@@ -1,5 +1,23 @@
 # Release Notes
 
+## [1.2.0] - 2026-02-27
+
+### Added
+
+**OpenCode 平台支持**
+- 新增 `.opencode/plugins/open-skills.js` - OpenCode 插件
+- 新增 `.opencode/INSTALL.md` - OpenCode 快速安装指南
+- 新增 `docs/README.opencode.md` - OpenCode 详细使用文档
+
+### Changed
+
+**文档完善**
+- 重写 `README.md` - 完善三个平台（Claude Code、Cursor、OpenCode）的安装说明
+- 每个平台包含：安装步骤、验证方法、更新命令、卸载命令
+- 新增 Troubleshooting 常见问题解答
+
+---
+
 ## [1.1.0] - 2026-02-27
 
 ### Added
