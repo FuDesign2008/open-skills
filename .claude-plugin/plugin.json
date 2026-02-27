@@ -1,0 +1,12 @@
+{
+  "name": "open-skills",
+  "description": "开放技能库：工作流、性能优化、Git 操作、情绪陪伴等 Claude Code Skills",
+  "version": "1.0.0",
+  "author": {
+    "name": "FUD2008"
+  },
+  "homepage": "https://github.com/FUD2008/open-skills",
+  "repository": "https://github.com/FUD2008/open-skills",
+  "license": "MIT",
+  "keywords": ["skills", "workflow", "performance", "git", "情绪价值"]
+}
