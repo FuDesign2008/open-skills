@@ -1,0 +1,23 @@
+{
+  "name": "open-skills-marketplace",
+  "owner": {
+    "name": "FuDesign",
+    "email": "fudesign2008@gmail.com"
+  },
+  "metadata": {
+    "description": "开放技能库：工作流、性能优化、情绪陪伴等 Claude Code Skills",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "open-skills",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/FuDesign2008/open-skills.git"
+      },
+      "description": "情绪陪伴、问题解决工作流、性能优化等 Claude Code Skills",
+      "version": "1.2.0",
+      "strict": false
+    }
+  ]
+}

@@ -16,7 +16,17 @@ Open Skills 为你的 AI 编码助手提供经过验证的技能和工作流。�
 
 ### Claude Code
 
-**安装：**
+#### 方式一：Marketplace 安装（推荐）
+
+```bash
+# 添加 marketplace
+/plugin marketplace add FuDesign2008/open-skills
+
+# 安装插件
+/plugin install open-skills@open-skills-marketplace
+```
+
+#### 方式二：手动安装
 
 ```bash
 # macOS / Linux
