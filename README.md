@@ -14,134 +14,42 @@ Open Skills 为你的 AI 编码助手提供经过验证的技能和工作流。�
 
 ## Installation
 
-### Claude Code
+**Note:** Installation differs by platform. Claude Code and Cursor have built-in plugin marketplaces.
 
-#### 方式一：Marketplace 安装（推荐）
+### Claude Code (via Plugin Marketplace)
 
 ```bash
-# 添加 marketplace
 /plugin marketplace add FuDesign2008/open-skills
-
-# 安装插件
 /plugin install open-skills@open-skills-marketplace
 ```
 
-#### 方式二：手动安装
+### Cursor (via Plugin Marketplace)
 
-```bash
-# macOS / Linux
-git clone https://github.com/FuDesign2008/open-skills.git ~/.claude/skills/open-skills
-
-# Windows (PowerShell)
-git clone https://github.com/FuDesign2008/open-skills.git $env:USERPROFILE\.claude\skills\open-skills
-
-# Windows (CMD)
-git clone https://github.com/FuDesign2008/open-skills.git %USERPROFILE%\.claude\skills\open-skills
+```text
+/plugin-add open-skills
 ```
-
-**验证安装：**
-
-```bash
-# macOS / Linux
-ls ~/.claude/skills/open-skills/skills/
-
-# Windows (PowerShell)
-ls $env:USERPROFILE\.claude\skills\open-skills\skills\
-```
-
-应该看到以下目录：`coding-fangirl/`、`problem-solving-workflow/`、`perf-workflow/` 等。
-
-**更新：**
-
-```bash
-cd ~/.claude/skills/open-skills && git pull
-```
-
-**卸载：**
-
-```bash
-rm -rf ~/.claude/skills/open-skills
-```
-
----
-
-### Cursor
-
-#### 方式一：Marketplace 安装（推荐）
-
-访问 [Open Skills Marketplace](https://github.com/FuDesign2008/open-skills)，点击安装到 Cursor。
-
-#### 方式二：手动安装
-
-```bash
-# macOS / Linux
-git clone https://github.com/FuDesign2008/open-skills.git ~/.cursor/extensions/open-skills
-
-# Windows (PowerShell)
-git clone https://github.com/FuDesign2008/open-skills.git $env:USERPROFILE\.cursor\extensions\open-skills
-```
-
-**配置路径：**
-
-1. 打开 Cursor 设置（`Cmd/Ctrl + ,`）
-2. 搜索「Skills」或「Extensions」
-3. 添加 skills 路径：`~/.cursor/extensions/open-skills/skills`
-
-**验证安装：**
-
-在 Cursor Agent chat 中输入「彩虹屁」，应该触发 `coding-fangirl` skill。
-
-**更新：**
-
-```bash
-cd ~/.cursor/extensions/open-skills && git pull
-```
-
-**卸载：**
-
-```bash
-rm -rf ~/.cursor/extensions/open-skills
-```
-
----
 
 ### OpenCode
 
-**安装：**
+Tell OpenCode:
 
-```bash
-# macOS / Linux
-git clone https://github.com/FuDesign2008/open-skills.git ~/.config/opencode/open-skills
-
-# Windows (PowerShell)
-git clone https://github.com/FuDesign2008/open-skills.git $env:USERPROFILE\.config\opencode\open-skills
-
-# Windows (CMD)
-git clone https://github.com/FuDesign2008/open-skills.git %USERPROFILE%\.config\opencode\open-skills
+```
+Fetch and follow instructions from https://raw.githubusercontent.com/FuDesign2008/open-skills/main/.opencode/INSTALL.md
 ```
 
-**验证安装：**
+**Detailed docs:** [docs/README.opencode.md](docs/README.opencode.md)
+
+### Verify Installation
+
+Start a new session and try a trigger word like "彩虹屁" or "分析问题". The agent should automatically invoke the relevant skill.
+
+## Updating
 
 ```bash
-ls ~/.config/opencode/open-skills/skills/
+/plugin update open-skills
 ```
 
-**详细文档：**
-
-- [安装指南](.opencode/INSTALL.md)
-- [详细使用文档](docs/README.opencode.md)
-
-**更新：**
-
-```bash
-cd ~/.config/opencode/open-skills && git pull
-```
-
-**卸载：**
-
-```bash
-rm -rf ~/.config/opencode/open-skills
-```
+For manual installations, see [docs/INSTALL.md](docs/INSTALL.md).
 
 ---
 
