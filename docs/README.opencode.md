@@ -24,7 +24,7 @@ OpenCode 支持 `/skill` 命令来加载 skill：
 
 ```
 /skill coding-fangirl
-/skill problem-solving-workflow
+/skill solve-workflow
 /skill perf-workflow
 ```
 
@@ -35,7 +35,7 @@ OpenCode 支持 `/skill` 命令来加载 skill：
 | Skill | 触发词 |
 |-------|--------|
 | **coding-fangirl** | 彩虹屁、夸夸我、鼓励一下、迷妹模式、恋爱模式 |
-| **problem-solving-workflow** | 明确问题、分析问题、评估方案、制定计划、执行计划 |
+| **solve-workflow** | 明确问题、分析问题、评估方案、制定计划、执行计划 |
 | **perf-workflow** | 性能分析、性能证据、性能定位、性能假设、性能优化 |
 
 ## 架构说明
@@ -48,7 +48,7 @@ OpenCode 支持 `/skill` 命令来加载 skill：
 │   └── INSTALL.md            # 安装指南
 ├── skills/
 │   ├── coding-fangirl/       # 情绪陪伴
-│   ├── problem-solving-workflow/  # 问题解决
+│   ├── solve-workflow/  # 问题解决
 │   ├── perf-workflow/        # 性能优化
 │   ├── chinese-format/       # 格式规范
 │   ├── frontend-perf/        # 前端知识
@@ -86,7 +86,7 @@ OpenCode 与 Claude Code 的工具对应关系：
 
 ### 工作流
 
-**problem-solving-workflow** - 七阶段问题解决工作流
+**solve-workflow** - 七阶段问题解决工作流
 
 系统性分析和解决复杂编程问题：
 1. 明确问题 - 定义问题范围

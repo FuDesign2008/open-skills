@@ -65,7 +65,7 @@
 - `coding-fangirl` v5.0.0 - 技术小迷妹 AI 编码陪伴
 
 **工作流**
-- `problem-solving-workflow` v1.0.0 - 七阶段问题解决工作流
+- `solve-workflow` v1.0.0 - 七阶段问题解决工作流
 - `perf-workflow` v2.1.0 - 性能问题分析与优化工作流
 
 **代码质量**

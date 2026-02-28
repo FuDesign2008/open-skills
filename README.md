@@ -65,7 +65,7 @@ For manual installations, see [docs/INSTALL.md](docs/INSTALL.md).
 
 | Skill | 触发词 | 说明 |
 |-------|--------|------|
-| **problem-solving-workflow** | 明确问题、分析问题、评估方案、制定计划、执行计划 | 七阶段问题解决工作流 |
+| **solve-workflow** | 明确问题、分析问题、评估方案、制定计划、执行计划 | 七阶段问题解决工作流 |
 | **perf-workflow** | 性能分析、性能证据、性能定位、性能假设、性能优化 | 性能问题分析与优化工作流 |
 
 ### 文档规范
