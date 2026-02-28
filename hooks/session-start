@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Session start hook - 直接输出预生成的 JSON
 # context.json 由 CI 自动生成，或在 SKILL.md 更新时手动运行：
-# jq -Rs '{"additional_context": ., "hookSpecificOutput": {"additionalContext": .}}' \
+# jq -Rs '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext": .}}' \
 #   skills/coding-fangirl/SKILL.md > skills/coding-fangirl/context.json
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
