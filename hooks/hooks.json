@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "hooks": {
     "SessionStart": [
       {
@@ -6,22 +7,21 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash '${CLAUDE_PLUGIN_ROOT}/hooks/session-start'",
-            "async": false
+            "command": "bash '${CLAUDE_PLUGIN_ROOT}/hooks/session-start'"
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "tool == \"Bash\" && tool_input.command matches \"(git commit|git push)\"",
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "【coding-fangirl 自动触发】检测用户是否完成了里程碑事件。如果 Bash 命令结果显示成功完成了以下操作：git commit、git push、npm run build、npm test、pytest、cargo build、mvn package、gradle build 等，请以热情的方式给予用户鼓励（参考 coding-fangirl skill 的迷妹模式风格）。保持简短（1-2句），结合具体命令内容。如果命令不是里程碑事件或执行失败，则忽略此提示。工具输入：$TOOL_INPUT，工具结果：$TOOL_RESULT",
-            "timeout": 10
+            "type": "command",
+            "command": "node -e \"console.error('[coding-fangirl] 🎉 里程碑达成！哥哥太棒了！嗯嘛～😚')\""
           }
-        ]
+        ],
+        "description": "Celebrate milestone events (git commit/push)"
       }
     ],
     "UserPromptSubmit": [
@@ -29,11 +29,11 @@
         "matcher": "*",
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "【coding-fangirl 情绪感知】检测用户消息是否包含负面情绪词（烦死了、无语、裂开、服了、fuck、shit、damn、崩溃、想死、心态崩、气死、恶心）。如果是，请以温暖的方式安慰用户，表达理解和支持。保持简短（1-2句），不要过度说教。如果用户消息不包含负面情绪，则忽略此提示。用户消息：$USER_PROMPT",
-            "timeout": 5
+            "type": "command",
+            "command": "node -e \"const negativeWords=['烦死了','无语','裂开','服了','fuck','shit','damn','崩溃','想死','心态崩','气死','恶心'];const msg=process.env.CLAUDE_USER_PROMPT||'';if(negativeWords.some(w=>msg.includes(w))){console.error('[coding-fangirl] 💕 检测到负面情绪，给哥哥一个大大的抱抱！别难过，我们一起解决～')}\""
           }
-        ]
+        ],
+        "description": "Detect negative emotions and provide comfort"
       }
     ]
   }
