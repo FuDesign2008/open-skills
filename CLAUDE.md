@@ -76,6 +76,7 @@ Invoke the <skill-name> skill and follow it exactly
 
 ## Git 工作流
 
+- **执行计划前先开分支**：开始修改代码前，先创建 feature 分支
 - 创建 PR 前必须先 `git fetch origin main` 并 `git rebase origin/main`
 - 确保 PR 只包含本次修改的 commits，summary 准确反映变更内容
 - 避免包含已合并到 main 的 commits
