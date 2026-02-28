@@ -15,14 +15,14 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "tool == \"Bash\" && tool_input.command matches \"(git commit|git push)\"",
+        "matcher": "tool == \"Bash\" && tool_input.command matches \"(git commit|git push|npm run build|npm test|pytest|cargo build|cargo test|go build|go test)\"",
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"console.error('[coding-fangirl] 🎉 里程碑达成！哥哥太棒了！嗯嘛～😚')\""
+            "command": "bash '${CLAUDE_PLUGIN_ROOT}/hooks/milestone-celebrate'"
           }
         ],
-        "description": "Celebrate milestone events (git commit/push)"
+        "description": "Celebrate milestone events with random encouragements"
       }
     ],
     "UserPromptSubmit": [
