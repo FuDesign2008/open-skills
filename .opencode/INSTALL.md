@@ -15,14 +15,27 @@
 git clone https://github.com/FuDesign2008/open-skills.git ~/.config/opencode/open-skills
 ```
 
-### 2. 创建 Skills 符号链接
+### 2. 注册插件
+
+```bash
+mkdir -p ~/.config/opencode/plugins
+rm -f ~/.config/opencode/plugins/open-skills.js
+ln -s ~/.config/opencode/open-skills/.opencode/plugins/open-skills.js ~/.config/opencode/plugins/open-skills.js
+```
+
+### 3. 创建 Skills 符号链接
 
 OpenCode 只搜索 `~/.config/opencode/skills/` 目录，需要创建符号链接：
 
 ```bash
 mkdir -p ~/.config/opencode/skills
+rm -rf ~/.config/opencode/skills/open-skills
 ln -s ~/.config/opencode/open-skills/skills ~/.config/opencode/skills/open-skills
 ```
+
+### 4. 重启 OpenCode
+
+重启 OpenCode 使插件和 skills 生效。
 
 ## Windows
 
@@ -38,11 +51,17 @@ ln -s ~/.config/opencode/open-skills/skills ~/.config/opencode/skills/open-skill
 :: 1. Clone 仓库
 git clone https://github.com/FuDesign2008/open-skills.git "%USERPROFILE%\.config\opencode\open-skills"
 
-:: 2. 创建目录
-mkdir "%USERPROFILE%\.config\opencode\skills" 2>nul
+:: 2. 注册插件
+mkdir "%USERPROFILE%\.config\opencode\plugins" 2>nul
+if exist "%USERPROFILE%\.config\opencode\plugins\open-skills.js" del "%USERPROFILE%\.config\opencode\plugins\open-skills.js"
+mklink "%USERPROFILE%\.config\opencode\plugins\open-skills.js" "%USERPROFILE%\.config\opencode\open-skills\.opencode\plugins\open-skills.js"
 
 :: 3. 创建 Skills 目录连接（无需特殊权限）
+mkdir "%USERPROFILE%\.config\opencode\skills" 2>nul
+if exist "%USERPROFILE%\.config\opencode\skills\open-skills" rmdir "%USERPROFILE%\.config\opencode\skills\open-skills"
 mklink /J "%USERPROFILE%\.config\opencode\skills\open-skills" "%USERPROFILE%\.config\opencode\open-skills\skills"
+
+:: 4. 重启 OpenCode
 ```
 
 ### PowerShell
@@ -51,11 +70,17 @@ mklink /J "%USERPROFILE%\.config\opencode\skills\open-skills" "%USERPROFILE%\.co
 # 1. Clone 仓库
 git clone https://github.com/FuDesign2008/open-skills.git "$env:USERPROFILE\.config\opencode\open-skills"
 
-# 2. 创建目录
-New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.config\opencode\skills"
+# 2. 注册插件
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.config\opencode\plugins"
+Remove-Item -Force -ErrorAction SilentlyContinue "$env:USERPROFILE\.config\opencode\plugins\open-skills.js"
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.config\opencode\plugins\open-skills.js" -Target "$env:USERPROFILE\.config\opencode\open-skills\.opencode\plugins\open-skills.js"
 
 # 3. 创建 Skills 目录连接（无需特殊权限）
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.config\opencode\skills"
+Remove-Item -Force -Recurse -ErrorAction SilentlyContinue "$env:USERPROFILE\.config\opencode\skills\open-skills"
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.config\opencode\skills\open-skills" -Target "$env:USERPROFILE\.config\opencode\open-skills\skills"
+
+# 4. 重启 OpenCode
 ```
 
 ### Git Bash
@@ -66,27 +91,45 @@ New-Item -ItemType Junction -Path "$env:USERPROFILE\.config\opencode\skills\open
 # 1. Clone 仓库
 git clone https://github.com/FuDesign2008/open-skills.git ~/.config/opencode/open-skills
 
-# 2. 创建目录
-mkdir -p ~/.config/opencode/skills
+# 2. 注册插件
+mkdir -p ~/.config/opencode/plugins
+rm -f ~/.config/opencode/plugins/open-skills.js
+cmd //c "mklink \"$(cygpath -w ~/.config/opencode/plugins/open-skills.js)\" \"$(cygpath -w ~/.config/opencode/open-skills/.opencode/plugins/open-skills.js)\""
 
 # 3. 创建 Skills 目录连接
+mkdir -p ~/.config/opencode/skills
+rm -rf ~/.config/opencode/skills/open-skills
 cmd //c "mklink /J \"$(cygpath -w ~/.config/opencode/skills/open-skills)\" \"$(cygpath -w ~/.config/opencode/open-skills/skills)\""
+
+# 4. 重启 OpenCode
 ```
 
 ## 验证安装
 
 **macOS / Linux:**
 ```bash
+# 验证 plugins 符号链接
+ls -l ~/.config/opencode/plugins/open-skills.js
+
+# 验证 skills 符号链接
 ls -l ~/.config/opencode/skills/open-skills
 ```
 
 **Windows CMD:**
 ```cmd
+:: 验证 plugins 符号链接
+dir /AL "%USERPROFILE%\.config\opencode\plugins"
+
+:: 验证 skills 符号链接
 dir /AL "%USERPROFILE%\.config\opencode\skills"
 ```
 
 **Windows PowerShell:**
 ```powershell
+# 验证 plugins 符号链接
+Get-ChildItem "$env:USERPROFILE\.config\opencode\plugins" | Where-Object { $_.LinkType }
+
+# 验证 skills 符号链接
 Get-ChildItem "$env:USERPROFILE\.config\opencode\skills" | Where-Object { $_.LinkType }
 ```
 
@@ -125,18 +168,21 @@ git pull
 
 **macOS / Linux:**
 ```bash
+rm -f ~/.config/opencode/plugins/open-skills.js
 rm -rf ~/.config/opencode/skills/open-skills
 rm -rf ~/.config/opencode/open-skills
 ```
 
 **Windows CMD:**
 ```cmd
+del "%USERPROFILE%\.config\opencode\plugins\open-skills.js"
 rmdir "%USERPROFILE%\.config\opencode\skills\open-skills"
 rmdir /S /Q "%USERPROFILE%\.config\opencode\open-skills"
 ```
 
 **Windows PowerShell:**
 ```powershell
+Remove-Item "$env:USERPROFILE\.config\opencode\plugins\open-skills.js" -Force
 Remove-Item "$env:USERPROFILE\.config\opencode\skills\open-skills" -Force
 Remove-Item "$env:USERPROFILE\.config\opencode\open-skills" -Recurse -Force
 ```
