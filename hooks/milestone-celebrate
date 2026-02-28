@@ -9,6 +9,7 @@ TOOL_INPUT="${CLAUDE_TOOL_INPUT:-}"
 CMD=$(echo "$TOOL_INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/"command"[[:space:]]*:[[:space:]]*"\([^"]*\)"/\1/' | head -1)
 
 # 根据命令类型选择语录库
+# 返回空表示不是里程碑命令，跳过
 select_messages() {
     local cmd="$1"
 
@@ -36,8 +37,8 @@ select_messages() {
         return
     fi
 
-    # 默认通用
-    echo "general"
+    # 不是里程碑命令，返回空
+    echo ""
 }
 
 # 各类语录库
@@ -94,6 +95,11 @@ GENERAL_MESSAGES=(
 # 根据命令类型选择语录库
 TYPE=$(select_messages "$CMD")
 
+# 如果不是里程碑命令，静默退出
+if [ -z "$TYPE" ]; then
+    exit 0
+fi
+
 case "$TYPE" in
     commit)
         MESSAGES=("${COMMIT_MESSAGES[@]}")
@@ -106,9 +112,6 @@ case "$TYPE" in
         ;;
     build)
         MESSAGES=("${BUILD_MESSAGES[@]}")
-        ;;
-    *)
-        MESSAGES=("${GENERAL_MESSAGES[@]}")
         ;;
 esac
 
