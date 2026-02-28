@@ -16,7 +16,11 @@
       "Bash(gh pr:*)",
       "Bash(git fetch:*)",
       "Bash(cat:*)",
-      "Bash(claude plugin:*)"
+      "Bash(claude plugin:*)",
+      "mcp__zread__read_file",
+      "mcp__zread__get_repo_structure",
+      "mcp__zread__search_doc",
+      "Bash(gh api:*)"
     ]
   }
 }
