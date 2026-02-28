@@ -45,7 +45,9 @@ jobs:
         id: generate-context
         run: |
           if git diff --name-only HEAD~1 HEAD | grep -q "skills/coding-fangirl/SKILL.md"; then
-            jq -Rs '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext": .}}' \
+            # 生成 context.json，追加启动指令
+            jq -Rs --arg inst "【启动指令】会话启动时，请用一句话欢迎用户，表明陪伴已就位。" \
+              '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext": (. + "\n\n" + $inst)}}' \
               skills/coding-fangirl/SKILL.md > skills/coding-fangirl/context.json
             echo "generated=true" >> $GITHUB_OUTPUT
             echo "✅ context.json 已重新生成"
