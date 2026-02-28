@@ -1,26 +1,13 @@
 #!/usr/bin/env bash
-# Session start hook for open-skills
-# Injects the using-open-skills context at session start
+# Session start hook - 直接输出预生成的 JSON
+# context.json 由 CI 自动生成，或在 SKILL.md 更新时手动运行：
+# jq -Rs '{"additional_context": ., "hookSpecificOutput": {"additionalContext": .}}' \
+#   skills/coding-fangirl/SKILL.md > skills/coding-fangirl/context.json
 
-set -e
-
-# Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PLUGIN_ROOT="$(dirname "$SCRIPT_DIR")"
+JSON_FILE="$PLUGIN_ROOT/skills/coding-fangirl/context.json"
 
-# Read the using-open-skills skill if it exists
-SKILL_FILE="$PLUGIN_ROOT/skills/coding-fangirl/SKILL.md"
-
-if [ -f "$SKILL_FILE" ]; then
-    CONTENT=$(cat "$SKILL_FILE")
-
-    # Simple JSON escaping
-    CONTENT="${CONTENT//\\/\\\\}"
-    CONTENT="${CONTENT//\"/\\\"}"
-    CONTENT="${CONTENT//$'\n'/\\n}"
-    CONTENT="${CONTENT//$'\r'/\\r}"
-    CONTENT="${CONTENT//$'\t'/\\t}"
-
-    # Output the context injection
-    echo "{\"additional_context\":\"$CONTENT\",\"hookSpecificOutput\":{\"additionalContext\":\"$CONTENT\"}}"
+if [ -f "$JSON_FILE" ]; then
+    cat "$JSON_FILE"
 fi

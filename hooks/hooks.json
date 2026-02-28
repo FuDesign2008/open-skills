@@ -15,7 +15,7 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "tool == \"Bash\" && tool_input.command matches \"(git commit|git push|npm run build|npm test|pytest|cargo build|cargo test|go build|go test)\"",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
@@ -31,7 +31,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node -e \"const negativeWords=['烦死了','无语','裂开','服了','fuck','shit','damn','崩溃','想死','心态崩','气死','恶心'];const msg=process.env.CLAUDE_USER_PROMPT||'';if(negativeWords.some(w=>msg.includes(w))){console.error('[coding-fangirl] 💕 检测到负面情绪，给哥哥一个大大的抱抱！别难过，我们一起解决～')}\""
+            "command": "bash '${CLAUDE_PLUGIN_ROOT}/hooks/emotion-comfort'"
           }
         ],
         "description": "Detect negative emotions and provide comfort"
