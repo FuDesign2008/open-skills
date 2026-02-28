@@ -31,13 +31,10 @@ Open Skills 为你的 AI 编码助手提供经过验证的技能和工作流。�
 
 ### OpenCode
 
-```bash
-# 1. Clone 仓库
-git clone https://github.com/FuDesign2008/open-skills.git ~/.config/opencode/open-skills
+Tell OpenCode:
 
-# 2. 创建 Skills 符号链接
-mkdir -p ~/.config/opencode/skills
-ln -s ~/.config/opencode/open-skills/skills ~/.config/opencode/skills/open-skills
+```
+Fetch and follow instructions from https://raw.githubusercontent.com/FuDesign2008/open-skills/main/.opencode/INSTALL.md
 ```
 
 **详细文档**: [docs/README.opencode.md](docs/README.opencode.md)
