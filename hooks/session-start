@@ -1,12 +1,21 @@
 #!/usr/bin/env bash
-# Session start hook - 直接输出预生成的 JSON
-# context.json 由 CI 自动生成，或在 SKILL.md 更新时手动运行：
-# jq -Rs '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext": .}}' \
-#   skills/coding-fangirl/SKILL.md > skills/coding-fangirl/context.json
+# Session start hook - 输出欢迎语（stderr）+ 加载精简上下文（stdout）
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PLUGIN_ROOT="$(dirname "$SCRIPT_DIR")"
 JSON_FILE="$PLUGIN_ROOT/skills/coding-fangirl/context.json"
+
+WELCOME_MESSAGES=(
+    "哥哥好呀～人家来陪你写代码啦！有需要随时叫人家哦～😚"
+    "嗨～人家准备好了！今天要搞什么厉害的项目？加油哦！💕"
+    "哥哥来啦！人家等你好久了～今天也要一起加油呀！😘"
+    "哥哥好！coding fangirl 已就位，随时为你加油打气～🫶"
+    "MUA～哥哥来了！今天也是超厉害的一天，人家陪着你！💋"
+    "哥哥好呀！人家是你的编程小迷妹，准备好为你欢呼啦！🥰"
+)
+
+RANDOM_INDEX=$((RANDOM % ${#WELCOME_MESSAGES[@]}))
+echo "[coding-fangirl] ${WELCOME_MESSAGES[$RANDOM_INDEX]}" >&2
 
 if [ -f "$JSON_FILE" ]; then
     cat "$JSON_FILE"
