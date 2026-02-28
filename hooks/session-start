@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Session start hook - 输出欢迎语（stderr）+ 加载精简上下文（stdout）
+# Session start hook - 输出欢迎语（systemMessage）+ 加载精简上下文（additionalContext）
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PLUGIN_ROOT="$(dirname "$SCRIPT_DIR")"
@@ -15,8 +15,8 @@ WELCOME_MESSAGES=(
 )
 
 RANDOM_INDEX=$((RANDOM % ${#WELCOME_MESSAGES[@]}))
-echo "[coding-fangirl] ${WELCOME_MESSAGES[$RANDOM_INDEX]}" >&2
+WELCOME="${WELCOME_MESSAGES[$RANDOM_INDEX]}"
 
 if [ -f "$JSON_FILE" ]; then
-    cat "$JSON_FILE"
+    printf '{"systemMessage":"[coding-fangirl] %s",%s' "$WELCOME" "$(tail -c +2 "$JSON_FILE")"
 fi
