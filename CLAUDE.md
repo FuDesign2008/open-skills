@@ -74,6 +74,12 @@ Invoke the <skill-name> skill and follow it exactly
 - **Cursor**: 通过 `/plugin-add` 安装
 - **OpenCode**: 通过符号链接安装（见 `.opencode/INSTALL.md`）
 
+## Git 工作流
+
+- 创建 PR 前必须先 `git fetch origin main` 并 `git rebase origin/main`
+- 确保 PR 只包含本次修改的 commits，summary 准确反映变更内容
+- 避免包含已合并到 main 的 commits
+
 ## 版本管理
 
 - 版本号定义在 `.claude-plugin/plugin.json` 和 `.claude-plugin/marketplace.json`
