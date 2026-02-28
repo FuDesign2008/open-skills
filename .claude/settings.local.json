@@ -10,7 +10,12 @@
       "Bash(git branch:*)",
       "Bash(git push:*)",
       "Bash(cd:*)",
-      "Skill(commit-commands:commit)"
+      "Skill(commit-commands:commit)",
+      "mcp__web-reader__webReader",
+      "mcp__web-search-prime__webSearchPrime",
+      "Bash(gh pr:*)",
+      "Bash(git fetch:*)",
+      "Bash(cat:*)"
     ]
   }
 }
