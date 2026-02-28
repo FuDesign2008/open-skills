@@ -46,7 +46,7 @@ Start a new session and try a trigger word like "彩虹屁" or "分析问题". T
 ## Updating
 
 ```bash
-/plugin update open-skills@open-skills-marketplace
+claude plugin update open-skills@open-skills-marketplace
 ```
 
 For manual installations, see [docs/INSTALL.md](docs/INSTALL.md).

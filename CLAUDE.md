@@ -74,6 +74,17 @@ Invoke the <skill-name> skill and follow it exactly
 - **Cursor**: 通过 `/plugin-add` 安装
 - **OpenCode**: 通过符号链接安装（见 `.opencode/INSTALL.md`）
 
+## 版本管理
+
+- 版本号定义在 `.claude-plugin/plugin.json` 和 `.claude-plugin/marketplace.json`
+- 推送到 main 分支时，GitHub Actions 自动递增版本号（见 `.github/workflows/release.yml`）
+- 版本递增规则：
+  - `feat:` / `feature:` → MINOR（如 1.2.0 → 1.3.0）
+  - `fix:` / 其他 → PATCH（如 1.2.0 → 1.2.1）
+  - `BREAKING CHANGE` → MAJOR（如 1.2.0 → 2.0.0）
+- **不要手动修改版本号**，由 CI 自动管理
+- 触发条件：`hooks/`、`skills/`、`commands/` 目录有变更
+
 ## 哲学
 
 - **情绪价值** - 编程不只是技术，也需要情感支持
