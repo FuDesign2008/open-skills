@@ -15,7 +15,8 @@
       "mcp__web-search-prime__webSearchPrime",
       "Bash(gh pr:*)",
       "Bash(git fetch:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(claude plugin:*)"
     ]
   }
 }
