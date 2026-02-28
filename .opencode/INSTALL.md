@@ -135,7 +135,7 @@ Get-ChildItem "$env:USERPROFILE\.config\opencode\skills" | Where-Object { $_.Lin
 
 应该看到以下目录：
 - `coding-fangirl/`
-- `problem-solving-workflow/`
+- `solve-workflow/`
 - `perf-workflow/`
 - `chinese-format/`
 - `frontend-perf/`
@@ -147,7 +147,7 @@ Get-ChildItem "$env:USERPROFILE\.config\opencode\skills" | Where-Object { $_.Lin
 
 ```
 /skill coding-fangirl
-/skill problem-solving-workflow
+/skill solve-workflow
 /skill perf-workflow
 ```
 

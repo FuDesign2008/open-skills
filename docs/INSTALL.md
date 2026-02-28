@@ -39,7 +39,7 @@ ls ~/.claude/skills/open-skills/skills/
 ls $env:USERPROFILE\.claude\skills\open-skills\skills\
 ```
 
-应该看到以下目录：`coding-fangirl/`、`problem-solving-workflow/`、`perf-workflow/` 等。
+应该看到以下目录：`coding-fangirl/`、`solve-workflow/`、`perf-workflow/` 等。
 
 ### 更新
 
