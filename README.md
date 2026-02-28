@@ -25,9 +25,17 @@ Open Skills 为你的 AI 编码助手提供经过验证的技能和工作流。�
 
 ### Cursor (via Plugin Marketplace)
 
-```text
+**Option A: If `open-skills` is already listed in Cursor Marketplace**
+
+```bash
 /plugin-add open-skills
 ```
+
+**Option B: If it is not listed yet (or `/plugin-add` cannot find it)**
+
+Use manual installation steps in [docs/INSTALL.md](docs/INSTALL.md) under the Cursor section.
+
+**Status note:** `/plugin-add open-skills` works only after Marketplace listing is live and searchable by slug.
 
 ### OpenCode
 
@@ -41,7 +49,10 @@ Fetch and follow instructions from https://raw.githubusercontent.com/FuDesign200
 
 ### Verify Installation
 
-Start a new session and try a trigger word like "彩虹屁" or "分析问题". The agent should automatically invoke the relevant skill.
+1. Start a new session.
+2. Try a trigger word like "彩虹屁" or "分析问题".
+3. Confirm the agent automatically invokes the relevant skill.
+4. If installation fails, use the manual Cursor path in [docs/INSTALL.md](docs/INSTALL.md).
 
 ## Updating
 
