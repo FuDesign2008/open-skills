@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 
 # Git worktrees
 .worktrees/
+
+# Claude Code local settings
+.claude/settings.local.json
