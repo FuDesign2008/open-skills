@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash '${CLAUDE_PLUGIN_ROOT}/hooks/session-start'"
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start\""
           }
         ],
         "async": false
@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash '${CLAUDE_PLUGIN_ROOT}/hooks/milestone-celebrate'"
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/milestone-celebrate\""
           }
         ],
         "description": "Celebrate milestone events with random encouragements"
@@ -31,7 +31,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash '${CLAUDE_PLUGIN_ROOT}/hooks/emotion-comfort'"
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/emotion-comfort\""
           }
         ],
         "description": "Detect negative emotions and provide comfort"
