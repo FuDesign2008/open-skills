@@ -75,41 +75,37 @@
 ```
 .opencode/
 ├── plugin/
-│   ├── package.json           # 插件依赖配置
-│   ├── coding-fangirl-hooks.ts # 核心 hook 实现（新增）
-│   └── node_modules/          # 依赖包
-│       └── @opencode-ai/
-│           ├── plugin/        # OpenCode 插件 API
-│           └── sdk/           # OpenCode SDK
+│   └── coding-fangirl-hooks.ts # 核心 hook 实现（新增）
 ├── plugins/
 │   └── open-skills.js         # 增强版（含情绪感知）
 └── ...
-opencode.json                   # 插件注册配置（新增）
 ```
+
+> **注意**：不需要 `package.json`、`node_modules/` 或 `opencode.json`。
+>
+> **源码证据**（`packages/opencode/src/config/config.ts`）：
+> ```typescript
+> async function loadPlugin(dir: string) {
+>   const plugins: string[] = []
+>   for (const item of await Glob.scan("{plugin,plugins}/*.{ts,js}", {
+>     cwd: dir,
+>     absolute: true,
+>     dot: true,
+>     symlink: true,
+>   })) {
+>     plugins.push(pathToFileURL(item).href)
+>   }
+>   return plugins
+> }
+> ```
+>
+> OpenCode 会**自动发现** `.opencode/plugin/` 和 `.opencode/plugins/` 目录下的 `.ts` 和 `.js` 文件，无需任何配置。
+>
+> `@opencode-ai/plugin` 是 OpenCode monorepo 的内部包，由 Bun 运行时自动解析，用户无需安装。
 
 ### 2. 核心实现
 
-#### 2.1 创建 `.opencode/plugin/package.json`
-
-**目的**：定义插件依赖
-
-**内容**：
-```json
-{
-  "name": "open-skills-plugin",
-  "version": "1.0.0",
-  "description": "Coding Fangirl hooks plugin for OpenCode",
-  "dependencies": {
-    "@opencode-ai/plugin": "latest"
-  }
-}
-```
-
-**原因**：
-- OpenCode 插件需要 `@opencode-ai/plugin` 包提供的类型定义
-- 使用 `latest` 标签确保获取最新 API
-
-#### 2.2 创建 `.opencode/plugin/coding-fangirl-hooks.ts`
+#### 2.1 创建 `.opencode/plugin/coding-fangirl-hooks.ts`
 
 **目的**：实现核心 hook 功能
 
@@ -245,42 +241,50 @@ opencode.json                   # 插件注册配置（新增）
    - 使用 `input.parts` 获取用户消息：符合 OpenCode API
    - 注入到系统提示：AI 会根据情绪安慰语调整响应
 
-#### 2.4 创建 `opencode.json`
-
-**目的**：注册插件
-
-**内容**：
-```json
-{
-  "$schema": "https://opencode.ai/config.json",
-  "plugins": {
-    "open-skills": {
-      "enabled": true
-    },
-    "coding-fangirl-hooks": {
-      "enabled": true
-    }
-  }
-}
-```
-
-**原因**：
-- OpenCode 需要通过配置文件注册插件
-- `enabled: true` 确保插件被加载
-- 两个插件可以共存，分别负责不同功能
-
 ---
 
 ## 设计决策
 
-### 1. 为什么创建独立插件而不是改造现有插件？
+### 1. 为什么不需要 `opencode.json` 和 `package.json`？
+
+**源码证据**：
+
+1. **插件自动发现**（`packages/opencode/src/config/config.ts`）：
+   ```typescript
+   async function loadPlugin(dir: string) {
+     const plugins: string[] = []
+     for (const item of await Glob.scan("{plugin,plugins}/*.{ts,js}", {
+       cwd: dir,
+       absolute: true,
+       dot: true,
+       symlink: true,
+     })) {
+       plugins.push(pathToFileURL(item).href)
+     }
+     return plugins
+   }
+   ```
+   OpenCode 自动扫描 `.opencode/plugin/` 和 `.opencode/plugins/` 目录，无需配置。
+
+2. **配置格式是数组而非对象**（Schema 定义）：
+   ```typescript
+   plugin: z.string().array().optional(),
+   ```
+   如果需要配置远程插件，格式应为 `{ "plugin": ["package@version"] }`，而非 `{ "plugins": {...} }`。
+
+3. **`@opencode-ai/plugin` 是内部包**：
+   这是 OpenCode monorepo 的一部分（`packages/plugin/`），由 Bun 运行时自动解析，用户无需安装。
+
+**结论**：本地插件只需放在 `.opencode/plugin/` 或 `.opencode/plugins/` 目录下即可，无需任何配置文件。
+
+### 2. 为什么创建独立插件而不是改造现有插件？
 
 **原因**：
 - **单一职责原则**：`open-skills.js` 负责系统提示转换，`coding-fangirl-hooks.ts` 负责 hook 监听
 - **可维护性**：独立文件便于测试和维护
 - **扩展性**：未来可以单独升级或替换某个插件
 
-### 2. 为什么使用 `console.log` 而不是其他输出方式？
+### 3. 为什么使用 `console.log` 而不是其他输出方式？
 
 **原因**：
 - OpenCode 会捕获 `console.log` 输出并显示给用户
@@ -290,7 +294,7 @@ opencode.json                   # 插件注册配置（新增）
 **风险**：
 - 未在实际环境验证，可能需要调整
 
-### 3. 为什么语录库从 Shell 脚本迁移到 TypeScript？
+### 4. 为什么语录库从 Shell 脚本迁移到 TypeScript？
 
 **原因**：
 - **类型安全**：TypeScript 提供类型检查，减少错误
@@ -298,14 +302,14 @@ opencode.json                   # 插件注册配置（新增）
 - **统一管理**：所有代码在一个语言中，便于维护
 - **性能**：无需启动 Shell 进程，性能更好
 
-### 4. 为什么情绪感知在 `open-skills.js` 而不是新插件中实现？
+### 5. 为什么情绪感知在 `open-skills.js` 而不是新插件中实现？
 
 **原因**：
 - 情绪感知需要访问用户输入，而用户输入在 `system.transform` hook 中最容易获取
 - 避免在两个插件中重复实现相同的逻辑
 - `open-skills.js` 已经有系统提示转换的逻辑，情绪感知是其自然扩展
 
-### 5. 为什么时间关怀和 AI 协作完成放在同一个 hook 中？
+### 6. 为什么时间关怀和 AI 协作完成放在同一个 hook 中？
 
 **原因**：
 - 两者都在 `session.idle` 事件中触发
@@ -421,16 +425,6 @@ opencode.json                   # 插件注册配置（新增）
 **解决方案**：
 - 使用相对路径或配置文件
 - 添加路径检测和错误处理
-
-### 4. 依赖安装
-
-**问题**：需要手动安装依赖 `npm install`（bun 不可用）
-
-**影响**：用户需要额外操作
-
-**解决方案**：
-- 在文档中明确说明安装步骤
-- 考虑使用 postinstall 脚本自动安装
 
 ---
 
