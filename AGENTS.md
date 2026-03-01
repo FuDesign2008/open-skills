@@ -121,7 +121,7 @@ export const OpenSkillsPlugin = async ({ client, directory }) => {
 
 ## Git 工作流
 
-- **执行计划前先开分支**：开始修改代码前，先创建 feature 分支
+- **⚠️ 必须先创建分支**：任何代码修改前，必须先创建 feature 分支。main 是保护分支，禁止直接推送
 - 创建 PR 前必须先 `git fetch origin main` 并 `git rebase origin/main`
 - 确保 PR 只包含本次修改的 commits
 - 避免包含已合并到 main 的 commits
@@ -138,7 +138,7 @@ export const OpenSkillsPlugin = async ({ client, directory }) => {
 - 版本号定义在 `.claude-plugin/plugin.json` 和 `.claude-plugin/marketplace.json`
 - 推送到 main 分支时，GitHub Actions 自动递增版本号
 - **不要手动修改版本号**，由 CI 自动管理
-- 触发条件：`hooks/`、`skills/`、`commands/` 目录有变更
+- 触发条件：`hooks/`、`skills/`、`commands/`、`.opencode/` 目录有变更
 
 ## 多平台支持
 
