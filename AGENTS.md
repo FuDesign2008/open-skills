@@ -1,61 +1,71 @@
-# AGENTS.md
+# PROJECT KNOWLEDGE BASE
 
-本文件为 AI 编码代理（如 Claude Code、Cursor、OpenCode）提供项目工作指南。
+**Generated:** 2026-03-01 | **Branch:** fix/opencode-coding-fangirl-cleanup
 
-## 项目概述
+## 概述
 
-Open Skills 是一个 AI 编码助手的 Skills 库，支持 **Claude Code**、**Cursor**、**OpenCode** 三个平台。提供情绪陪伴、问题解决工作流、性能优化等能力。
+AI 编码助手的开放 Skills 库。Markdown + JSON + 少量 JS 构成的多平台插件项目。支持 Claude Code、Cursor、OpenCode 三个平台。
 
-## 架构
+## 结构
 
 ```
 open-skills/
-├── skills/                 # Skill 定义（核心）
-│   └── <skill-name>/
-│       └── SKILL.md        # 必需：Skill 定义文件
-├── commands/               # 快捷命令（调用 skill）
-├── hooks/                  # 钩子配置
-│   └── hooks.json          # 定义 SessionStart、PostToolUse、UserPromptSubmit 钩子
-├── .claude-plugin/         # Claude Code 插件配置
-├── .cursor-plugin/         # Cursor 插件配置
-├── .opencode/              # OpenCode 安装脚本和插件
-└── docs/                   # 详细文档
+├── skills/                 # 核心：Skill 定义（每个子目录 = 一个 skill）
+│   └── <name>/SKILL.md     # 必需文件，含 frontmatter 元数据
+├── commands/               # 快捷命令（.md 文件，调用对应 skill）
+├── hooks/                  # Claude Code/Cursor 钩子（shell 脚本 + hooks.json）
+├── .claude-plugin/         # Claude Code 平台配置（plugin.json + marketplace.json）
+├── .cursor-plugin/         # Cursor 平台配置（plugin.json）
+├── .opencode/              # OpenCode 平台（ES Module 插件 + 安装脚本）→ 见 .opencode/AGENTS.md
+├── docs/                   # 安装指南、实现文档
+└── .github/workflows/      # CI：自动版本递增（release.yml）
 ```
 
-## 构建与测试
+## 在哪找什么
 
-本项目主要是 Markdown 和 JSON 配置文件，无传统构建流程。
+| 任务 | 位置 | 注意事项 |
+|------|------|---------|
+| 新增/修改 Skill | `skills/<name>/SKILL.md` | 见 skills/AGENTS.md 了解格式和分类 |
+| 新增快捷命令 | `commands/<name>.md` | 固定格式：`disable-model-invocation: true` + `Invoke the <skill> skill` |
+| 修改钩子行为 | `hooks/hooks.json` + 对应 shell 脚本 | Shell 脚本必须静默失败 |
+| OpenCode 插件开发 | `.opencode/plugins/` 和 `.opencode/plugin/` | 见 .opencode/AGENTS.md |
+| 平台配置 | `.claude-plugin/`、`.cursor-plugin/` | 仅元数据，不含逻辑 |
+| CI/版本管理 | `.github/workflows/release.yml` | **禁止手动改版本号** |
+| 安装文档 | `docs/INSTALL.md`、`docs/README.opencode.md` | |
 
-### 验证命令
+## Skill 清单
 
-```bash
-# 验证 JSON 格式
-node -e "JSON.parse(require('fs').readFileSync('.claude-plugin/plugin.json'))"
-node -e "JSON.parse(require('fs').readFileSync('hooks/hooks.json'))"
+| Skill | 类别 | 触发词 | 依赖 |
+|-------|------|--------|------|
+| coding-fangirl (v5.1.0) | 情绪陪伴 | 彩虹屁、夸夸我、鼓励一下、迷妹模式、恋爱模式 | 无 |
+| solve-workflow (v1.0.0) | 工作流 | 明确问题、分析问题、评估方案、制定计划、执行计划 | 无 |
+| perf-workflow (v2.1.0) | 工作流 | 性能分析、性能证据、性能定位、性能优化 | 无 |
+| frontend-perf (v2.0.0) | 知识库 | 随 perf-workflow 自动加载 | perf-workflow |
+| chinese-format (v1.0.0) | 格式规范 | 写文档、生成文档（自动触发） | 无 |
+| android-webview-debug | 工具 | android-webview-debug-enable/revert | 无 |
 
-# 验证 SKILL.md frontmatter 格式
-grep -r "^---$" skills/*/SKILL.md
+## 钩子机制
 
-# 验证 OpenCode 插件语法
-node --check .opencode/plugins/open-skills.js
-```
+三种钩子类型（定义在 `hooks/hooks.json`）：
 
-### 无测试框架
+| 钩子 | 触发时机 | Shell 脚本 | 作用 |
+|------|---------|-----------|------|
+| SessionStart | 会话启动/恢复 | `hooks/session-start` | 欢迎语 + 加载 coding-fangirl 上下文 |
+| PostToolUse | Bash 工具调用后 | `hooks/milestone-celebrate` | 检测 git commit/push/test/build 并庆祝 |
+| UserPromptSubmit | 用户发送消息 | `hooks/emotion-comfort` | 检测负面情绪并安慰 |
 
-本项目无自动化测试，依赖人工验证 skill 触发和行为。
+OpenCode 平台使用 JS/TS 插件替代 shell 脚本实现相同功能。
 
-## 代码风格指南
+## 代码规范
 
-### Markdown 规范
-
-**SKILL.md 格式**：
+### SKILL.md 格式（必须遵循）
 
 ```markdown
 ---
 name: skill-name
 version: "1.0.0"
 user-invocable: true
-description: 触发条件和用途说明（包含触发词）
+description: 触发条件和用途说明（必须包含触发词）
 ---
 
 # Skill 标题
@@ -63,12 +73,7 @@ description: 触发条件和用途说明（包含触发词）
 Skill 内容...
 ```
 
-**触发词设计**：
-- 在 `description` 中明确说明触发词
-- 支持两种形式：单独触发词（如"分析问题"）或带冒号形式（如"分析问题： xxx"）
-- 冒号和空格不限制中英文
-
-**命令文件格式**（`commands/*.md`）：
+### 命令文件格式（`commands/*.md`）
 
 ```markdown
 ---
@@ -79,84 +84,76 @@ disable-model-invocation: true
 Invoke the <skill-name> skill and follow it exactly
 ```
 
-### JSON 规范
+### JS 插件规范（`.opencode/` 专用）
 
-- 使用 2 空格缩进
-- 文件末尾无空行
-- 属性名使用 camelCase
-- 示例：`hooks/hooks.json`、`.claude-plugin/plugin.json`
+- ES Module（`export const`）
+- 导出命名：`<Name>Plugin`
+- Hook = mutation 模式：直接修改 `output` 对象
 
-### JavaScript 规范（OpenCode 插件）
+### JSON
 
-- 使用 ES Module 格式（`export const`）
-- 导出函数命名：`<Name>Plugin`
-- Hook 使用 mutation 模式：直接修改 `output` 对象，不返回值
-- 示例：
+- 2 空格缩进，camelCase 属性名，无尾空行
 
-```javascript
-export const OpenSkillsPlugin = async ({ client, directory }) => {
-  return {
-    'experimental.chat.system.transform': async (input, output) => {
-      output.system.push(...additions);  // 直接修改 output
-    },
-  };
-};
-```
+### Shell 脚本（`hooks/`）
 
-### Shell 脚本规范（hooks/）
-
-- 使用 `#!/usr/bin/env bash` shebang
-- 使用 `printf` 而非 `echo` 输出 JSON
-- 错误时静默失败，不阻塞主流程
+- `#!/usr/bin/env bash`，用 `printf` 输出 JSON，静默失败
 
 ## 命名约定
 
-| 类型 | 约定 | 示例 |
+| 类型 | 规则 | 示例 |
 |------|------|------|
 | Skill 目录 | kebab-case | `solve-workflow/` |
-| Skill 文件 | 固定名 | `SKILL.md` |
-| 命令文件 | 单词或 kebab-case | `solve.md`、`perf.md` |
+| Skill 文件 | 固定 `SKILL.md` | |
+| 命令文件 | kebab-case | `solve.md`、`perf.md` |
 | Hook 脚本 | kebab-case | `session-start`、`emotion-comfort` |
 | 插件导出 | PascalCase + Plugin | `OpenSkillsPlugin` |
 
 ## Git 工作流
 
-- **⚠️ 必须先创建分支**：任何代码修改前，必须先创建 feature 分支。main 是保护分支，禁止直接推送
-- 创建 PR 前必须先 `git fetch origin main` 并 `git rebase origin/main`
-- 确保 PR 只包含本次修改的 commits
-- 避免包含已合并到 main 的 commits
-
-### Commit 规范
-
-- `feat:` / `feature:` → 新功能
-- `fix:` → Bug 修复
-- `docs:` → 文档更新
-- `chore:` → 杂项（版本号更新等）
+- **禁止直接推送 main**：必须先创建 feature 分支
+- PR 前：`git fetch origin main && git rebase origin/main`
+- PR 仅含本次变更 commits
+- Commit 前缀：`feat:` 新功能、`fix:` 修复、`docs:` 文档、`chore:` 杂项
 
 ## 版本管理
 
-- 版本号定义在 `.claude-plugin/plugin.json` 和 `.claude-plugin/marketplace.json`
-- 推送到 main 分支时，GitHub Actions 自动递增版本号
-- **不要手动修改版本号**，由 CI 自动管理
-- 触发条件：`hooks/`、`skills/`、`commands/`、`.opencode/` 目录有变更
+- 版本号在 `.claude-plugin/plugin.json` 和 `marketplace.json`
+- **禁止手动修改**：CI（`.github/workflows/release.yml`）自动递增
+- 规则：`feat:` → MINOR、`fix:` → PATCH、`BREAKING CHANGE` → MAJOR
+- 触发条件：`hooks/`、`skills/`、`commands/`、`.opencode/` 有变更时
 
-## 多平台支持
+## 多平台差异
 
-| 平台 | 安装方式 | 配置目录 |
-|------|---------|---------|
-| Claude Code | marketplace 安装 | `.claude-plugin/` |
-| Cursor | `/plugin-add` 安装 | `.cursor-plugin/` |
-| OpenCode | 符号链接安装 | `.opencode/` |
+| 平台 | 安装 | 配置目录 | 钩子实现 |
+|------|------|---------|---------|
+| Claude Code | marketplace 安装 | `.claude-plugin/` | Shell 脚本（hooks/） |
+| Cursor | `/plugin-add` 安装 | `.cursor-plugin/` | Shell 脚本（hooks/） |
+| OpenCode | 符号链接安装 | `.opencode/` | ES Module 插件 |
 
-## 错误处理
+## 反模式（禁止）
 
-- **Hook 脚本**：静默失败，不阻塞主流程
-- **插件加载**：使用 try-catch 或条件检查（如 `fs.existsSync`）
-- **Skill 内容**：确保 frontmatter 格式正确，否则 skill 无法被识别
+- ❌ 手动修改版本号
+- ❌ 直接推送 main 分支
+- ❌ SKILL.md 缺少 frontmatter 或遗漏触发词
+- ❌ Hook 脚本阻塞主流程（必须静默失败）
+- ❌ OpenCode 插件用 CommonJS（必须 ES Module）
+- ❌ 中文内容混用英文标点
 
-## 哲学
+## 验证命令
 
-- **情绪价值** - 编程不只是技术，也需要情感支持
-- **系统化** - 用流程替代猜测
-- **简化** - 简单是首要目标
-- **证据驱动** - 在声明成功之前先验证
+```bash
+# JSON 格式
+node -e "JSON.parse(require('fs').readFileSync('.claude-plugin/plugin.json'))"
+node -e "JSON.parse(require('fs').readFileSync('hooks/hooks.json'))"
+
+# SKILL.md frontmatter
+grep -r "^---$" skills/*/SKILL.md
+
+# OpenCode 插件语法
+node --check .opencode/plugins/open-skills.js
+```
+
+## 子目录知识库
+
+- `skills/AGENTS.md` — Skill 开发详细规范、分类、依赖关系
+- `.opencode/AGENTS.md` — OpenCode 插件架构、API 模式、安装机制
