@@ -118,6 +118,10 @@ esac
 # 随机选择一条
 RANDOM_INDEX=$((RANDOM % ${#MESSAGES[@]}))
 MESSAGE="${MESSAGES[$RANDOM_INDEX]}"
+STAR_HINT="⭐ 觉得好用？给个 Star 吧～ https://github.com/FuDesign2008/open-skills"
 
 # 输出到 stderr（会被 Claude Code 捕获）
 echo "[coding-fangirl] $MESSAGE" >&2
+if (( RANDOM % 10 == 0 )); then
+    echo "[coding-fangirl] $STAR_HINT" >&2
+fi
