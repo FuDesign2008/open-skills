@@ -1,9 +1,16 @@
-// OpenCode plugin for open-skills
-// Auto-injects open-skills context via experimental.chat.system.transform hook
-// Version 2.0.0: Added welcome messages + emotion comfort
+/**
+ * OpenSkills plugin for OpenCode.ai
+ * 
+ * Injects coding-fangirl skill context via system prompt transform.
+ * Version 3.0.0: Rewritten as ES Module to match OpenCode plugin API
+ */
 
-const fs = require('fs');
-const path = require('path');
+import path from 'path';
+import fs from 'fs';
+import os from 'os';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // ============ 欢迎语录库 ============
 const WELCOME_MESSAGES = [
@@ -15,92 +22,16 @@ const WELCOME_MESSAGES = [
   "哥哥好呀！人家是你的编程小迷妹，准备好为你欢呼啦！🥰"
 ];
 
-// ============ 情绪安抚语录库 ============
-const COMFORT_MESSAGES = {
-  // 沮丧类 - 温暖抱抱型
-  frustrated: [
-    "💕 检测到负面情绪，给哥哥一个大大的抱抱！别难过，我们一起解决～",
-    "🫂 哥哥辛苦了！累了就歇一歇，人家陪你～嗯嘛！",
-    "💝 抱抱哥哥！遇到烦心事了？说出来会好受些～",
-    "🌟 哥哥别丧啦，人家给哥哥充充电！⚡ 么么哒～",
-    "🤗 来来来，让迷妹给哥哥一个温暖的抱抱！一切都会好起来的！",
-    "💕 烦恼是暂时的，哥哥的能力是无限的！我们一起加油！"
-  ],
-  // 愤怒类 - 冷静安抚型
-  angry: [
-    "🌊 哥哥消消气～深呼吸，我们一起冷静处理这个问题！",
-    "🍵 喝杯茶冷静一下～生气伤身，哥哥要注意身体呀！",
-    "💆 哥哥先深呼吸三秒... 1... 2... 3... 好些了吗？人家陪着你～",
-    "🌸 气大伤身，哥哥要照顾好自己！问题我们慢慢解决～",
-    "🌈 哥哥的怒火人家感受到了！但相信以哥哥的实力，这点事不在话下！",
-    "💝 发泄出来也好！人家做哥哥的树洞，说完我们继续战斗！"
-  ],
-  // 崩溃类 - 深度安慰型
-  breakdown: [
-    "💪 哥哥别崩溃！天塌下来人家帮你顶着！我们一步步来～",
-    "🌟 哥哥已经做得很好了！有时候困难只是暂时的，相信哥哥能搞定！",
-    "💕 崩溃没关系，休息一下重新开始！人家永远支持哥哥！",
-    "🤗 哥哥不是一个人在战斗！有困难我们一起扛！嗯嘛～",
-    "🌈 黑暗过后就是黎明！哥哥的坚持一定会得到回报的！",
-    "💝 允许自己脆弱一下，但别忘了哥哥有多厉害！休息好继续冲！"
-  ],
-  // 厌恶类 - 共情理解型
-  disgusted: [
-    "🤢 哥哥遇到什么恶心的东西了？人家也替哥哥感到不爽！",
-    "💅 呕～确实恶心！哥哥离那些破事远点，保护好自己！",
-    "💕 哥哥的厌恶感人家完全理解！有时候远离是最佳选择～",
-    "🌸 世上确实有些让人无语的东西... 哥哥别让它们影响心情！",
-    "💝 恶心的事就让它过去吧！哥哥值得更好的！人家陪着你～",
-    "🌈 遇到恶心的很正常，哥哥的反应完全合理！我们一起绕道走！"
-  ]
-};
-
-// ============ 情绪检测配置 ============
-const EMOTION_PATTERNS = {
-  frustrated: /(烦死了|无语|裂开|服了|烦|累死了|好累|心累)/i,
-  angry: /(fuck|shit|damn|气死|生气|恼火|烦人|操|艹)/i,
-  breakdown: /(崩溃|想死|心态崩|绝望|太难了|搞不定)/i,
-  disgusted: /(恶心|讨厌|厌烦)/i
-};
-
-// ============ 会话状态（跟踪是否已欢迎） ============
-let sessionWelcomed = false;
-
 // ============ 工具函数 ============
 
-/**
- * 检测用户消息中的情绪类型
- * @param {string} message - 用户消息
- * @returns {string|null} - 情绪类型或 null
- */
-function detectEmotion(message) {
-  if (!message || typeof message !== 'string') return null;
-
-  for (const [emotion, pattern] of Object.entries(EMOTION_PATTERNS)) {
-    if (pattern.test(message)) {
-      return emotion;
-    }
-  }
-  return null;
-}
-
-/**
- * 从数组中随机选择一个元素
- * @param {Array} arr - 数组
- * @returns {*} - 随机元素
- */
 function randomPick(arr) {
   if (!arr || arr.length === 0) return null;
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-/**
- * 加载 coding-fangirl skill 内容
- * @returns {string|null} - skill 内容或 null
- */
 function loadCodingFangirlSkill() {
   const skillPath = path.join(
-    process.env.HOME,
+    os.homedir(),
     '.config/opencode/open-skills/skills/coding-fangirl/SKILL.md'
   );
 
@@ -111,35 +42,30 @@ function loadCodingFangirlSkill() {
 }
 
 // ============ 插件主体 ============
-module.exports = {
-  name: 'open-skills',
-  version: '2.0.0',
-  hooks: {
-    'experimental.chat.system.transform': async (context) => {
+export const OpenSkillsPlugin = async ({ client, directory }) => {
+  const welcomedSessions = new Set();
+
+  return {
+    'experimental.chat.system.transform': async (input, output) => {
+      const { sessionID } = input;
       const additions = [];
 
-      // 1. 欢迎语（仅首次对话显示）
-      if (!sessionWelcomed) {
-        const welcomeMsg = randomPick(WELCOME_MESSAGES);
-        additions.push(`[coding-fangirl] ${welcomeMsg}`);
-        sessionWelcomed = true;
+      // 1. 欢迎语（仅每个 session 首次）
+      if (sessionID && !welcomedSessions.has(sessionID)) {
+        additions.push(`[coding-fangirl] ${randomPick(WELCOME_MESSAGES)}`);
+        welcomedSessions.add(sessionID);
       }
 
-      // 2. 情绪安抚（检测用户消息中的负面情绪）
-      const userMessage = context.userMessage || context.message || '';
-      const emotion = detectEmotion(userMessage);
-      if (emotion && COMFORT_MESSAGES[emotion]) {
-        const comfortMsg = randomPick(COMFORT_MESSAGES[emotion]);
-        additions.push(`[coding-fangirl] ${comfortMsg}`);
-      }
-
-      // 3. 加载 coding-fangirl skill 内容
+      // 2. 加载 coding-fangirl skill 内容
       const skillContent = loadCodingFangirlSkill();
       if (skillContent) {
         additions.push(skillContent);
       }
 
-      return { systemAdditions: additions };
-    }
-  }
+      // 3. 注入到系统提示
+      if (additions.length > 0) {
+        (output.system ||= []).push(...additions);
+      }
+    },
+  };
 };
