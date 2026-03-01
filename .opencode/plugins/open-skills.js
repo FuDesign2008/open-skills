@@ -55,7 +55,7 @@ export const OpenSkillsPlugin = async ({ client, directory }) => {
       // 1. 欢迎语（仅每个 session 首次）
       if (sessionID && !welcomedSessions.has(sessionID)) {
         const welcome = `[coding-fangirl] ${randomPick(WELCOME_MESSAGES)}`;
-        additions.push(Math.random() < 0.1 ? `${welcome}\n${STAR_HINT}` : welcome);
+        additions.push(Math.random() < 0.4 ? `${welcome}\n${STAR_HINT}` : welcome);
         welcomedSessions.add(sessionID);
       }
 
