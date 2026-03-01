@@ -33,9 +33,20 @@ rm -rf ~/.config/opencode/skills/open-skills
 ln -s ~/.config/opencode/open-skills/skills ~/.config/opencode/skills/open-skills
 ```
 
-### 4. 重启 OpenCode
+### 4. 创建 Commands 符号链接
 
-重启 OpenCode 使插件和 skills 生效。
+OpenCode 只搜索 `~/.config/opencode/commands/` 目录，需要为每个命令文件创建符号链接：
+
+```bash
+mkdir -p ~/.config/opencode/commands
+for cmd in ~/.config/opencode/open-skills/commands/*.md; do
+  ln -sf "$cmd" ~/.config/opencode/commands/
+done
+```
+
+### 5. 重启 OpenCode
+
+重启 OpenCode 使插件、skills 和 commands 生效。
 
 ## Windows
 
@@ -61,7 +72,11 @@ mkdir "%USERPROFILE%\.config\opencode\skills" 2>nul
 if exist "%USERPROFILE%\.config\opencode\skills\open-skills" rmdir "%USERPROFILE%\.config\opencode\skills\open-skills"
 mklink /J "%USERPROFILE%\.config\opencode\skills\open-skills" "%USERPROFILE%\.config\opencode\open-skills\skills"
 
-:: 4. 重启 OpenCode
+:: 4. 创建 Commands 符号链接
+mkdir "%USERPROFILE%\.config\opencode\commands" 2>nul
+for %f in ("%USERPROFILE%\.config\opencode\open-skills\commands\*.md") do mklink "%USERPROFILE%\.config\opencode\commands\%~nxf" "%f"
+
+:: 5. 重启 OpenCode
 ```
 
 ### PowerShell
@@ -80,7 +95,15 @@ New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.config\opencode\ski
 Remove-Item -Force -Recurse -ErrorAction SilentlyContinue "$env:USERPROFILE\.config\opencode\skills\open-skills"
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.config\opencode\skills\open-skills" -Target "$env:USERPROFILE\.config\opencode\open-skills\skills"
 
-# 4. 重启 OpenCode
+# 4. 创建 Commands 符号链接
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.config\opencode\commands"
+Get-ChildItem "$env:USERPROFILE\.config\opencode\open-skills\commands\*.md" | ForEach-Object {
+    $target = Join-Path "$env:USERPROFILE\.config\opencode\commands" $_.Name
+    Remove-Item -Force -ErrorAction SilentlyContinue $target
+    New-Item -ItemType SymbolicLink -Path $target -Target $_.FullName
+}
+
+# 5. 重启 OpenCode
 ```
 
 ### Git Bash
@@ -101,7 +124,15 @@ mkdir -p ~/.config/opencode/skills
 rm -rf ~/.config/opencode/skills/open-skills
 cmd //c "mklink /J \"$(cygpath -w ~/.config/opencode/skills/open-skills)\" \"$(cygpath -w ~/.config/opencode/open-skills/skills)\""
 
-# 4. 重启 OpenCode
+# 4. 创建 Commands 符号链接
+mkdir -p ~/.config/opencode/commands
+for cmd in ~/.config/opencode/open-skills/commands/*.md; do
+  name=$(basename "$cmd")
+  rm -f ~/.config/opencode/commands/"$name"
+  cmd //c "mklink \"$(cygpath -w ~/.config/opencode/commands/$name)\" \"$(cygpath -w $cmd)\""
+done
+
+# 5. 重启 OpenCode
 ```
 
 ## 验证安装
@@ -113,6 +144,9 @@ ls -l ~/.config/opencode/plugins/open-skills.js
 
 # 验证 skills 符号链接
 ls -l ~/.config/opencode/skills/open-skills
+
+# 验证 commands 符号链接
+ls -l ~/.config/opencode/commands/
 ```
 
 **Windows CMD:**
@@ -122,6 +156,9 @@ dir /AL "%USERPROFILE%\.config\opencode\plugins"
 
 :: 验证 skills 符号链接
 dir /AL "%USERPROFILE%\.config\opencode\skills"
+
+:: 验证 commands 符号链接
+dir /AL "%USERPROFILE%\.config\opencode\commands"
 ```
 
 **Windows PowerShell:**
@@ -131,15 +168,23 @@ Get-ChildItem "$env:USERPROFILE\.config\opencode\plugins" | Where-Object { $_.Li
 
 # 验证 skills 符号链接
 Get-ChildItem "$env:USERPROFILE\.config\opencode\skills" | Where-Object { $_.LinkType }
+
+# 验证 commands 符号链接
+Get-ChildItem "$env:USERPROFILE\.config\opencode\commands" | Where-Object { $_.LinkType }
 ```
 
-应该看到以下目录：
+应该看到以下 skills 目录：
 - `coding-fangirl/`
 - `solve-workflow/`
 - `perf-workflow/`
 - `chinese-format/`
 - `frontend-perf/`
 - `android-webview-debug/`
+
+应该看到以下 commands 文件：
+- `solve.md`
+- `perf.md`
+- `encourage.md`
 
 ## 使用方法
 
@@ -157,11 +202,22 @@ Get-ChildItem "$env:USERPROFILE\.config\opencode\skills" | Where-Object { $_.Lin
 - 「明确问题」「分析问题」→ 问题解决工作流
 - 「性能分析」「性能优化」→ 性能工作流
 
+或使用命令快捷方式：
+
+- `/solve` → 问题解决工作流
+- `/perf` → 性能工作流
+- `/encourage` → 情绪陪伴
+
 ## 更新
 
 ```bash
 cd ~/.config/opencode/open-skills
 git pull
+
+# 重新链接 commands（如有新增）
+for cmd in ~/.config/opencode/open-skills/commands/*.md; do
+  ln -sf "$cmd" ~/.config/opencode/commands/
+done
 ```
 
 ## 卸载
@@ -170,6 +226,7 @@ git pull
 ```bash
 rm -f ~/.config/opencode/plugins/open-skills.js
 rm -rf ~/.config/opencode/skills/open-skills
+rm -rf ~/.config/opencode/commands
 rm -rf ~/.config/opencode/open-skills
 ```
 
@@ -177,6 +234,7 @@ rm -rf ~/.config/opencode/open-skills
 ```cmd
 del "%USERPROFILE%\.config\opencode\plugins\open-skills.js"
 rmdir "%USERPROFILE%\.config\opencode\skills\open-skills"
+rmdir "%USERPROFILE%\.config\opencode\commands"
 rmdir /S /Q "%USERPROFILE%\.config\opencode\open-skills"
 ```
 
@@ -184,5 +242,6 @@ rmdir /S /Q "%USERPROFILE%\.config\opencode\open-skills"
 ```powershell
 Remove-Item "$env:USERPROFILE\.config\opencode\plugins\open-skills.js" -Force
 Remove-Item "$env:USERPROFILE\.config\opencode\skills\open-skills" -Force
+Remove-Item "$env:USERPROFILE\.config\opencode\commands" -Recurse -Force
 Remove-Item "$env:USERPROFILE\.config\opencode\open-skills" -Recurse -Force
 ```
