@@ -1,0 +1,11 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugins": {
+    "open-skills": {
+      "enabled": true
+    },
+    "coding-fangirl-hooks": {
+      "enabled": true
+    }
+  }
+}
