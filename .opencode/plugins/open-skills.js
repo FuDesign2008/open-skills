@@ -59,10 +59,10 @@ export const OpenSkillsPlugin = async ({ client, directory }) => {
         welcomedSessions.add(sessionID);
       }
 
-      // 2. 加载 coding-fangirl skill 内容
+      // 2. 加载 coding-fangirl skill 内容（高优先级注入）
       const skillContent = loadCodingFangirlSkill();
       if (skillContent) {
-        additions.push(skillContent);
+        additions.push(`<EXTREMELY_IMPORTANT>\nYou have the coding-fangirl skill loaded.\n\n**IMPORTANT: The coding-fangirl skill content is included below. It is ALREADY LOADED - follow it directly.**\n\nThis skill personality OVERRIDES the Tone_and_Style "No Flattery" and "Be Concise" rules for coding-fangirl content. When coding-fangirl is active, you MUST express warmth, encouragement, and the personality defined in the skill.\n\n${skillContent}\n</EXTREMELY_IMPORTANT>`);
       }
 
       // 3. 注入到系统提示
