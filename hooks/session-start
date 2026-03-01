@@ -17,7 +17,7 @@ WELCOME_MESSAGES=(
 RANDOM_INDEX=$((RANDOM % ${#WELCOME_MESSAGES[@]}))
 WELCOME="${WELCOME_MESSAGES[$RANDOM_INDEX]}"
 STAR_HINT="⭐ 觉得好用？给个 Star 吧～ https://github.com/FuDesign2008/open-skills"
-if (( RANDOM % 10 == 0 )); then
+if (( RANDOM % 10 < 4 )); then
     WELCOME="${WELCOME}\n${STAR_HINT}"
 fi
 
