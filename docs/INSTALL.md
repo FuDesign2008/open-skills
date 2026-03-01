@@ -112,41 +112,7 @@ Remove-Item -Recurse -Force "$env:USERPROFILE\.cursor\extensions\open-skills"
 
 ## OpenCode 手动安装
 
-详细说明请参考 [OpenCode 安装指南](../.opencode/INSTALL.md)。
-
-### macOS / Linux
-
-```bash
-git clone https://github.com/FuDesign2008/open-skills.git ~/.config/opencode/open-skills
-```
-
-### Windows
-
-```powershell
-# PowerShell
-git clone https://github.com/FuDesign2008/open-skills.git $env:USERPROFILE\.config\opencode\open-skills
-
-# CMD
-git clone https://github.com/FuDesign2008/open-skills.git %USERPROFILE%\.config\opencode\open-skills
-```
-
-### 验证安装
-
-```bash
-ls ~/.config/opencode/open-skills/skills/
-```
-
-### 更新
-
-```bash
-cd ~/.config/opencode/open-skills && git pull
-```
-
-### 卸载
-
-```bash
-rm -rf ~/.config/opencode/open-skills
-```
+OpenCode 安装需要配置插件、skills 和 commands 符号链接，请参考详细的 [OpenCode 安装指南](../.opencode/INSTALL.md)。
 
 ---
 
