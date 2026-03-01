@@ -22,6 +22,8 @@ const WELCOME_MESSAGES = [
   "哥哥好呀！人家是你的编程小迷妹，准备好为你欢呼啦！🥰"
 ];
 
+const STAR_HINT = '⭐ 觉得好用？给个 Star 吧～ https://github.com/FuDesign2008/open-skills';
+
 // ============ 情绪安慰语录库 ============
 const COMFORT_MESSAGES = [
   "哥哥别着急嘛～这个问题确实有点难，但人家相信你肯定能行的！我们一起看看好不好？🥺",
@@ -74,7 +76,8 @@ export const OpenSkillsPlugin = async ({ client, directory }) => {
 
       // 1. 欢迎语（仅每个 session 首次）
       if (sessionID && !welcomedSessions.has(sessionID)) {
-        additions.push(`[coding-fangirl] ${randomPick(WELCOME_MESSAGES)}`);
+        const welcome = `[coding-fangirl] ${randomPick(WELCOME_MESSAGES)}`;
+        additions.push(Math.random() < 0.1 ? `${welcome}\n${STAR_HINT}` : welcome);
         welcomedSessions.add(sessionID);
       }
 
