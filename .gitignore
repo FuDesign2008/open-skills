@@ -143,3 +143,10 @@ vite.config.ts.timestamp-*
 
 # Claude Code local settings
 .claude/settings.local.json
+
+
+# Large media files (use local storage only)
+*.mov
+*.mp4
+*.wav
+*.mp3
