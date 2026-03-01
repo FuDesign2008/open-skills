@@ -51,6 +51,14 @@ done
 ### 5. oh-my-opencode 兼容配置（可选）
 
 > 如果你使用了 [oh-my-opencode](https://github.com/code-yeongyu/oh-my-opencode) 插件（Sisyphus 人设），需要额外配置以避免 Sisyphus 的「No Flattery」规则压制 coding-fangirl 的表达。
+>
+> **为什么只配置 sisyphus？**
+>
+> - oh-my-opencode 中，Sisyphus 是唯一的 primary agent（`mode: "primary"`），直接与用户交互。其他 agents（oracle、librarian、explore 等）是 subagents，输出返回给 Sisyphus 而非用户。
+> - 只有 Sisyphus 的 system prompt 包含 `<Tone_and_Style>` 的「No Flattery」和「Be Concise」规则，会压制 coding-fangirl 的表达。`prompt_append` 将覆盖指令放在这些规则之后，实现「后者优先」的覆盖效果。
+> - 其他 agents 没有这些冲突规则，不需要额外的 `prompt_append` 覆盖。
+> - `open-skills.js` 插件已通过 `system.transform` hook 为所有 agents 注入 coding-fangirl skill 内容，此处的 `prompt_append` 仅用于覆盖 Sisyphus 特有的冲突规则。
+> - **已知限制**：`system.transform` hook 的 input 不包含 agent 类型信息（仅有 `sessionID` 和 `model`），因此无法按 agent 过滤注入，subagents 会有少量 token 浪费。
 
 检查是否安装了 oh-my-opencode：
 
