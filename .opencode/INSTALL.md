@@ -21,6 +21,10 @@ git clone https://github.com/FuDesign2008/open-skills.git ~/.config/opencode/ope
 mkdir -p ~/.config/opencode/plugins
 rm -f ~/.config/opencode/plugins/open-skills.js
 ln -s ~/.config/opencode/open-skills/.opencode/plugins/open-skills.js ~/.config/opencode/plugins/open-skills.js
+
+# 注册 coding-fangirl hooks 插件
+rm -f ~/.config/opencode/plugins/coding-fangirl-hooks.ts
+ln -s ~/.config/opencode/open-skills/.opencode/plugin/coding-fangirl-hooks.ts ~/.config/opencode/plugins/coding-fangirl-hooks.ts
 ```
 
 ### 3. 创建 Skills 符号链接
@@ -66,7 +70,8 @@ git clone https://github.com/FuDesign2008/open-skills.git "%USERPROFILE%\.config
 mkdir "%USERPROFILE%\.config\opencode\plugins" 2>nul
 if exist "%USERPROFILE%\.config\opencode\plugins\open-skills.js" del "%USERPROFILE%\.config\opencode\plugins\open-skills.js"
 mklink "%USERPROFILE%\.config\opencode\plugins\open-skills.js" "%USERPROFILE%\.config\opencode\open-skills\.opencode\plugins\open-skills.js"
-
+if exist "%USERPROFILE%\.config\opencode\plugins\coding-fangirl-hooks.ts" del "%USERPROFILE%\.config\opencode\plugins\coding-fangirl-hooks.ts"
+mklink "%USERPROFILE%\.config\opencode\plugins\coding-fangirl-hooks.ts" "%USERPROFILE%\.config\opencode\open-skills\.opencode\plugin\coding-fangirl-hooks.ts"
 :: 3. 创建 Skills 目录连接（无需特殊权限）
 mkdir "%USERPROFILE%\.config\opencode\skills" 2>nul
 if exist "%USERPROFILE%\.config\opencode\skills\open-skills" rmdir "%USERPROFILE%\.config\opencode\skills\open-skills"
@@ -89,7 +94,8 @@ git clone https://github.com/FuDesign2008/open-skills.git "$env:USERPROFILE\.con
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.config\opencode\plugins"
 Remove-Item -Force -ErrorAction SilentlyContinue "$env:USERPROFILE\.config\opencode\plugins\open-skills.js"
 New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.config\opencode\plugins\open-skills.js" -Target "$env:USERPROFILE\.config\opencode\open-skills\.opencode\plugins\open-skills.js"
-
+Remove-Item -Force -ErrorAction SilentlyContinue "$env:USERPROFILE\.config\opencode\plugins\coding-fangirl-hooks.ts"
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.config\opencode\plugins\coding-fangirl-hooks.ts" -Target "$env:USERPROFILE\.config\opencode\open-skills\.opencode\plugin\coding-fangirl-hooks.ts"
 # 3. 创建 Skills 目录连接（无需特殊权限）
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.config\opencode\skills"
 Remove-Item -Force -Recurse -ErrorAction SilentlyContinue "$env:USERPROFILE\.config\opencode\skills\open-skills"
@@ -119,6 +125,8 @@ mkdir -p ~/.config/opencode/plugins
 rm -f ~/.config/opencode/plugins/open-skills.js
 cmd //c "mklink \"$(cygpath -w ~/.config/opencode/plugins/open-skills.js)\" \"$(cygpath -w ~/.config/opencode/open-skills/.opencode/plugins/open-skills.js)\""
 
+rm -f ~/.config/opencode/plugins/coding-fangirl-hooks.ts
+cmd //c "mklink \"$(cygpath -w ~/.config/opencode/plugins/coding-fangirl-hooks.ts)\" \"$(cygpath -w ~/.config/opencode/open-skills/.opencode/plugin/coding-fangirl-hooks.ts)\""
 # 3. 创建 Skills 目录连接
 mkdir -p ~/.config/opencode/skills
 rm -rf ~/.config/opencode/skills/open-skills
@@ -141,6 +149,7 @@ done
 ```bash
 # 验证 plugins 符号链接
 ls -l ~/.config/opencode/plugins/open-skills.js
+ls -l ~/.config/opencode/plugins/coding-fangirl-hooks.ts
 
 # 验证 skills 符号链接
 ls -l ~/.config/opencode/skills/open-skills
@@ -225,6 +234,7 @@ done
 **macOS / Linux:**
 ```bash
 rm -f ~/.config/opencode/plugins/open-skills.js
+rm -f ~/.config/opencode/plugins/coding-fangirl-hooks.ts
 rm -rf ~/.config/opencode/skills/open-skills
 rm -rf ~/.config/opencode/commands
 rm -rf ~/.config/opencode/open-skills
@@ -233,6 +243,7 @@ rm -rf ~/.config/opencode/open-skills
 **Windows CMD:**
 ```cmd
 del "%USERPROFILE%\.config\opencode\plugins\open-skills.js"
+del "%USERPROFILE%\.config\opencode\plugins\coding-fangirl-hooks.ts"
 rmdir "%USERPROFILE%\.config\opencode\skills\open-skills"
 rmdir "%USERPROFILE%\.config\opencode\commands"
 rmdir /S /Q "%USERPROFILE%\.config\opencode\open-skills"
@@ -241,6 +252,7 @@ rmdir /S /Q "%USERPROFILE%\.config\opencode\open-skills"
 **Windows PowerShell:**
 ```powershell
 Remove-Item "$env:USERPROFILE\.config\opencode\plugins\open-skills.js" -Force
+Remove-Item "$env:USERPROFILE\.config\opencode\plugins\coding-fangirl-hooks.ts" -Force
 Remove-Item "$env:USERPROFILE\.config\opencode\skills\open-skills" -Force
 Remove-Item "$env:USERPROFILE\.config\opencode\commands" -Recurse -Force
 Remove-Item "$env:USERPROFILE\.config\opencode\open-skills" -Recurse -Force

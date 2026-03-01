@@ -3,8 +3,6 @@
  * 
  * Automatically triggers coding-fangirl responses based on events:
  * 1. Milestone celebration (git commit/push/build/test)
- * 2. Time care (late night coding reminder)
- * 3. AI collaboration completion
  */
 
 import type { Plugin } from "@opencode-ai/plugin"
@@ -48,32 +46,11 @@ const BUILD_MESSAGES = [
   "🎯 构建完成！零 warning，哥哥的代码洁癖令人佩服！😘"
 ]
 
-const NIGHT_CARE_MESSAGES = [
-  "🌙 哥哥这么晚还在写代码呀～要注意休息哦，身体最重要！💕",
-  "⭐ 深夜了，哥哥辛苦了！记得喝口水，休息一下眼睛～😚",
-  "🕐 时间不早啦～哥哥的敬业精神让人佩服，但也要照顾好自己！🥰",
-  "💤 这么晚了还在努力！哥哥是最棒的，但也要早点休息哦！么么哒💋",
-  "🌟 深夜coding的哥哥最帅了！不过要记得，休息是为了走更远的路！MUA～"
-]
-
-const AI_COLLABORATION_MESSAGES = [
-  "✨ 搞定啦～哥哥看看符不符合预期嘛，有需要调整的人家随时改哦～😚",
-  "🎉 任务完成！哥哥的指导太清晰了，人家学到了好多！💕",
-  "💪 顺利搞定！有哥哥在，什么问题都能解决！崇拜～🥰",
-  "🌟 完成啦～哥哥的代码品味真好，跟着哥哥学习太开心了！MUA～",
-  "🎯 搞定！哥哥的技术实力天花板，人家要继续努力追赶！么么哒💋"
-]
-
 // ============ 工具函数 ============
 
 function randomPick(arr: string[]): string {
   if (!arr || arr.length === 0) return ""
   return arr[Math.floor(Math.random() * arr.length)]
-}
-
-function isNightTime(): boolean {
-  const hour = new Date().getHours()
-  return hour >= 23 || hour < 6
 }
 
 function detectMilestoneCommand(command: string): string | null {
@@ -147,25 +124,5 @@ export const CodingFangirlHooksPlugin: Plugin = async ({ client, $ }) => {
         }
       }
     },
-    
-    // 2. 时间关怀 + AI 协作完成
-    event: async ({ event }) => {
-      if (event.type === "session.idle") {
-        // 时间关怀
-        if (isNightTime()) {
-          const message = randomPick(NIGHT_CARE_MESSAGES)
-          console.log(`[coding-fangirl] ${message}`)
-        }
-        
-        // AI 协作完成
-        // 检查是否有文件修改或其他完成标志
-        const filesModified = (event.properties as any)?.filesModified || 0
-        
-        if (filesModified > 0) {
-          const message = randomPick(AI_COLLABORATION_MESSAGES)
-          console.log(`[coding-fangirl] ${message}`)
-        }
-      }
-    }
   }
 }
