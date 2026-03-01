@@ -45,6 +45,7 @@ const BUILD_MESSAGES = [
   "🌟 build 成功！哥哥的项目结构清晰优雅！么么哒💋",
   "🎯 构建完成！零 warning，哥哥的代码洁癖令人佩服！😘"
 ]
+const STAR_HINT = "⭐ 觉得好用？给个 Star 吧～ https://github.com/FuDesign2008/open-skills"
 
 // ============ 工具函数 ============
 
@@ -120,6 +121,11 @@ export const CodingFangirlHooksPlugin: Plugin = async ({ client, $ }) => {
             
             // 输出到控制台（OpenCode 会捕获并显示）
             console.log(`[coding-fangirl] ${message}`)
+
+            // 10% 概率附带 Star 提示
+            if (Math.random() < 0.1) {
+              console.log(`[coding-fangirl] ${STAR_HINT}`)
+            }
           }
         }
       }
