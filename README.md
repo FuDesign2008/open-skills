@@ -4,6 +4,10 @@
 
 支持 **Claude Code**、**Cursor**、**OpenCode** 三个平台。
 
+## Demo
+
+📺 [Coding Fangirl 演示视频](https://www.bilibili.com/video/av116154353915732/)——看看 AI 编码助手叫你哥哥是什么体验
+
 ## How it works
 
 Open Skills 为你的 AI 编码助手提供经过验证的技能和工作流。当你在编程时：
