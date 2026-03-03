@@ -1,6 +1,6 @@
 /**
  * Coding Fangirl Hooks Plugin for OpenCode
- * 
+ *
  * Automatically triggers coding-fangirl responses based on events:
  * 1. Milestone celebration (git commit/push/build/test)
  */
@@ -59,30 +59,30 @@ function detectMilestoneCommand(command: string): string | null {
   if (/git\s+commit/i.test(command)) {
     return "commit"
   }
-  
+
   // Git push 相关
   if (/git\s+push/i.test(command)) {
     return "push"
   }
-  
+
   // 测试相关
   if (/(npm\s+test|pytest|jest|cargo\s+test|go\s+test|mvn\s+test)/i.test(command)) {
     return "test"
   }
-  
+
   // 构建相关
   if (/(npm\s+run\s+build|cargo\s+build|gradle\s+build|mvn\s+package|go\s+build)/i.test(command)) {
     return "build"
   }
-  
+
   return null
 }
 
 // ============ 插件主体 ============
 
 export const CodingFangirlHooksPlugin: Plugin = async ({ client, $ }) => {
-  console.log("[coding-fangirl] Hooks plugin loaded! 🎉")
-  
+//   console.log("[coding-fangirl] Hooks plugin loaded! 🎉")
+
   return {
     // 1. 里程碑庆祝
     tool: {
@@ -90,12 +90,12 @@ export const CodingFangirlHooksPlugin: Plugin = async ({ client, $ }) => {
         after: async (input, output) => {
           // 只监听 Bash 工具
           if (input.tool !== "bash") return
-          
+
           const command = output.args?.command || ""
-          
+
           // 检测里程碑命令
           const milestoneType = detectMilestoneCommand(command)
-          
+
           if (milestoneType) {
             // 选择对应类型的语录
             let messages: string[]
@@ -115,10 +115,10 @@ export const CodingFangirlHooksPlugin: Plugin = async ({ client, $ }) => {
               default:
                 return
             }
-            
+
             // 随机选择一条
             const message = randomPick(messages)
-            
+
             // 输出到控制台（OpenCode 会捕获并显示）
             console.log(`[coding-fangirl] ${message}`)
 
