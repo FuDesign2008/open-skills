@@ -37,11 +37,11 @@ open-skills/
 
 | Skill | 类别 | 触发词 | 依赖 |
 |-------|------|--------|------|
-| coding-fangirl (v5.1.0) | 情绪陪伴 | 彩虹屁、夸夸我、鼓励一下、迷妹模式、恋爱模式 | 无 |
-| solve-workflow (v1.0.0) | 工作流 | 明确问题、分析问题、评估方案、制定计划、执行计划 | 无 |
+| coding-fangirl (v5.2.0) | 情绪陪伴 | 彩虹屁、夸夸我、鼓励一下、迷妹模式、恋爱模式 | 无 |
+| solve-workflow (v1.1.0) | 工作流 | 明确问题、分析问题、评估方案、制定计划、执行计划 | 无 |
 | perf-workflow (v2.1.0) | 工作流 | 性能分析、性能证据、性能定位、性能优化 | 无 |
 | frontend-perf (v2.0.0) | 知识库 | 随 perf-workflow 自动加载 | perf-workflow |
-| chinese-format (v1.0.0) | 格式规范 | 写文档、生成文档（自动触发） | 无 |
+| chinese-format (v1.1.0) | 格式规范 | 写文档、生成文档（自动触发） | 无 |
 | android-webview-debug | 工具 | android-webview-debug-enable/revert | 无 |
 
 ## 钩子机制

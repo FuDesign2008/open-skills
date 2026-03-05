@@ -6,15 +6,15 @@
 
 ```
 skills/
-├── coding-fangirl/         # 情绪陪伴（v5.1.0）- 含 context.json 供 Hook 使用
+├── coding-fangirl/         # 情绪陪伴（v5.2.0）- 含 context.json 供 Hook 使用
 │   ├── SKILL.md
 │   └── context.json        # SessionStart Hook 加载的上下文数据
-├── solve-workflow/          # 七阶段问题解决（v1.0.0）
+├── solve-workflow/          # 七阶段问题解决（v1.1.0）
 ├── perf-workflow/           # 六阶段性能分析（v2.1.0）
 ├── frontend-perf/           # 前端性能知识库（v2.0.0）- 含 reference.md
 │   ├── SKILL.md
 │   └── reference.md        # 补充参考资料（React/Angular/Electron 版本专属优化）
-├── chinese-format/          # 中文格式规范（v1.0.0）
+├── chinese-format/          # 中文格式规范（v1.1.0）
 └── android-webview-debug/   # WebView 调试开关
 ```
 
