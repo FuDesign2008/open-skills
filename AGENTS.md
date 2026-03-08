@@ -111,6 +111,8 @@ Invoke the <skill-name> skill and follow it exactly
 ## Git 工作流
 
 - **禁止直接推送 main**：必须先创建 feature 分支
+- **合并 PR 时**：优先使用「Create a merge commit」，避免「Squash and merge」。Squash 会切断 main 与 feature 分支的提交图，后续在同一分支继续开发再合并 main 时易产生冲突。
+- **PR 合并后继续开发**：若上游已用 Squash 合并过，在本地继续提交前必须先 `git merge origin/main` 或 `git pull origin main`，再开发。
 - PR 前：`git fetch origin main && git rebase origin/main`
 - PR 仅含本次变更 commits
 - Commit 前缀：`feat:` 新功能、`fix:` 修复、`docs:` 文档、`chore:` 杂项
