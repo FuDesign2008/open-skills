@@ -1,5 +1,18 @@
 # Release Notes
 
+## [1.15.0] - 2026-03-08
+
+### Changed
+
+**solve-workflow v1.2.0**
+- 新增调用约定：`xxx` 非触发词时默认进入阶段 1；触发词速查、命令形式、匹配规则
+- CSO 优化：description 移除 workflow 约束；正文增加 Overview
+- 阶段 1 醒目约束：本阶段禁止 Edit/Write
+- 移除临时内容管理、阶段 6 清理诊断子阶段
+- 阶段 1 完全禁止 Edit/Write（不再保留临时日志例外）
+
+---
+
 ## [1.2.0] - 2026-02-27
 
 ### Added
