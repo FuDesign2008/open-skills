@@ -115,6 +115,15 @@ Invoke the <skill-name> skill and follow it exactly
 - PR 仅含本次变更 commits
 - Commit 前缀：`feat:` 新功能、`fix:` 修复、`docs:` 文档、`chore:` 杂项
 
+### Merge PR 与发布流程
+
+1. **合并 PR**：`gh pr merge <编号> --merge`
+2. **检查版本发布**：等待 CI 完成（约 15–20 秒），`gh release list -L 3` 确认新版本
+3. **更新本地安装**：
+   - **OpenCode**：`cd ~/.config/opencode/open-skills && git pull`，然后 `for cmd in commands/*.md; do ln -sf "$(pwd)/$cmd" ~/.config/opencode/commands/; done`
+   - **Claude Code**：`claude plugin update open-skills@open-skills-marketplace`
+4. **工作区同步**：`git checkout main && git pull origin main`
+
 ## 版本管理
 
 - 版本号在 `.claude-plugin/plugin.json` 和 `marketplace.json`
