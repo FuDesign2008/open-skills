@@ -8,6 +8,7 @@ on:
       - 'skills/**'
       - 'commands/**'
       - '.opencode/**'
+      - '.cursor-plugin/**'
 
 permissions:
   contents: write
@@ -64,17 +65,20 @@ jobs:
 
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-          # 更新 plugin.json
-          sed -i "s/\"version\": \"$CURRENT\"/\"version\": \"$NEW_VERSION\"/" .claude-plugin/plugin.json
+          # 更新 .claude-plugin/plugin.json
+          jq --arg v "$NEW_VERSION" '.version = $v' .claude-plugin/plugin.json > .claude-plugin/plugin.json.tmp && mv .claude-plugin/plugin.json.tmp .claude-plugin/plugin.json
 
-          # 更新 marketplace.json
-          sed -i "s/\"version\": \"$CURRENT\"/\"version\": \"$NEW_VERSION\"/" .claude-plugin/marketplace.json
+          # 更新 .claude-plugin/marketplace.json（metadata.version + plugins[0].version）
+          jq --arg v "$NEW_VERSION" '.metadata.version = $v | .plugins[0].version = $v' .claude-plugin/marketplace.json > .claude-plugin/marketplace.json.tmp && mv .claude-plugin/marketplace.json.tmp .claude-plugin/marketplace.json
+
+          # 更新 .cursor-plugin/plugin.json
+          jq --arg v "$NEW_VERSION" '.version = $v' .cursor-plugin/plugin.json > .cursor-plugin/plugin.json.tmp && mv .cursor-plugin/plugin.json.tmp .cursor-plugin/plugin.json
 
       - name: Commit and push version bump
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .claude-plugin/plugin.json .claude-plugin/marketplace.json
+          git add .claude-plugin/plugin.json .claude-plugin/marketplace.json .cursor-plugin/plugin.json
           git commit -m "chore: bump version to ${{ steps.new-version.outputs.version }} [skip ci]"
           git push
 
@@ -82,3 +86,12 @@ jobs:
         run: |
           git tag -a "v${{ steps.new-version.outputs.version }}" -m "Release v${{ steps.new-version.outputs.version }}"
           git push origin "v${{ steps.new-version.outputs.version }}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.new-version.outputs.version }}
+          name: v${{ steps.new-version.outputs.version }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
