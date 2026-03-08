@@ -45,7 +45,7 @@ description: |               # 必须包含所有触发词
 - 在 `description` 中列出所有触发词
 - 支持两种形式："触发词" 或 "触发词：具体描述"
 - 冒号中英文均可，空格可有可无
-- 工作流 skill 的阶段名即为触发词（如"分析问题"触发 solve-workflow 的阶段 2）
+- 工作流 skill 的阶段名即为触发词（如"分析问题"触发 solve-workflow 的阶段 1）
 
 ## 新增 Skill 检查清单
 
