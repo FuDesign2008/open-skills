@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "开放技能库：工作流、性能优化、情绪陪伴等 Claude Code Skills",
-    "version": "1.0.0"
+    "version": "1.9.1"
   },
   "plugins": [
     {

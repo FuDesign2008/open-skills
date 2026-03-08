@@ -264,7 +264,7 @@ Get-ChildItem "$env:USERPROFILE\.config\opencode\commands" | Where-Object { $_.L
 或使用触发词：
 
 - 「彩虹屁」「夸夸我」→ 情绪陪伴
-- 「明确问题」「分析问题」→ 问题解决工作流
+- 「分析问题」（含明确问题小节）→ 问题解决工作流
 - 「性能分析」「性能优化」→ 性能工作流
 
 或使用命令快捷方式：

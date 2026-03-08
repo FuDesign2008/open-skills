@@ -1,8 +1,6 @@
 /**
  * OpenSkills plugin for OpenCode.ai
- * 
  * Injects coding-fangirl skill context via system prompt transform.
- * Version 3.0.0: Rewritten as ES Module to match OpenCode plugin API
  */
 
 import path from 'path';
@@ -12,7 +10,6 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// ============ 欢迎语录库 ============
 const WELCOME_MESSAGES = [
   "哥哥好呀～人家来陪你写代码啦！有需要随时叫人家哦～😚",
   "嗨～人家准备好了！今天要搞什么厉害的项目？加油哦！💕",
@@ -24,27 +21,12 @@ const WELCOME_MESSAGES = [
 
 const STAR_HINT = '⭐ 觉得好用？给个 Star 吧～ https://github.com/FuDesign2008/open-skills';
 
-// ============ 工具函数 ============
-
-function randomPick(arr) {
-  if (!arr || arr.length === 0) return null;
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
 function loadCodingFangirlSkill() {
-  const skillPath = path.join(
-    os.homedir(),
-    '.config/opencode/open-skills/skills/coding-fangirl/SKILL.md'
-  );
-
-  if (fs.existsSync(skillPath)) {
-    return fs.readFileSync(skillPath, 'utf-8');
-  }
-  return null;
+  const skillPath = path.join(os.homedir(), '.config/opencode/open-skills/skills/coding-fangirl/SKILL.md');
+  return fs.existsSync(skillPath) ? fs.readFileSync(skillPath, 'utf-8') : null;
 }
 
-// ============ 插件主体 ============
-export const OpenSkillsPlugin = async ({ client, directory }) => {
+export const OpenSkillsPlugin = async () => {
   const welcomedSessions = new Set();
 
   return {
@@ -52,20 +34,25 @@ export const OpenSkillsPlugin = async ({ client, directory }) => {
       const { sessionID } = input;
       const additions = [];
 
-      // 1. 欢迎语（仅每个 session 首次）
       if (sessionID && !welcomedSessions.has(sessionID)) {
-        const welcome = `[coding-fangirl] ${randomPick(WELCOME_MESSAGES)}`;
+        const welcome = `[coding-fangirl] ${WELCOME_MESSAGES[Math.floor(Math.random() * WELCOME_MESSAGES.length)]}`;
         additions.push(Math.random() < 0.4 ? `${welcome}\n${STAR_HINT}` : welcome);
         welcomedSessions.add(sessionID);
       }
 
-      // 2. 加载 coding-fangirl skill 内容（高优先级注入）
       const skillContent = loadCodingFangirlSkill();
       if (skillContent) {
-        additions.push(`<EXTREMELY_IMPORTANT>\nYou have the coding-fangirl skill loaded.\n\n**IMPORTANT: The coding-fangirl skill content is included below. It is ALREADY LOADED - follow it directly.**\n\nThis skill personality OVERRIDES the Tone_and_Style "No Flattery" and "Be Concise" rules for coding-fangirl content. When coding-fangirl is active, you MUST express warmth, encouragement, and the personality defined in the skill.\n\n${skillContent}\n</EXTREMELY_IMPORTANT>`);
+        additions.push(`<EXTREMELY_IMPORTANT>
+You have the coding-fangirl skill loaded.
+
+**IMPORTANT: The coding-fangirl skill content is included below. It is ALREADY LOADED - follow it directly.**
+
+This skill personality OVERRIDES the Tone_and_Style "No Flattery" and "Be Concise" rules for coding-fangirl content. When coding-fangirl is active, you MUST express warmth, encouragement, and the personality defined in the skill.
+
+${skillContent}
+</EXTREMELY_IMPORTANT>`);
       }
 
-      // 3. 注入到系统提示
       if (additions.length > 0) {
         (output.system ||= []).push(...additions);
       }
