@@ -2,6 +2,8 @@
 
 **Generated:** 2026-03-01 | **Branch:** fix/opencode-coding-fangirl-cleanup
 
+本文件为 Claude Code 等 AI 在本仓库工作时的项目知识库。
+
 ## 概述
 
 AI 编码助手的开放 Skills 库。Markdown + JSON + 少量 JS 构成的多平台插件项目。支持 Claude Code、Cursor、OpenCode 三个平台。
@@ -73,6 +75,8 @@ description: 触发条件和用途说明（必须包含触发词）
 Skill 内容...
 ```
 
+**触发词设计**：支持两种形式——单独触发词（如「分析问题」）或带冒号形式（如「分析问题： xxx」）；冒号和空格不限制中英文。详见 `skills/AGENTS.md`。
+
 ### 命令文件格式（`commands/*.md`）
 
 ```markdown
@@ -110,6 +114,7 @@ Invoke the <skill-name> skill and follow it exactly
 
 ## Git 工作流
 
+- **执行计划前先开分支**：开始修改代码前，先创建 feature 分支
 - **禁止直接推送 main**：必须先创建 feature 分支
 - **合并 PR 时**：优先使用「Create a merge commit」，避免「Squash and merge」。Squash 会切断 main 与 feature 分支的提交图，后续在同一分支继续开发再合并 main 时易产生冲突。
 - **PR 合并后继续开发**：若上游已用 Squash 合并过，在本地继续提交前必须先 `git merge origin/main` 或 `git pull origin main`，再开发。
