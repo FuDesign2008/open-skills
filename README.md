@@ -1,5 +1,31 @@
 # Open Skills
 
+![GitHub stars](https://img.shields.io/github/stars/FuDesign2008/open-skills?style=flat-square)
+[![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/FuDesign2008/open-skills)
+[![Version](https://img.shields.io/github/v/release/FuDesign2008/open-skills?style=flat-square)](https://github.com/FuDesign2008/open-skills/releases)
+![Skills](https://img.shields.io/badge/skills-7-informational?style=flat-square)
+![Commands](https://img.shields.io/badge/commands-3-informational?style=flat-square)
+
+<!-- banner -->
+```text
+╔════════════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                        ║
+║    ██████╗ ██████╗ ███████╗███╗   ██╗    ███████╗██╗  ██╗██╗██╗     ██╗     ███████╗   ║
+║   ██╔═══██╗██╔══██╗██╔════╝████╗  ██║    ██╔════╝██║ ██╔╝██║██║     ██║     ██╔════╝   ║
+║   ██║   ██║██████╔╝█████╗  ██╔██╗ ██║    ███████╗█████╔╝ ██║██║     ██║     ███████╗   ║
+║   ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║    ╚════██║██╔═██╗ ██║██║     ██║     ╚════██║   ║
+║   ╚██████╔╝██║     ███████╗██║ ╚████║    ███████║██║  ██╗██║███████╗███████╗███████║   ║
+║    ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝    ╚══════╝╚═╝  ╚═╝╚═╝╚══════╝╚══════╝╚══════╝   ║
+║                                                                                        ║
+║   THE OPEN AGENT SKILLS ECOSYSTEM                                                      ║
+║                                                                                        ║
+║   Claude Code • Cursor • OpenCode                                                      ║
+║                                                                                        ║
+╚════════════════════════════════════════════════════════════════════════════════════════╝
+```
+<!-- /banner -->
+
 开放技能库：工作流、性能优化、情绪陪伴等 AI 编码助手 Skills。
 
 支持 **Claude Code**、**Cursor**、**OpenCode** 三个平台。
