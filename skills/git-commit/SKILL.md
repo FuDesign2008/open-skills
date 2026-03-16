@@ -1,6 +1,6 @@
 ---
 name: git-commit
-version: "2.1.0"
+version: "3.0.0"
 user-invocable: true
 description: 当用户说「提交代码」「git commit」「帮我提交」「写 commit message」「生成 commit」「提交一下」「git-commit」「自动提交代码」「git-commit-auto」「自动执行」「直接提交」，或由 jira-fix-workflow / jira-auto-fix-workflow 阶段7触发时使用。说「手动提交」「只生成命令」「不要执行」时进入手动模式，其余默认自动执行。
 ---
@@ -28,7 +28,7 @@ description: 当用户说「提交代码」「git commit」「帮我提交」「
 
 ## 执行流程
 
-**步骤1：收集提交信息**
+### 步骤1：收集提交信息
 
 写入 commit message 的字段：
 - **type**：fix、feat、refactor、perf、style、docs、test
@@ -39,11 +39,48 @@ description: 当用户说「提交代码」「git commit」「帮我提交」「
 仅用于上下文（不写入 commit message）：
 - problem_description、root_cause、solution、modified_files、report_path、branch
 
-**步骤2：判断模式** → `execute=false`（手动）或 `execute=true`（自动）
+### 步骤2：判断模式
 
-**步骤3：调用 `git-commit-core` SKILL**，传入步骤1收集的参数 + execute 值
+确定 `execute=false`（手动）或 `execute=true`（自动），规则见「模式判断规则」。
 
-**步骤4：输出结果**
+### 步骤3：多项目检测
+
+**扫描规则**：
+- 扫描范围：workspace 根目录的一级和二级子目录
+- 识别标准：存在 `.git` 目录
+- 排除目录：`node_modules`、`.cursor`、`dist`、`build`、`.git`、隐藏目录（`.` 开头）
+- 对每个候选目录执行 `git status` 验证是否有效
+
+**多项目场景**：报告文件只在主项目（第一个）中提交；为每个有改动的项目独立生成 commit message。
+
+### 步骤4：生成 Commit Message
+
+**格式**：
+```
+<type>(<scope>): <subject> <Jira-ID>
+```
+
+规则：
+- Subject 不超过 50 字符，使用中文
+- 有 Jira ID 时追加到末尾
+- 无 scope 时省略括号：`<type>: <subject>`
+- commit message 只含标题行，无正文
+
+### 步骤5：执行 Git 操作
+
+**手动模式（execute=false）**：生成命令，不执行，提示用户手动运行。
+
+**自动模式（execute=true）**：依次执行以下命令：
+
+```bash
+git status                                         # 检查状态与当前分支
+git add .                                          # 添加所有改动
+git commit -m "<type>(<scope>): <subject> <ID>"   # 提交
+git log -1 --stat                                  # 确认提交详情
+git push -u origin [branch-name]                   # 推送到远程
+```
+
+多项目时对每个项目独立执行上述步骤，末尾附汇总表。
 
 ## 输出格式
 
@@ -75,7 +112,17 @@ git push -u origin [branch-name]  # 可选
 **提示**：请确认后手动执行上述命令。
 ```
 
-多项目时对每个项目独立输出，末尾附汇总表。失败时输出错误信息并建议说「手动提交」切换模式重试。
+多项目时对每个项目独立输出，末尾附汇总表。
+
+## 错误处理
+
+| 场景 | 处理方式 |
+|------|---------|
+| 无未提交改动 | 手动模式提示；自动模式执行 `git add .` 后继续 |
+| 分支不存在 | 报错，建议先创建分支 |
+| Git 操作失败 | 显示错误，提供降级方案（建议说「手动提交」重试） |
+| 不在 Git 仓库 | 报错并终止，提示检查目录 |
+| 多项目检测失败 | 降级为单项目模式，使用当前目录 |
 
 ## 安全机制（自动模式）
 

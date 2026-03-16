@@ -16,8 +16,7 @@ skills/
 │   └── reference.md        # 补充参考资料（React/Angular/Electron 版本专属优化）
 ├── chinese-format/          # 中文格式规范（v1.1.0）
 ├── android-webview-debug/   # WebView 调试开关
-├── git-commit/              # Git 提交统一入口（v2.1.0）- 默认自动模式，依赖 git-commit-core
-├── git-commit-core/         # Git 提交核心逻辑（v1.0.0）- 不可直接触发，供 git-commit 调用
+├── git-commit/              # Git 提交统一入口（v3.0.0）- 默认自动模式，含完整核心逻辑
 ├── jira-fix-workflow/       # Jira Bug 修复工作流（v2.0.0）- 7阶段，需人工确认
 ├── jira-auto-fix-workflow/  # Jira Bug 全自动修复（v2.0.0）- 无需人工确认
 ├── jira-auto-batch-workflow/ # Jira Bug 批量自动修复（v2.0.0）- 依赖 jira-auto-fix-workflow
@@ -35,8 +34,7 @@ skills/
 | 知识库 | frontend-perf | **依赖 perf-workflow**，为其提供前端领域专属数据 |
 | 格式规范 | chinese-format | 自动触发，无需用户主动调用 |
 | 工具 | android-webview-debug | enable/revert 双模式，带修改记录和回滚 |
-| Git | git-commit | **依赖 git-commit-core**，统一入口，默认自动执行 |
-| Git | git-commit-core | `user-invocable: false`，仅供 git-commit 调用 |
+| Git | git-commit | 统一入口，默认自动执行，含多项目检测与错误处理 |
 | Jira | jira-fix-workflow | 7阶段 bug 修复，需人工确认，调用 git-commit（手动模式） |
 | Jira | jira-auto-fix-workflow | 全自动修复，调用 git-commit（自动模式） |
 | Jira | jira-auto-batch-workflow | **依赖 jira-auto-fix-workflow**，批量管理多个 bug |
