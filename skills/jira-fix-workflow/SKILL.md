@@ -686,11 +686,18 @@ if (所有方案风险 > 中) {
 
 ---
 
-## 批量修复（使用 /ralph）
+## 批量修复
 
-> `jira-auto-batch` 已移除，批量修复请使用 `/ralph`
+批量修复需要借助**任务编排工具**——即能将一组任务拆解为独立子任务、逐个执行并跟踪状态的工具。不同平台的命令名称可能不同（如 `/ralph`、`/autopilot`、`/ultrawork` 等），使用时以当前平台支持的编排工具为准。
 
-### 使用方式
+### 核心思路
+
+将每个 Jira bug 描述为一个独立任务，交由编排工具依次调用 `jira-fix [URL]` 完成修复。编排工具负责：
+- 逐个执行，单个失败不阻断后续
+- 跟踪整体进度，支持断点恢复
+- 完成后汇总结果
+
+### 示例（以 /ralph 为例）
 
 ```
 /ralph 批量修复以下 Jira bug：
@@ -698,11 +705,6 @@ YNOTR-12167
 YNOTR-12168
 https://your-jira.example.com/browse/YNOTR-12169
 ```
-
-Ralph 会自动：
-- 为每个 bug 创建一个 user story（prd.json）
-- 依次调用 `jira-fix [URL]` 完成修复
-- 支持单个 bug 失败不阻断后续、断点恢复、Architect 验收
 
 ---
 
