@@ -45,6 +45,14 @@ open-skills/
 | frontend-perf (v2.0.0) | 知识库 | 随 perf-workflow 自动加载 | perf-workflow |
 | chinese-format (v1.1.0) | 格式规范 | 写文档、生成文档（自动触发） | 无 |
 | android-webview-debug | 工具 | android-webview-debug-enable/revert | 无 |
+| git-commit (v2.1.0) | Git | 提交代码、git commit、帮我提交、写 commit message；手动提交进手动模式 | git-commit-core |
+| git-commit-core (v1.0.0) | Git | 不可直接触发，供 git-commit 调用 | 无 |
+| jira-fix-workflow (v2.0.0) | Jira 工作流 | jira-fix [URL]、修复 bug、创建分支、读取jira、分析问题、评估方案、制定计划、执行计划、提交代码 | git-commit、jira-read |
+| jira-auto-fix-workflow (v2.0.0) | Jira 工作流 | jira-auto-fix [URL]、自动修复 bug | git-commit、jira-read |
+| jira-auto-batch-workflow (v2.0.0) | Jira 工作流 | jira-auto-batch [Jira列表]、批量修复 bug | jira-auto-fix-workflow、jira-read |
+| jira-read (v2.0.0) | Jira 工具 | jira-read [ID]、jira-download [ID]；需配置 $JIRA_CACHE_DIR | 无 |
+| typescript-check (v1.0.0) | 工具 | 类型检查、type-check、tsc | 无 |
+| file-operation-fallback (v1.0.0) | 工具 | Write/StrReplace 返回 Error: Aborted 时自动触发 | 无 |
 
 ## 钩子机制
 
