@@ -49,65 +49,34 @@
 
 ## 多平台概览
 
-| 平台 | 安装方式 | 配置目录 | 更新方式 |
-|------|----------|----------|----------|
-| Claude Code | Marketplace | 插件管理 | `claude plugin update open-skills@open-skills-marketplace` |
-| Cursor | Marketplace / 手动 | `~/.cursor/extensions/open-skills` | `cd ~/.cursor/extensions/open-skills && git pull` |
-| OpenCode | 符号链接 | `~/.config/opencode/open-skills` | `cd ~/.config/opencode/open-skills && git pull` |
+| 平台 | 快速安装 | 更新方式 |
+|------|----------|----------|
+| 通用（npx skills） | `npx skills add FuDesign2008/open-skills -g` | `npx skills update` |
+| Claude Code | `/plugin install open-skills@open-skills-marketplace` | `claude plugin update open-skills@open-skills-marketplace` |
+| Cursor | `/plugin-add open-skills` | `cd ~/.cursor/extensions/open-skills && git pull` |
+| OpenCode | 见下方 | `cd ~/.config/opencode/open-skills && git pull` |
 
-各平台详细安装与更新步骤见 [docs/INSTALL.md](docs/INSTALL.md)。
+详细安装步骤见 [docs/INSTALL.md](docs/INSTALL.md)。
 
 ## Installation
 
-**Note:** 各平台安装方式不同，Claude Code 和 Cursor 支持 Marketplace 一键安装。
-
-### Claude Code (via Plugin Marketplace)
+**通用（npx skills）**——适用于 [38+ AI 编码助手](https://github.com/vercel-labs/skills#available-agents)：
 
 ```bash
-/plugin marketplace add FuDesign2008/open-skills
-/plugin install open-skills@open-skills-marketplace
+npx skills add FuDesign2008/open-skills -g
 ```
 
-### Cursor (via Plugin Marketplace)
+> 此方式仅安装 SKILL.md 知识层，不含 Hooks 和 Commands。完整功能需平台原生安装。
 
-> **⚠️ Note:** Cursor 平台支持尚在完善中，可能存在兼容性问题。欢迎 [Issue](https://github.com/FuDesign2008/open-skills/issues) 反馈。
-
-**Option A: Marketplace 已上架**
-
-```bash
-/plugin-add open-skills
-```
-
-**Option B: 未上架或无法搜索到**
-
-按 [docs/INSTALL.md](docs/INSTALL.md) 中 Cursor 章节进行手动安装。
-
-### OpenCode
-
-对 OpenCode 说：
+**OpenCode**——对 OpenCode 说：
 
 ```
 Fetch and follow instructions from https://raw.githubusercontent.com/FuDesign2008/open-skills/main/.opencode/INSTALL.md
 ```
 
-**详细文档**: [docs/README.opencode.md](docs/README.opencode.md)
+**验证安装**：新建会话，输入「彩虹屁」或「分析问题」，确认 AI 自动调用对应 skill。
 
-### 验证安装
-
-1. 新建会话
-2. 输入「彩虹屁」或「分析问题」
-3. 确认 AI 自动调用对应 skill
-4. 若失败，参考 [docs/INSTALL.md](docs/INSTALL.md) 手动安装
-
-## Updating
-
-| 平台 | 更新命令 |
-|------|----------|
-| **Claude Code** | `claude plugin update open-skills@open-skills-marketplace` |
-| **Cursor** | `cd ~/.cursor/extensions/open-skills && git pull` |
-| **OpenCode** | `cd ~/.config/opencode/open-skills && git pull`<br>如有新增 commands，执行：`for cmd in ~/.config/opencode/open-skills/commands/*.md; do ln -sf "$cmd" ~/.config/opencode/commands/; done` |
-
-手动安装或更多细节见 [docs/INSTALL.md](docs/INSTALL.md)。
+完整安装指南（含 Cursor 手动安装、Hooks 配置）见 [docs/INSTALL.md](docs/INSTALL.md)。
 
 ---
 

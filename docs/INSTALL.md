@@ -6,6 +6,42 @@
 
 ---
 
+## 通用安装（npx skills）— 推荐轻量方式
+
+支持 Claude Code、Cursor、OpenCode 等主流 AI 编码助手，无需关心平台差异。
+
+### 安装
+
+```bash
+# 全部安装（全局，推荐）
+npx skills add FuDesign2008/open-skills -g
+
+# 仅安装某个 skill
+npx skills add FuDesign2008/open-skills --skill solve-workflow -g
+
+# 查看可安装的 skill 列表
+npx skills add FuDesign2008/open-skills --list
+```
+
+### 更新
+
+```bash
+npx skills update
+```
+
+### 覆盖范围说明
+
+| 能力 | 是否包含 |
+|------|----------|
+| 7 个 SKILL.md 知识层（solve-workflow、perf-workflow 等） | 包含 |
+| Hooks（情绪安抚 / 里程碑庆祝 / 欢迎语） | **不包含** |
+| Commands（`/solve`、`/perf`、`/encourage`） | **不包含** |
+| OpenCode 插件 | **不包含** |
+
+如需 Hooks 和 Commands，请使用各平台完整安装方式（见下方章节）。
+
+---
+
 ## Claude Code 手动安装
 
 ### macOS / Linux
