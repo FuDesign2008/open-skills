@@ -57,7 +57,7 @@ description: Jira Bug 修复工作流（默认自动模式）。当用户说"jir
 ```json
 {
   "jira_id": "YNOTR-12345",
-  "jira_url": "https://jira.mail.netease.com/browse/YNOTR-12345",
+  "jira_url": "https://your-jira.example.com/browse/YNOTR-12345",
   "mode": "auto",
   "current_phase": 3,
   "completed_phases": [0, 1, 2],
@@ -100,7 +100,7 @@ description: Jira Bug 修复工作流（默认自动模式）。当用户说"jir
    请检查：
    1. opencode.json 中是否配置了 mcp-atlassian
    2. JIRA_PERSONAL_TOKEN 是否有效
-   3. JIRA_URL 是否正确（当前：https://jira.mail.netease.com）
+   3. JIRA_URL 是否正确（当前：https://your-jira.example.com）
    4. 网络是否可达
    ```
 
@@ -696,7 +696,7 @@ if (所有方案风险 > 中) {
 /ralph 批量修复以下 Jira bug：
 YNOTR-12167
 YNOTR-12168
-https://jira.mail.netease.com/browse/YNOTR-12169
+https://your-jira.example.com/browse/YNOTR-12169
 ```
 
 Ralph 会自动：
