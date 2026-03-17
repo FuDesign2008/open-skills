@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/FuDesign2008/open-skills)
 [![Version](https://img.shields.io/github/v/release/FuDesign2008/open-skills?style=flat-square)](https://github.com/FuDesign2008/open-skills/releases)
-![Skills](https://img.shields.io/badge/skills-7-informational?style=flat-square)
+![Skills](https://img.shields.io/badge/skills-9-informational?style=flat-square)
 ![Commands](https://img.shields.io/badge/commands-3-informational?style=flat-square)
 
 <!-- banner -->
@@ -43,7 +43,8 @@
 | 能力 | 说明 |
 |------|------|
 | **情绪陪伴** | 技术小迷妹提供彩虹屁和情绪价值 |
-| **问题解决** | 七阶段工作流：分析问题 → 探索方案 → 制定计划 → 执行 → 验证 → 总结 |
+| **问题解决** | 七阶段工作流：分析问题 → 探索方案 → 审查方案 → 制定计划 → 执行 → 验证 → 总结 |
+| **Jira 修复** | 端到端 Bug 修复：读取 Jira → 分析问题 → 探索与审查方案 → 制定计划 → 执行 → 提交与回顾 |
 | **性能优化** | 六阶段流程：证据收集 → 定位 → 假设 → 监控 → 优化 → 验证 |
 | **内容创作** | 公众号、知乎等技术文章写作流程 |
 
@@ -107,6 +108,13 @@ Fetch and follow instructions from https://raw.githubusercontent.com/FuDesign200
 |-------|--------|------|
 | **article-writer** | 写公众号、写知乎、技术文章 | 公众号/知乎/自媒体技术文章写作流程 |
 
+### Jira 工作流
+
+| Skill | 触发词 | 说明 |
+|-------|--------|------|
+| **jira-fix-workflow** | 「修复这个 bug [URL]」「帮我修复 [URL]」「手动修复 [URL]」「继续修复」 | 端到端 Jira Bug 修复，默认自动模式，支持难度分级与多项目 |
+| **jira-read** | jira-read [ID] | 统一 Jira 数据读取（本地缓存 + API）|
+
 ### 领域知识
 
 | Skill | 触发词 | 说明 |
@@ -127,7 +135,7 @@ Fetch and follow instructions from https://raw.githubusercontent.com/FuDesign200
 ### Skill 未加载
 
 1. **确认路径**：Claude Code `~/.claude/skills/open-skills`；Cursor `~/.cursor/extensions/open-skills`；OpenCode `~/.config/opencode/open-skills`
-2. **检查文件**：`ls skills/*/SKILL.md` 应列出 7 个 skill
+2. **检查文件**：`ls skills/*/SKILL.md` 应列出 12 个 skill
 3. **重启**：完全退出 AI 编码助手后重新打开
 
 ### 触发词不生效
