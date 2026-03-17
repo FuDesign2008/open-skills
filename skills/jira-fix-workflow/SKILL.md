@@ -2,7 +2,7 @@
 name: jira-fix-workflow
 version: "3.0.0"
 user-invocable: true
-description: 当用户说「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「手动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」时触发；或在修复过程中说「分析问题」「探索方案」「审查方案」「制定计划」「执行计划」「提交代码」时进入对应阶段。适用于从 Jira 链接出发、对单个 bug 进行端到端修复的场景。
+description: 当用户说「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「手动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」时触发。适用于从 Jira 链接出发、对单个 bug 进行端到端修复的场景。
 ---
 
 # Jira Bug 修复工作流
