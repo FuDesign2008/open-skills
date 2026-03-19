@@ -146,3 +146,9 @@ vite.config.ts.timestamp-*
 
 # oh-my-claudecode state
 .omc/
+
+# VSCode workspace
+*.code-workspace
+
+# Playwright MCP
+.playwright-mcp/
