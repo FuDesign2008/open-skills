@@ -32,7 +32,7 @@ open-skills/
 | OpenCode 插件开发 | `.opencode/plugins/` 和 `.opencode/plugin/` | 见 .opencode/AGENTS.md |
 | 平台配置 | `.claude-plugin/`、`.cursor-plugin/` | 仅元数据，不含逻辑 |
 | CI/版本管理 | `.github/workflows/release.yml` | **禁止手动改版本号** |
-| 安装文档 | `docs/INSTALL.md`、`docs/README.opencode.md` | **通用安装**（npx）与 **全能力安装**（插件 / OpenCode 符号链接）口径见 `README.md` § 安装；总览见 `docs/README.md` |
+| 安装文档 | `docs/INSTALL.md`、`.opencode/INSTALL.md` | **通用安装**（npx）与 **全能力安装**（插件 / OpenCode 符号链接）口径见 `README.md` § 安装；总览见 `docs/README.md`；OpenCode 架构见 `.opencode/AGENTS.md` |
 | Skill 完整列表 | `docs/generated/skills-index.md` | **自动生成**，勿手改；改 skill 后运行 `node scripts/gen-skill-docs.mjs` |
 
 ## Skill 清单

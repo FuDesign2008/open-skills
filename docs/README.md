@@ -3,9 +3,8 @@
 | 文档 | 适合谁 | 内容 |
 |------|--------|------|
 | [../README.md](../README.md) | 所有人 | 项目简介；**通用安装 / 全能力安装** 选型；排错见 INSTALL |
-| [INSTALL.md](INSTALL.md) | 要复制命令、查范围、排错的用户 | **通用安装**（npx）详解、**全能力** OpenCode raw 入口、常见问题 |
-| [README.opencode.md](README.opencode.md) | OpenCode 用户 | OpenCode 侧使用与排错 |
-| [../.opencode/INSTALL.md](../.opencode/INSTALL.md) | OpenCode **全能力安装** | 插件、符号链接、命令 |
+| [INSTALL.md](INSTALL.md) | 要复制命令、查范围、排错的用户 | **通用安装**（npx）详解、**全能力**（含 OpenCode raw 入口）、常见问题 |
+| [../.opencode/INSTALL.md](../.opencode/INSTALL.md) | OpenCode **全能力安装** | 插件、符号链接、命令；与 Claude/Cursor 差异见 [.opencode/AGENTS.md](../.opencode/AGENTS.md) |
 | [opencode-coding-fangirl-implementation.md](opencode-coding-fangirl-implementation.md) | 贡献者 | coding-fangirl 在 OpenCode 的实现说明 |
 | [generated/skills-index.md](generated/skills-index.md) | 所有人 | 全部 skill 的版本、可唤起性、描述（触发条件）；由脚本生成，页首有维护提示 |
 

@@ -1,5 +1,15 @@
 # 修复与变更记录
 
+## 2026-03-21：删除 docs/README.opencode.md
+
+**状态**：已修复
+
+**修复方式**：移除 `docs/README.opencode.md`；`docs/README.md` 去掉对应索引行并收紧 OpenCode 指路；`docs/INSTALL.md` 与 `AGENTS.md` 中对该文件的引用改为 `.opencode/AGENTS.md`（架构 / Hook 差异）或 `.opencode/INSTALL.md`。
+
+**验证场景**：仓库内 `grep README.opencode` 无残留业务引用；OpenCode 用户仍可从 `docs/README.md` → `.opencode/INSTALL.md` / `.opencode/AGENTS.md` 到达说明。
+
+---
+
 ## 2026-03-21：README 安装节改为仅引导 INSTALL
 
 **状态**：已修复

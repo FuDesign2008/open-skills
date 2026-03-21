@@ -111,7 +111,7 @@ done
 
 若 `git pull` 后安装文档要求调整 `~/.config/opencode/plugins/` 下的符号链接，按 [.opencode/INSTALL.md](../.opencode/INSTALL.md) 安装步骤补做。
 
-与 Claude / Cursor 的 Shell Hook 差异见 [README.opencode.md](README.opencode.md)。
+与 Claude / Cursor 的 Shell Hook 差异见 [.opencode/AGENTS.md](../.opencode/AGENTS.md)。
 
 ### 装好后常见目录
 
