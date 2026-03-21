@@ -30,7 +30,9 @@
 
 ## Demo Video for Coding Fangirl
 
-📺 [Coding Fangirl 演示视频](https://www.bilibili.com/video/av116154353915732/)
+<video src="docs/media/coding-fangirl-demo.mp4" controls width="100%"></video>
+
+> 视频加载失败？📺 [在 Bilibili 观看](https://www.bilibili.com/video/av116154353915732/)
 
 <a id="install-path"></a>
 
