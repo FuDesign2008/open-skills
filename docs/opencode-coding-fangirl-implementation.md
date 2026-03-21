@@ -4,7 +4,7 @@
 
 本文档记录 coding-fangirl 在 OpenCode 中的自动触发功能实现状态。
 
-**更新日期**：2026-03-01
+**更新日期**：2026-03-21（以本文与 `.opencode/plugin/`、`plugins/` 源码为准）
 
 ---
 
@@ -56,7 +56,9 @@
 
 ### 安装流程
 
-INSTALL.md 中需要为两个插件文件创建符号链接：
+以下属于 OpenCode **全能力安装**（见 `.opencode/INSTALL.md`）。**通用安装**不涉及这些插件符号链接。
+
+`.opencode/INSTALL.md` 中需要为两个插件文件创建符号链接：
 - `open-skills.js` → `~/.config/opencode/plugins/open-skills.js`
 - `coding-fangirl-hooks.ts` → `~/.config/opencode/plugins/coding-fangirl-hooks.ts`
 

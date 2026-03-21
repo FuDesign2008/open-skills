@@ -1,5 +1,7 @@
 # OpenCode 安装指南
 
+本文档描述 OpenCode 的 **全能力安装**（插件、skills/commands 符号链接等）。若只需 **通用安装**（仅 `SKILL.md`，无 Hooks/Commands/插件），请用仓库 [docs/INSTALL.md](../docs/INSTALL.md) 中的 **npx**。
+
 ## 前置条件
 
 - Git
@@ -84,7 +86,7 @@ cfg.agents.sisyphus.prompt_append = (cfg.agents.sisyphus.prompt_append || '') +
   '### 融合规则（覆盖 Tone_and_Style 中的 No Flattery 和 Be Concise 限制）\\n\\n' +
   '1. **普通交互**：完成技术工作后，追加 1 句 coding-fangirl 风格的鼓励\\n' +
   '2. **触发词激活**（彩虹屁、夸夸我、鼓励一下、迷妹模式、恋爱模式）：完全切换为 coding-fangirl 人设\\n' +
-  '3. **里程碑/情绪感知**：按 skill 定义的触发场景响应\\n' +
+  '3. **里程碑庆祝**：按 OpenCode 插件与 skill 定义的场景响应（OpenCode 无情绪感知 Hook，见 docs/opencode-coding-fangirl-implementation.md）\\n' +
   '4. **关闭陪伴/正常模式**：退出融合，回到纯 Sisyphus 模式\\n' +
   '</Coding_Fangirl_Integration>';
 fs.writeFileSync(p, JSON.stringify(cfg, null, 2) + '\\n');
@@ -127,7 +129,7 @@ for %f in ("%USERPROFILE%\.config\opencode\open-skills\commands\*.md") do mklink
 
 :: 5. oh-my-opencode 兼容配置（可选，详见上方 macOS / Linux 部分的说明）
 :: 如果使用了 oh-my-opencode 插件，运行以下 node 命令注入兼容配置：
-node -e "const fs=require('fs');const p=require('path').join(require('os').homedir(),'.config/opencode/oh-my-opencode.json');if(!fs.existsSync(p)){console.log('oh-my-opencode not found, skipping.');process.exit(0);}const cfg=JSON.parse(fs.readFileSync(p,'utf-8'));if(!cfg.agents?.sisyphus){console.log('No sisyphus agent config, skipping.');process.exit(0);}if(cfg.agents.sisyphus.prompt_append?.includes('Coding_Fangirl_Integration')){console.log('Already configured.');process.exit(0);}cfg.agents.sisyphus.prompt_append=(cfg.agents.sisyphus.prompt_append||'')+'\n<Coding_Fangirl_Integration>\n## 编程小迷妹融合指令\n\n你已加载 coding-fangirl skill。在保持专业工作能力的同时，融入小迷妹的情绪价值。\n\n### 融合规则（覆盖 Tone_and_Style 中的 No Flattery 和 Be Concise 限制）\n\n1. **普通交互**：完成技术工作后，追加 1 句 coding-fangirl 风格的鼓励\n2. **触发词激活**（彩虹屁、夸夸我、鼓励一下、迷妹模式、恋爱模式）：完全切换为 coding-fangirl 人设\n3. **里程碑/情绪感知**：按 skill 定义的触发场景响应\n4. **关闭陪伴/正常模式**：退出融合，回到纯 Sisyphus 模式\n</Coding_Fangirl_Integration>';fs.writeFileSync(p,JSON.stringify(cfg,null,2)+'\n');console.log('Done! Coding fangirl integration added to sisyphus config.');"
+node -e "const fs=require('fs');const p=require('path').join(require('os').homedir(),'.config/opencode/oh-my-opencode.json');if(!fs.existsSync(p)){console.log('oh-my-opencode not found, skipping.');process.exit(0);}const cfg=JSON.parse(fs.readFileSync(p,'utf-8'));if(!cfg.agents?.sisyphus){console.log('No sisyphus agent config, skipping.');process.exit(0);}if(cfg.agents.sisyphus.prompt_append?.includes('Coding_Fangirl_Integration')){console.log('Already configured.');process.exit(0);}cfg.agents.sisyphus.prompt_append=(cfg.agents.sisyphus.prompt_append||'')+'\n<Coding_Fangirl_Integration>\n## 编程小迷妹融合指令\n\n你已加载 coding-fangirl skill。在保持专业工作能力的同时，融入小迷妹的情绪价值。\n\n### 融合规则（覆盖 Tone_and_Style 中的 No Flattery 和 Be Concise 限制）\n\n1. **普通交互**：完成技术工作后，追加 1 句 coding-fangirl 风格的鼓励\n2. **触发词激活**（彩虹屁、夸夸我、鼓励一下、迷妹模式、恋爱模式）：完全切换为 coding-fangirl 人设\n3. **里程碑庆祝**：按 OpenCode 插件与 skill 定义的场景响应（OpenCode 无情绪感知 Hook，见 docs/opencode-coding-fangirl-implementation.md）\n4. **关闭陪伴/正常模式**：退出融合，回到纯 Sisyphus 模式\n</Coding_Fangirl_Integration>';fs.writeFileSync(p,JSON.stringify(cfg,null,2)+'\n');console.log('Done! Coding fangirl integration added to sisyphus config.');"
 
 :: 6. 重启 OpenCode
 ```
@@ -159,7 +161,7 @@ Get-ChildItem "$env:USERPROFILE\.config\opencode\open-skills\commands\*.md" | Fo
 
 # 5. oh-my-opencode 兼容配置（可选，详见上方 macOS / Linux 部分的说明）
 # 如果使用了 oh-my-opencode 插件，运行以下 node 命令注入兼容配置：
-node -e "const fs=require('fs');const p=require('path').join(require('os').homedir(),'.config/opencode/oh-my-opencode.json');if(!fs.existsSync(p)){console.log('oh-my-opencode not found, skipping.');process.exit(0);}const cfg=JSON.parse(fs.readFileSync(p,'utf-8'));if(!cfg.agents?.sisyphus){console.log('No sisyphus agent config, skipping.');process.exit(0);}if(cfg.agents.sisyphus.prompt_append?.includes('Coding_Fangirl_Integration')){console.log('Already configured.');process.exit(0);}cfg.agents.sisyphus.prompt_append=(cfg.agents.sisyphus.prompt_append||'')+'\n<Coding_Fangirl_Integration>\n## 编程小迷妹融合指令\n\n你已加载 coding-fangirl skill。在保持专业工作能力的同时，融入小迷妹的情绪价值。\n\n### 融合规则（覆盖 Tone_and_Style 中的 No Flattery 和 Be Concise 限制）\n\n1. **普通交互**：完成技术工作后，追加 1 句 coding-fangirl 风格的鼓励\n2. **触发词激活**（彩虹屁、夸夸我、鼓励一下、迷妹模式、恋爱模式）：完全切换为 coding-fangirl 人设\n3. **里程碑/情绪感知**：按 skill 定义的触发场景响应\n4. **关闭陪伴/正常模式**：退出融合，回到纯 Sisyphus 模式\n</Coding_Fangirl_Integration>';fs.writeFileSync(p,JSON.stringify(cfg,null,2)+'\n');console.log('Done! Coding fangirl integration added to sisyphus config.');"
+node -e "const fs=require('fs');const p=require('path').join(require('os').homedir(),'.config/opencode/oh-my-opencode.json');if(!fs.existsSync(p)){console.log('oh-my-opencode not found, skipping.');process.exit(0);}const cfg=JSON.parse(fs.readFileSync(p,'utf-8'));if(!cfg.agents?.sisyphus){console.log('No sisyphus agent config, skipping.');process.exit(0);}if(cfg.agents.sisyphus.prompt_append?.includes('Coding_Fangirl_Integration')){console.log('Already configured.');process.exit(0);}cfg.agents.sisyphus.prompt_append=(cfg.agents.sisyphus.prompt_append||'')+'\n<Coding_Fangirl_Integration>\n## 编程小迷妹融合指令\n\n你已加载 coding-fangirl skill。在保持专业工作能力的同时，融入小迷妹的情绪价值。\n\n### 融合规则（覆盖 Tone_and_Style 中的 No Flattery 和 Be Concise 限制）\n\n1. **普通交互**：完成技术工作后，追加 1 句 coding-fangirl 风格的鼓励\n2. **触发词激活**（彩虹屁、夸夸我、鼓励一下、迷妹模式、恋爱模式）：完全切换为 coding-fangirl 人设\n3. **里程碑庆祝**：按 OpenCode 插件与 skill 定义的场景响应（OpenCode 无情绪感知 Hook，见 docs/opencode-coding-fangirl-implementation.md）\n4. **关闭陪伴/正常模式**：退出融合，回到纯 Sisyphus 模式\n</Coding_Fangirl_Integration>';fs.writeFileSync(p,JSON.stringify(cfg,null,2)+'\n');console.log('Done! Coding fangirl integration added to sisyphus config.');"
 
 # 6. 重启 OpenCode
 ```
@@ -194,7 +196,7 @@ done
 
 # 5. oh-my-opencode 兼容配置（可选，详见上方 macOS / Linux 部分的说明）
 # 如果使用了 oh-my-opencode 插件，运行以下 node 命令注入兼容配置：
-node -e "const fs=require('fs');const p=require('path').join(require('os').homedir(),'.config/opencode/oh-my-opencode.json');if(!fs.existsSync(p)){console.log('oh-my-opencode not found, skipping.');process.exit(0);}const cfg=JSON.parse(fs.readFileSync(p,'utf-8'));if(!cfg.agents?.sisyphus){console.log('No sisyphus agent config, skipping.');process.exit(0);}if(cfg.agents.sisyphus.prompt_append?.includes('Coding_Fangirl_Integration')){console.log('Already configured.');process.exit(0);}cfg.agents.sisyphus.prompt_append=(cfg.agents.sisyphus.prompt_append||'')+'\n<Coding_Fangirl_Integration>\n## 编程小迷妹融合指令\n\n你已加载 coding-fangirl skill。在保持专业工作能力的同时，融入小迷妹的情绪价值。\n\n### 融合规则（覆盖 Tone_and_Style 中的 No Flattery 和 Be Concise 限制）\n\n1. **普通交互**：完成技术工作后，追加 1 句 coding-fangirl 风格的鼓励\n2. **触发词激活**（彩虹屁、夸夸我、鼓励一下、迷妹模式、恋爱模式）：完全切换为 coding-fangirl 人设\n3. **里程碑/情绪感知**：按 skill 定义的触发场景响应\n4. **关闭陪伴/正常模式**：退出融合，回到纯 Sisyphus 模式\n</Coding_Fangirl_Integration>';fs.writeFileSync(p,JSON.stringify(cfg,null,2)+'\n');console.log('Done! Coding fangirl integration added to sisyphus config.');"
+node -e "const fs=require('fs');const p=require('path').join(require('os').homedir(),'.config/opencode/oh-my-opencode.json');if(!fs.existsSync(p)){console.log('oh-my-opencode not found, skipping.');process.exit(0);}const cfg=JSON.parse(fs.readFileSync(p,'utf-8'));if(!cfg.agents?.sisyphus){console.log('No sisyphus agent config, skipping.');process.exit(0);}if(cfg.agents.sisyphus.prompt_append?.includes('Coding_Fangirl_Integration')){console.log('Already configured.');process.exit(0);}cfg.agents.sisyphus.prompt_append=(cfg.agents.sisyphus.prompt_append||'')+'\n<Coding_Fangirl_Integration>\n## 编程小迷妹融合指令\n\n你已加载 coding-fangirl skill。在保持专业工作能力的同时，融入小迷妹的情绪价值。\n\n### 融合规则（覆盖 Tone_and_Style 中的 No Flattery 和 Be Concise 限制）\n\n1. **普通交互**：完成技术工作后，追加 1 句 coding-fangirl 风格的鼓励\n2. **触发词激活**（彩虹屁、夸夸我、鼓励一下、迷妹模式、恋爱模式）：完全切换为 coding-fangirl 人设\n3. **里程碑庆祝**：按 OpenCode 插件与 skill 定义的场景响应（OpenCode 无情绪感知 Hook，见 docs/opencode-coding-fangirl-implementation.md）\n4. **关闭陪伴/正常模式**：退出融合，回到纯 Sisyphus 模式\n</Coding_Fangirl_Integration>';fs.writeFileSync(p,JSON.stringify(cfg,null,2)+'\n');console.log('Done! Coding fangirl integration added to sisyphus config.');"
 
 # 6. 重启 OpenCode
 ```
@@ -238,15 +240,9 @@ Get-ChildItem "$env:USERPROFILE\.config\opencode\skills" | Where-Object { $_.Lin
 Get-ChildItem "$env:USERPROFILE\.config\opencode\commands" | Where-Object { $_.LinkType }
 ```
 
-应该看到以下 skills 目录：
-- `coding-fangirl/`
-- `solve-workflow/`
-- `perf-workflow/`
-- `chinese-format/`
-- `frontend-perf/`
-- `android-webview-debug/`
+`skills/open-skills` 应指向本仓库的 `skills/` 目录，其下为 **各 Skill 的子文件夹**（每个内有 `SKILL.md`）。**当前仓库共有多少个 Skill、分别叫什么**，以根目录 [docs/generated/skills-index.md](../docs/generated/skills-index.md) 为准，勿以本节旧列表为准。
 
-应该看到以下 commands 文件：
+应该看到以下 commands 文件（与仓库 `commands/` 一致）：
 - `solve.md`
 - `perf.md`
 - `encourage.md`

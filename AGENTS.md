@@ -1,12 +1,10 @@
 # PROJECT KNOWLEDGE BASE
 
-**Generated:** 2026-03-17 | **Branch:** refactor/merge-git-commit-core
-
-本文件为 Claude Code 等 AI 在本仓库工作时的项目知识库。
+本文件为 Claude Code 等 AI 在本仓库工作时的项目知识库。**文首若出现历史生成日期或分支名，仅作存档；以当前仓库 `main` 与目录结构为准。**
 
 ## 概述
 
-AI 编码助手的开放 Skills 库。Markdown + JSON + 少量 JS 构成的多平台插件项目。支持 Claude Code、Cursor、OpenCode 三个平台。
+AI 编码助手的开放 Skills 库。Markdown + JSON + 少量 JS 构成的多平台插件项目。支持 Claude Code、Cursor、OpenCode 三个平台。安装对外统一为 **通用安装**（`npx`，仅 SKILL.md）与 **全能力安装**（Hooks、Commands、平台集成）；见根目录 `README.md` § 安装。
 
 ## 结构
 
@@ -34,7 +32,7 @@ open-skills/
 | OpenCode 插件开发 | `.opencode/plugins/` 和 `.opencode/plugin/` | 见 .opencode/AGENTS.md |
 | 平台配置 | `.claude-plugin/`、`.cursor-plugin/` | 仅元数据，不含逻辑 |
 | CI/版本管理 | `.github/workflows/release.yml` | **禁止手动改版本号** |
-| 安装文档 | `docs/INSTALL.md`、`docs/README.opencode.md` | 文档总览见 `docs/README.md` |
+| 安装文档 | `docs/INSTALL.md`、`docs/README.opencode.md` | **通用安装**（npx）与 **全能力安装**（插件 / OpenCode 符号链接）口径见 `README.md` § 安装；总览见 `docs/README.md` |
 | Skill 完整列表 | `docs/generated/skills-index.md` | **自动生成**，勿手改；改 skill 后运行 `node scripts/gen-skill-docs.mjs` |
 
 ## Skill 清单
@@ -137,7 +135,7 @@ Invoke the <skill-name> skill and follow it exactly
 
 1. **合并 PR**：`gh pr merge <编号> --merge`
 2. **检查版本发布**：等待 CI 完成（约 15–20 秒），`gh release list -L 3` 确认新版本
-3. **更新本地安装**：
+3. **更新本地安装**（均为 **全能力安装** 路径）：
    - **OpenCode**：`cd ~/.config/opencode/open-skills && git pull`，然后 `for cmd in commands/*.md; do ln -sf "$(pwd)/$cmd" ~/.config/opencode/commands/; done`
    - **Claude Code**：`claude plugin update open-skills@open-skills-marketplace`
 4. **工作区同步**：`git checkout main && git pull origin main`
@@ -151,11 +149,13 @@ Invoke the <skill-name> skill and follow it exactly
 
 ## 多平台差异
 
-| 平台 | 安装 | 配置目录 | 钩子实现 |
-|------|------|---------|---------|
-| Claude Code | marketplace 安装 | `.claude-plugin/` | Shell 脚本（hooks/） |
-| Cursor | `/plugin-add` 安装 | `.cursor-plugin/` | Shell 脚本（hooks/） |
-| OpenCode | 符号链接安装 | `.opencode/` | ES Module 插件 |
+对外安装口径统一为两类：**通用安装**（仅 `SKILL.md`，`npx skills`）与 **全能力安装**（Hooks、Commands、平台集成）。详见根目录 `README.md` § 安装与 `docs/INSTALL.md`。
+
+| 平台 | 全能力安装（推荐） | 配置目录 | 钩子实现 |
+|------|-------------------|---------|---------|
+| Claude Code | Marketplace 插件 | `.claude-plugin/` | Shell 脚本（hooks/） |
+| Cursor | `/plugin-add` | `.cursor-plugin/` | Shell 脚本（hooks/） |
+| OpenCode | raw + 符号链接（见 `.opencode/INSTALL.md`） | `.opencode/` | ES Module 插件 |
 
 ## 反模式（禁止）
 

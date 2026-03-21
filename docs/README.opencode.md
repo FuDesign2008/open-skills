@@ -2,6 +2,8 @@
 
 本文档提供 OpenCode 平台上使用 open-skills 的详细说明。
 
+与仓库总口径一致：OpenCode 侧 **全能力安装** 见 **[.opencode/INSTALL.md](../.opencode/INSTALL.md)**（插件、符号链接、命令）；**通用安装**（仅 `SKILL.md`，`npx skills`）见 [docs/INSTALL.md](INSTALL.md)。
+
 ## 安装
 
 ### 快速安装
@@ -38,6 +40,8 @@ OpenCode 支持 `/skill` 命令来加载 skill：
 | **solve-workflow** | 分析问题、探索方案、审查方案、制定计划、执行计划、检查验证、回顾总结 |
 | **perf-workflow** | 性能分析、性能证据、性能定位、性能假设、性能监控、性能优化、性能验证、性能深入 |
 
+上表仅为示例；**其余 Skill 与完整触发说明**见 [skills-index.md](generated/skills-index.md)。
+
 ## 架构说明
 
 ```
@@ -60,6 +64,8 @@ OpenCode 支持 `/skill` 命令来加载 skill：
 └── README.md
 ```
 
+以上为**目录结构示意**；`skills/` 下实际子目录与仓库一致，**完整列表**见 [skills-index.md](generated/skills-index.md)。
+
 ## 工具映射
 
 OpenCode 与 Claude Code 的工具对应关系：
@@ -75,6 +81,8 @@ OpenCode 与 Claude Code 的工具对应关系：
 | `Glob` | `list_files` |
 
 ## 可用 Skills
+
+**完整 Skill 列表**（版本、触发条件）见 [skills-index.md](generated/skills-index.md)。下面仅介绍与 OpenCode 常见用法相关的条目，方便通读。
 
 ### 情绪陪伴
 
@@ -131,24 +139,28 @@ OpenCode 与 Claude Code 的工具对应关系：
 
 ## 故障排查
 
+通用排错还可看 [INSTALL — 常见问题](INSTALL.md#常见问题)。
+
 ### Skill 未加载
 
-1. 确认安装路径正确：
+1. **看目录在不在**（默认 clone 路径）：
    ```bash
    ls ~/.config/opencode/open-skills/skills/
    ```
-
-2. 确认 SKILL.md 文件存在：
+2. **看每个 Skill 是否都有 `SKILL.md`**：
    ```bash
    ls ~/.config/opencode/open-skills/skills/*/SKILL.md
    ```
+3. 与 [skills-index.md](generated/skills-index.md) 对照名称是否齐全；然后**完全退出** OpenCode 再开。
 
 ### 触发词不生效
 
-1. 检查触发词是否正确
-2. 尝试使用 `/skill` 命令显式加载
+1. 对照 [skills-index.md](generated/skills-index.md) 里该 Skill 的描述。
+2. 可先试 **`/skill <skill-name>`** 显式加载，再试自然语言触发词。
 
 ### 更新后问题
+
+在 clone 目录拉最新代码后重启客户端：
 
 ```bash
 cd ~/.config/opencode/open-skills

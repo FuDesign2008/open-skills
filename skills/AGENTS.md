@@ -35,7 +35,7 @@ skills/
 | 内容创作 | article-writer | 公众号 / 知乎等技术文章流程 |
 | 工具 | android-webview-debug | enable/revert 双模式，带修改记录和回滚 |
 | Git | git-commit | 统一入口，默认自动执行，含多项目检测与错误处理 |
-| Jira | jira-fix-workflow | 默认自动模式；`--manual` 进手动确认模式；含规则制难度分级（极难自动终止）；批量修复用 `/ralph` | 
+| Jira | jira-fix-workflow | 默认自动模式；`--manual` 进手动确认模式；含规则制难度分级（极难自动终止）；批量场景可在外部编排工具中自行接入（非本仓库内置命令） |
 | Jira | jira-read | 本地缓存优先，支持 mcp-atlassian API 降级；需配置 `$JIRA_CACHE_DIR` |
 | 工具 | typescript-check | TypeScript 类型错误检查流程 |
 | 工具 | file-operation-fallback | Write/StrReplace 失败时自动降级到 Shell 命令 |
