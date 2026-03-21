@@ -19,8 +19,9 @@ open-skills/
 ├── .claude-plugin/         # Claude Code 平台配置（plugin.json + marketplace.json）
 ├── .cursor-plugin/         # Cursor 平台配置（plugin.json）
 ├── .opencode/              # OpenCode 平台（ES Module 插件 + 安装脚本）→ 见 .opencode/AGENTS.md
-├── docs/                   # 安装指南、实现文档
-└── .github/workflows/      # CI：自动版本递增（release.yml）
+├── docs/                   # 安装指南、实现文档（含 generated/ 自动生成索引）
+├── scripts/                # gen-skill-docs.mjs：由 skills 生成 docs/generated/skills-index.md
+└── .github/workflows/      # CI：版本递增（release.yml）、skills 索引校验（docs-skills-verify.yml）
 ```
 
 ## 在哪找什么
@@ -33,23 +34,27 @@ open-skills/
 | OpenCode 插件开发 | `.opencode/plugins/` 和 `.opencode/plugin/` | 见 .opencode/AGENTS.md |
 | 平台配置 | `.claude-plugin/`、`.cursor-plugin/` | 仅元数据，不含逻辑 |
 | CI/版本管理 | `.github/workflows/release.yml` | **禁止手动改版本号** |
-| 安装文档 | `docs/INSTALL.md`、`docs/README.opencode.md` | |
+| 安装文档 | `docs/INSTALL.md`、`docs/README.opencode.md` | 文档总览见 `docs/README.md` |
+| Skill 完整列表 | `docs/generated/skills-index.md` | **自动生成**，勿手改；改 skill 后运行 `node scripts/gen-skill-docs.mjs` |
 
 ## Skill 清单
 
-| Skill | 类别 | 触发词 | 依赖 |
-|-------|------|--------|------|
-| coding-fangirl (v5.2.0) | 情绪陪伴 | 彩虹屁、夸夸我、鼓励一下、迷妹模式、恋爱模式 | 无 |
-| solve-workflow (v1.1.0) | 工作流 | 分析问题（含明确问题）、探索方案、审查方案、制定计划、执行计划、检查验证、回顾总结 | 无 |
-| perf-workflow (v2.1.0) | 工作流 | 性能分析、性能证据、性能定位、性能假设、性能监控、性能优化、性能验证、性能深入 | 无 |
-| frontend-perf (v2.0.0) | 知识库 | 随 perf-workflow 自动加载 | perf-workflow |
-| chinese-format (v1.1.0) | 格式规范 | 写文档、生成文档（自动触发） | 无 |
-| android-webview-debug | 工具 | android-webview-debug-enable/revert | 无 |
-| git-commit (v3.0.0) | Git | 提交代码、git commit、帮我提交、写 commit message；手动提交进手动模式 | 无 |
-| jira-fix-workflow (v3.0.0) | Jira 工作流 | 「修复这个 bug [URL]」「帮我修复 [URL]」「手动修复 [URL]」「继续修复」；批量修复用任务编排工具（/ralph 等） | git-commit、jira-read |
-| jira-read (v2.0.0) | Jira 工具 | jira-read [ID]；需配置 $JIRA_CACHE_DIR（如 ~/.cache/jira） | 无 |
-| typescript-check (v1.0.0) | 工具 | 类型检查、type-check、tsc | 无 |
-| file-operation-fallback (v1.0.0) | 工具 | Write/StrReplace 返回 Error: Aborted 时自动触发 | 无 |
+**名称、版本、`user-invocable`、描述（触发条件）** 以自动生成的 [docs/generated/skills-index.md](docs/generated/skills-index.md) 为准（`node scripts/gen-skill-docs.mjs`）。下表仅保留 **类别与依赖**，供快速扫一眼关系。
+
+| Skill | 类别 | 依赖 |
+|-------|------|------|
+| coding-fangirl | 情绪陪伴 | 无 |
+| solve-workflow | 工作流 | 无 |
+| perf-workflow | 工作流 | 无 |
+| frontend-perf | 知识库 | perf-workflow |
+| chinese-format | 格式规范 | 无 |
+| android-webview-debug | 工具 | 无 |
+| git-commit | Git | 无 |
+| jira-fix-workflow | Jira 工作流 | git-commit、jira-read |
+| jira-read | Jira 工具 | 无 |
+| typescript-check | 工具 | 无 |
+| file-operation-fallback | 工具 | 无 |
+| article-writer | 内容创作 | 无 |
 
 ## 钩子机制
 
@@ -173,6 +178,9 @@ grep -r "^---$" skills/*/SKILL.md
 
 # OpenCode 插件语法
 node --check .opencode/plugins/open-skills.js
+
+# Skills 索引生成脚本语法
+node --check scripts/gen-skill-docs.mjs
 ```
 
 ## 子目录知识库

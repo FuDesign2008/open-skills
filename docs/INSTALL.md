@@ -1,8 +1,10 @@
 # Open Skills 详细安装指南
 
-本文档提供各平台的手动安装、更新和卸载说明。
+本文档负责 **手动路径、卸载、多系统命令** 与 **npx 能力边界**。若你只需「怎么选安装方式」，先看 [README.md](../README.md) 的 **「怎么装」**；**完整 skill 名称与版本** 以自动生成的 [skills-index.md](generated/skills-index.md) 为准。
 
-> **推荐**：Claude Code 和 Cursor 用户优先使用 [Marketplace 安装](../README.md#installation)。
+**与 README 的分工**：README = 门面 + 决策树 + 链接；INSTALL = 可复制的 clone / 配置 / 卸载步骤；索引 = `skills/` 单一事实源。
+
+> **推荐**：Claude Code / Cursor 优先 [Marketplace / 插件安装](../README.md#install-path)。
 
 ---
 
@@ -33,7 +35,7 @@ npx skills update
 
 | 能力 | 是否包含 |
 |------|----------|
-| 7 个 SKILL.md 知识层（solve-workflow、perf-workflow 等） | 包含 |
+| 仓库 `skills/` 下全部 `SKILL.md`（与 [skills-index.md](generated/skills-index.md) 同步；默认全量安装，亦可用 `--skill` 只装子集） | 包含 |
 | Hooks（情绪安抚 / 里程碑庆祝 / 欢迎语） | **不包含** |
 | Commands（`/solve`、`/perf`、`/encourage`） | **不包含** |
 | OpenCode 插件 | **不包含** |
@@ -154,20 +156,22 @@ OpenCode 安装需要配置插件、skills 和 commands 符号链接，请参考
 
 ## 常见问题
 
+更完整的摘要见 [README.md — Troubleshooting](../README.md#troubleshooting)。
+
 ### Skill 未加载
 
-1. 确认安装路径正确
-2. 检查 SKILL.md 文件是否存在
-3. 重启 AI 编码助手
+1. 对照 README 中的路径说明确认安装目录
+2. 本地仓库可执行 `node scripts/gen-skill-docs.mjs`，核对 `docs/generated/skills-index.md` 是否列出预期 skill
+3. 完全退出并重启客户端
 
 ### 触发词不生效
 
-1. 检查触发词拼写是否正确
-2. 尝试使用完整触发词（如「明确问题：xxx」）
-3. 查看是否有其他 skill 冲突
+1. 对照 [skills-index.md](generated/skills-index.md) 中的描述原文
+2. 尝试「触发词：具体说明」形式（冒号中英文均可）
+3. 排查与其他 skill 触发词冲突
 
 ### 更新后问题
 
-1. 执行 `git pull` 更新
+1. Marketplace：`claude plugin update …`；clone 安装：`git pull`
 2. 清除缓存后重启
-3. 如有问题，重新 clone
+3. 仍异常则删除安装目录后按上文重装
