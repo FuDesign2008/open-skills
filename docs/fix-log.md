@@ -1,5 +1,15 @@
 # 修复与变更记录
 
+## 2026-03-21：release workflow 改回做法 B（分支 + PR）
+
+**状态**：已修复
+
+**修复方式**：关闭错误方向的 PR `#64`，并将 `.github/workflows/release.yml` 改为：版本号变更先提交到 `chore/version-bump-<version>-<run_id>`，随后通过 `gh pr create` 创建 PR，再用 `gh pr merge --squash -t "... [skip ci]"` 合并回 `main`，最后同步 `origin/main` 再打 tag / 发 release。`AGENTS.md` 同步改为做法 B，并补上 `.cursor-plugin/` 也会触发版本递增。
+
+**验证场景**：合并命中触发路径的 PR 后，Auto Version Bump 应自动创建版本号 PR、完成 squash 合并，并继续创建 tag 与 GitHub Release；不会再因直推 `main` 触发 GH006。
+
+---
+
 ## 2026-03-21：删除 docs/README.opencode.md
 
 **状态**：已修复
