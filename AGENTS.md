@@ -145,7 +145,8 @@ Invoke the <skill-name> skill and follow it exactly
 - 版本号在 `.claude-plugin/plugin.json` 和 `marketplace.json`
 - **禁止手动修改**：CI（`.github/workflows/release.yml`）自动递增
 - 规则：`feat:` → MINOR、`fix:` → PATCH、`BREAKING CHANGE` → MAJOR
-- 触发条件：`hooks/`、`skills/`、`commands/`、`.opencode/` 有变更时
+- 触发条件：`hooks/`、`skills/`、`commands/`、`.opencode/`、`.cursor-plugin/` 有变更时
+- **受保护 main**：采用做法 B。工作流在 `chore/version-bump-*` 分支提交版本号变更，自动创建 PR，并以 **squash** 合并回 `main`；squash 提交标题带 `[skip ci]`，避免再次触发发版流程。
 
 ## 多平台差异
 

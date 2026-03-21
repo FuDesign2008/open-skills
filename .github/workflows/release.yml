@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   version-bump:
@@ -74,13 +75,29 @@ jobs:
           # 更新 .cursor-plugin/plugin.json
           jq --arg v "$NEW_VERSION" '.version = $v' .cursor-plugin/plugin.json > .cursor-plugin/plugin.json.tmp && mv .cursor-plugin/plugin.json.tmp .cursor-plugin/plugin.json
 
-      - name: Commit and push version bump
+      - name: Open PR and merge version bump
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -eux
+          VERSION="${{ steps.new-version.outputs.version }}"
+          BRANCH="chore/version-bump-${VERSION}-${{ github.run_id }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
           git add .claude-plugin/plugin.json .claude-plugin/marketplace.json .cursor-plugin/plugin.json
-          git commit -m "chore: bump version to ${{ steps.new-version.outputs.version }} [skip ci]"
-          git push
+          git commit -m "chore: bump version to ${VERSION}"
+          git push -u origin "$BRANCH"
+          PR_URL=$(gh pr create --base main --head "$BRANCH" \
+            --title "chore: bump version to ${VERSION}" \
+            --body "由 Auto Version Bump workflow 自动创建。将以 squash 合并并附带 [skip ci]，避免再次触发 release workflow。")
+          PR_NUM="${PR_URL##*/}"
+          gh pr merge "$PR_NUM" --squash \
+            --subject "chore: bump version to ${VERSION} [skip ci]" \
+            --delete-branch
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
 
       - name: Create tag
         run: |
