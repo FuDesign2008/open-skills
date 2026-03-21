@@ -1,0 +1,25 @@
+name: Docs — Skills index
+
+on:
+  pull_request:
+    paths:
+      - "skills/**"
+      - "scripts/gen-skill-docs.mjs"
+      - "docs/generated/skills-index.md"
+  push:
+    branches: [main]
+    paths:
+      - "skills/**"
+      - "scripts/gen-skill-docs.mjs"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Regenerate skills index
+        run: node scripts/gen-skill-docs.mjs
+
+      - name: Fail if generated file is stale
+        run: git diff --exit-code docs/generated/skills-index.md

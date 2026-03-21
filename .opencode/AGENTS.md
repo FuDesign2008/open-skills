@@ -56,6 +56,8 @@ export const PluginName: Plugin = async ({ client, $ }) => ({
 
 ## 安装机制
 
+以下属于 OpenCode **全能力安装**；**通用安装**（仅 `SKILL.md`）见仓库 `docs/INSTALL.md` 的 npx 说明。
+
 符号链接方式安装到 `~/.config/opencode/`：
 
 1. 克隆仓库
