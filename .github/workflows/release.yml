@@ -10,6 +10,8 @@ on:
       - '.opencode/**'
       - '.cursor-plugin/**'
 
+# main 若要求「须通过 PR」：在分支保护规则中为 github-actions[bot] 或 GitHub Actions 配置**绕过**，
+# 否则本工作流向 main 直推版本号会失败（GH006）。
 permissions:
   contents: write
 

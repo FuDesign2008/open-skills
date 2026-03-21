@@ -1,5 +1,23 @@
 # 修复与变更记录
 
+## 2026-03-21：release workflow 恢复直推 main（做法 A）
+
+**状态**：已修复
+
+**修复方式**：撤销「分支 + PR + squash」方案；`.github/workflows/release.yml` 恢复为在 `main` 上 `commit` 后 `git push`，提交信息保留 `[skip ci]`。`permissions` 仅保留 `contents: write`。`AGENTS.md`「版本管理」改为说明做法 A：分支保护须为 **github-actions[bot]** / **GitHub Actions** 配置绕过。
+
+---
+
+## 2026-03-21：release workflow 改 PR 合并且绕过受保护 main
+
+**状态**：已修复
+
+**修复方式**：`.github/workflows/release.yml` 不再向 `main` 直推版本号；改为在 `chore/version-bump-<version>-<run_id>` 提交后 `gh pr create`，再以 **squash** 合并且 **`-t "... [skip ci]"`**，随后 `git fetch` / `reset` 到 `main` 再打 tag 与 Release。增加 `permissions.pull-requests: write`；`AGENTS.md`「版本管理」补充说明与分支规则要求。
+
+**验证场景**：合并含 `skills/` 等触发路径的 PR 后，Actions 中 **Auto Version Bump** 应成功创建 PR、自动 squash 合并、`gh release list` 出现新 tag；若 merge 失败，检查 `main` 是否要求 PR 审批且未放行 Actions。
+
+---
+
 ## 2026-03-21：删除 docs/README.opencode.md
 
 **状态**：已修复
