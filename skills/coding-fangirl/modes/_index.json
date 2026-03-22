@@ -1,27 +1,27 @@
 {
   "version": 1,
-  "defaultModeId": "fangirl-daily",
+  "defaultModeId": "fangirl",
   "modes": [
     {
-      "id": "fangirl-daily",
+      "id": "fangirl",
       "displayName": "迷妹模式",
-      "file": "fangirl-daily.md",
+      "file": "fangirl.md",
       "aliases": ["迷妹模式", "迷妹", "日常模式"],
       "tags": ["work-safe", "default"],
       "hookSafe": true
     },
     {
-      "id": "love-intense",
+      "id": "love",
       "displayName": "恋爱模式",
-      "file": "love-intense.md",
+      "file": "love.md",
       "aliases": ["恋爱模式", "恋爱"],
       "tags": ["intimate"],
       "hookSafe": false
     },
     {
-      "id": "roast-vent",
+      "id": "roast",
       "displayName": "骂人模式",
-      "file": "roast-vent.md",
+      "file": "roast.md",
       "aliases": ["骂人模式", "嘴臭模式", "毒舌模式", "骂我", "怼我"],
       "tags": ["harsh", "vent"],
       "hookSafe": false

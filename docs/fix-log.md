@@ -1,5 +1,15 @@
 # 修复与变更记录
 
+## 2026-03-22：coding-fangirl 模式 id 与文件名精简
+
+**状态**：已修复
+
+**修复方式**：`fangirl-daily` → `fangirl`（`fangirl.md`），`love-intense` → `love`（`love.md`），`roast-vent` → `roast`（`roast.md`）；同步更新 `modes/_index.json`、`SKILL.md`、`context.json`，skill 版本 **5.4.1**；运行 `node scripts/gen-skill-docs.mjs`。
+
+**验证**：`modes/` 下仅存在 `fangirl.md`、`love.md`、`roast.md` 与 `_index.json`；`defaultModeId` 为 `fangirl`。
+
+---
+
 ## 2026-03-22：coding-fangirl 模式库架构（modes + _index.json）
 
 **状态**：已修复
