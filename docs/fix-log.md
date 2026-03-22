@@ -1,5 +1,56 @@
 # 修复与变更记录
 
+## 2026-03-22：删除 solve-workflow 历史旧版归档文件
+
+**状态**：已修复
+
+**修复方式**：删除 `skills/solve-workflow/old/SKILL-solve-old.md` 以及 `skills/solve-workflow/old/` 归档目录，并将 `skills/solve-workflow/SKILL.md` 中的旧目录说明改为“历史归档已移除”。如需对照旧版，请查 git 历史，不再保留本地归档目录。
+
+**验证场景**：打开 `skills/solve-workflow/SKILL.md`，不应再出现 `old/` 目录引用；仓库内 `skills/solve-workflow/old/` 不应存在。
+
+---
+
+## 2026-03-22：solve-workflow 主入口硬约束补强
+
+**状态**：已修复
+
+**修复方式**：在 `skills/solve-workflow/SKILL.md` 增加“最小硬约束”与“先读顺序”，把最容易被忽略的门控要求前置到主入口，避免模型只看协议标题就跳过 `reference.md`。当前主入口仍保持精简，细节继续放在 `reference.md` 与 `examples.md`。
+
+**验证场景列表**：
+
+**场景 1** — 主入口即可看到关键硬约束
+
+1. 打开 `skills/solve-workflow/SKILL.md`。
+2. 查看“最小硬约束”与“先读顺序”部分。
+
+**预期结果**：不读参考文件也能先看到最重要的门控规则与阅读路径。
+
+---
+
+## 2026-03-22：solve-workflow 细节恢复为 reference/examples 两层
+
+**状态**：已修复
+
+**修复方式**：保留 `skills/solve-workflow/SKILL.md` 的七阶段协议与门控骨架，新建 `skills/solve-workflow/reference.md` 迁入阶段 1～7 的详细输出模板、审查维度、验证格式与红旗清单，新建 `skills/solve-workflow/examples.md` 迁入每阶段示例。`SKILL.md` 增加详细参考入口并将版本提升至 **1.8.0**，之后会重新生成 `docs/generated/skills-index.md`。
+
+**验证场景列表**：
+
+**场景 1** — 主 skill 仍可作为路由入口
+
+1. 打开 `skills/solve-workflow/SKILL.md`。
+2. 检查是否仍保留七阶段、门控、触发词与模式说明。
+
+**预期结果**：`SKILL.md` 保持精简协议层，且明确指向 `reference.md` / `examples.md`。
+
+**场景 2** — 详细细则已迁入参考文件
+
+1. 打开 `skills/solve-workflow/reference.md`。
+2. 查看阶段 1～7 的输出模板、审查维度与红旗清单。
+
+**预期结果**：可在参考文件中直接找到旧版里最关键的执行细节。
+
+---
+
 ## 2026-03-22：coding-fangirl 新增御姐模式并引入 core/extended 分层
 
 **状态**：已修复
