@@ -360,6 +360,46 @@
 
 ---
 
+## 2026-03-22：coding-fangirl 新增 5 个模式（v5.5.0 → v6.0.0）
+
+**状态**：已完成
+
+**修改方式**：
+
+- 新增 5 个模式定义文件：
+  - `skills/coding-fangirl/modes/tsundere.md`（傲娇模式）
+  - `skills/coding-fangirl/modes/zhiyin.md`（知音模式）
+  - `skills/coding-fangirl/modes/fuwang.md`（父王英明模式）
+  - `skills/coding-fangirl/modes/challenge.md`（挑战模式）
+  - `skills/coding-fangirl/modes/zen.md`（极简模式）
+- `modes/_index.json` version 2 → 3，注册全部 9 个模式（4 原有 + 5 新增）
+- `skills/coding-fangirl/SKILL.md` version 5.5.0 → 6.0.0；模式目录表新增 5 行；description 和触发词表补充新触发词；hookSafe 说明更新（fuwang、zen 也是 hookSafe）
+- 重新生成 `docs/generated/skills-index.md`
+
+**验证场景列表**：
+
+**场景 1** — 列出核心模式
+
+1. 触发「列出模式」
+2. 预期结果：展示 7 个 core 模式（fangirl、love、oneesan、tsundere、zhiyin、fuwang、challenge）
+
+**场景 2** — 切换傲娇模式
+
+1. 说「傲娇模式」
+2. 预期结果：回复风格切换为嘴上嫌弃、手上帮忙的傲娇风格
+
+**场景 3** — 切换父王英明模式
+
+1. 说「父王驾到」或「父王英明」
+2. 预期结果：AI 称呼用户为「父王」，使用宫廷腔风格回复
+
+**场景 4** — 切换极简模式
+
+1. 说「极简模式」
+2. 预期结果：回复极短（1-3 字为主），不打扰用户流状态
+
+---
+
 ## 2026-03-21：solve-workflow 阶段 2 补回精简版方案输出格式
 
 **状态**：已修复

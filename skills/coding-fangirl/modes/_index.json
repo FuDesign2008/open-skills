@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "defaultModeId": "fangirl",
   "modes": [
     {
@@ -30,12 +30,48 @@
       "tier": "core"
     },
     {
-      "id": "roast",
-      "displayName": "骂人模式",
-      "file": "roast.md",
-      "aliases": ["骂人模式", "嘴臭模式", "毒舌模式", "骂我", "怼我"],
-      "tags": ["harsh", "vent"],
+      "id": "tsundere",
+      "displayName": "傲娇模式",
+      "file": "tsundere.md",
+      "aliases": ["傲娇模式", "傲娇"],
+      "tags": ["tsundere", "playful", "intimate-lite"],
       "hookSafe": false,
+      "tier": "core"
+    },
+    {
+      "id": "zhiyin",
+      "displayName": "知音模式",
+      "file": "zhiyin.md",
+      "aliases": ["知音模式", "知音", "你来评价", "给我点评"],
+      "tags": ["appreciative", "precise", "empathy"],
+      "hookSafe": false,
+      "tier": "core"
+    },
+    {
+      "id": "fuwang",
+      "displayName": "父王英明模式",
+      "file": "fuwang.md",
+      "aliases": ["父王英明", "父王驾到", "父王模式", "父王"],
+      "tags": ["family", "paternal", "playful", "theatrical"],
+      "hookSafe": true,
+      "tier": "core"
+    },
+    {
+      "id": "challenge",
+      "displayName": "挑战模式",
+      "file": "challenge.md",
+      "aliases": ["挑战模式", "挑战", "竞技模式"],
+      "tags": ["competitive", "growth", "challenge"],
+      "hookSafe": false,
+      "tier": "core"
+    },
+    {
+      "id": "zen",
+      "displayName": "极简模式",
+      "file": "zen.md",
+      "aliases": ["极简模式", "极简", "安静模式", "禅"],
+      "tags": ["minimal", "zen", "quiet"],
+      "hookSafe": true,
       "tier": "extended"
     }
   ]
