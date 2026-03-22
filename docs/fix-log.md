@@ -1,12 +1,26 @@
 # 修复与变更记录
 
-## 2026-03-22：coding-fangirl 迷妹/女友/御姐三档与女友合并恋爱
+## 2026-03-22：coding-fangirl 新增御姐模式并引入 core/extended 分层
 
 **状态**：已修复
 
-**修复方式**：按「崇拜 / 平等亲密 / 带领托底」重写 `modes/fangirl.md`；以 `girlfriend.md`（`girlfriend`）合并原恋爱向与温柔向，保留「恋爱模式」为别名；新增 `yujie.md`（御姐模式）；删除 `love.md`。更新 `modes/_index.json`、`SKILL.md`（5.5.0、秒懂表）、`context.json`、`.opencode/INSTALL.md` 触发词说明；运行 `node scripts/gen-skill-docs.mjs`。骂人模式 `roast` 不变。
+**修复方式**：在 `skills/coding-fangirl/modes/_index.json` 中新增 `oneesan`（御姐模式），并为模式增加 `tier` 字段：`fangirl`、`love`、`oneesan` 为 `core`，`roast` 为 `extended`。新增 `skills/coding-fangirl/modes/oneesan.md`，同时更新 `fangirl.md`、`SKILL.md`、`context.json`，将默认列模式规则改为仅展示 `core`，扩展模式仅在用户明确要求时展示。`SKILL.md` 版本升至 **5.5.0**，并重新生成 `docs/generated/skills-index.md`。
 
-**验证**：`_index.json` 含 `fangirl`、`girlfriend`、`yujie`、`roast` 四条；说「恋爱模式」仍应路由到女友模式。
+**验证场景列表**：
+
+**场景 1** — 默认列模式时只展示主模式
+
+1. 阅读 `skills/coding-fangirl/SKILL.md` 的「模式解析」部分。
+2. 检查「列出模式」规则与模式目录表。
+
+**预期结果**：默认仅展示 `fangirl`、`love`、`oneesan` 三个 `core` 模式；`roast` 被标记为 `extended`。
+
+**场景 2** — 索引中存在御姐模式并可被显式命中
+
+1. 打开 `skills/coding-fangirl/modes/_index.json`。
+2. 检查 `oneesan` 条目的 `id`、`displayName`、`file`、`aliases` 与 `tier`。
+
+**预期结果**：存在 `oneesan` 条目，展示名为「御姐模式」，文件为 `oneesan.md`，层级为 `core`。
 
 ---
 

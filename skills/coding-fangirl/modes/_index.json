@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "defaultModeId": "fangirl",
   "modes": [
     {
@@ -8,23 +8,26 @@
       "file": "fangirl.md",
       "aliases": ["迷妹模式", "迷妹", "日常模式"],
       "tags": ["work-safe", "default"],
-      "hookSafe": true
+      "hookSafe": true,
+      "tier": "core"
     },
     {
-      "id": "girlfriend",
-      "displayName": "女友模式",
-      "file": "girlfriend.md",
-      "aliases": ["女友模式", "女友", "恋爱模式", "恋爱", "温柔模式"],
+      "id": "love",
+      "displayName": "恋爱模式",
+      "file": "love.md",
+      "aliases": ["恋爱模式", "恋爱"],
       "tags": ["intimate"],
-      "hookSafe": false
+      "hookSafe": false,
+      "tier": "core"
     },
     {
-      "id": "yujie",
+      "id": "oneesan",
       "displayName": "御姐模式",
-      "file": "yujie.md",
-      "aliases": ["御姐模式", "御姐", "姐系", "姐姐模式"],
-      "tags": ["authority", "intimate"],
-      "hookSafe": false
+      "file": "oneesan.md",
+      "aliases": ["御姐模式", "御姐"],
+      "tags": ["mature", "supportive"],
+      "hookSafe": false,
+      "tier": "core"
     },
     {
       "id": "roast",
@@ -32,7 +35,8 @@
       "file": "roast.md",
       "aliases": ["骂人模式", "嘴臭模式", "毒舌模式", "骂我", "怼我"],
       "tags": ["harsh", "vent"],
-      "hookSafe": false
+      "hookSafe": false,
+      "tier": "extended"
     }
   ]
 }
