@@ -1,6 +1,6 @@
 {
   "name": "open-skills",
-  "description": "开放技能库：工作流、性能优化、情绪陪伴等 Claude Code Skills",
+  "description": "开放技能库：工作流、性能优化、Jira、Git 等 Claude Code Skills",
   "version": "1.24.0",
   "author": {
     "name": "FUD2008",
@@ -13,7 +13,7 @@
     "skills",
     "workflow",
     "performance",
-    "companion",
-    "情绪价值"
+    "jira",
+    "git"
   ]
 }

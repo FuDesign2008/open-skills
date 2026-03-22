@@ -41,7 +41,6 @@ open-skills/
 
 | Skill | 类别 | 依赖 |
 |-------|------|------|
-| coding-fangirl | 情绪陪伴 | 无 |
 | solve-workflow | 工作流 | 无 |
 | perf-workflow | 工作流 | 无 |
 | frontend-perf | 知识库 | perf-workflow |
@@ -54,15 +53,13 @@ open-skills/
 | file-operation-fallback | 工具 | 无 |
 | article-writer | 内容创作 | 无 |
 
+> 💕 AI 编码陪伴（coding-fangirl）已迁移至独立工程 [oh-my-fangirl](https://github.com/FuDesign2008/oh-my-fangirl)。
+
 ## 钩子机制
 
 三种钩子类型（定义在 `hooks/hooks.json`）：
 
-| 钩子 | 触发时机 | Shell 脚本 | 作用 |
-|------|---------|-----------|------|
-| SessionStart | 会话启动/恢复 | `hooks/session-start` | 欢迎语 + 加载 coding-fangirl 上下文 |
-| PostToolUse | Bash 工具调用后 | `hooks/milestone-celebrate` | 检测 git commit/push/test/build 并庆祝 |
-| UserPromptSubmit | 用户发送消息 | `hooks/emotion-comfort` | 检测负面情绪并安慰 |
+Hooks 已随 coding-fangirl 迁移至 [oh-my-fangirl](https://github.com/FuDesign2008/oh-my-fangirl)，本仓库不再包含 hooks。
 
 OpenCode 平台使用 JS/TS 插件替代 shell 脚本实现相同功能。
 
