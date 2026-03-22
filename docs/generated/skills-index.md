@@ -23,6 +23,29 @@
 
 ---
 
+## 模式详情
+
+> 以下 skill 含多模式库，详细信息由 `modes/_index.json` 自动生成。
+
+### coding-fangirl 模式一览
+
+默认模式：`fangirl`　共 **8** 个模式。
+
+| 模式 ID | 展示名 | 层级 | hookSafe | 标签 | 触发别名 |
+| --- | --- | --- | --- | --- | --- |
+| `fangirl` | 迷妹模式 | `core` | ✓ | `work-safe` `default` | 迷妹模式、迷妹、日常模式 |
+| `love` | 恋爱模式 | `core` | ✗ | `intimate` | 恋爱模式、恋爱 |
+| `oneesan` | 御姐模式 | `core` | ✗ | `mature` `supportive` | 御姐模式、御姐 |
+| `tsundere` | 傲娇模式 | `core` | ✗ | `tsundere` `playful` `intimate-lite` | 傲娇模式、傲娇 |
+| `zhiyin` | 知音模式 | `core` | ✗ | `appreciative` `precise` `empathy` | 知音模式、知音、你来评价、给我点评 |
+| `fuwang` | 父王英明模式 | `core` | ✓ | `family` `paternal` `playful` `theatrical` | 父王英明、父王驾到、父王模式、父王 |
+| `challenge` | 挑战模式 | `core` | ✗ | `competitive` `growth` `challenge` | 挑战模式、挑战、竞技模式 |
+| `zen` | 极简模式 | `extended` | ✓ | `minimal` `zen` `quiet` | 极简模式、极简、安静模式、禅 |
+
+> **hookSafe ✓**：Hook 自动触发（SessionStart / 里程碑等）时可使用。**✗**：仅用户主动切换。
+
+---
+
 ## 校验
 
 ```bash
