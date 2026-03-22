@@ -1,5 +1,53 @@
 # 修复与变更记录
 
+## 2026-03-22：coding-fangirl 新增御姐模式并引入 core/extended 分层
+
+**状态**：已修复
+
+**修复方式**：在 `skills/coding-fangirl/modes/_index.json` 中新增 `oneesan`（御姐模式），并为模式增加 `tier` 字段：`fangirl`、`love`、`oneesan` 为 `core`，`roast` 为 `extended`。新增 `skills/coding-fangirl/modes/oneesan.md`，同时更新 `fangirl.md`、`SKILL.md`、`context.json`，将默认列模式规则改为仅展示 `core`，扩展模式仅在用户明确要求时展示。`SKILL.md` 版本升至 **5.5.0**，并重新生成 `docs/generated/skills-index.md`。
+
+**验证场景列表**：
+
+**场景 1** — 默认列模式时只展示主模式
+
+1. 阅读 `skills/coding-fangirl/SKILL.md` 的「模式解析」部分。
+2. 检查「列出模式」规则与模式目录表。
+
+**预期结果**：默认仅展示 `fangirl`、`love`、`oneesan` 三个 `core` 模式；`roast` 被标记为 `extended`。
+
+**场景 2** — 索引中存在御姐模式并可被显式命中
+
+1. 打开 `skills/coding-fangirl/modes/_index.json`。
+2. 检查 `oneesan` 条目的 `id`、`displayName`、`file`、`aliases` 与 `tier`。
+
+**预期结果**：存在 `oneesan` 条目，展示名为「御姐模式」，文件为 `oneesan.md`，层级为 `core`。
+
+---
+
+## 2026-03-22：coding-fangirl 模式 id 与文件名精简
+
+**状态**：已修复
+
+**修复方式**：`fangirl-daily` → `fangirl`（`fangirl.md`），`love-intense` → `love`（`love.md`），`roast-vent` → `roast`（`roast.md`）；同步更新 `modes/_index.json`、`SKILL.md`、`context.json`，skill 版本 **5.4.1**；运行 `node scripts/gen-skill-docs.mjs`。
+
+**验证**：`modes/` 下仅存在 `fangirl.md`、`love.md`、`roast.md` 与 `_index.json`；`defaultModeId` 为 `fangirl`。
+
+---
+
+## 2026-03-22：coding-fangirl 模式库架构（modes + _index.json）
+
+**状态**：已修复
+
+**修复方式**：将三种互动模式从 `SKILL.md` 正文迁至 `skills/coding-fangirl/modes/*.md`，用 `modes/_index.json` 登记 `id`、别名、`tags` 与 `hookSafe`。`SKILL.md` 改为路由、Hook 安全约定、触发与全局规则，版本升至 5.4.0。更新 `context.json`、`skills/AGENTS.md` 目录说明、`docs/opencode-coding-fangirl-implementation.md` 注入说明，并运行 `node scripts/gen-skill-docs.mjs`。
+
+**验证场景**：
+
+1. 打开 `skills/coding-fangirl/modes/_index.json`，确认三条模式与文件路径一致。
+2. 阅读 `SKILL.md`，确认「模式解析」与「Hook 与安全档位」可指导模型只通过索引切换模式。
+3. `docs/generated/skills-index.md` 中 coding-fangirl 版本为 5.4.0，description 含「切换模式、列出模式」等触发说明。
+
+---
+
 ## 2026-03-22：README Demo 脚注改为读者向表述
 
 **状态**：已修复

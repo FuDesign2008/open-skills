@@ -6,9 +6,10 @@
 
 ```
 skills/
-├── coding-fangirl/          # 情绪陪伴；含 context.json 供 Hook 使用
+├── coding-fangirl/          # 情绪陪伴；含 context.json 供 Hook 使用；多模式在 modes/
 │   ├── SKILL.md
-│   └── context.json
+│   ├── context.json
+│   └── modes/               # _index.json + 各模式 *.md（可扩展）
 ├── solve-workflow/
 ├── perf-workflow/
 ├── frontend-perf/           # 含 reference.md（前端性能参考资料）
