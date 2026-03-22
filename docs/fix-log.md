@@ -1,5 +1,19 @@
 # 修复与变更记录
 
+## 2026-03-22：coding-fangirl 模式库架构（modes + _index.json）
+
+**状态**：已修复
+
+**修复方式**：将三种互动模式从 `SKILL.md` 正文迁至 `skills/coding-fangirl/modes/*.md`，用 `modes/_index.json` 登记 `id`、别名、`tags` 与 `hookSafe`。`SKILL.md` 改为路由、Hook 安全约定、触发与全局规则，版本升至 5.4.0。更新 `context.json`、`skills/AGENTS.md` 目录说明、`docs/opencode-coding-fangirl-implementation.md` 注入说明，并运行 `node scripts/gen-skill-docs.mjs`。
+
+**验证场景**：
+
+1. 打开 `skills/coding-fangirl/modes/_index.json`，确认三条模式与文件路径一致。
+2. 阅读 `SKILL.md`，确认「模式解析」与「Hook 与安全档位」可指导模型只通过索引切换模式。
+3. `docs/generated/skills-index.md` 中 coding-fangirl 版本为 5.4.0，description 含「切换模式、列出模式」等触发说明。
+
+---
+
 ## 2026-03-22：README Demo 脚注改为读者向表述
 
 **状态**：已修复

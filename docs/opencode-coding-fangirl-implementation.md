@@ -13,7 +13,7 @@
 | 功能 | 实现位置 | 状态 | 说明 |
 |------|----------|------|------|
 | **Session 欢迎语** | `open-skills.js` | ✅ 已验证 | 通过 `system.transform` 注入系统提示，AI “知道”欢迎语但用户不会直接看到 |
-| **Skill 内容注入** | `open-skills.js` | ✅ 已验证 | 加载 SKILL.md 内容到系统提示 |
+| **Skill 内容注入** | `open-skills.js` | ✅ 已验证 | 加载 SKILL.md 到系统提示；多模式正文在 `skills/coding-fangirl/modes/*.md`，由 SKILL 内协议在切换后指导按需读取 |
 | **里程碑庆祝** | `coding-fangirl-hooks.ts` | ✅ 已验证 | 通过 `tool.execute.after` 监听 bash 工具，检测 git commit/push/build/test |
 | **情绪感知** | 已删除 | ❌ 不可用 | `system.transform` 的 `input` 不包含用户消息（无 `input.parts`），无法检测情绪 |
 | **时间关怀** | 已删除 | ❌ 不可用 | 依赖 `session.idle` 事件，OpenCode 未确认支持该事件 |
