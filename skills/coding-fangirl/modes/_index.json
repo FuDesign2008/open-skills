@@ -11,11 +11,19 @@
       "hookSafe": true
     },
     {
-      "id": "love",
-      "displayName": "恋爱模式",
-      "file": "love.md",
-      "aliases": ["恋爱模式", "恋爱"],
+      "id": "girlfriend",
+      "displayName": "女友模式",
+      "file": "girlfriend.md",
+      "aliases": ["女友模式", "女友", "恋爱模式", "恋爱", "温柔模式"],
       "tags": ["intimate"],
+      "hookSafe": false
+    },
+    {
+      "id": "yujie",
+      "displayName": "御姐模式",
+      "file": "yujie.md",
+      "aliases": ["御姐模式", "御姐", "姐系", "姐姐模式"],
+      "tags": ["authority", "intimate"],
       "hookSafe": false
     },
     {

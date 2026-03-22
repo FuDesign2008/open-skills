@@ -1,5 +1,15 @@
 # 修复与变更记录
 
+## 2026-03-22：coding-fangirl 迷妹/女友/御姐三档与女友合并恋爱
+
+**状态**：已修复
+
+**修复方式**：按「崇拜 / 平等亲密 / 带领托底」重写 `modes/fangirl.md`；以 `girlfriend.md`（`girlfriend`）合并原恋爱向与温柔向，保留「恋爱模式」为别名；新增 `yujie.md`（御姐模式）；删除 `love.md`。更新 `modes/_index.json`、`SKILL.md`（5.5.0、秒懂表）、`context.json`、`.opencode/INSTALL.md` 触发词说明；运行 `node scripts/gen-skill-docs.mjs`。骂人模式 `roast` 不变。
+
+**验证**：`_index.json` 含 `fangirl`、`girlfriend`、`yujie`、`roast` 四条；说「恋爱模式」仍应路由到女友模式。
+
+---
+
 ## 2026-03-22：coding-fangirl 模式 id 与文件名精简
 
 **状态**：已修复
