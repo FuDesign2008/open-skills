@@ -1,5 +1,40 @@
 # 修复与变更记录
 
+## 2026-03-22：README Demo 脚注改为读者向表述
+
+**状态**：已修复
+
+**修复方式**：`README.md` 中 Coding Fangirl 演示区去掉 GitHub 技术限制、时间码与编码参数等内部说明；改为说明动图展示的内容、B 站完整演示与本地 MP4 路径。配图 alt 改为「在 Claude Code 中使用 Coding Fangirl 的示意」。
+
+**验证场景**：打开仓库 `README.md` 中 Demo 一节，脚注应以用户价值为主，不出现「2:46」「256 色」等制作细节。
+
+---
+
+## 2026-03-22：README 演示改为 GIF 预览（GitHub 不播 `<video>`）
+
+**状态**：已修复（后续同日复用本条目补充「精彩片段 + 画质」迭代，见下段）
+
+**修复方式**：使用 `ffmpeg` 从 `docs/media/coding-fangirl-demo.mp4` 截取前 12 秒，生成 `docs/media/coding-fangirl-demo.gif`（约 680px 宽、8fps、palette 优化）。`README.md` 将 `<video>` 改为 Markdown 图片引用，并说明完整视频可本地打开 MP4 或跳转 Bilibili。
+
+**迭代（同日）**：片头预览信息量不足；改为自原视频 **约 166s（2:46）起截取 14s**，覆盖「coding-fangirl 切换模式 → 恋爱模式 → 回复展开」；输出约 **850px 宽、10fps、256 色、`stats_mode=full`、Sierra 抖动**，文件约 283KB。`README.md` 配图说明与脚注已同步。
+
+**验证场景列表**：
+
+**场景 1** — GitHub 仓库首页 README 可见动图预览
+
+1. 在 GitHub 打开本仓库默认展示的 `README.md`。
+2. 滚动到「Demo for Coding Fangirl」一节。
+
+**预期结果**：显示循环播放的 GIF 预览，无需依赖 `<video>` 标签。
+
+**场景 2** — 本地克隆后仍可观看完整 MP4
+
+1. 克隆仓库后打开 `docs/media/coding-fangirl-demo.mp4`。
+
+**预期结果**：可播放完整约 4 分钟带音频视频，与 GIF 仅为片头预览一致。
+
+---
+
 ## 2026-03-21：替换 README 演示视频为高清版
 
 **状态**：已修复
