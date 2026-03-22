@@ -28,11 +28,11 @@
 
 开放技能库：工作流、性能、Jira、Git、情绪陪伴等 **Skills**，支持 **Claude Code**、**Cursor**、**OpenCode**。完整 skill 列表（版本与触发说明）见 **[技能索引](docs/generated/skills-index.md)**。
 
-## Demo Video for Coding Fangirl
+## Demo for Coding Fangirl
 
-<video src="docs/media/coding-fangirl-demo.mp4" controls width="100%"></video>
+![在 Claude Code 中使用 Coding Fangirl 的示意](docs/media/coding-fangirl-demo.gif)
 
-> 视频加载失败？📺 [在 Bilibili 观看](https://www.bilibili.com/video/av116154353915732/)
+> 动图展示在终端里启用 **Coding Fangirl**、切换互动模式的一小段效果。想看完整约 4 分钟演示，可 📺 [在 Bilibili 观看](https://www.bilibili.com/video/av116154353915732/)，或克隆仓库后本地播放 [完整录屏文件](docs/media/coding-fangirl-demo.mp4)。
 
 <a id="install-path"></a>
 
