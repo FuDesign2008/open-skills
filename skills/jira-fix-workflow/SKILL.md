@@ -1,13 +1,13 @@
 ---
 name: jira-fix-workflow
-version: "3.4.0"
+version: "3.4.1"
 user-invocable: true
 description: 当用户说「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」时触发。适用于从 Jira 链接出发、对单个 bug 进行端到端修复的场景。
 ---
 
 # Jira Bug 修复工作流
 
-> 默认手动模式，阶段间需用户确认。说「自动修复」或使用 `--auto` 进入全流程自动模式。
+> 端到端 Jira Bug 修复流程，阶段 2～5 只读不写。默认手动模式，阶段间需用户确认。
 >
 > **前提**：mcp-atlassian 已配置且 PAT 有效；Git 环境正常。
 > **输出规范**：Markdown 结构化（标题/列表/表格/代码块），代码引用用 `startLine:endLine:filepath`；容易 → 精简，困难/极难 → 详细。
