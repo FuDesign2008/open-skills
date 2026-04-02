@@ -1,6 +1,6 @@
 ---
 name: jira-fix-workflow
-version: "3.6.1"
+version: "3.7.0"
 user-invocable: true
 description: 当用户说「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」时触发。适用于从 Jira 链接出发、对单个 bug 进行端到端修复的场景。
 ---
@@ -20,9 +20,10 @@ description: 当用户说「修复这个 bug [URL]」「帮我修复 [URL]」「
 | 「修复这个 bug [URL]」「帮我修复 [URL]」`jira-fix [URL]` | 👤 手动 | 默认，方案/计划/提交需用户确认 |
 | 「自动修复 [URL]」「修复 [URL] 自动模式」`jira-fix [URL] --auto` | 🤖 自动 | 全流程自动执行，无需确认 |
 | 「强制修复 [URL]」「跳过分级修复 [URL]」`jira-fix [URL] --force` | 🤖 自动 | 跳过难度分级，强制自动执行 |
-| 「继续修复」「从上次继续」「恢复修复 [URL]」`jira-fix [URL] --resume` | 当前模式 | 从断点恢复 |
+| 「继续修复 [URL]」「再次修复 [URL]」`jira-fix [URL] --retry` | 👤 手动 | 跳过阶段0/1，从**阶段2**重新分析（修复不完整时使用） |
+| 「从上次继续」「恢复修复 [URL]」`jira-fix [URL] --resume` | 当前模式 | 从断点恢复（中途中断时使用） |
 
-**模式识别规则**：触发词中含「自动」「--auto」→ 自动模式；含「强制」「跳过分级」→ 跳过分级（自动模式）；含「继续」「恢复」「上次」→ 断点恢复；其余默认手动模式。
+**模式识别规则**：触发词中含「自动」「--auto」→ 自动模式；含「强制」「跳过分级」→ 跳过分级（自动模式）；含「继续修复」「再次修复」「--retry」→ 阶段2重入（修复迭代）；含「从上次继续」「恢复」「--resume」→ 断点恢复；其余默认手动模式。
 
 ## 模式差异速查
 
@@ -135,6 +136,13 @@ description: 当用户说「修复这个 bug [URL]」「帮我修复 [URL]」「
 ## 状态持久化（中断恢复）
 
 **恢复**：检测到 state.json 时，**[🤖 自动]** 直接从 `current_phase` 继续；**[👤 手动]** 询问是否恢复。**清理**：完成后 state.json 设 `current_phase: "completed"`。
+
+**继续修复（阶段2重入）**：触发词含「继续修复」「--retry」时，跳过阶段0/1，直接从阶段2重新分析。执行逻辑：
+1. 读取已有 `01-jira-info.md` 作为 Jira 上下文，不再调用 API
+2. 询问用户：「上次修复了什么？本次发现的新现象是？」（一次性收集补充上下文）
+3. 将补充上下文写入 `02-analysis.md` 顶部的「本次迭代背景」区块，再重新执行分析
+4. 重置 state.json：`current_phase: 2`，`completed_phases: [0, 1]`，清空 `grade / selected_option / review_round / review_status`
+5. 阶段5前置创建分支时，在原分支名加 `-v2`（`-v3`、`-v4`……以此类推）
 
 ### 状态目录
 
