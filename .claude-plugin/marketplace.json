@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "开放技能库：工作流、性能优化、Jira、Git 等 Claude Code Skills",
-    "version": "1.26.1"
+    "version": "1.27.0"
   },
   "plugins": [
     {
@@ -16,7 +16,7 @@
         "url": "https://github.com/FuDesign2008/open-skills.git"
       },
       "description": "问题解决工作流、性能优化、Jira、Git 等 Claude Code Skills",
-      "version": "1.26.1",
+      "version": "1.27.0",
       "strict": false
     }
   ]
