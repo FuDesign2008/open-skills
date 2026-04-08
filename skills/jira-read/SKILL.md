@@ -1,6 +1,6 @@
 ---
 name: jira-read
-version: "2.0.0"
+version: "2.0.1"
 user-invocable: true
 description: 当用户说"jira-read [JIRA-ID]"，或需要读取、获取、下载 Jira issue 数据时触发。需配置 $JIRA_CACHE_DIR（如 ~/.cache/jira）。
 ---
@@ -62,7 +62,18 @@ export JIRA_CACHE_DIR="$HOME/.cache/jira"
 - **默认**：调用 `jira_get_issue(issue_key="{JIRA-ID}", fields="*all", comment_limit=50)` → 成功则格式化保存并继续；失败则提示检查配置
 - **--no-download**：仅提示，不自动下载
 - **--live**：跳过本地检查，直接 API 获取并更新缓存
-- **--force**：API 获取 + 调用 `jira_download_attachments` 下载所有附件至 `$JIRA_CACHE_DIR/{JIRA-ID}/`，覆盖已有文件
+- **--force**：API 获取 + 按下方【附件下载规则】下载附件至 `$JIRA_CACHE_DIR/{JIRA-ID}/`，覆盖已有文件
+
+### 附件下载规则（必须遵守）
+
+调用 `jira_download_attachments` **之前**，必须先检查 `jira_get_issue` 响应中所有附件的 `mimeType` 字段：
+
+1. **扫描 MIME 类型**：遍历 `fields.attachment[]`，收集每个附件的 `mimeType`。
+2. **判断是否可下载**：
+   - 若所有附件的 `mimeType` 均属于支持类型（图片、PDF、二进制等，即**非** `text/plain`、`text/*`），则正常调用 `jira_download_attachments`。
+   - 若存在任意 `mimeType` 为 `text/plain` 或其他 `text/*` 的附件，**禁止调用 `jira_download_attachments`**，改为执行步骤 3（仅记录元信息）。
+3. **仅记录元信息（跳过下载时）**：在缓存 Markdown 文件的附件区块中写入每个附件的文件名、大小、MIME 类型，并注明「附件因包含不支持类型（如 text/plain）而跳过下载，如需获取请手动访问 Jira」。
+4. **流程继续**：无论是否下载附件，均继续步骤 3，不得因附件问题中断整体流程。
 
 ### 步骤 3：读取、解析、输出
 
@@ -94,6 +105,7 @@ export JIRA_CACHE_DIR="$HOME/.cache/jira"
 | mcp-atlassian 不可用 | 提示检查配置和网络 |
 | PAT 认证失败 | 提示检查 Token 有效性 |
 | Issue 不存在 | 提示 Jira ID 可能错误 |
-| 附件下载失败 | 保留 Issue 信息，标记附件失败 |
+| 附件包含 `text/plain` 等不支持类型 | **禁止调用 `jira_download_attachments`**；仅在缓存文件中记录附件元信息（文件名、大小、MIME 类型）并注明跳过原因；流程继续正常输出 Issue 信息 |
+| 附件下载失败（其他原因） | 保留 Issue 信息，标记附件失败 |
 | 文件解析失败 | 输出原始文件内容 |
 | 资源目录不存在 | 正常输出，标记无资源 |
