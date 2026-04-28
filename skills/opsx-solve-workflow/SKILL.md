@@ -299,6 +299,16 @@ openspec archive <change-name>
 
 归档后必须检查 diff，确认主 specs 更新和 archive 目录迁移都进入当前工作区变更。若检测到 `finishing-a-development-branch`，在归档和 diff 检查完成后，再借鉴其流程做分支收尾决策：保留当前分支、创建 PR、合并或继续开发。不得在测试未通过、归档未完成或 diff 未审查时宣布完成。
 
+### AI 工程沉淀载体选择
+
+| 载体 | 适用内容 |
+|------|----------|
+| `AGENTS.md` | 项目级、跨工具、团队共享的长期规则与工程约定 |
+| `CLAUDE.md` | Claude Code 专属的行为约束、工作流偏好或工具使用约定 |
+| `.cursor/rules/` | Cursor 专属规则、文件模式规则、编辑器内 AI 指导 |
+| 项目内 skill | 步骤稳定、可复用、未来可被明确触发的工作流或领域知识 |
+| 总结文档 | 一次性复盘、背景记录、暂不适合固化为规则的经验 |
+
 归档完成后输出：
 
 ```text
@@ -307,6 +317,7 @@ openspec archive <change-name>
 - 更新的 specs：...
 - 归档位置：...
 - 可复用经验：...
+- 推荐沉淀载体：AGENTS.md / CLAUDE.md / .cursor/rules/ / 项目内 skill / 总结文档 / 暂不沉淀，理由：...
 - 后续建议：...
 ```
 
