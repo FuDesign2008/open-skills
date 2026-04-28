@@ -21,7 +21,6 @@ skills/
 ├── jira-fix-workflow/
 ├── jira-read/
 ├── typescript-check/
-├── file-operation-fallback/
 └── article-writer/
 ```
 
@@ -39,7 +38,6 @@ skills/
 | Jira | jira-fix-workflow | 默认自动模式；`--manual` 进手动确认模式；含规则制难度分级（极难自动终止）；批量场景可在外部编排工具中自行接入（非本仓库内置命令） |
 | Jira | jira-read | 本地缓存优先，支持 mcp-atlassian API 降级；需配置 `$JIRA_CACHE_DIR` |
 | 工具 | typescript-check | TypeScript 类型错误检查流程 |
-| 工具 | file-operation-fallback | Write/StrReplace 失败时自动降级到 Shell 命令 |
 
 ## SKILL.md 必须包含
 
