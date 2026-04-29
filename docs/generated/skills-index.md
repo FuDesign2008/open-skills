@@ -1,6 +1,6 @@
 # Skills 索引（自动生成）
 
-> **请勿手改。** 源数据：`skills/<name>/SKILL.md`。生成时间：2026-04-28。
+> **请勿手改。** 源数据：`skills/<name>/SKILL.md`。生成时间：2026-04-29。
 > 
 > 变更 skill 后在本仓库根目录执行：`node scripts/gen-skill-docs.mjs`
 
