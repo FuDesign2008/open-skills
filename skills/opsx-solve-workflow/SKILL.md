@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.0.0"
+version: "1.1.0"
 user-invocable: true
 description: 当用户说"opsx解决"、"OpenSpec解决"、"规范化解决"、"创建OpenSpec变更"、"创建opsx变更"、"用OpenSpec分析"、"用OpenSpec修复"、"opsx自动解决"、"OpenSpec自动解决"、"opsx-solve"或"opsx-solve-workflow"时触发。适用于需要将分析、方案、计划、实现、验证和归档沉淀到OpenSpec artifacts的功能开发、Bug修复、重构和复杂工程任务。
 ---
@@ -309,6 +309,16 @@ openspec archive <change-name>
 | 项目内 skill | 步骤稳定、可复用、未来可被明确触发的工作流或领域知识 |
 | 总结文档 | 一次性复盘、背景记录、暂不适合固化为规则的经验 |
 
+### 判断沉淀价值
+
+**OpenSpec artifacts**（`proposal.md`、`specs/`、`design.md`、`tasks.md`）是本 skill 的核心产出，正常归档流程落盘，不受以下门控限制。
+
+**AI 工程知识**（`AGENTS.md`、`CLAUDE.md`、`.cursor/rules/`、项目内 skill 等）须先过沉淀价值门控：
+
+- ✅ **建议固化**：高复用、已验证、对团队或工程有长期价值的经验
+- ❌ **不建议固化**：一次性经验、未验证判断、个人临时偏好、本次 change 专属配置
+- **写入前必须等用户明确要求**：除非用户明确说「写入规则」「创建 skill」「更新文档」，否则只输出建议，不落盘
+
 归档完成后输出：
 
 ```text
@@ -317,7 +327,9 @@ openspec archive <change-name>
 - 更新的 specs：...
 - 归档位置：...
 - 可复用经验：...
+- 不建议固化的内容：...（一次性经验、未验证判断等，不写入长期规则）
 - 推荐沉淀载体：AGENTS.md / CLAUDE.md / .cursor/rules/ / 项目内 skill / 总结文档 / 暂不沉淀，理由：...
+- 是否需要用户确认写入：需要 / 不需要；若需要，等待用户明确要求后再落盘
 - 后续建议：...
 ```
 
@@ -337,6 +349,7 @@ openspec archive <change-name>
 | 未验证就 archive | 主 specs 记录了未实现或错误行为 | 阶段 6 未通过不得归档 |
 | 分支收尾早于 archive | 归档产生的 specs 或 archive 目录可能遗漏出最终 diff | 先 archive 并检查 diff，再做 PR/合并/保留决策 |
 | 实现中发现设计错误却继续硬做 | artifacts 与代码分叉 | 回写 proposal/specs/design/tasks 后再继续 |
+| 阶段7默认将可复用经验写入 AGENTS.md / CLAUDE.md / skill（OpenSpec artifacts 除外） | 长期规则被一次性经验污染 | 阶段7只输出沉淀建议；必须等用户明确要求后才落盘 |
 
 ## 最小成功标准
 
