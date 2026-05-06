@@ -431,6 +431,40 @@ description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审
 
 🔌 若环境探索发现「✅ 完成验证」类能力，在验证环节调用（运行测试、确认修复、检查回归）。
 
+### 🔴 Oracle 强制审查约束（高风险领域）
+
+当本次修改**涉及以下任一领域**时，阶段 6 必须额外委托 Oracle 做 skeptical review（不可仅靠 Linter/TS/测试下结论）：
+
+| 触发领域 | 典型风险 |
+|---------|---------|
+| **并发** | Promise.all 无限并发、共享状态竞态、`clear()` 误杀 in-flight 操作 |
+| **大数据传输** | IPC Structured Clone 双拷贝、渲染进程 OOM、内存峰值失控 |
+| **跨进程** | Main/Renderer/Server 边界、白名单/权限/TOCTOU |
+| **安全边界** | 路径任意读、注入、越权、同源策略绕过 |
+| **事件驱动异步** | fire-and-forget 未守卫、重入、按键连发 |
+
+**调用方式**：
+
+```
+task(subagent_type="oracle", load_skills=[], run_in_background=true, prompt="""
+Skeptically review <task-id> implementation. Look for:
+1. Race conditions in ... 
+2. Memory explosion scenarios when ...
+3. TOCTOU between check and use
+4. ...具体关注点...
+List every concrete concern with file/line references. Prioritize blocking
+issues over stylistic ones.
+""")
+```
+
+**为何必要**：静态检查只能发现类型错误、lint 规则违反、测试覆盖的已知路径；**无法发现**并发竞态、内存峰值、TOCTOU、重入这些边界行为。Oracle 的 skeptical review 专门针对这类隐蔽 bug。
+
+**判定规则**：
+- Oracle 报告含 🔴 / P0 / blocking 级别问题 → 本阶段判定 ❌ 未达标，返回阶段 5（实现缺陷）或阶段 2/3（方案缺陷）
+- Oracle 仅有 🟡 / 🟢 低中严重度建议 → 可判定 ✅ 通过，把建议记入阶段 7 改进项
+
+### 验证维度
+
 1. **目标达成情况** - 是否达成阶段 1 明确问题小节的期望结果
 2. **与计划对比** - 与阶段 4 的计划对比
 3. **验证与测试** - 可引用阶段 5 执行报告；**若有测试相关内容，需执行测试**
