@@ -286,7 +286,7 @@ PR/MR 描述必须包含：
 
 ### 7.2 Jira 回写
 
-⚠️ **必须分两步独立调用**：① `jira_transition_issue` 流转状态（不传 `comment` 参数）；② `jira_add_comment` 写修复评论。禁止通过 `jira_transition_issue` 的 `comment` 参数传评论——该参数不可靠，评论可能被静默丢弃。
+⚠️ **必须分两步独立调用**：① `jira_transition_issue` 流转状态（不传 `comment` 参数）；② `jira_add_comment(issue_key=..., body=...)` 写修复评论。禁止通过 `jira_transition_issue` 的 `comment` 参数传评论——该参数不可靠，评论可能被静默丢弃；`jira_add_comment` 的评论内容参数名为 `body`（非 `comment`）。
 
 研发角色只能将 issue 流转到“已修复”。禁止流转到：
 
