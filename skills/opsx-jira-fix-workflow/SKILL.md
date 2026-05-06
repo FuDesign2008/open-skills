@@ -286,6 +286,8 @@ PR/MR 描述必须包含：
 
 ### 7.2 Jira 回写
 
+⚠️ **必须分两步独立调用**：① `jira_transition_issue` 流转状态（不传 `comment` 参数）；② `jira_add_comment` 写修复评论。禁止通过 `jira_transition_issue` 的 `comment` 参数传评论——该参数不可靠，评论可能被静默丢弃。
+
 研发角色只能将 issue 流转到“已修复”。禁止流转到：
 
 - 关闭
@@ -336,6 +338,7 @@ Jira 评论必须包含：
 | `MODIFIED` 只写片段 | archive 时丢失 requirement 细节 | 复制完整 requirement block 再修改 |
 | 先 PR/合并再 archive | specs 或 archive 目录可能不在最终 diff | 默认先 archive 并检查 diff，再完成 PR |
 | Jira 状态越权 | 研发误关闭 issue | 只允许流转到“已修复” |
+| 通过 `jira_transition_issue` 的 `comment` 参数传评论 | 评论被静默丢弃 | 独立调用 `jira_add_comment`，transition 的 comment 参数不可靠 |
 | Superpowers 缺失就中断 | 降低跨平台可用性 | Superpowers 只做渐进增强 |
 | 验证失败仍提交 PR | 把未闭环修复交给 QA | 阶段 6 未通过不得提交 |
 | OpenSpec artifacts 写得过薄 | 后续无法复盘根因和验证 | `design.md` 必须包含 Jira Context、Root Cause、Options、Risk 和 Verification Notes |
