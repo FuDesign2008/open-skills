@@ -1,14 +1,17 @@
 ---
-name: git-release-workflow
+name: git-release-finish
 version: "1.0.0"
 user-invocable: true
 description: 当 Git 仓库需要发版时使用，涵盖 tag 命名规范不统一、主分支名称各异（master/main/develop）、release 分支合入主干存在冲突、MR/PR 分支混入无关文件等场景。适用于 GitLab、GitHub、Gitea 等平台，支持单仓库和多仓库。触发词：发版、打tag、发布版本、版本发布、release流程、release工作流、git-release、multi-repo release。
 ---
 
-# Git 仓库版本发布工作流
+# Git 仓库版本发布工作流（git-release-finish）
 
-> 覆盖从打 tag 到合并 MR/PR 的完整发布流程。每个阶段均有具体命令和决策规则。
-> 适用于任意数量的仓库，无论 tag 命名规范、主分支名称是否统一。
+## Overview
+
+在版本迭代结束时，将 release 分支通过打 tag、创建 MR/PR、解决冲突、清理多余文件到最终合并的完整流程发布到主开发分支。
+
+**配对 skill：** `git-release-start`（迭代开始，创建 release 分支）↔ `git-release-finish`（迭代结束，本 skill）
 
 ---
 
