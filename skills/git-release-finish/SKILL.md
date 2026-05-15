@@ -13,6 +13,8 @@ description: 当 Git 仓库需要发版时使用，涵盖 tag 命名规范不统
 
 **配对 skill：** `git-release-start`（迭代开始，创建 release 分支）↔ `git-release-finish`（迭代结束，本 skill）
 
+**依赖 skill：** 阶段6 冲突解决由 `git-conflict-resolve` skill 执行（语义分析驱动，支持 merge / rebase 多轮聚合）。
+
 ---
 
 ## 平台 CLI 映射
@@ -67,7 +69,7 @@ description: 当 Git 仓库需要发版时使用，涵盖 tag 命名规范不统
 | 3 | 分析各仓库主开发分支 | `git remote show` + `git log` |
 | 4 | 创建 MR/PR | `<GIT_CLI> mr/pr create` |
 | 5 | 检测冲突 | `git merge-tree` |
-| 6 | 解决冲突（有则处理） | `git merge` + 手动解冲突 |
+| 6 | 解决冲突（有则处理） | `git-conflict-resolve` skill |
 | 7 | 清理 MR/PR 分支多余文件 | `git ls-tree` + `comm` |
 | 8 | 人工 review（提示） | — |
 | 9 | 合并 MR/PR | `<GIT_CLI> mr/pr merge` |
@@ -232,78 +234,22 @@ echo "main ahead:    $(git rev-list --count origin/<RELEASE_BRANCH>..origin/<MAI
 
 ## 阶段6：冲突解决
 
-### 6.1 创建 merge 分支
+检测到冲突后，**调用 `git-conflict-resolve` skill** 处理全部冲突解决、逻辑验证与复查清单：
+
+> 执行 `git-conflict-resolve` skill，传入以下参数：
+> - `source`：`<RELEASE_BRANCH>`
+> - `target`：`<MAIN_BRANCH>`
+> - `version`：`<VERSION>`
+> - `mode`：`merge`（默认）或 `rebase`（仅当阶段5判定为 source ≤ 3 commits 且冲突 ≤ 1 文件时）
+
+> ⚠️ 若 `git-conflict-resolve` 未能完成（用户主动中止、遇到无法解决的冲突或 rebase 中断），**不得继续执行以下操作**，保持当前工作区状态等待人工介入后重新启动。
+
+`git-conflict-resolve` 执行完毕并输出全局复查清单（Y.6）、用户确认后，按模式执行：
+
+**merge 模式**：
 
 ```bash
-# 从 target（主分支）创建新分支
-git checkout origin/<MAIN_BRANCH> -b merge-release/<VERSION>
-
-# 执行 merge（不自动提交，保留冲突供手动解决）
-git merge origin/<RELEASE_BRANCH> -X ours --no-commit --no-edit
-```
-
-> `-X ours` 的作用与边界：
-> - **作用**：自动解决简单内容冲突，取 target（主分支）一侧，减少需手动处理的冲突数量
-> - **边界**：**不能解决 rename/rename 冲突**（构建产物 hash 变更）；对所有**源码文件**的冲突，即使被自动解决，也**必须手动 review** 确认两侧逻辑均被保留
-> - **误区**：不要因为 `--no-commit` 后无冲突提示就直接 commit，仍需检查冲突文件清单
-
-### 6.2 冲突类型处理
-
-#### 类型1：内容冲突（源码文件）
-
-```bash
-# 查看所有未解决冲突文件
-git diff --name-only --diff-filter=U
-```
-
-手动解决步骤：
-1. 读取每个冲突文件，理解两侧的修改意图
-2. 综合两侧保留各自有效变更（不能简单取一侧）
-3. 解决后 `git add <file>`
-
-常见模式：
-- 版本号字段：各取各侧修改的字段（如 release 改 `testVersion`，target 改 `version`，两者均保留）
-- 逻辑互补修改：合并两侧代码（如一侧加 bugfix，另一侧做重构，需手工合并）
-
-#### 类型2：rename/rename 冲突（构建产物）
-
-典型表现：`resources/dist/assets/*.js` 两侧 hash 不同，均为 rename
-
-```bash
-# 查看当前合并中的 rename/rename 冲突
-git status | grep "both"
-
-# 解决：移除整个构建产物目录，还原为 release 版本
-git rm -rfq <BUILD_ASSET_DIR>
-git checkout origin/<RELEASE_BRANCH> -- <BUILD_ASSET_DIR>
-git add <BUILD_ASSET_DIR>
-```
-
-> 构建产物应以 release 分支版本为准（对应本次发版内容）。
-
-### 6.3 提交前验证：检查残留冲突标记
-
-```bash
-# 确保 0 个冲突标记（覆盖所有文本文件类型）
-grep -rl "<<<<<<" . \
-  --exclude-dir={node_modules,.git,dist,build} \
-  2>/dev/null
-```
-
-**若有输出则中止，继续解决残留冲突再提交。**
-
-### 6.4 提交并关闭旧 MR/PR
-
-```bash
-git add -A
-git commit --no-verify -m "Merge release/<VERSION> into <MAIN_BRANCH>"
-```
-
-> ⚠️ `--no-verify` 跳过所有 pre-commit hooks（含类型检查、lint）。**仅在 hooks 本身阻断合并提交（如格式化提示）时使用**；若 hooks 做类型检查，应优先修复错误而非跳过。
-
-推送后关闭原冲突 MR/PR，避免混淆：
-
-```bash
+# 推送 merge 分支
 git push origin merge-release/<VERSION>
 
 # 关闭原来因冲突而搁置的 MR/PR
@@ -312,6 +258,16 @@ gh pr close <OLD_ID>     # GitHub
 ```
 
 然后重新创建指向 `merge-release/<VERSION>` 的 MR/PR（参考阶段4命令）。
+
+**rebase 模式**：
+
+```bash
+# 将 rebase 结果推回原 release 分支，触发原 MR/PR 自动更新
+git push origin rebase-release/<VERSION>:<RELEASE_BRANCH> --force-with-lease
+# 原 MR/PR（<RELEASE_BRANCH> → <MAIN_BRANCH>）自动更新，无需关闭重建
+```
+
+> ⚠️ `--force-with-lease` 比 `--force` 更安全：若远端在此期间有新提交，会拒绝推送，避免覆盖他人提交。
 
 ---
 
@@ -368,22 +324,11 @@ comm -23 \
 
 ## 阶段8：冲突文件人工 review 提示
 
-在阶段6有冲突解决时，输出以下提示：
+`git-conflict-resolve` 的子阶段 Y.6 已输出全局复查清单（含所有冲突文件、解决方式、置信度、逻辑验证结论）。
 
-```
-⚠️ 以下文件存在逻辑合并，需人工 review 后确认合并 MR/PR：
+阶段8 直接引用 Y.6 的输出，**不得在 Y.6 复查清单确认完成前自动执行阶段9**。
 
-<repo-A>:
-  - path/to/conflicted-file-1.ts  （A 侧：xxx；B 侧：yyy）
-  - path/to/conflicted-file-2.ts
-
-<repo-B>:
-  - path/to/conflicted-file-3.tsx
-
-请确认以上文件逻辑正确后，回复「继续」执行合并。
-```
-
-**不得在未经用户确认时自动执行阶段9。**
+多仓库场景下，各仓库的 Y.6 复查清单需**全部**得到用户确认后，再统一进入阶段9。
 
 ---
 
@@ -412,7 +357,7 @@ gh pr merge <PR_ID> --merge --delete-branch=false
 3. **冲突处理详情**（如有）：
    - 分支差距（各仓库 source/target 超前 commit 数）
    - target 独有提交列表（冲突来源）
-   - 冲突文件清单及解决方式
+   - 冲突文件清单及解决方式：**直接引用 `git-conflict-resolve` Y.6 全局复查清单**，不重新生成
    - 清理的多余文件列表
 4. **需人工关注事项**（如残留风险、待补充 cherry-pick 等）
 
@@ -424,8 +369,8 @@ gh pr merge <PR_ID> --merge --delete-branch=false
 |------|---------|
 | tag 已存在 | 报错停止，询问是否覆盖（`git tag -f` + `git push --force`）|
 | MR/PR 已存在（同源同目标） | 复用已有 MR/PR，不重新创建 |
-| rebase 冲突过多 | 切换为 merge 策略 |
-| `-X ours` 无法解决所有冲突 | 手动处理剩余 rename/rename 冲突 |
+| rebase 冲突过多 | 切换为 merge 策略（在 git-conflict-resolve 中重新执行 Y.0 merge 模式） |
+| 冲突解决出现逻辑错误 | 交由 `git-conflict-resolve` Y.5 逻辑验证捕获，按 ⚠️/❌ 提示处理 |
 | `git rm --cached` 报 "pathspec not found" | 文件不在 index，用 `git add -A` 先同步 worktree 再重试 |
 | pipeline 未运行警告 | 平台 CI 提示（`! No pipeline running`）为正常提示，不影响合并 |
 | CLI 认证失败 | 检查 `<GIT_CLI> auth status`，重新执行 `<GIT_CLI> auth login` |
@@ -441,20 +386,15 @@ git tag --sort=-version:refname | head -30
 # 查看主分支合并历史
 git log --oneline --merges -20 | grep -E "into '(master|main|develop)'"
 
-# 冲突 dry-run
+# 冲突 dry-run（检测冲突文件数量）
 git merge-tree $(git merge-base origin/$SRC origin/$TGT) origin/$SRC origin/$TGT | grep -c "^changed in both"
 
-# 创建 merge 分支并解冲突
-git checkout origin/$TGT -b merge-release/$VERSION
-git merge origin/$SRC -X ours --no-commit --no-edit
-
-# 验证无残留冲突标记
-grep -rl "<<<<<<" . --exclude-dir={node_modules,.git,dist,build} 2>/dev/null
-
-# 检查多余文件
+# 检查多余文件（阶段7）
 comm -23 <(git ls-tree -r HEAD --name-only | sort) <(git ls-tree -r origin/$SRC --name-only | sort)
 
 # 合并 MR/PR（按平台选择）
 glab mr merge $MR_ID --squash=false --remove-source-branch=false --yes   # GitLab
 gh pr merge $PR_ID --merge --delete-branch=false                          # GitHub
+
+# 冲突解决相关命令 → 见 git-conflict-resolve skill 快速参考
 ```
