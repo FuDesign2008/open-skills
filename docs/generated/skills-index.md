@@ -1,10 +1,10 @@
 # Skills 索引（自动生成）
 
-> **请勿手改。** 源数据：`skills/<name>/SKILL.md`。生成时间：2026-05-14。
+> **请勿手改。** 源数据：`skills/<name>/SKILL.md`。生成时间：2026-05-15。
 > 
 > 变更 skill 后在本仓库根目录执行：`node scripts/gen-skill-docs.mjs`
 
-本仓库当前共 **16** 个 skill。
+本仓库当前共 **17** 个 skill。
 
 | Skill | 版本 | 用户可唤起 | 描述（含触发条件） |
 | --- | --- | --- | --- |
@@ -13,6 +13,7 @@
 | **chinese-format** | 1.2.0 | 是 | 中文内容格式规范，供用户手动请求时使用。当用户明确说"中文格式"、"检查中文格式"、"中文标点检查"、"格式化中文"、"按中文格式规范处理"或"chinese-format"时触发。确保中文内容使用中文标点符号，技术术语保持原文格式。 |
 | **frontend-perf** | 2.0.0 | 否 | 前端（含 Electron 桌面端）性能优化领域知识库，含 React 16-19、Angular 9-18+、Electron 12-28+ 版本专属优化知识。配合 perf-workflow skill 使用：perf-workflow 驱动分析流程，本 skill 提供前端专属量化标准、版本感知优化方案、瓶颈模式与工具速查。当分析 Web 前端（React/Angular/Vue）、Electron 桌面端性能问题时使用。 |
 | **git-commit** | 3.0.0 | 是 | 当用户说「提交代码」「git commit」「帮我提交」「写 commit message」「生成 commit」「提交一下」「git-commit」「自动提交代码」「git-commit-auto」，或由 jira-fix-workflow 阶段7触发时使用。 |
+| **git-conflict-resolve** | 1.0.0 | 是 | 当 Git merge 或 rebase 过程中出现代码冲突时使用，尤其适用于 AI 自动解冲突容易出错（取错侧、丢失重构、还原旧版代码）、需要语义分析和逻辑验证的场景。也适用于 rebase 多轮停止需跨轮聚合冲突文件的情况。触发词：解冲突、处理冲突、git-conflict-resolve、解决 merge 冲突、解决 rebase 冲突、conflict resolve、冲突解决。 |
 | **git-release-finish** | 1.0.0 | 是 | 当 Git 仓库需要发版时使用，涵盖 tag 命名规范不统一、主分支名称各异（master/main/develop）、release 分支合入主干存在冲突、MR/PR 分支混入无关文件等场景。适用于 GitLab、GitHub、Gitea 等平台，支持单仓库和多仓库。触发词：发版、打tag、发布版本、版本发布、release流程、release工作流、git-release、multi-repo release。 |
 | **git-release-start** | 1.0.0 | 是 | 当版本迭代开始时需要创建 release 分支时使用，适用于分支命名规范不统一、多仓库需同步创建、或需要确保本地 tracking 正确指向 origin/release/X.Y.Z 的场景。支持 GitLab、GitHub 等平台，单仓库和多仓库均可。触发词：创建release分支、开release分支、开分支、迭代分支、create release branch。 |
 | **jira-fix-batch** | 1.0.0 | 是 | 当用户说「批量修复」「批量 jira-fix」「jira-fix-batch」「批量修复多个 Jira」「批量修复以下 bug」时触发。适用于需要对多个 Jira issue 进行批量端到端修复的编排场景。 |
