@@ -10,7 +10,12 @@ skills/
 │   ├── SKILL.md
 │   ├── context.json
 │   └── modes/               # _index.json + 各模式 *.md（可扩展）
-├── solve-workflow/
+├── solve-workflow/          # orchestrator（user-invocable: true）
+│   ├── SKILL.md
+│   └── reference.md         # 常见错误等参考资料
+├── solve-analyze/           # 子 skill：阶段1.2 技术分析（user-invocable: false）
+├── solve-plan/              # 子 skill：阶段3 方案审查（user-invocable: false）
+├── solve-finish/            # 子 skill：阶段5+6+7 执行/验证/总结（user-invocable: false）
 ├── perf-workflow/
 ├── frontend-perf/           # 含 reference.md（前端性能参考资料）
 │   ├── SKILL.md
@@ -18,11 +23,41 @@ skills/
 ├── chinese-format/
 ├── android-webview-debug/
 ├── git-commit/
-├── jira-fix-workflow/
+├── jira-fix-workflow/       # orchestrator（user-invocable: true）
+│   ├── SKILL.md
+│   └── reference.md         # 状态目录、state.json schema、常见错误等参考资料
+├── jira-fix-analyze/        # 子 skill：阶段2 根因分析（user-invocable: false）
+├── jira-fix-plan/           # 子 skill：阶段3+4 方案审查+计划制定（user-invocable: false）
+├── jira-fix-execute/        # 子 skill：阶段5+6 执行+验证（user-invocable: false）
+├── jira-fix-submit/         # 子 skill：阶段7+8 提交+合并（user-invocable: false）
 ├── jira-read/
 ├── typescript-check/
 └── article-writer/
 ```
+
+## 子 skill 约定
+
+`user-invocable: false` 的子 skill 遵循以下规则：
+
+### 命名规范
+
+- 格式：`{parent-skill}-{stage-name}`
+- 示例：`jira-fix-analyze`（jira-fix-workflow 的阶段2子 skill）、`solve-plan`（solve-workflow 的阶段3子 skill）
+
+### 使用方式
+
+子 skill 只能由 orchestrator 通过 Skill 工具调用，**禁止用户直接触发**：
+
+- **Claude Code / OpenCode**：orchestrator 使用 `Skill` 工具加载子 skill，完整执行其内容
+- **Cursor 等平台**：orchestrator 读取子 skill 的 `SKILL.md` 完整内容并遵照执行
+
+### 文件规范
+
+- 每个子 skill 目录只包含 `SKILL.md`（无其他配置文件）
+- frontmatter 必须设置 `user-invocable: false`
+- frontmatter `description` 说明「由哪个 skill 的哪个阶段调用」及「禁止独立调用」
+- 文件开头必须有醒目提示：「本 skill 由 `{parent}` 在**阶段X**调用，请勿独立使用」
+- 文件结尾必须说明完成后如何返回 orchestrator 继续执行
 
 ## 分类与依赖
 
