@@ -1,0 +1,11 @@
+{
+  "name": "open-skills",
+  "private": true,
+  "scripts": {
+    "prepare": "husky || true",
+    "gen:skills-index": "node scripts/gen-skill-docs.mjs"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}
