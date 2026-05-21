@@ -186,7 +186,7 @@ function main() {
     "",
     `> **请勿手改。** 源数据：\`skills/<name>/SKILL.md\`。生成时间：${now}。`,
     "> ",
-    "> 变更 skill 后在本仓库根目录执行：\`node scripts/gen-skill-docs.mjs\`",
+    "> 变更 skill 后：commit 时 pre-commit hook 自动更新；或手动执行 `node scripts/gen-skill-docs.mjs`",
     "",
     `本仓库当前共 **${rows.length}** 个 skill。`,
     "",

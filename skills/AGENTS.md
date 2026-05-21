@@ -65,7 +65,7 @@ description: |               # 必须包含所有触发词
 3. 如需命令入口 → 在 `commands/` 添加对应 `.md`
 4. 如需 Hook 触发 → 在 `hooks/hooks.json` 添加配置
 5. 如需 OpenCode 支持 → 在 `.opencode/plugins/` 或 `.opencode/plugin/` 添加 JS/TS 代码
-6. 在仓库根目录执行 `node scripts/gen-skill-docs.mjs`，将更新后的 `docs/generated/skills-index.md` 一并提交
+6. 确认 `docs/generated/skills-index.md` 已更新并纳入提交（commit 时 pre-commit hook 自动处理；未安装 hook 则手动运行 `node scripts/gen-skill-docs.mjs` 后再提交）
 
 ## 反模式
 

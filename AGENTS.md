@@ -39,7 +39,7 @@ open-skills/
 | 平台配置 | `.claude-plugin/`、`.cursor-plugin/` | 仅元数据，不含逻辑 |
 | CI/版本管理 | `.github/workflows/release.yml` | **禁止手动改版本号** |
 | 安装文档 | `docs/INSTALL.md`、`.opencode/INSTALL.md` | **通用安装**（npx）与 **全能力安装**（插件 / OpenCode 符号链接）口径见 `README.md` § 安装；总览见 `docs/README.md`；OpenCode 架构见 `.opencode/AGENTS.md` |
-| Skill 完整列表 | `docs/generated/skills-index.md` | **自动生成**，勿手改；改 skill 后运行 `node scripts/gen-skill-docs.mjs` |
+| Skill 完整列表 | `docs/generated/skills-index.md` | **自动生成**，勿手改；改 skill 后由 pre-commit hook 自动更新（需先 `npm install`），或手动 `node scripts/gen-skill-docs.mjs` |
 
 ## Skill 清单
 
@@ -184,7 +184,13 @@ node --check .opencode/plugins/open-skills.js
 
 # Skills 索引生成脚本语法
 node --check scripts/gen-skill-docs.mjs
+
+# Skills 索引与 CI 一致（等同 docs-skills-verify workflow）
+node scripts/gen-skill-docs.mjs
+git diff --exit-code docs/generated/skills-index.md
 ```
+
+首次 clone 后执行 `npm install` 以启用 Husky pre-commit（修改 `skills/*/SKILL.md` 时自动 regenerate 并 stage `docs/generated/skills-index.md`）。
 
 ## 子目录知识库
 

@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# Auto-regenerate skills index when skill metadata or generator script changes.
+if git diff --cached --name-only | grep -qE '^(skills/.+/SKILL\.md|scripts/gen-skill-docs\.mjs)$'; then
+  echo "Regenerating docs/generated/skills-index.md..."
+  node scripts/gen-skill-docs.mjs
+  git add docs/generated/skills-index.md
+fi
