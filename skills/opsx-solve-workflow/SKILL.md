@@ -236,21 +236,7 @@ Delta spec 规范（由 `openspec-propose` skill 负责落实）：
 
 若检测到 `requesting-code-review`，在通过前额外做一次“spec 合规审查”：proposal 是否解释 why，delta specs 是否覆盖行为变化，design 是否处理风险，tasks 是否覆盖 requirements。
 
-通过后创建或更新 `design.md`：
-
-```markdown
-## Context
-
-## Goals / Non-Goals
-
-## Decisions
-
-## Risks / Trade-offs
-
-## Migration Plan
-
-## Open Questions
-```
+🔌 **OPSX Skills 集成**：审查通过后，通过 `openspec-propose` skill 创建或更新 `design.md`（先读取其 SKILL.md，再按其指令执行）。本 skill 不直接手写 design.md 内容。`design.md` 应覆盖的结构（由 skill 负责落实）：Context、Goals / Non-Goals、Decisions、Risks / Trade-offs、Migration Plan、Open Questions。
 
 不通过时：
 
@@ -259,31 +245,13 @@ Delta spec 规范（由 `openspec-propose` skill 负责落实）：
 
 ## 阶段 4：制定计划
 
-将设计拆成 `tasks.md`。任务必须可执行、可验证，并使用 checkbox：
+🔌 **OPSX Skills 集成**：通过 `openspec-propose` skill 生成 `tasks.md`（先读取其 SKILL.md，再按其指令执行）。若同时检测到 `writing-plans` skill，先读取其 SKILL.md，将细化要求（目标文件、测试命令、预期结果、失败处理）作为上下文传递给 `openspec-propose` skill 执行。本 skill 不直接手写 tasks.md 内容。
 
-```markdown
-# Tasks
+tasks.md 规范（由 skill 负责落实）：
 
-## 1. Preparation
-
-- [ ] 1.1 ...
-
-## 2. Implementation
-
-- [ ] 2.1 ...
-
-## 3. Verification
-
-- [ ] 3.1 ...
-```
-
-任务要求：
-
-- 每项足够小，通常可在一次实现循环中完成。
-- 顺序体现依赖关系。
-- 包含必要的测试、验证、文档或迁移步骤。
-- 若检测到 `writing-plans`，把每项任务细化到接近工程脚本的粒度：目标文件、测试命令、预期结果、失败时处理。
-- 禁止 `TBD`、`TODO`、`适当处理`、`类似上面` 这类不可执行描述。
+- 使用 checkbox，任务粒度足够小，顺序体现依赖关系
+- 包含必要的测试、验证、文档或迁移步骤
+- 禁止 `TBD`、`TODO`、`适当处理`、`类似上面` 等不可执行描述
 
 手动模式输出计划并暂停，等待用户确认后才能进入执行。
 
