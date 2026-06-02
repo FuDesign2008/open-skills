@@ -331,16 +331,19 @@ diff <(git show <SKIPPED_SHA> --format=) <(git show <TARGET_SHA> --format=)
 
 > ⚠️ **本阶段仅适用于 merge 模式**（阶段6 产生了 `merge-release/<VERSION>` 分支）。rebase 模式不会将 target 的额外文件带入，跳过本阶段直接进入阶段8。
 
-> MR/PR 分支可能混入与本次 release 无关的文件（源自 target 分支的 AI 工具文件、临时脚本等）。
+> MR/PR 分支可能混入意外引入的本地文件（Stage 6 冲突解决时 `git add -A` 可能将本地 untracked 文件意外 stage 并 commit）。
 
 ### 检查规则
 
-**在 merge-release 但不在 release 分支的文件 = 需要剔除**：
+**在 merge-release 中、但在 release 分支和 target 分支中均不存在的文件 = 意外引入的本地文件，需剔除**：
 
 ```bash
 comm -23 \
   <(git ls-tree -r HEAD --name-only | sort) \
-  <(git ls-tree -r origin/<RELEASE_BRANCH> --name-only | sort)
+  <(sort \
+      <(git ls-tree -r origin/<RELEASE_BRANCH> --name-only) \
+      <(git ls-tree -r origin/<TARGET_BRANCH> --name-only) \
+    | uniq)
 ```
 
 ### 常见需剔除的文件类型
@@ -349,10 +352,9 @@ comm -23 \
 |------|---------|
 | AI 工具配置 | `.claude/`, `.omc/`, `.codemap/`, `opencode.json` |
 | 临时调试文件 | `ci-build-error.txt`, `ci-fix-log.txt` |
-| 环境标记文件 | `release-branch`（纯文本标记文件） |
-| target 独有脚本 | `scripts/perf-benchmark/*.mjs`（仅在主干，不在 release） |
 
-> **注意**：若文件在 release 分支中存在，则**不剔除**（即使看起来像临时文件，那是 release 分支的问题，不在此处处理）。
+> **注意**：若文件在 release 分支**或** target 分支中存在，则**不剔除**。
+> 来自 target 的文件（AGENTS.md、docs/、独有 package 等）均为预期存在，不属于多余文件。
 
 ### 剔除操作
 
@@ -373,9 +375,12 @@ git push origin merge-release/<VERSION> --force-with-lease
 ```bash
 comm -23 \
   <(git ls-tree -r HEAD --name-only | sort) \
-  <(git ls-tree -r origin/<RELEASE_BRANCH> --name-only | sort) \
+  <(sort \
+      <(git ls-tree -r origin/<RELEASE_BRANCH> --name-only) \
+      <(git ls-tree -r origin/<TARGET_BRANCH> --name-only) \
+    | uniq) \
   | wc -l
-# 输出应为 0
+# 输出应为 0（无意外引入的本地文件）
 ```
 
 ---
