@@ -1,0 +1,26 @@
+{
+  "iteration": 0,
+  "layer": "baseline",
+  "timestamp": "2026-06-06T00:00:00Z",
+  "summary": {
+    "total_cases": 8,
+    "passed_cases": 8,
+    "failed_cases": 0,
+    "pass_rate": 1.0,
+    "target_met": true
+  },
+  "results": [
+    {"id": "case-01", "status": "pass", "reason": "阶段总览、平台 CLI 映射、适用/不适用、调用前置条件均存在"},
+    {"id": "case-02", "status": "pass", "reason": "核心原则包含先在远程创建、再同步到本地和 tracking 指向说明"},
+    {"id": "case-03", "status": "pass", "reason": "平台 CLI 映射表包含 GitLab/glab 和 GitHub/gh"},
+    {"id": "case-04", "status": "pass", "reason": "配对 skill 说明与 git-release-finish 配对"},
+    {"id": "case-05", "status": "pass", "reason": "适用/不适用场景包含多个仓库和 tracking 指向正确"},
+    {"id": "case-06", "status": "pass", "reason": "适用场景说明多仓库统一创建和并行执行"},
+    {"id": "case-07", "status": "pass", "reason": "原则部分包含流程必须完整执行和每个阶段都不可跳过"},
+    {"id": "case-08", "status": "pass", "reason": "阶段标题和 git 操作命令存在"}
+  ],
+  "mutation_applied": null,
+  "mutation_type": "baseline",
+  "tokens_used": 0,
+  "duration_s": 0
+}
