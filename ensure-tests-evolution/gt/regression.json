@@ -1,0 +1,7 @@
+{
+  "skill_name": "ensure-tests",
+  "split": "regression",
+  "evals": [
+    {"id": "case-regression-01", "prompt": "ensure-tests：完整测试流程", "expected_output": "执行 6 阶段测试流程", "expectations": ["[contains] 阶段 1", "[contains] 阶段 5", "[contains] 阶段 6", "检查是否包含 Tech Stack 检测和 E2E 测试"], "difficulty": "standard", "tags": ["core-flow"]}
+  ]
+}

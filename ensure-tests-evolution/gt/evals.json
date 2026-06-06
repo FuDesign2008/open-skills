@@ -1,0 +1,16 @@
+{
+  "skill_name": "ensure-tests",
+  "split": "full",
+  "evals": [
+    {"id": "case-01", "prompt": "ensure-tests", "expected_output": "执行 6 阶段测试流程", "expectations": ["[contains] 阶段 1：Tech Stack 检测", "[contains] 阶段 2：测试框架检测", "[contains] 阶段 3：框架搭建", "[contains] 阶段 4：单元测试作用域确定", "[contains] 阶段 5：单元测试生成与运行", "[contains] 阶段 6：E2E 测试检测与执行"], "difficulty": "standard", "tags": ["basic-flow"]},
+    {"id": "case-02", "prompt": "补全测试：TypeScript 项目", "expected_output": "检测 TypeScript tech stack 和测试框架", "expectations": ["[contains] package.json", "[contains] TypeScript", "[contains] 测试框架检测"], "difficulty": "standard", "tags": ["typescript-detection"]},
+    {"id": "case-03", "prompt": "生成测试：Go 项目", "expected_output": "检测 Go 并使用内置 go test", "expectations": ["[contains] go.mod", "[contains] go test", "[not_contains] 需搭建"], "difficulty": "standard", "tags": ["go-detection"]},
+    {"id": "case-04", "prompt": "添加单元测试：Python 项目", "expected_output": "检测 Python 并使用 Pytest", "expectations": ["[contains] requirements.txt", "[contains] Pytest"], "difficulty": "standard", "tags": ["python-detection"]},
+    {"id": "case-05", "prompt": "ensure-tests：确定单元测试作用域", "expected_output": "说明包含和排除规则", "expectations": ["[contains] 包含（逻辑代码）", "[contains] services/", "[contains] 排除（UI 层）", "[contains] components/"], "difficulty": "standard", "tags": ["scope-determination"]},
+    {"id": "case-06", "prompt": "检查测试覆盖：运行单元测试", "expected_output": "生成测试并运行，包含阻断条件", "expectations": ["[contains] 单元测试生成与运行", "[contains] 阻断条件", "[contains] 2 轮"], "difficulty": "standard", "tags": ["unit-test-execution"]},
+    {"id": "case-07", "prompt": "ensure-tests：E2E 测试检测", "expected_output": "检测 E2E 框架并说明为可选项", "expectations": ["[contains] 阶段 6：E2E 测试检测与执行", "[contains] 可选", "[contains] Playwright", "[contains] Cypress"], "difficulty": "standard", "tags": ["e2e-detection"]},
+    {"id": "case-08", "prompt": "生成测试：输出格式", "expected_output": "按格式输出执行结果", "expectations": ["[contains] 【ensure-tests 执行结果】", "[contains] Tech Stack", "[contains] 测试框架", "[contains] 单元测试", "[contains] E2E 测试"], "difficulty": "standard", "tags": ["output-format"]},
+    {"id": "case-09", "prompt": "补充单元测试：常见错误", "expected_output": "列出常见错误表格", "expectations": ["[contains] 常见错误", "[contains] 将 UI 组件文件纳入单元测试作用域", "[contains] 框架已存在却重复安装"], "difficulty": "standard", "tags": ["common-errors"]},
+    {"id": "case-10", "prompt": "ensure-tests：调用约定", "expected_output": "说明独立触发和被 workflow 调用", "expectations": ["[contains] 调用约定", "[contains] 独立触发", "[contains] 被 workflow 调用", "[contains] 调用前先读 SKILL.md"]}
+  ]
+}

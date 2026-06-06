@@ -1,0 +1,8 @@
+{
+  "skill_name": "ensure-tests",
+  "split": "holdout",
+  "evals": [
+    {"id": "case-09", "prompt": "补充单元测试：常见错误", "expected_output": "列出常见错误表格", "expectations": ["[contains] 常见错误", "[contains] 将 UI 组件文件纳入单元测试作用域", "[contains] 框架已存在却重复安装"], "difficulty": "standard", "tags": ["common-errors"]},
+    {"id": "case-10", "prompt": "ensure-tests：调用约定", "expected_output": "说明独立触发和被 workflow 调用", "expectations": ["[contains] 调用约定", "[contains] 独立触发", "[contains] 被 workflow 调用", "[contains] 调用前先读 SKILL.md"], "difficulty": "standard", "tags": ["calling-convention"]}
+  ]
+}
