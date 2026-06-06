@@ -27,7 +27,7 @@
 | **skill-evolver** | — | — | Autonomously evolves an existing skill through iterative atomic mutations, trace-driven diagnosis, and multi-layer evaluation with automatic keep/revert decisions. Runs N iterations of changes against ground truth test cases, applying a 5-dimension AND gate to each mutation. Triggers on "evolve this skill", "train this skill", "optimize skill quality", "self-improve", "run evolution loop", "iterate on this skill automatically", or when a skill has ground truth test cases and pass_rate needs systematic improvement beyond manual tuning. Also triggers when a skill "works but isn't good enough" and data-driven improvement is needed. |
 | **solve-workflow** | 1.8.0 | 是 | 当用户说"明确问题"、"分析问题"、"探索方案"、"审查方案"、"制定计划"、"执行计划"、"检查验证"、"回顾总结"，或"继续分析"、"深入分析"、"修改方案"、"完善方案"、"优化方案"、"更新计划"、"修订计划"、"修改计划"，或"自动模式"、"自动分析"、"自动解决"时触发。适用于 bug 修复、代码重构、功能开发等需系统性分析的复杂任务。 |
 | **think-big** | 1.0.0 | 是 | Use when 用户需要从战略视角分析一件事——想清楚要不要做、值不值得做、风险在哪、长远影响是什么。触发词：战略思考、战略分析、从战略角度看、战略视角、帮我想清楚这件事、这件事值不值得做、从更高视角分析、think-big、strategic thinking、strategy。不适用于执行细节规划（那是战术层）。 |
-| **typescript-check** | 1.0.0 | 是 | TypeScript 类型检查流程。当用户说"类型检查"、"type-check"、"tsc"或需要检查 TypeScript 类型错误时触发。 |
+| **typescript-check** | — | — | TypeScript 类型检查流程。当用户说"类型检查"、"type-check"、"tsc"或需要检查 TypeScript 类型错误时触发。 |
 
 ---
 

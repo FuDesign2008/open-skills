@@ -1,0 +1,127 @@
+{
+  "skill_name": "typescript-check",
+  "evals": [
+    {
+      "id": "case-01",
+      "prompt": "类型检查",
+      "expected_output": "检测 TypeScript 配置并运行类型检查",
+      "expectations": [
+        "[contains] TypeScript 类型检查",
+        "[contains] npx tsc --noEmit",
+        "检查是否使用项目配置的脚本或回退到 tsc --noEmit"
+      ],
+      "difficulty": "standard",
+      "tags": ["basic-check"]
+    },
+    {
+      "id": "case-02",
+      "prompt": "tsc",
+      "expected_output": "触发类型检查流程",
+      "expectations": [
+        "[contains] TypeScript 类型检查",
+        "[contains] npx tsc --noEmit 或 npm run type-check",
+        "[not_contains] 未找到 TypeScript 配置"
+      ],
+      "difficulty": "standard",
+      "tags": ["trigger-word"]
+    },
+    {
+      "id": "case-03",
+      "prompt": "检查类型，项目有 tsconfig.json 但没有类型错误",
+      "expected_output": "运行 tsc 并报告通过",
+      "expectations": [
+        "[contains] ✅ TypeScript 类型检查通过",
+        "[not_contains] ❌ 发现 TypeScript 类型错误",
+        "检查通过时不应显示错误列表"
+      ],
+      "difficulty": "standard",
+      "tags": ["check-pass"]
+    },
+    {
+      "id": "case-04",
+      "prompt": "type-check，发现类型错误需要修复",
+      "expected_output": "显示错误详情和修复方案",
+      "expectations": [
+        "[contains] ❌ 发现 TypeScript 类型错误",
+        "[contains] 文件:",
+        "[contains] 错误描述",
+        "[contains] 共发现",
+        "[contains] 🔧 修复方案"
+      ],
+      "difficulty": "standard",
+      "tags": ["check-fail"]
+    },
+    {
+      "id": "case-05",
+      "prompt": "类型检查：无 tsconfig.json，有 package.json 但无 type-check 脚本",
+      "expected_output": "警告未找到 TypeScript 配置，尝试回退方案",
+      "expectations": [
+        "[contains] ⚠️ 未找到 TypeScript 配置",
+        "[not_contains] ❌",
+        "输出警告而非错误"
+      ],
+      "difficulty": "hard",
+      "tags": ["no-config-warning"]
+    },
+    {
+      "id": "case-06",
+      "prompt": "tsc，有 package.json 且有 type-check 脚本",
+      "expected_output": "优先使用项目配置的 type-check 脚本",
+      "expectations": [
+        "[contains] npm run type-check",
+        "[not_contains] npx tsc --noEmit",
+        "优先使用 npm 脚本而非直接 tsc"
+      ],
+      "difficulty": "standard",
+      "tags": ["npm-script-priority"]
+    },
+    {
+      "id": "case-07",
+      "prompt": "类型检查：发现 3 个类型错误",
+      "expected_output": "显示错误数量和修复方案",
+      "expectations": [
+        "[contains] 共发现 3 个错误",
+        "[regex] 错误 N",
+        "[contains] 📍 位置:",
+        "[contains] 🔧 修复方案"
+      ],
+      "difficulty": "standard",
+      "tags": ["error-multiple"]
+    },
+    {
+      "id": "case-08",
+      "prompt": "检查类型，修复方案必须等待用户同意",
+      "expected_output": "明确说明需要用户同意才执行修复",
+      "expectations": [
+        "[contains] 必须等待用户明确同意后才能执行修复",
+        "[contains] 是否应用此修复",
+        "修复方案格式包含等待确认的提示"
+      ],
+      "difficulty": "standard",
+      "tags": ["user-consent"]
+    },
+    {
+      "id": "case-09",
+      "prompt": "type-check，批量修复流程",
+      "expected_output": "说明可以逐个或批量修复",
+      "expectations": [
+        "[contains] 可以逐个或批量修复",
+        "[contains] 每修复一个后重新检查"
+      ],
+      "difficulty": "standard",
+      "tags": ["batch-fix"]
+    },
+    {
+      "id": "case-10",
+      "prompt": "检查类型，项目既有 tsconfig.json 也有 type-check 脚本",
+      "expected_output": "优先使用 npm run type-check",
+      "expectations": [
+        "[contains] npm run type-check",
+        "[not_contains] npx tsc --noEmit",
+        "有脚本时优先使用脚本"
+      ],
+      "difficulty": "hard",
+      "tags": ["script-priority"]
+    }
+  ]
+}

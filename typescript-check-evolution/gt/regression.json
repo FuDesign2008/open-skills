@@ -1,0 +1,17 @@
+{
+  "skill_name": "typescript-check",
+  "split": "regression",
+  "evals": [
+    {
+      "id": "case-regression-01",
+      "prompt": "类型检查：验证类型检查命令执行",
+      "expected_output": "执行类型检查命令并输出结果",
+      "expectations": [
+        "[contains] TypeScript 类型检查",
+        "检查是否执行 npx tsc --noEmit 或 npm run type-check"
+      ],
+      "difficulty": "standard",
+      "tags": ["command-execution"]
+    }
+  ]
+}

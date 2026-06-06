@@ -1,0 +1,8 @@
+{
+  "skill_name": "typescript-check",
+  "split": "holdout",
+  "evals": [
+    {"id": "case-05", "prompt": "类型检查：无 tsconfig.json，有 package.json 但无 type-check 脚本", "expected_output": "警告未找到 TypeScript 配置，尝试回退方案", "expectations": ["[contains] ⚠️ 未找到 TypeScript 配置", "[not_contains] ❌"], "difficulty": "hard", "tags": ["no-config-warning"]},
+    {"id": "case-10", "prompt": "检查类型，项目既有 tsconfig.json 也有 type-check 脚本", "expected_output": "优先使用 npm run type-check", "expectations": ["[contains] npm run type-check", "[not_contains] npx tsc --noEmit"], "difficulty": "hard", "tags": ["script-priority"]}
+  ]
+}
