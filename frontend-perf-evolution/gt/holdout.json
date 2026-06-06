@@ -1,0 +1,8 @@
+{
+  "skill_name": "frontend-perf",
+  "split": "holdout",
+  "evals": [
+    {"id": "case-09", "prompt": "性能优化：与 perf-workflow 协作", "expected_output": "展示协作关系表", "expectations": ["[contains] 与 perf-workflow 的协作关系", "[contains] perf-workflow 阶段", "[contains] 本 skill 提供的前端专属内容"], "difficulty": "standard", "tags": ["collaboration"]},
+    {"id": "case-10", "prompt": "前端优化：核心规则", "expected_output": "展示核心优化规则", "expectations": ["[contains] 核心规则", "[contains] 动画和滚动只用 transform / opacity", "[contains] 禁止 sendSync", "[contains] 阿姆达尔定律"]}
+  ]
+}

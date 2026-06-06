@@ -1,0 +1,14 @@
+{
+  "skill_name": "frontend-perf",
+  "split": "dev",
+  "evals": [
+    {"id": "case-01", "prompt": "前端性能优化：查看量化标准", "expected_output": "展示 RAIL 模型和 Web Vitals 指标", "expectations": ["[contains] 量化标准速查", "[contains] RAIL 模型", "[contains] Response 响应", "[contains] Web Vitals 三项核心指标", "[contains] LCP", "[contains] INP", "[contains] CLS"], "difficulty": "standard", "tags": ["quantitative-standards"]},
+    {"id": "case-02", "prompt": "前端性能：Electron 指标", "expected_output": "展示 Electron 桌面端扩展指标", "expectations": ["[contains] Electron 桌面端扩展指标", "[contains] 冷启动耗时", "[contains] 热启动耗时", "[contains] IPC 往返耗时", "[contains] 渲染进程内存"], "difficulty": "standard", "tags": ["electron-metrics"]},
+    {"id": "case-03", "prompt": "性能优化：前端瓶颈模式", "expected_output": "展示前端专属瓶颈模式表", "expectations": ["[contains] 前端专属瓶颈模式", "[contains] 重排（Layout）", "[contains] 重绘（Paint）", "[contains] 主线程长任务", "[contains] 无效重渲染", "[contains] IPC 阻塞"], "difficulty": "standard", "tags": ["bottleneck-patterns"]},
+    {"id": "case-04", "prompt": "前端优化：框架版本特性", "expected_output": "展示 React/Angular/Electron 版本关键优化特性", "expectations": ["[contains] 框架版本关键优化特性", "[contains] React 版本", "[contains] Angular 版本", "[contains] Electron 版本", "[contains] 18", "[contains] Signals"], "difficulty": "standard", "tags": ["framework-versions"]},
+    {"id": "case-05", "prompt": "性能分析：渲染流水线", "expected_output": "展示浏览器渲染流水线和操作类型", "expectations": ["[contains] 浏览器渲染流水线要点", "[contains] DOM → CSSOM → Style", "[contains] Layout（重排）", "[contains] Paint（重绘）", "[contains] Composite（合成）"], "difficulty": "standard", "tags": ["rendering-pipeline"]},
+    {"id": "case-06", "prompt": "Electron 性能：多进程要点", "expected_output": "展示 Electron 多进程职责和优化红线", "expectations": ["[contains] Electron 多进程要点", "[contains] 主进程", "[contains] 渲染进程", "[contains] GPU 进程", "[contains] Worker 进程", "[contains] IPC 核心规则"], "difficulty": "standard", "tags": ["electron-processes"]},
+    {"id": "case-07", "prompt": "性能优化：方案优先级", "expected_output": "展示 P0/P1/P2 优化方案", "expectations": ["[contains] 优化方案优先级速查", "[contains] P0：先做", "[contains] P1：次之", "[contains] P2：可选", "[contains] 长任务拆分", "[contains] 虚拟滚动"], "difficulty": "standard", "tags": ["optimization-priorities"]},
+    {"id": "case-08", "prompt": "前端性能：分析工具", "expected_output": "展示分析工具速查表", "expectations": ["[contains] 分析工具速查", "[contains] Chrome DevTools", "[contains] React DevTools Profiler", "[contains] Angular DevTools", "[contains] Lighthouse"], "difficulty": "standard", "tags": ["analysis-tools"]}
+  ]
+}

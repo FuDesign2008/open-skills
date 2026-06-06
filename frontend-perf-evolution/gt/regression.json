@@ -1,0 +1,7 @@
+{
+  "skill_name": "frontend-perf",
+  "split": "regression",
+  "evals": [
+    {"id": "case-regression-01", "prompt": "前端性能优化：量化标准和瓶颈模式", "expected_output": "展示核心量化标准和瓶颈模式", "expectations": ["[contains] 量化标准速查", "[contains] RAIL 模型", "[contains] 前端专属瓶颈模式", "检查是否包含重排和重绘"]}
+  ]
+}
