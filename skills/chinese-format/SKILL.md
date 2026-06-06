@@ -1,7 +1,5 @@
 ---
 name: chinese-format
-version: "1.2.0"
-user-invocable: true
 description: 中文内容格式规范，供用户手动请求时使用。当用户明确说"中文格式"、"检查中文格式"、"中文标点检查"、"格式化中文"、"按中文格式规范处理"或"chinese-format"时触发。确保中文内容使用中文标点符号，技术术语保持原文格式。
 ---
 

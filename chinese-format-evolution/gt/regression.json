@@ -1,0 +1,32 @@
+{
+  "skill_name": "chinese-format",
+  "split": "regression",
+  "note": "Populated after baseline run — only cases that pass baseline are added here",
+  "evals": [
+    {
+      "id": "case-11",
+      "prompt": "格式化：This is pure English text without Chinese characters.",
+      "expected_output": "纯英文内容，不进行中文标点转换",
+      "expectations": [
+        "[contains] This is pure English text",
+        "[not_contains] This is pure English text，",
+        "保持原文或不需要中文格式化"
+      ],
+      "difficulty": "hard",
+      "tags": ["edge-pure-english"]
+    },
+    {
+      "id": "case-12",
+      "prompt": "检查中文：在终端运行 `npm run build`，然后访问 http://localhost:3000",
+      "expected_output": "命令和 URL 保持原样，逗号转换",
+      "expectations": [
+        "[contains] 在终端运行 `npm run build`，",
+        "[contains] 然后访问 http://localhost:3000",
+        "[not_contains] 在终端运行 `npm run build`,",
+        "[regex] http://localhost:3000"
+      ],
+      "difficulty": "standard",
+      "tags": ["mixed-commands-url"]
+    }
+  ]
+}

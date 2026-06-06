@@ -1,0 +1,110 @@
+{
+  "skill_name": "chinese-format",
+  "split": "dev",
+  "evals": [
+    {
+      "id": "case-01",
+      "prompt": "检查以下中文格式：这是一个测试，包含一些技术术语如JavaScript和React。",
+      "expected_output": "将英文逗号转换为中文逗号，技术术语保持原文",
+      "expectations": [
+        "[contains] 这是一个测试，包含一些技术术语如",
+        "[contains] JavaScript",
+        "[contains] React",
+        "[not_contains] 这是一个测试,包含一些技术术语如",
+        "[not_contains] ，JavaScript"
+      ],
+      "difficulty": "standard",
+      "tags": ["basic-punctuation"]
+    },
+    {
+      "id": "case-02",
+      "prompt": "中文格式检查：我们需要修复bug#1234；这个问题很重要！请尽快解决。",
+      "expected_output": "转换分号和感叹号为中文标点",
+      "expectations": [
+        "[contains] 修复bug#1234；",
+        "[contains] 很重要！",
+        "[not_contains] 修复bug#1234;",
+        "[not_contains] 很重要!"
+      ],
+      "difficulty": "standard",
+      "tags": ["mixed-punctuation"]
+    },
+    {
+      "id": "case-03",
+      "prompt": "格式化中文：文件路径是 /usr/local/bin/node，版本号是 8.2.10",
+      "expected_output": "逗号转换，但路径和版本号保持原样",
+      "expectations": [
+        "[contains] 文件路径是 /usr/local/bin/node，",
+        "[contains] 版本号是 8.2.10",
+        "[not_contains] 文件路径是 /usr/local/bin/node,",
+        "[regex] /usr/local/bin/node"
+      ],
+      "difficulty": "standard",
+      "tags": ["exceptions-paths"]
+    },
+    {
+      "id": "case-04",
+      "prompt": "检查中文格式：执行命令 npm install 和 git status",
+      "expected_output": "逗号转换，命令保持原文",
+      "expectations": [
+        "[contains] 执行命令 npm install 和",
+        "[contains] git status",
+        "[not_contains] 执行命令 npm install 和 git status.",
+        "[contains] npm install"
+      ],
+      "difficulty": "standard",
+      "tags": ["exceptions-commands"]
+    },
+    {
+      "id": "case-05",
+      "prompt": "中文格式：《JavaScript高级程序设计》是一本好书，推荐给所有人（特别是前端开发者）。",
+      "expected_output": "书名号和括号转换正确",
+      "expectations": [
+        "[contains] 《JavaScript高级程序设计》",
+        "[contains] （特别是前端开发者）",
+        "[not_contains] 《JavaScript高级程序设计》.",
+        "[not_contains] (特别是前端开发者)"
+      ],
+      "difficulty": "standard",
+      "tags": ["book-title-brackets"]
+    },
+    {
+      "id": "case-06",
+      "prompt": "格式化：项目使用 TypeScript 4.5 版本，覆盖率达到 95% 以上",
+      "expected_output": "逗号转换，技术术语和数字保持原样",
+      "expectations": [
+        "[contains] TypeScript 4.5 版本，",
+        "[contains] 覆盖率达到 95% 以上",
+        "[not_contains] TypeScript 4.5 版本.",
+        "[regex] 95%"
+      ],
+      "difficulty": "standard",
+      "tags": ["exceptions-numbers"]
+    },
+    {
+      "id": "case-07",
+      "prompt": "中文检查：React 和 Vue 是主流框架，Angular 也很重要",
+      "expected_output": "中英文混排，逗号转换",
+      "expectations": [
+        "[contains] React 和 Vue 是主流框架，",
+        "[contains] Angular 也很重要",
+        "[not_contains] React 和 Vue 是主流框架.",
+        "[contains] React"
+      ],
+      "difficulty": "standard",
+      "tags": ["mixed-en-zh"]
+    },
+    {
+      "id": "case-08",
+      "prompt": "格式化：访问 https://example.com/api/v2 查看文档",
+      "expected_output": "逗号转换，URL 保持原样",
+      "expectations": [
+        "[contains] 访问 https://example.com/api/v2 查看文档",
+        "[not_contains] 访问 https://example.com/api/v2 查看文档.",
+        "[regex] https://"
+      ],
+      "difficulty": "standard",
+      "tags": ["exceptions-url"]
+    }
+  ]
+}

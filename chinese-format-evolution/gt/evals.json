@@ -1,0 +1,159 @@
+{
+  "skill_name": "chinese-format",
+  "evals": [
+    {
+      "id": "case-01",
+      "prompt": "检查以下中文格式：这是一个测试，包含一些技术术语如JavaScript和React。",
+      "expected_output": "将英文逗号转换为中文逗号，技术术语保持原文",
+      "expectations": [
+        "[contains] 这是一个测试，包含一些技术术语如",
+        "[contains] JavaScript",
+        "[contains] React",
+        "[not_contains] 这是一个测试,包含一些技术术语如",
+        "[not_contains] ，JavaScript"
+      ],
+      "difficulty": "standard",
+      "tags": ["basic-punctuation"]
+    },
+    {
+      "id": "case-02",
+      "prompt": "中文格式检查：我们需要修复bug#1234；这个问题很重要！请尽快解决。",
+      "expected_output": "转换分号和感叹号为中文标点",
+      "expectations": [
+        "[contains] 修复bug#1234；",
+        "[contains] 很重要！",
+        "[not_contains] 修复bug#1234;",
+        "[not_contains] 很重要!"
+      ],
+      "difficulty": "standard",
+      "tags": ["mixed-punctuation"]
+    },
+    {
+      "id": "case-03",
+      "prompt": "格式化中文：文件路径是 /usr/local/bin/node，版本号是 8.2.10",
+      "expected_output": "逗号转换，但路径和版本号保持原样",
+      "expectations": [
+        "[contains] 文件路径是 /usr/local/bin/node，",
+        "[contains] 版本号是 8.2.10",
+        "[not_contains] 文件路径是 /usr/local/bin/node,",
+        "[regex] /usr/local/bin/node"
+      ],
+      "difficulty": "standard",
+      "tags": ["exceptions-paths"]
+    },
+    {
+      "id": "case-04",
+      "prompt": "检查中文格式：执行命令 npm install 和 git status",
+      "expected_output": "逗号转换，命令保持原文",
+      "expectations": [
+        "[contains] 执行命令 npm install 和",
+        "[contains] git status",
+        "[not_contains] 执行命令 npm install 和 git status.",
+        "[contains] npm install"
+      ],
+      "difficulty": "standard",
+      "tags": ["exceptions-commands"]
+    },
+    {
+      "id": "case-05",
+      "prompt": "中文格式：《JavaScript高级程序设计》是一本好书，推荐给所有人（特别是前端开发者）。",
+      "expected_output": "书名号和括号转换正确",
+      "expectations": [
+        "[contains] 《JavaScript高级程序设计》",
+        "[contains] （特别是前端开发者）",
+        "[not_contains] 《JavaScript高级程序设计》.",
+        "[not_contains] (特别是前端开发者)"
+      ],
+      "difficulty": "standard",
+      "tags": ["book-title-brackets"]
+    },
+    {
+      "id": "case-06",
+      "prompt": "格式化：项目使用 TypeScript 4.5 版本，覆盖率达到 95% 以上",
+      "expected_output": "逗号转换，技术术语和数字保持原样",
+      "expectations": [
+        "[contains] TypeScript 4.5 版本，",
+        "[contains] 覆盖率达到 95% 以上",
+        "[not_contains] TypeScript 4.5 版本.",
+        "[regex] 95%"
+      ],
+      "difficulty": "standard",
+      "tags": ["exceptions-numbers"]
+    },
+    {
+      "id": "case-07",
+      "prompt": "中文检查：React 和 Vue 是主流框架，Angular 也很重要",
+      "expected_output": "中英文混排，逗号转换",
+      "expectations": [
+        "[contains] React 和 Vue 是主流框架，",
+        "[contains] Angular 也很重要",
+        "[not_contains] React 和 Vue 是主流框架.",
+        "[contains] React"
+      ],
+      "difficulty": "standard",
+      "tags": ["mixed-en-zh"]
+    },
+    {
+      "id": "case-08",
+      "prompt": "格式化：访问 https://example.com/api/v2 查看文档",
+      "expected_output": "逗号转换，URL 保持原样",
+      "expectations": [
+        "[contains] 访问 https://example.com/api/v2 查看文档",
+        "[not_contains] 访问 https://example.com/api/v2 查看文档.",
+        "[regex] https://"
+      ],
+      "difficulty": "standard",
+      "tags": ["exceptions-url"]
+    },
+    {
+      "id": "case-09",
+      "prompt": "检查中文：代码示例：const arr = [1, 2, 3]; console.log(arr);",
+      "expected_output": "代码块完全保持原样，不转换标点",
+      "expectations": [
+        "[contains] const arr = [1, 2, 3];",
+        "[contains] console.log(arr);",
+        "[not_contains] const arr = [1, 2, 3]；",
+        "[not_contains] console。log"
+      ],
+      "difficulty": "hard",
+      "tags": ["exceptions-code"]
+    },
+    {
+      "id": "case-10",
+      "prompt": "中文格式：already correct，无需修改。这句话已经符合规范！",
+      "expected_output": "已经是中文标点，保持不变或提示符合规范",
+      "expectations": [
+        "[contains] already correct，无需修改。",
+        "[contains] 这句话已经符合规范！",
+        "[not_contains] already correct,无需修改."
+      ],
+      "difficulty": "standard",
+      "tags": ["already-correct"]
+    },
+    {
+      "id": "case-11",
+      "prompt": "格式化：This is pure English text without Chinese characters.",
+      "expected_output": "纯英文内容，不进行中文标点转换",
+      "expectations": [
+        "[contains] This is pure English text",
+        "[not_contains] This is pure English text，",
+        "保持原文或不需要中文格式化"
+      ],
+      "difficulty": "hard",
+      "tags": ["edge-pure-english"]
+    },
+    {
+      "id": "case-12",
+      "prompt": "检查中文：在终端运行 `npm run build`，然后访问 http://localhost:3000",
+      "expected_output": "命令和 URL 保持原样，逗号转换",
+      "expectations": [
+        "[contains] 在终端运行 `npm run build`，",
+        "[contains] 然后访问 http://localhost:3000",
+        "[not_contains] 在终端运行 `npm run build`,",
+        "[regex] http://localhost:3000"
+      ],
+      "difficulty": "standard",
+      "tags": ["mixed-commands-url"]
+    }
+  ]
+}

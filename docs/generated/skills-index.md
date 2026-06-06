@@ -10,7 +10,7 @@
 | --- | --- | --- | --- |
 | **android-webview-debug** | — | — | Android 工程内统一 WebView 远程调试开关。android-webview-debug-enable 将 setWebContentsDebuggingEnabled 全部设为 true 并记录修改位置与修改前内容；android-webview-debug-revert 按记录恢复，与记录不符的项在最后列出并等待人工确认。适用于需要统一开启或恢复 WebView 调试的 Android 项目。 |
 | **article-writer** | 1.0.0 | — | Use when 用户想写公众号、知乎技术文章、自媒体内容，或基于已有技术文档改写为可发布文章时。 |
-| **chinese-format** | 1.2.0 | 是 | 中文内容格式规范，供用户手动请求时使用。当用户明确说"中文格式"、"检查中文格式"、"中文标点检查"、"格式化中文"、"按中文格式规范处理"或"chinese-format"时触发。确保中文内容使用中文标点符号，技术术语保持原文格式。 |
+| **chinese-format** | — | — | 中文内容格式规范，供用户手动请求时使用。当用户明确说"中文格式"、"检查中文格式"、"中文标点检查"、"格式化中文"、"按中文格式规范处理"或"chinese-format"时触发。确保中文内容使用中文标点符号，技术术语保持原文格式。 |
 | **ensure-tests** | 1.0.0 | 是 | 当用户说"ensure-tests"、"补全测试"、"生成测试"、"确保测试"、"补充单元测试"、"添加单元测试"、"检查测试覆盖"时触发。也可被 opsx-solve-workflow 等工作流在开发完成后调用，确保交付物包含单元测试（必须）和 E2E 测试（可选，按工程支持情况）。 |
 | **frontend-perf** | 2.0.0 | 否 | 前端（含 Electron 桌面端）性能优化领域知识库，含 React 16-19、Angular 9-18+、Electron 12-28+ 版本专属优化知识。配合 perf-workflow skill 使用：perf-workflow 驱动分析流程，本 skill 提供前端专属量化标准、版本感知优化方案、瓶颈模式与工具速查。当分析 Web 前端（React/Angular/Vue）、Electron 桌面端性能问题时使用。 |
 | **git-commit** | — | — | 当用户说「提交代码」「git commit」「帮我提交」「写 commit message」「生成 commit」「提交一下」「git-commit」「自动提交代码」「git-commit-auto」，或由 jira-fix-workflow 阶段7触发时使用。 |

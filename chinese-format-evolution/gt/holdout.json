@@ -1,0 +1,31 @@
+{
+  "skill_name": "chinese-format",
+  "split": "holdout",
+  "evals": [
+    {
+      "id": "case-09",
+      "prompt": "检查中文：代码示例：const arr = [1, 2, 3]; console.log(arr);",
+      "expected_output": "代码块完全保持原样，不转换标点",
+      "expectations": [
+        "[contains] const arr = [1, 2, 3];",
+        "[contains] console.log(arr);",
+        "[not_contains] const arr = [1, 2, 3]；",
+        "[not_contains] console。log"
+      ],
+      "difficulty": "hard",
+      "tags": ["exceptions-code"]
+    },
+    {
+      "id": "case-10",
+      "prompt": "中文格式：already correct，无需修改。这句话已经符合规范！",
+      "expected_output": "已经是中文标点，保持不变或提示符合规范",
+      "expectations": [
+        "[contains] already correct，无需修改。",
+        "[contains] 这句话已经符合规范！",
+        "[not_contains] already correct,无需修改."
+      ],
+      "difficulty": "standard",
+      "tags": ["already-correct"]
+    }
+  ]
+}
