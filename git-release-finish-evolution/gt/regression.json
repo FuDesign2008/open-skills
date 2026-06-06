@@ -1,0 +1,7 @@
+{
+  "skill_name": "git-release-finish",
+  "split": "regression",
+  "evals": [
+    {"id": "case-regression-01", "prompt": "发版：核心流程验证", "expected_output": "执行关键阶段（1/2/6/9/10）", "expectations": ["[contains] 阶段1", "[contains] 阶段2", "[contains] 阶段6", "[contains] 阶段9", "检查是否包含阶段10"]}
+  ]
+}

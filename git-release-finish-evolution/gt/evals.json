@@ -1,0 +1,16 @@
+{
+  "skill_name": "git-release-finish",
+  "split": "full",
+  "evals": [
+    {"id": "case-01", "prompt": "发版：Git 版本发布流程", "expected_output": "执行 10 个阶段的完整发版流程", "expectations": ["[contains] 阶段1：分析 Tag 命名规范", "[contains] 阶段2：创建并推送 tag", "[contains] 阶段6：解决冲突", "[contains] 阶段9：合并 MR/PR", "[contains] 阶段10：输出报告"], "difficulty": "standard", "tags": ["full-flow"]},
+    {"id": "case-02", "prompt": "打tag：平台 CLI 映射", "expected_output": "展示 GitLab/GitHub/Gitea CLI 工具", "expectations": ["[contains] 平台 CLI 映射", "[contains] GitLab", "[contains] glab", "[contains] GitHub", "[contains] gh", "[contains] Gitea"], "difficulty": "standard", "tags": ["platform-cli"]},
+    {"id": "case-03", "prompt": "发布版本：执行路径选择", "expected_output": "展示不同情况的执行路径", "expectations": ["[contains] 执行路径", "[contains] merge-tree=0 且 MR 可合并", "[contains] 冲突 > 0", "[contains] 跳过"], "difficulty": "standard", "tags": ["execution-path"]},
+    {"id": "case-04", "prompt": "release流程：配对和依赖 skill", "expected_output": "说明 git-release-start 和 git-conflict-resolve", "expectations": ["[contains] 配对 skill", "[contains] git-release-start", "[contains] 依赖 skill", "[contains] git-conflict-resolve"], "difficulty": "standard", "tags": ["paired-skills"]},
+    {"id": "case-05", "prompt": "版本发布：阶段1 Tag 分析", "expected_output": "展示 Tag 命名规范分析流程", "expectations": ["[contains] 阶段1：分析 Tag 命名规范", "[contains] git tag", "[contains] 禁止假设 tag 格式统一"]},
+    {"id": "case-06", "prompt": "发版：阶段5 冲突检测", "expected_output": "展示冲突检测和阶段5.5验证", "expectations": ["[contains] 阶段5：检测冲突", "[contains] git merge-tree", "[contains] 阶段 5.5：验证 MR 可合并性"], "difficulty": "standard", "tags": ["conflict-detection"]},
+    {"id": "case-07", "prompt": "git-release：阶段6 冲突解决", "expected_output": "调用 git-conflict-resolve skill", "expectations": ["[contains] 阶段6：解决冲突", "[contains] git-conflict-resolve", "[contains] merge", "[contains] rebase"]},
+    {"id": "case-08", "prompt": "版本发布：阶段7 清理多余文件", "expected_output": "清理 MR/PR 分支多余文件", "expectations": ["[contains] 阶段7：清理 MR/PR 分支多余文件", "[contains] git ls-tree", "[contains] AI 工具文件"]},
+    {"id": "case-09", "prompt": "发版流程：并行执行", "expected_output": "说明仓库无关操作并行执行", "expectations": ["[contains] 并行执行", "[contains] 并行打 tag", "[contains] 并行建 MR/PR", "[contains] 并行检查冲突"]},
+    {"id": "case-10", "prompt": "git-release：适用场景", "expected_output": "列出适用和不适用场景", "expectations": ["[contains] 适用场景", "[contains] 不适用场景", "[contains] 单仓库、多仓库均可", "[contains] SVN"]}
+  ]
+}

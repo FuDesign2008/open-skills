@@ -1,0 +1,8 @@
+{
+  "skill_name": "git-release-finish",
+  "split": "holdout",
+  "evals": [
+    {"id": "case-09", "prompt": "发版流程：并行执行", "expected_output": "说明仓库无关操作并行执行", "expectations": ["[contains] 并行执行", "[contains] 并行打 tag", "[contains] 并行建 MR/PR", "[contains] 并行检查冲突"]},
+    {"id": "case-10", "prompt": "git-release：适用场景", "expected_output": "列出适用和不适用场景", "expectations": ["[contains] 适用场景", "[contains] 不适用场景", "[contains] 单仓库、多仓库均可", "[contains] SVN"]}
+  ]
+}
