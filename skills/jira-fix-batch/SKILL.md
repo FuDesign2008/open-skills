@@ -1,9 +1,5 @@
 ---
 name: jira-fix-batch
-version: "1.0.0"
-user-invocable: true
-category: development
-tags: [jira, batch, workflow]
 description: 当用户说「批量修复」「批量 jira-fix」「jira-fix-batch」「批量修复多个 Jira」「批量修复以下 bug」时触发。适用于需要对多个 Jira issue 进行批量端到端修复的编排场景。
 ---
 

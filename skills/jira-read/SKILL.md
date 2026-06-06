@@ -1,7 +1,5 @@
 ---
 name: jira-read
-version: "2.0.1"
-user-invocable: true
 description: 当用户说"jira-read [JIRA-ID]"，或需要读取、获取、下载 Jira issue 数据时触发。需配置 $JIRA_CACHE_DIR（如 ~/.cache/jira）。
 ---
 

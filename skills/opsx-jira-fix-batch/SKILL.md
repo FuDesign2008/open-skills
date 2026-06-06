@@ -1,9 +1,5 @@
 ---
 name: opsx-jira-fix-batch
-version: "1.0.0"
-user-invocable: true
-category: development
-tags: [jira, openspec, batch, workflow]
 description: 当用户说「opsx 批量修复」「批量 opsx-jira-fix」「opsx-jira-fix-batch」「批量 OpenSpec Jira 修复」时触发。适用于需要对多个 Jira issue 进行批量端到端修复并将关系判断沉淀到 OpenSpec artifacts 的编排场景。
 ---
 
