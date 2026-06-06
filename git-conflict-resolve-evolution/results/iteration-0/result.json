@@ -1,0 +1,26 @@
+{
+  "iteration": 0,
+  "layer": "baseline",
+  "timestamp": "2026-06-06T00:00:00Z",
+  "summary": {
+    "total_cases": 8,
+    "passed_cases": 8,
+    "failed_cases": 0,
+    "pass_rate": 1.0,
+    "target_met": true
+  },
+  "results": [
+    {"id": "case-01", "status": "pass", "reason": "所有子阶段标题（Y.0, Y.1, Y.5, Y.6）明确存在"},
+    {"id": "case-02", "status": "pass", "reason": "Y.0 包含 rebase 模式说明和 git rebase 命令，Y.1 包含累积冲突文件清单"},
+    {"id": "case-03", "status": "pass", "reason": "Y.2 明确列出三方内容读取命令（git show :1/:2/:3:）和两侧关系"},
+    {"id": "case-04", "status": "pass", "reason": "Y.3 包含置信度三档表和 🟢🟡🔴 emoji 标识"},
+    {"id": "case-05", "status": "pass", "reason": "Y.3 高置信度场景表包含 version 和 git checkout --theirs，Y.4 包含自动解决"},
+    {"id": "case-06", "status": "pass", "reason": "Y.3 中置信度场景和 Y.4 包含【AI 建议】、【请选择】、A = 接受 AI 建议"},
+    {"id": "case-07", "status": "pass", "reason": "Y.3 低置信度场景和 Y.4 包含三方视图标题【BASE/【main 侧/【release 侧】"},
+    {"id": "case-08", "status": "pass", "reason": "Y.5 包含三个验证部分和 ⚠️❌ 标记说明"}
+  ],
+  "mutation_applied": null,
+  "mutation_type": "baseline",
+  "tokens_used": 0,
+  "duration_s": 0
+}
