@@ -1,0 +1,7 @@
+{
+  "skill_name": "git-conflict-resolve",
+  "split": "regression",
+  "evals": [
+    {"id": "case-regression-01", "prompt": "解冲突：完整流程验证", "expected_output": "执行 Y.0～Y.6 关键子阶段", "expectations": ["[contains] 子阶段 Y.0", "[contains] 子阶段 Y.5", "[contains] 子阶段 Y.6", "检查是否包含冲突清单盘点和逻辑验证"], "difficulty": "standard", "tags": ["core-flow"]}
+  ]
+}

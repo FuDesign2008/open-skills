@@ -1,0 +1,14 @@
+{
+  "skill_name": "git-conflict-resolve",
+  "split": "dev",
+  "evals": [
+    {"id": "case-01", "prompt": "解冲突：merge release 到 main", "expected_output": "执行 Y.0～Y.6 完整冲突解决流程", "expectations": ["[contains] 子阶段 Y.0 — 模式识别与初始化", "[contains] 子阶段 Y.1 — 冲突清单盘点", "[contains] 子阶段 Y.5 — 逻辑验证", "[contains] 子阶段 Y.6 — 全局复查清单"], "difficulty": "standard", "tags": ["full-flow"]},
+    {"id": "case-02", "prompt": "处理冲突：rebase 场景", "expected_output": "检测并处理 rebase 多轮冲突", "expectations": ["[contains] rebase 模式", "[contains] git rebase origin/<TARGET>", "[contains] 累积冲突文件清单", "[contains] git rebase --continue"], "difficulty": "standard", "tags": ["rebase-mode"]},
+    {"id": "case-03", "prompt": "git-conflict-resolve：语义分析阶段", "expected_output": "执行三方内容读取和语义描述", "expectations": ["[contains] 子阶段 Y.2 — 语义分析", "[contains] git show :1:<FILE>", "[contains] git show :2:<FILE>", "[contains] git show :3:<FILE>", "[contains] 两侧关系"], "difficulty": "standard", "tags": ["semantic-analysis"]},
+    {"id": "case-04", "prompt": "conflict resolve：置信度判定", "expected_output": "展示高/中/低置信度场景和规则", "expectations": ["[contains] 子阶段 Y.3 — 规则推导", "[contains] 置信度三档", "[contains] 🟢 高", "[contains] 🟡 中", "[contains] 🔴 低"], "difficulty": "standard", "tags": ["confidence-levels"]},
+    {"id": "case-05", "prompt": "解决 merge 冲突：高置信度自动解决", "expected_output": "展示高置信度场景和自动解决命令", "expectations": ["[contains] 高置信度场景", "[contains] version", "[contains] git checkout --theirs", "[contains] 自动解决"], "difficulty": "standard", "tags": ["high-confidence"]},
+    {"id": "case-06", "prompt": "冲突解决：中置信度用户确认", "expected_output": "展示中置信度建议和 A/B/C 选择", "expectations": ["[contains] 中置信度场景", "[contains] 【AI 建议】", "[contains] 【请选择】", "[contains] A = 接受 AI 建议"], "difficulty": "standard", "tags": ["medium-confidence"]},
+    {"id": "case-07", "prompt": "解决 rebase 冲突：低置信度三方视图", "expected_output": "展示三方视图和用户选择", "expectations": ["[contains] 低置信度场景", "[contains] 【BASE（公共祖先）】", "[contains] 【main 侧（ours）】", "[contains] 【release 侧（theirs）】"], "difficulty": "standard", "tags": ["low-confidence"]},
+    {"id": "case-08", "prompt": "处理冲突：逻辑验证阶段", "expected_output": "执行完整逻辑验证并输出标记", "expectations": ["[contains] 子阶段 Y.5 — 逻辑验证", "[contains] release 意图完整性验证", "[contains] main 必要变更验证", "[contains] ⚠️", "[contains] ❌"], "difficulty": "standard", "tags": ["logic-verification"]}
+  ]
+}

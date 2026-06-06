@@ -1,0 +1,8 @@
+{
+  "skill_name": "git-conflict-resolve",
+  "split": "holdout",
+  "evals": [
+    {"id": "case-09", "prompt": "git-conflict-resolve：全局复查清单", "expected_output": "生成汇总表并等待用户确认", "expectations": ["[contains] 子阶段 Y.6 — 全局复查清单", "[contains] 输出汇总表", "[contains] | 文件 | 出现轮次", "[contains] 确认以上文件逻辑正确后"], "difficulty": "standard", "tags": ["review-checklist"]},
+    {"id": "case-10", "prompt": "解决冲突：禁止行为", "expected_output": "列出违规行为表", "expectations": ["[contains] 禁止行为（Red Flags）", "[contains] 清空累积清单", "[contains] 跳过逻辑验证", "[contains] 未等用户确认"], "difficulty": "standard", "tags": ["red-flags"]}
+  ]
+}
