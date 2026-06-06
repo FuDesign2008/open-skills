@@ -1,0 +1,26 @@
+{
+  "iteration": 0,
+  "layer": "baseline",
+  "timestamp": "2026-06-06T00:00:00Z",
+  "summary": {
+    "total_cases": 8,
+    "passed_cases": 8,
+    "failed_cases": 0,
+    "pass_rate": 1.0,
+    "target_met": true
+  },
+  "results": [
+    {"id": "case-01", "status": "pass", "reason": "阶段总览表和各阶段标题明确存在"},
+    {"id": "case-02", "status": "pass", "reason": "平台 CLI 映射表包含 GitLab/glab、GitHub/gh、Gitea"},
+    {"id": "case-03", "status": "pass", "reason": "执行路径表包含不同情况和跳过说明"},
+    {"id": "case-04", "status": "pass", "reason": "Overview 包含配对 skill（git-release-start）和依赖 skill（git-conflict-resolve）"},
+    {"id": "case-05", "status": "pass", "reason": "阶段1 标题和内容包含 git tag 和禁止假设说明"},
+    {"id": "case-06", "status": "pass", "reason": "阶段5 和阶段5.5 标题明确，包含 git merge-tree"},
+    {"id": "case-07", "status": "pass", "reason": "阶段6 包含 git-conflict-resolve 和 merge/rebase 模式"},
+    {"id": "case-08", "status": "pass", "reason": "阶段7 标题和内容包含 git ls-tree 和 AI 工具文件说明"}
+  ],
+  "mutation_applied": null,
+  "mutation_type": "baseline",
+  "tokens_used": 0,
+  "duration_s": 0
+}
