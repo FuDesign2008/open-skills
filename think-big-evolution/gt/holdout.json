@@ -1,0 +1,8 @@
+{
+  "skill_name": "think-big",
+  "split": "holdout",
+  "evals": [
+    {"id": "case-09", "prompt": "帮我想清楚这件事：不适用场景", "expected_output": "说明不适用场景并退出", "expectations": ["[contains] 不适用场景", "[contains] 战术层", "[contains] 执行细节规划"]},
+    {"id": "case-10", "prompt": "strategic thinking：常见误用", "expected_output": "列出常见误用和违规行为", "expectations": ["[contains] 常见误用", "[contains] 决策机器", "[contains] 自然行为", "[contains] Skill 要求"]}
+  ]
+}

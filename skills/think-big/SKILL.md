@@ -1,7 +1,5 @@
 ---
 name: think-big
-version: "1.0.0"
-user-invocable: true
 description: Use when 用户需要从战略视角分析一件事——想清楚要不要做、值不值得做、风险在哪、长远影响是什么。触发词：战略思考、战略分析、从战略角度看、战略视角、帮我想清楚这件事、这件事值不值得做、从更高视角分析、think-big、strategic thinking、strategy。不适用于执行细节规划（那是战术层）。
 ---
 

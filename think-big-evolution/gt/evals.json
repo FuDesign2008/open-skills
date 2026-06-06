@@ -1,0 +1,16 @@
+{
+  "skill_name": "think-big",
+  "split": "full",
+  "evals": [
+    {"id": "case-01", "prompt": "战略思考：快速模式", "expected_output": "执行四维战略分析", "expectations": ["[contains] ⚡ 快速模式", "[contains] 维度 1：时间轴视角", "[contains] 维度 2：系统视角", "[contains] 维度 3：取舍视角", "[contains] 维度 4：不确定性视角"], "difficulty": "standard", "tags": ["quick-mode"]},
+    {"id": "case-02", "prompt": "think-big：深度模式", "expected_output": "执行苏格拉底式追问协议", "expectations": ["[contains] 🔍 深度模式", "[contains] 追问协议", "[contains] 一次只问一个问题", "[contains] 最多 5 轮", "[contains] 收敛失败处理"], "difficulty": "standard", "tags": ["deep-mode"]},
+    {"id": "case-03", "prompt": "战略分析：时间轴视角", "expected_output": "展示过去/现在/未来引导问题", "expectations": ["[contains] 时间轴视角", "[contains] 过去", "[contains] 现在", "[contains] 未来", "[contains] 历史路径依赖"]},
+    {"id": "case-04", "prompt": "从战略角度看：系统视角", "expected_output": "展示影响方和被影响方分析", "expectations": ["[contains] 系统视角", "[contains] 影响方", "[contains] 被影响方", "[contains] 连带效应"]},
+    {"id": "case-05", "prompt": "这件事值不值得做：取舍视角", "expected_output": "展示机会成本和判断标准", "expectations": ["[contains] 取舍视角", "[contains] 选了这个，放弃了什么", "[contains] 机会成本", "[contains] 假性两全"]},
+    {"id": "case-06", "prompt": "从更高视角分析：不确定性视角", "expected_output": "列出关键不确定性", "expectations": ["[contains] 不确定性视角", "[contains] 最关键的不确定性", "[contains] 最小验证行动"]},
+    {"id": "case-07", "prompt": "战略思考：输出格式", "expected_output": "展示结构化输出模板", "expectations": ["[contains] 【事项】", "[contains] 【时间轴】", "[contains] 【系统影响】", "[contains] 【战略性建议】"], "difficulty": "standard", "tags": ["output-format"]},
+    {"id": "case-08", "prompt": "think-big：通用原则", "expected_output": "列出战略思考原则", "expectations": ["[contains] 通用原则", "[contains] 不替用户做决定", "[contains] 取舍是核心", "[contains] 本质追问优先"]},
+    {"id": "case-09", "prompt": "帮我想清楚这件事：不适用场景", "expected_output": "说明不适用场景并退出", "expectations": ["[contains] 不适用场景", "[contains] 战术层", "[contains] 执行细节规划"]},
+    {"id": "case-10", "prompt": "strategic thinking：常见误用", "expected_output": "列出常见误用和违规行为", "expectations": ["[contains] 常见误用", "[contains] 决策机器", "[contains] 自然行为", "[contains] Skill 要求"]}
+  ]
+}

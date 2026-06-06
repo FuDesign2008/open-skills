@@ -1,0 +1,7 @@
+{
+  "skill_name": "think-big",
+  "split": "regression",
+  "evals": [
+    {"id": "case-regression-01", "prompt": "战略思考：核心框架验证", "expected_output": "展示关键维度和原则", "expectations": ["[contains] ⚡ 快速模式", "[contains] 时间轴视角", "[contains] 通用原则", "检查是否包含取舍视角"]}
+  ]
+}
