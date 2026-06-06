@@ -1,0 +1,26 @@
+{
+  "iteration": 0,
+  "layer": "baseline",
+  "timestamp": "2026-06-06T00:00:00Z",
+  "summary": {
+    "total_cases": 8,
+    "passed_cases": 8,
+    "failed_cases": 0,
+    "pass_rate": 1.0,
+    "target_met": true
+  },
+  "results": [
+    {"id": "case-01", "status": "pass", "reason": "量化标准速查包含 RAIL 模型和 Web Vitals 指标（LCP、INP、CLS）"},
+    {"id": "case-02", "status": "pass", "reason": "Electron 桌面端扩展指标表包含所有期望字段"},
+    {"id": "case-03", "status": "pass", "reason": "前端专属瓶颈模式表包含重排、重绘、长任务等模式"},
+    {"id": "case-04", "status": "pass", "reason": "框架版本关键优化特性包含 React 18 和 Angular Signals"},
+    {"id": "case-05", "status": "pass", "reason": "浏览器渲染流水线要点包含 DOM→CSSOM→Style 和 Layout/Paint/Composite"},
+    {"id": "case-06", "status": "pass", "reason": "Electron 多进程要点表包含所有进程类型和 IPC 核心规则"},
+    {"id": "case-07", "status": "pass", "reason": "优化方案优先级速查包含 P0/P1/P2 和长任务拆分、虚拟滚动"},
+    {"id": "case-08", "status": "pass", "reason": "分析工具速查表包含所有期望工具：Chrome DevTools、React DevTools Profiler、Angular DevTools、Lighthouse"}
+  ],
+  "mutation_applied": null,
+  "mutation_type": "baseline",
+  "tokens_used": 0,
+  "duration_s": 0
+}
