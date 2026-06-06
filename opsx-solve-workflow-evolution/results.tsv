@@ -1,2 +1,3 @@
 iteration	layer	mutation_type	description	pass_rate	delta	decision	tokens	duration_s	timestamp
 0	baseline	baseline	opsx-solve-workflow baseline evaluation	1.0	0.0	ACCEPT	0	0	1780715282
+real-world	deep-assertion	深度断言验证 - 12场景57断言全部通过	1.0	0.0	ACCEPT	57	120	1780716385

@@ -1,0 +1,206 @@
+{
+  "skill_name": "opsx-solve-workflow",
+  "split": "real-world",
+  "evals": [
+    {
+      "id": "scenario-01",
+      "prompt": "opsx解决：门禁检查 - 项目没有 openspec 目录",
+      "expected_output": "门禁1未通过，提示用户运行 openspec init",
+      "expectations": [
+        "[contains] 阶段 0",
+        "[contains] 门禁 1",
+        "[contains] OpenSpec 目录检查",
+        "[contains] 不存在",
+        "[contains] openspec init",
+        "[contains] 立即停止",
+        "[not_contains] 阶段 1"
+      ],
+      "difficulty": "hard",
+      "tags": ["gate", "environment"],
+      "notes": "验证门禁1阻断行为"
+    },
+    {
+      "id": "scenario-02",
+      "prompt": "opsx解决：门禁2 - 缺少 OPSX 原生 skills",
+      "expected_output": "门禁2未通过，提示补全 skills",
+      "expectations": [
+        "[contains] 门禁 2",
+        "[contains] OPSX 原生 Skills",
+        "[contains] openspec-new-change",
+        "[contains] openspec-continue-change",
+        "[contains] openspec-apply-change",
+        "[contains] openspec-archive-change",
+        "[contains] 不存在",
+        "[not_contains] 阶段 1"
+      ],
+      "difficulty": "hard",
+      "tags": ["gate", "opsx-skills"],
+      "notes": "验证门禁2精确名称检查"
+    },
+    {
+      "id": "scenario-03",
+      "prompt": "opsx解决：阶段1.1工具限制 - 用户未引用代码时禁止Read",
+      "expected_output": "阶段1.1不使用Read/Grep，只输出问题复述",
+      "expectations": [
+        "[contains] 阶段 1.1",
+        "[contains] 问题复述",
+        "[contains] 关键要素",
+        "[contains] 疑问点",
+        "[not_contains] 已读取文件",
+        "[not_contains] 已执行代码分析",
+        "[contains] 等用户确认"
+      ],
+      "difficulty": "hard",
+      "tags": ["tool-permissions", "gate"],
+      "notes": "验证阶段1.1工具限制"
+    },
+    {
+      "id": "scenario-04",
+      "prompt": "opsx解决：存在性验证门控 - 问题可能不存在",
+      "expected_output": "执行存在性验证后报告",
+      "expectations": [
+        "[contains] 存在性验证",
+        "[contains] 门控",
+        "[contains] 问题存在",
+        "[contains] 问题已不存在",
+        "[contains] 描述与代码不符",
+        "[contains] 等待用户确认"
+      ],
+      "difficulty": "hard",
+      "tags": ["existence-check", "gate"],
+      "notes": "验证存在性验证三路分支"
+    },
+    {
+      "id": "scenario-05",
+      "prompt": "opsx解决：打点调试 - 静态分析受阻",
+      "expected_output": "设计打点代码并等用户提供日志",
+      "expectations": [
+        "[contains] 打点调试",
+        "[contains] 静态分析",
+        "[contains] 打点设计",
+        "[contains] DEBUG",
+        "[contains] 等待日志",
+        "[contains] 逃生出口",
+        "[not_contains] 已修改代码"
+      ],
+      "difficulty": "hard",
+      "tags": ["debugging", "instrumentation"],
+      "notes": "验证打点调试流程"
+    },
+    {
+      "id": "scenario-06",
+      "prompt": "OpenSpec自动解决：自动模式完整执行",
+      "expected_output": "自动模式全程无停止点执行",
+      "expectations": [
+        "[contains] 自动模式",
+        "[contains] 阶段 1",
+        "[contains] 阶段 2",
+        "[contains] 阶段 3",
+        "[contains] 审查最多循环 3 轮",
+        "[not_contains] 等用户确认",
+        "[not_contains] 停止等"
+      ],
+      "difficulty": "hard",
+      "tags": ["auto-mode"],
+      "notes": "验证自动模式无停止点"
+    },
+    {
+      "id": "scenario-07",
+      "prompt": "opsx解决：OPSX Skills 委托 - 不得绕过原生skill",
+      "expected_output": "各阶段正确委托 OPSX 原生 skills",
+      "expectations": [
+        "[contains] openspec-new-change",
+        "[contains] openspec-continue-change",
+        "[contains] openspec-apply-change",
+        "[contains] 先读取其 SKILL.md",
+        "[contains] 不得凭记忆调用",
+        "[contains] 不直接手写",
+        "[contains] 绕过原生 skill 流程"
+      ],
+      "difficulty": "hard",
+      "tags": ["opsx-integration", "delegation"],
+      "notes": "验证OPSX Skills委托规则"
+    },
+    {
+      "id": "scenario-08",
+      "prompt": "opsx解决：Superpowers 渐进增强 - 可选不阻断",
+      "expected_output": "Superpowers作为增强能力，缺失时降级",
+      "expectations": [
+        "[contains] Superpowers",
+        "[contains] 渐进增强",
+        "[contains] 不阻断",
+        "[contains] 静默降级",
+        "[contains] 增强能力失败不阻断流程",
+        "[contains] 不是硬依赖"
+      ],
+      "difficulty": "standard",
+      "tags": ["superpowers", "graceful-degradation"],
+      "notes": "验证Superpowers渐进增强原则"
+    },
+    {
+      "id": "scenario-09",
+      "prompt": "opsx解决：阶段5执行 - 每完成一个任务立即勾选checkbox",
+      "expected_output": "任务完成后立即更新 tasks.md checkbox",
+      "expectations": [
+        "[contains] 阶段 5",
+        "[contains] 执行计划",
+        "[contains] checkbox",
+        "[contains] StrReplace",
+        "[contains] 不得延后",
+        "[contains] 立即更新"
+      ],
+      "difficulty": "standard",
+      "tags": ["execution", "task-tracking"],
+      "notes": "验证任务勾选纪律"
+    },
+    {
+      "id": "scenario-10",
+      "prompt": "opsx解决：路径选择 - 精简→增量→完整升级",
+      "expected_output": "正确选择路径并支持升级",
+      "expectations": [
+        "[contains] 完整路径",
+        "[contains] 增量路径",
+        "[contains] 精简路径",
+        "[contains] 升级路径",
+        "[contains] 不跳过验证",
+        "[contains] 升级需用户确认"
+      ],
+      "difficulty": "standard",
+      "tags": ["path-selection", "escalation"],
+      "notes": "验证路径选择和升级规则"
+    },
+    {
+      "id": "scenario-11",
+      "prompt": "opsx解决：常见错误 - Red Flags 检查",
+      "expected_output": "输出 Red Flags 列表",
+      "expectations": [
+        "[contains] Red Flags",
+        "[contains] 禁止行为",
+        "[contains] 跳过方案审查",
+        "[contains] 只生成 1 个方案",
+        "[contains] 未验证就 archive",
+        "[contains] 凭记忆使用 Superpowers"
+      ],
+      "difficulty": "standard",
+      "tags": ["red-flags", "quality"],
+      "notes": "验证Red Flags覆盖"
+    },
+    {
+      "id": "scenario-12",
+      "prompt": "opsx解决：阶段7归档 - 不得手动操作 openspec 目录",
+      "expected_output": "委托 openspec-archive-change skill 归档",
+      "expectations": [
+        "[contains] 阶段 7",
+        "[contains] 回顾归档",
+        "[contains] openspec-archive-change",
+        "[contains] 先读取其 SKILL.md",
+        "[contains] 手动操作",
+        "[contains] 检查 diff",
+        "[contains] 不得归档"
+      ],
+      "difficulty": "hard",
+      "tags": ["archive", "safety"],
+      "notes": "验证归档安全规则"
+    }
+  ]
+}
