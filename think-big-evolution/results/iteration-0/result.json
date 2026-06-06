@@ -1,0 +1,26 @@
+{
+  "iteration": 0,
+  "layer": "baseline",
+  "timestamp": "2026-06-06T00:00:00Z",
+  "summary": {
+    "total_cases": 8,
+    "passed_cases": 8,
+    "failed_cases": 0,
+    "pass_rate": 1.0,
+    "target_met": true
+  },
+  "results": [
+    {"id": "case-01", "status": "pass", "reason": "⚡ 快速模式和四个维度标题明确存在"},
+    {"id": "case-02", "status": "pass", "reason": "🔍 深度模式和追问协议内容完整"},
+    {"id": "case-03", "status": "pass", "reason": "时间轴视角包含过去/现在/未来和历史路径依赖"},
+    {"id": "case-04", "status": "pass", "reason": "系统视角包含影响方/被影响方和连带效应"},
+    {"id": "case-05", "status": "pass", "reason": "取舍视角包含机会成本和假性两全说明"},
+    {"id": "case-06", "status": "pass", "reason": "不确定性视角包含关键不确定性和最小验证行动"},
+    {"id": "case-07", "status": "pass", "reason": "输出格式包含所有【】方括号标题模板"},
+    {"id": "case-08", "status": "pass", "reason": "通用原则包含不替用户做决定、取舍是核心、本质追问优先"}
+  ],
+  "mutation_applied": null,
+  "mutation_type": "baseline",
+  "tokens_used": 0,
+  "duration_s": 0
+}
