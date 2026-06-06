@@ -1,0 +1,14 @@
+{
+  "skill_name": "article-writer",
+  "split": "dev",
+  "evals": [
+    {"id": "case-01", "prompt": "写公众号：如何使用 React Hooks", "expected_output": "执行 4 步流程并生成技术文章", "expectations": ["[contains] 搜索资料", "[contains] 撰写文章", "[contains] 生成标题", "[contains] 排版优化"], "difficulty": "standard", "tags": ["basic-flow"]},
+    {"id": "case-02", "prompt": "写知乎技术文章：TypeScript 类型系统深度解析", "expected_output": "选择原理剖析结构模板并撰写", "expectations": ["[contains] 原理剖析", "[contains] 表象 → 深入分析 → 结论", "[contains] chinese-format"], "difficulty": "standard", "tags": ["structure-template"]},
+    {"id": "case-03", "prompt": "技术文章：Node.js 性能优化 5 个技巧", "expected_output": "生成 5 个标题并包含数字要素", "expectations": ["[contains] 生成 5 个标题", "[contains] 痛点", "[contains] 数字", "[contains] 结果"], "difficulty": "standard", "tags": ["title-generation"]},
+    {"id": "case-04", "prompt": "写公众号：Vibe Coding 提效实践", "expected_output": "使用 Vibe Coding 格式标题", "expectations": ["[contains] Vibe Coding", "[contains] 《Vibe Coding 10X 提效：", "[regex] \\[成果\\]，\\[痛点\\]"], "difficulty": "standard", "tags": ["vibe-format"]},
+    {"id": "case-05", "prompt": "写掘金：Vue 3 组合式 API 教程", "expected_output": "使用教程结构模板", "expectations": ["[contains] 使用教程", "[contains] 效果展示 → 步骤教学 → 升华", "[contains] 1000–1500 字"], "difficulty": "standard", "tags": ["tutorial-template"]},
+    {"id": "case-06", "prompt": "技术文章：前端性能监控工具测评", "expected_output": "使用工具测评结构模板", "expectations": ["[contains] 工具测评", "[contains] 介绍 → 使用过程 → 评测结论"], "difficulty": "standard", "tags": ["review-template"]},
+    {"id": "case-07", "prompt": "写知乎：Webpack 5 迁移指南", "expected_output": "展示排版优化要求", "expectations": ["[contains] 段落 3–5 行", "[contains] 配图", "[contains] 代码块前后留白"], "difficulty": "standard", "tags": ["layout-optimization"]},
+    {"id": "case-08", "prompt": "公众号：CSS Grid 完全指南", "expected_output": "执行准备阶段并读取上下文", "expectations": ["[contains] 执行前准备", "[contains] 读取项目上下文", "[contains] 确认目标平台"], "difficulty": "standard", "tags": ["preparation"]}
+  ]
+}

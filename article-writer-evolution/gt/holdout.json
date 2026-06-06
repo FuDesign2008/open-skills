@@ -1,0 +1,8 @@
+{
+  "skill_name": "article-writer",
+  "split": "holdout",
+  "evals": [
+    {"id": "case-09", "prompt": "写技术文章：Rust 所有权机制详解", "expected_output": "检查是否跳过项目上下文错误", "expectations": ["[contains] Common Mistakes", "[contains] 跳过项目上下文", "[not_contains] 直接开始撰写"], "difficulty": "standard", "tags": ["common-mistakes"]},
+    {"id": "case-10", "prompt": "技术文章：如何选择状态管理方案", "expected_output": "使用 Quick Reference 快速参考", "expectations": ["[contains] Quick Reference", "[contains] 阶段", "[contains] 关键动作"], "difficulty": "standard", "tags": ["quick-reference"]}
+  ]
+}

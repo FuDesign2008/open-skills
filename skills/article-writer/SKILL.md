@@ -1,6 +1,5 @@
 ---
 name: article-writer
-version: "1.0.0"
 description: Use when 用户想写公众号、知乎技术文章、自媒体内容，或基于已有技术文档改写为可发布文章时。
 triggers:
   - 写公众号

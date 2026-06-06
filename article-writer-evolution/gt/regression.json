@@ -1,0 +1,7 @@
+{
+  "skill_name": "article-writer",
+  "split": "regression",
+  "evals": [
+    {"id": "case-regression-01", "prompt": "写公众号：技术文章写作流程", "expected_output": "执行 4 步写作流程", "expectations": ["[contains] 搜索资料", "[contains] 撰写文章", "检查是否包含生成标题和排版优化"], "difficulty": "standard", "tags": ["core-flow"]}
+  ]
+}
