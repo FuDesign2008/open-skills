@@ -1,0 +1,8 @@
+{
+  "skill_name": "opsx-solve-workflow",
+  "split": "holdout",
+  "evals": [
+    {"id": "case-09", "prompt": "规范化解决：阶段5-6", "expected_output": "执行计划和检查验证", "expectations": ["[contains] 阶段 5 执行计划", "[contains] 阶段 6 检查验证", "[contains] 执行报告", "[contains] 验证结果"]},
+    {"id": "case-10", "prompt": "OpenSpec解决：阶段7", "expected_output": "回顾归档或循环", "expectations": ["[contains] 阶段 7 回顾归档", "[contains] 归档确认", "[contains] 沉淀建议", "[contains] 循环回阶段"]}
+  ]
+}

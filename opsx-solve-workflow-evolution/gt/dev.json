@@ -1,0 +1,14 @@
+{
+  "skill_name": "opsx-solve-workflow",
+  "split": "dev",
+  "evals": [
+    {"id": "case-01", "prompt": "opsx解决：七阶段流程", "expected_output": "执行完整七阶段问题解决流程", "expectations": ["[contains] 阶段 0：环境检查", "[contains] 阶段 1.1 明确问题", "[contains] 阶段 2 探索方案", "[contains] 阶段 5 执行计划", "[contains] 阶段 7 回顾归档"], "difficulty": "standard", "tags": ["full-flow"]},
+    {"id": "case-02", "prompt": "OpenSpec解决：PDCA 对应", "expected_output": "展示与戴明环对应关系", "expectations": ["[contains] 与戴明环（PDCA）的对应", "[contains] Plan", "[contains] Do", "[contains] Check", "[contains] Act"]},
+    {"id": "case-03", "prompt": "规范化解决：调用约定", "expected_output": "说明手动模式和自动模式", "expectations": ["[contains] 调用约定", "[contains] 手动模式", "[contains] 自动模式", "[contains] 等用户确认"]},
+    {"id": "case-04", "prompt": "opsx-solve：快速参考", "expected_output": "展示工具权限和停止点", "expectations": ["[contains] ⚡ 快速参考", "[contains] 手动停止点", "[contains] 必须输出"]},
+    {"id": "case-05", "prompt": "用OpenSpec分析：环境检查", "expected_output": "执行门禁检查", "expectations": ["[contains] 阶段 0：环境检查", "[contains] 门禁 1", "[contains] OpenSpec 目录检查", "[contains] openspec init"]},
+    {"id": "case-06", "prompt": "创建opsx变更：阶段1", "expected_output": "明确问题和技术分析", "expectations": ["[contains] 阶段 1.1 明确问题", "[contains] 阶段 1.2 技术分析", "[contains] 问题复述", "[contains] 根因"]},
+    {"id": "case-07", "prompt": "OpenSpec自动解决：阶段2", "expected_output": "探索方案并输出方案表", "expectations": ["[contains] 阶段 2 探索方案", "[contains] 方案对比表", "[contains] OpenSpec artifacts"]},
+    {"id": "case-08", "prompt": "opsx-solve：阶段3-4", "expected_output": "审查方案和制定计划", "expectations": ["[contains] 阶段 3 审查方案", "[contains] 阶段 4 制定计划", "[contains] 审查报告", "[contains] tasks.md"]}
+  ]
+}

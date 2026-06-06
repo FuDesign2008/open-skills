@@ -1,0 +1,7 @@
+{
+  "skill_name": "opsx-solve-workflow",
+  "split": "regression",
+  "evals": [
+    {"id": "case-regression-01", "prompt": "opsx解决：核心阶段验证", "expected_output": "验证关键阶段（0/1/2/5/7）", "expectations": ["[contains] 阶段 0", "[contains] 阶段 1", "[contains] 阶段 2", "[contains] 阶段 5", "检查是否包含阶段7"]}
+  ]
+}
