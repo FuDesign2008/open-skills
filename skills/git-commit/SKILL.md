@@ -58,15 +58,13 @@ description: 当用户说「提交代码」「git commit」「帮我提交」「
 
 **手动模式（execute=false）**：生成命令，不执行，提示用户手动运行。
 
-**自动模式（execute=true）**：依次执行以下命令：
+**自动模式（execute=true）**：依次执行以下命令，并输出每个命令的执行结果或状态：
 
-```bash
-git status
-git add .
-git commit -m "<type>(<scope>): <ID> <subject>"
-git log -1 --stat
-git push -u origin [branch-name]
-```
+1. **git status** — 输出当前改动摘要
+2. **git add .** — 输出文件暂存状态
+3. **git commit -m "..."** — 输出 commit hash 和提交信息
+4. **git log -1 --stat** — 输出提交统计（改动文件数和行数）
+5. **git push -u origin [branch-name]** — 输出推送结果或分支设置信息
 
 多项目时对每个项目独立执行上述步骤，末尾附汇总表。
 
