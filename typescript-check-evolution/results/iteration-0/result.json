@@ -1,0 +1,26 @@
+{
+  "iteration": 0,
+  "layer": "baseline",
+  "timestamp": "2026-06-06T00:00:00Z",
+  "summary": {
+    "total_cases": 8,
+    "passed_cases": 8,
+    "failed_cases": 0,
+    "pass_rate": 1.0,
+    "target_met": true
+  },
+  "results": [
+    {"id": "case-01", "status": "pass", "reason": "SKILL.md 包含 TypeScript 类型检查和 npx tsc --noEmit 关键词"},
+    {"id": "case-02", "status": "pass", "reason": "tsc 是触发词，skill 包含完整流程"},
+    {"id": "case-03", "status": "pass", "reason": "step2 包含 ✅ 通过格式输出"},
+    {"id": "case-04", "status": "pass", "reason": "step2/3 包含错误格式和修复方案模板"},
+    {"id": "case-06", "status": "pass", "reason": "step1 优先检查 npm run type-check"},
+    {"id": "case-07", "status": "pass", "reason": "step3 包含多个错误处理和 🔧 修复方案"},
+    {"id": "case-08", "status": "pass", "reason": "step3 明确说明必须等待用户同意"},
+    {"id": "case-09", "status": "pass", "reason": "step4 包含批量修复流程说明"}
+  ],
+  "mutation_applied": null,
+  "mutation_type": "baseline",
+  "tokens_used": 0,
+  "duration_s": 0
+}

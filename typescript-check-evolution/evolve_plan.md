@@ -19,9 +19,16 @@
 
 | Metric | Value |
 |--------|-------|
-| Baseline pass_rate | TBD (iteration-0) |
+| Baseline pass_rate | **1.0 (8/8 passed)** ✅ |
 | Target pass_rate | 0.95 (dev) |
-| Starting layer | Layer 1 (wording tweaks) |
+| Status | **目标已达成，无需迭代** |
+
+### Baseline Details
+
+**Iteration 0 (2026-06-06)**:
+- Dev set: 8/8 passed (100%)
+- All cases passed without mutations
+- Skill already in high-quality state
 
 ## Mutation Strategy
 
