@@ -1,0 +1,7 @@
+{
+  "skill_name": "perf-workflow",
+  "split": "regression",
+  "evals": [
+    {"id": "case-regression-01", "prompt": "性能分析：核心阶段和原则", "expected_output": "验证关键阶段和通用原则", "expectations": ["[contains] 阶段 1", "[contains] 阶段 6", "[contains] 通用原则", "检查是否包含数据驱动"]}
+  ]
+}

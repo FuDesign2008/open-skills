@@ -1,0 +1,7 @@
+{
+  "skill_name": "solve-workflow",
+  "split": "regression",
+  "evals": [
+    {"id": "case-regression-01", "prompt": "七阶段核心验证", "expected_output": "验证所有7个阶段存在", "expectations": ["[contains] 阶段 1", "[contains] 阶段 7", "检查是否包含PDCA"]}
+  ]
+}

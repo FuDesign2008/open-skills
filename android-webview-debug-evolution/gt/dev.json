@@ -1,0 +1,14 @@
+{
+  "skill_name": "android-webview-debug",
+  "split": "dev",
+  "evals": [
+    {"id": "case-01", "prompt": "android-webview-debug-enable 搜索与分类", "expected_output": "搜索并分类 setWebContentsDebuggingEnabled", "expectations": ["[contains] 搜索", "[contains] 分类", "[contains] 已是 true", "[contains] 条件或其它表达式"]},
+    {"id": "case-02", "prompt": "android-webview-debug-enable 状态文件", "expected_output": "创建 .android-webview-debug-state.json", "expectations": ["[contains] 状态文件", "[contains] .android-webview-debug-state.json", "[contains] entries"]},
+    {"id": "case-03", "prompt": "android-webview-debug-enable 执行替换", "expected_output": "将条件表达式改为 true", "expectations": ["[contains] 执行替换", "[contains] setWebContentsDebuggingEnabled(true)", "[contains] 已修改文件"]},
+    {"id": "case-04", "prompt": "android-webview-debug-revert 读取状态", "expected_output": "读取状态文件并遍历 entries", "expectations": ["[contains] 读取状态文件", "[contains] 遍历 entries", "[contains] replaced"]},
+    {"id": "case-05", "prompt": "android-webview-debug-revert 恢复一致项", "expected_output": "恢复与记录一致的项", "expectations": ["[contains] 一致", "[contains] 替换为 original", "[contains] 与记录不符"]},
+    {"id": "case-06", "prompt": "android-webview-debug-revert 人工确认", "expected_output": "提示不符项并等待确认", "expectations": ["[contains] 与记录不符", "[contains] 请确认", "[contains] 恢复或跳过"]},
+    {"id": "case-07", "prompt": "状态文件格式", "expected_output": "验证状态文件 JSON 格式", "expectations": ["[contains] version", "[contains] createdAt", "[contains] projectRoot", "[contains] entries", "[contains] original", "[contains] replaced"]},
+    {"id": "case-08", "prompt": "触发词识别", "expected_output": "识别两个触发词", "expectations": ["[contains] android-webview-debug-enable", "[contains] android-webview-debug-revert"]}
+  ]
+}

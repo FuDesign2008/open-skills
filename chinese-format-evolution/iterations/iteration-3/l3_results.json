@@ -1,0 +1,88 @@
+{
+  "iteration": 3,
+  "l3_trigger": "all_cases_pass",
+  "dev_pass_rate": 1.0,
+  "threshold": 0.95,
+  "holdout_eval": {
+    "cases": [
+      {
+        "id": "case-09",
+        "prompt": "检查中文：代码示例：const arr = [1, 2, 3]; console.log(arr);",
+        "passed": 4,
+        "total": 4,
+        "pass_rate": 1.0,
+        "expectations": [
+          "[contains] const arr = [1, 2, 3];",
+          "[contains] console.log(arr);",
+          "[not_contains] const arr = [1, 2, 3]；",
+          "[not_contains] console。log"
+        ],
+        "failed_expectations": []
+      },
+      {
+        "id": "case-10",
+        "prompt": "中文格式：already correct，无需修改。这句话已经符合规范！",
+        "passed": 3,
+        "total": 3,
+        "pass_rate": 1.0,
+        "expectations": [
+          "[contains] already correct，无需修改。",
+          "[contains] 这句话已经符合规范！",
+          "[not_contains] already correct,无需修改."
+        ],
+        "failed_expectations": []
+      }
+    ],
+    "holdout_pass_rate": 1.0
+  },
+  "regression_eval": {
+    "cases": [
+      {
+        "id": "case-11",
+        "prompt": "格式化：This is pure English text without Chinese characters.",
+        "passed": 3,
+        "total": 3,
+        "pass_rate": 1.0,
+        "expectations": [
+          "[contains] This is pure English text",
+          "[not_contains] This is pure English text，",
+          "保持原文或不需要中文格式化"
+        ],
+        "failed_expectations": []
+      },
+      {
+        "id": "case-12",
+        "prompt": "检查中文：在终端运行 `npm run build`，然后访问 http://localhost:3000",
+        "passed": 4,
+        "total": 4,
+        "pass_rate": 1.0,
+        "expectations": [
+          "[contains] 在终端运行 `npm run build`，",
+          "[contains] 然后访问 http://localhost:3000",
+          "[not_contains] 在终端运行 `npm run build`,",
+          "[regex] http://localhost:3000"
+        ],
+        "failed_expectations": []
+      }
+    ],
+    "regression_pass_rate": 1.0
+  },
+  "overfitting_check": {
+    "dev_pass_rate": 1.0,
+    "holdout_pass_rate": 1.0,
+    "gap": 0.0,
+    "overfitting_detected": false,
+    "verdict": "NO_OVERFITTING — holdout 性能与 dev 一致，未发现过拟合"
+  },
+  "final_summary": {
+    "total_cases_evaluated": 12,
+    "dev_cases": 8,
+    "holdout_cases": 2,
+    "regression_cases": 2,
+    "overall_pass_rate": 1.0,
+    "iteration_count": 3,
+    "layer": 1,
+    "consecutive_keeps": 3,
+    "decision": "STOP — 目标达成，所有 GT cases 通过"
+  }
+}

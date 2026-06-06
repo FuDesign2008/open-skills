@@ -1,0 +1,7 @@
+{
+  "skill_name": "android-webview-debug",
+  "split": "regression",
+  "evals": [
+    {"id": "case-regression-01", "prompt": "核心流程验证", "expected_output": "验证 enable 和 revert 流程", "expectations": ["[contains] android-webview-debug-enable", "[contains] android-webview-debug-revert", "[contains] 状态文件"]}
+  ]
+}

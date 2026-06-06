@@ -1,0 +1,8 @@
+{
+  "skill_name": "solve-workflow",
+  "split": "holdout",
+  "evals": [
+    {"id": "case-09", "prompt": "自动模式识别", "expected_output": "识别自动模式", "expectations": ["[contains] 自动模式", "[contains] 全流程自动执行", "[contains] 无需确认"]},
+    {"id": "case-10", "prompt": "触发词列表", "expected_output": "列出所有触发词", "expectations": ["[contains] 明确问题", "[contains] 分析问题", "[contains] 探索方案", "[contains] 审查方案", "[contains] 制定计划", "[contains] 执行计划", "[contains] 检查验证", "[contains] 回顾总结"]}
+  ]
+}

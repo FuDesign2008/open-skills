@@ -1,0 +1,2 @@
+{"iteration":0,"layer":"baseline","mutation_type":"baseline","description":"article-writer baseline evaluation","pass_rate":0.75,"delta":0.0,"decision":"ACCEPT","tokens":0,"duration_s":0,"timestamp":"1780714787"}
+{"iteration":1,"layer":"Layer 1","mutation_type":"wording_improvements","description":"强化排版和准备动作","pass_rate":1.0,"delta":0.25,"decision":"ACCEPT","tokens":0,"duration_s":0,"timestamp":"1780714812"}

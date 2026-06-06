@@ -1,0 +1,98 @@
+{
+  "iteration": 2,
+  "dev_pass_rate": 0.97,
+  "tokens": 0,
+  "duration_seconds": 0,
+  "baseline_comparison": {
+    "previous_pass_rate": 0.94,
+    "delta": "+0.03",
+    "improved": true
+  },
+  "cases": [
+    {
+      "id": "case-01",
+      "prompt": "检查以下中文格式：这是一个测试，包含一些技术术语如JavaScript和React.",
+      "passed": 5,
+      "total": 5,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-02",
+      "prompt": "中文格式检查：我们需要修复bug#1234；这个问题很重要！请尽快解决.",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-03",
+      "prompt": "格式化中文：文件路径是 /usr/local/bin/node，版本号是 8.2.10",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-04",
+      "prompt": "检查中文格式：执行命令 npm install 和 git status",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-05",
+      "prompt": "中文格式：《JavaScript高级程序设计》是一本好书，推荐给所有人（特别是前端开发者）.",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "FIXED",
+      "fix_details": "Iteration-2 明确「书名号内的英文标点符号可保留」和「书名号内的句号可保留原样」，解决了 GT 期望不包含书名号后句号的问题"
+    },
+    {
+      "id": "case-06",
+      "prompt": "格式化：项目使用 TypeScript 4.5 版本，覆盖率达到 95% 以上",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-07",
+      "prompt": "中文检查：React 和 Vue 是主流框架，Angular 也很重要",
+      "passed": 3,
+      "total": 4,
+      "pass_rate": 0.75,
+      "failed_expectations": [
+        "[contains] React"
+      ],
+      "improvement": "no_change",
+      "note": "GT 期望必须包含 React（检查是否原样保留），但技能说明未明确「技术术语必须原样保留」的输出格式"
+    },
+    {
+      "id": "case-08",
+      "prompt": "格式化：访问 https://example.com/api/v2 查看文档",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    }
+  ],
+  "regressions": [],
+  "new_passes": ["case-05"],
+  "mutation_summary": {
+    "layer": 1,
+    "type": "wording_improvement",
+    "target": "明确书名号内标点处理",
+    "affected_cases": ["case-05"],
+    "success": true
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "skill_name": "solve-workflow",
+  "split": "dev",
+  "evals": [
+    {"id": "case-01", "prompt": "分析问题：阶段触发", "expected_output": "识别触发词并进入阶段1", "expectations": ["[contains] 阶段 1", "[contains] 分析问题", "[contains] 问题复述"]},
+    {"id": "case-02", "prompt": "探索方案：方案对比表", "expected_output": "输出方案对比表", "expectations": ["[contains] 阶段 2", "[contains] 方案对比表", "[contains] 手动停止点"]},
+    {"id": "case-03", "prompt": "审查方案：审查报告", "expected_output": "输出审查报告", "expectations": ["[contains] 阶段 3", "[contains] 审查报告", "[contains] 通过/不通过"]},
+    {"id": "case-04", "prompt": "制定计划：修改清单", "expected_output": "输出文件修改清单", "expectations": ["[contains] 阶段 4", "[contains] 文件修改清单", "[contains] 顺序"]},
+    {"id": "case-05", "prompt": "执行计划：执行报告", "expected_output": "输出执行报告", "expectations": ["[contains] 阶段 5", "[contains] 执行报告", "[contains] 全部"]},
+    {"id": "case-06", "prompt": "检查验证：检查结果", "expected_output": "输出检查结果", "expectations": ["[contains] 阶段 6", "[contains] 检查结果", "[contains] Bash"]},
+    {"id": "case-07", "prompt": "回顾总结：改进建议", "expected_output": "输出改进建议和沉淀载体", "expectations": ["[contains] 阶段 7", "[contains] 改进建议", "[contains] 沉淀载体"]},
+    {"id": "case-08", "prompt": "PDCA 对应", "expected_output": "展示 PDCA 对应关系", "expectations": ["[contains] PDCA", "[contains] Plan", "[contains] Do", "[contains] Check", "[contains] Act"]}
+  ]
+}

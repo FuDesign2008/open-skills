@@ -1,0 +1,8 @@
+{
+  "skill_name": "perf-workflow",
+  "split": "holdout",
+  "evals": [
+    {"id": "case-09", "prompt": "性能分析：职责范围", "expected_output": "说明工作流职责", "expectations": ["[contains] 职责范围", "[contains] 找到性能瓶颈的根因", "[contains] 如何发布"]},
+    {"id": "case-10", "prompt": "性能问题：触发词识别扩展", "expected_output": "识别性能相关说法", "expectations": ["[contains] 触发词识别", "[contains] 性能问题", "[contains] 卡顿", "[contains] 很慢"]}
+  ]
+}

@@ -1,0 +1,1 @@
+{"iteration": 0, "layer": "baseline", "mutation": "Pre-evolution cleanup: removed non-standard frontmatter (version, user-invocable) from chinese-format SKILL.md", "target_cases": [], "pass_rate_before": null, "pass_rate_after": 0.75, "regressions": [], "decision": "BASELINE", "gate_details": {"structure": true, "progress": true, "regression": true, "cost": true, "safety": true}}

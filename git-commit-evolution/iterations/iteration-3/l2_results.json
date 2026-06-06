@@ -1,0 +1,87 @@
+{
+  "iteration": 3,
+  "dev_pass_rate": 1.0,
+  "tokens": 0,
+  "duration_seconds": 0,
+  "baseline_comparison": {
+    "previous_pass_rate": 0.96,
+    "delta": "+0.04",
+    "improved": true
+  },
+  "cases": [
+    {
+      "id": "case-01",
+      "prompt": "帮我提交代码",
+      "passed": 5,
+      "total": 5,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-02",
+      "prompt": "提交代码，类型是 feat，描述是：新增用户登录功能",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-03",
+      "prompt": "手动提交，帮我生成提交命令，不要执行",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-04",
+      "prompt": "提交代码，Jira 号是 PROJ-1234，修复了空指针异常",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-05",
+      "prompt": "git commit",
+      "passed": 3,
+      "total": 3,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-06",
+      "prompt": "提交代码，类型选 refactor，重构了数据库连接池模块",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-09",
+      "prompt": "帮我提交，但是我现在没有任何文件改动",
+      "passed": 3,
+      "total": 3,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "FIXED",
+      "fix_details": "Iteration-3 明确「无未提交改动」错误处理措辞（自动模式输出「无改动可提交」或「暂存区为空」；手动模式告知用户没有需要提交的改动），解决了之前「告知用户没有需要提交的改动或处理方式」模糊的问题"
+    }
+  ],
+  "regressions": [],
+  "new_passes": ["case-09"],
+  "mutation_summary": {
+    "layer": 1,
+    "type": "wording_improvement",
+    "target": "明确无改动场景提示措辞",
+    "affected_cases": ["case-09"],
+    "success": true,
+    "all_cases_pass": true
+  }
+}

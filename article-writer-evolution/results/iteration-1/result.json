@@ -1,0 +1,27 @@
+{
+  "iteration": 1,
+  "layer": "Layer 1",
+  "timestamp": "2026-06-06T00:00:00Z",
+  "summary": {
+    "total_cases": 8,
+    "passed_cases": 8,
+    "failed_cases": 0,
+    "pass_rate": 1.0,
+    "target_met": true,
+    "delta": 0.25
+  },
+  "results": [
+    {"id": "case-01", "status": "pass", "reason": "Step 1-4 明确列出 4 步流程"},
+    {"id": "case-02", "status": "pass", "reason": "结构模板表包含原理剖析框架"},
+    {"id": "case-03", "status": "pass", "reason": "Step 3 明确说明生成 5 个标题，要素表包含痛点/数字/结果"},
+    {"id": "case-04", "status": "pass", "reason": "Step 3 包含 Vibe Coding 格式示例"},
+    {"id": "case-05", "status": "pass", "reason": "结构模板表包含使用教程框架和字数要求"},
+    {"id": "case-06", "status": "pass", "reason": "结构模板表包含工具测评框架"},
+    {"id": "case-07", "status": "pass", "reason": "排版优化部分已强化'段落 3–5 行'格式"},
+    {"id": "case-08", "status": "pass", "reason": "执行前准备已添加'关键动作'总结"}
+  ],
+  "mutation_applied": "强化排版优化部分和执行前准备的关键动作描述",
+  "mutation_type": "wording_improvements",
+  "tokens_used": 0,
+  "duration_s": 0
+}

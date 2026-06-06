@@ -1,0 +1,96 @@
+{
+  "iteration": 3,
+  "dev_pass_rate": 1.0,
+  "tokens": 0,
+  "duration_seconds": 0,
+  "baseline_comparison": {
+    "previous_pass_rate": 0.97,
+    "delta": "+0.03",
+    "improved": true
+  },
+  "cases": [
+    {
+      "id": "case-01",
+      "prompt": "检查以下中文格式：这是一个测试，包含一些技术术语如JavaScript和React.",
+      "passed": 5,
+      "total": 5,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-02",
+      "prompt": "中文格式检查：我们需要修复bug#1234；这个问题很重要！请尽快解决.",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-03",
+      "prompt": "格式化中文：文件路径是 /usr/local/bin/node，版本号是 8.2.10",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-04",
+      "prompt": "检查中文格式：执行命令 npm install 和 git status",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-05",
+      "prompt": "中文格式：《JavaScript高级程序设计》是一本好书，推荐给所有人（特别是前端开发者）.",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-06",
+      "prompt": "格式化：项目使用 TypeScript 4.5 版本，覆盖率达到 95% 以上",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-07",
+      "prompt": "中文检查：React 和 Vue 是主流框架，Angular 也很重要",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "FIXED",
+      "fix_details": "Iteration-3 在「例外情况」的所有条目中强化「在输出中必须原样保留」，解决了 GT 期望「包含 React」的问题"
+    },
+    {
+      "id": "case-08",
+      "prompt": "格式化：访问 https://example.com/api/v2 查看文档",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    }
+  ],
+  "regressions": [],
+  "new_passes": ["case-07"],
+  "mutation_summary": {
+    "layer": 1,
+    "type": "wording_improvement",
+    "target": "强化技术术语输出保留",
+    "affected_cases": ["case-07"],
+    "success": true,
+    "all_cases_pass": true
+  }
+}

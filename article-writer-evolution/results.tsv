@@ -1,1 +1,3 @@
 iteration	layer	mutation_type	description	pass_rate	delta	decision	tokens	duration_s	timestamp
+0	baseline	baseline	article-writer baseline evaluation	0.75	0.0	ACCEPT	0	0	1780714787
+1	Layer 1	wording_improvements	强化排版和准备动作	1.0	0.25	ACCEPT	0	0	1780714812

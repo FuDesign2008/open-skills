@@ -1,0 +1,101 @@
+{
+  "iteration": 0,
+  "dev_pass_rate": 0.75,
+  "tokens": 0,
+  "duration_seconds": 0,
+  "baseline_type": "manual_analysis",
+  "cases": [
+    {
+      "id": "case-01",
+      "prompt": "检查以下中文格式：这是一个测试，包含一些技术术语如JavaScript和React.",
+      "passed": 4,
+      "total": 5,
+      "pass_rate": 0.8,
+      "failed_expectations": [
+        "[not_contains] ，JavaScript"
+      ],
+      "analysis": "技能说明「技术术语保持原文」，但未明确技术术语与中文标点之间是否需要空格"
+    },
+    {
+      "id": "case-02",
+      "prompt": "中文格式检查：我们需要修复bug#1234；这个问题很重要！请尽快解决.",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "analysis": "分号和感叹号转换明确，无问题"
+    },
+    {
+      "id": "case-03",
+      "prompt": "格式化中文：文件路径是 /usr/local/bin/node，版本号是 8.2.10",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "analysis": "路径和版本号例外规则明确"
+    },
+    {
+      "id": "case-04",
+      "prompt": "检查中文格式：执行命令 npm install 和 git status",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "analysis": "命令例外规则明确"
+    },
+    {
+      "id": "case-05",
+      "prompt": "中文格式：《JavaScript高级程序设计》是一本好书，推荐给所有人（特别是前端开发者）.",
+      "passed": 3,
+      "total": 4,
+      "pass_rate": 0.75,
+      "failed_expectations": [
+        "[not_contains] 《JavaScript高级程序设计》."
+      ],
+      "analysis": "书名号转换明确，但 GT 期望在书名号后不应有句号，而技能说明未明确「书名号内的句号处理」"
+    },
+    {
+      "id": "case-06",
+      "prompt": "格式化：项目使用 TypeScript 4.5 版本，覆盖率达到 95% 以上",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "analysis": "数字和百分比例外规则明确"
+    },
+    {
+      "id": "case-07",
+      "prompt": "中文检查：React 和 Vue 是主流框架，Angular 也很重要",
+      "passed": 3,
+      "total": 4,
+      "pass_rate": 0.75,
+      "failed_expectations": [
+        "[contains] React"
+      ],
+      "analysis": "中英文混排规则说「中英文之间可加空格（可选）」，但 GT 期望必须包含 React（不需要检查空格），技能说明未明确「技术术语必须原样保留」的输出格式"
+    },
+    {
+      "id": "case-08",
+      "prompt": "格式化：访问 https://example.com/api/v2 查看文档",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "analysis": "URL 例外规则明确"
+    }
+  ],
+  "regressions": [],
+  "new_passes": [],
+  "summary": {
+    "total_cases": 8,
+    "total_passed": 30,
+    "total_expectations": 32,
+    "pass_rate": 0.9375,
+    "weak_cases": ["case-01", "case-05", "case-07"],
+    "improvement_targets": [
+      "明确技术术语与中文标点之间的空格规则（case-01）",
+      "明确书名号内标点的处理规则（case-05）",
+      "强化技术术语必须原样保留的输出要求（case-07）"
+    ]
+  }
+}

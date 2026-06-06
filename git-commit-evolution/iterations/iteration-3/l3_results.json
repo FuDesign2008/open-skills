@@ -1,0 +1,77 @@
+{
+  "iteration": 3,
+  "l3_trigger": "dev_pass_rate_exceeds_threshold",
+  "dev_pass_rate": 1.0,
+  "threshold": 0.9,
+  "holdout_eval": {
+    "cases": [
+      {
+        "id": "case-08",
+        "prompt": "提交代码，带 scope，模块是 auth，类型是 fix，修复了 token 过期问题",
+        "passed": 4,
+        "total": 4,
+        "pass_rate": 1.0,
+        "expectations": [
+          "[regex] fix\\(auth\\):",
+          "[contains] token",
+          "[contains] git commit",
+          "scope 正确使用括号包裹"
+        ],
+        "failed_expectations": []
+      },
+      {
+        "id": "case-10",
+        "prompt": "自动提交代码，这次改动了超过15个文件",
+        "passed": 5,
+        "total": 5,
+        "pass_rate": 1.0,
+        "expectations": [
+          "[contains] git status",
+          "[contains] git add",
+          "[contains] git commit",
+          "出现大量文件改动时输出警告信息",
+          "警告不阻断提交，继续完成流程"
+        ],
+        "failed_expectations": []
+      }
+    ],
+    "holdout_pass_rate": 1.0
+  },
+  "regression_eval": {
+    "cases": [
+      {
+        "id": "case-07",
+        "prompt": "只生成 commit message，不要执行任何命令",
+        "passed": 4,
+        "total": 4,
+        "pass_rate": 1.0,
+        "expectations": [
+          "[not_contains] git add",
+          "[not_contains] 执行成功",
+          "输出格式符合约定式提交规范",
+          "明确告知用户这是手动模式"
+        ],
+        "failed_expectations": []
+      }
+    ],
+    "regression_pass_rate": 1.0
+  },
+  "overfitting_check": {
+    "dev_pass_rate": 1.0,
+    "holdout_pass_rate": 1.0,
+    "gap": 0.0,
+    "overfitting_detected": false,
+    "verdict": "NO_OVERFITTING — holdout 性能与 dev 一致，未发现过拟合"
+  },
+  "final_summary": {
+    "total_cases_evaluated": 10,
+    "dev_cases": 7,
+    "holdout_cases": 2,
+    "regression_cases": 1,
+    "overall_pass_rate": 1.0,
+    "iteration_count": 3,
+    "layer": 1,
+    "consecutive_keeps": 3,
+    "decision": "STOP — 目标达成，所有 GT cases 通过"
+  }
+}

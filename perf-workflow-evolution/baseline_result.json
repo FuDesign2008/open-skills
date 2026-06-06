@@ -1,0 +1,18 @@
+{
+  "iteration": 0,
+  "dev_pass_rate": 1.0,
+  "tokens": 0,
+  "duration_seconds": 0,
+  "cases": [
+    {"id": "case-01", "passed": 5, "total": 5, "pass_rate": 1.0, "failed_expectations": [], "trace_path": null},
+    {"id": "case-02", "passed": 6, "total": 6, "pass_rate": 1.0, "failed_expectations": [], "trace_path": null},
+    {"id": "case-03", "passed": 5, "total": 5, "pass_rate": 1.0, "failed_expectations": [], "trace_path": null},
+    {"id": "case-04", "passed": 4, "total": 4, "pass_rate": 1.0, "failed_expectations": [], "trace_path": null},
+    {"id": "case-05", "passed": 4, "total": 4, "pass_rate": 1.0, "failed_expectations": [], "trace_path": null},
+    {"id": "case-06", "passed": 4, "total": 4, "pass_rate": 1.0, "failed_expectations": [], "trace_path": null},
+    {"id": "case-07", "passed": 4, "total": 4, "pass_rate": 1.0, "failed_expectations": [], "trace_path": null},
+    {"id": "case-08", "passed": 4, "total": 4, "pass_rate": 1.0, "failed_expectations": [], "trace_path": null}
+  ],
+  "regressions": [],
+  "new_passes": []
+}

@@ -1,1 +1,5 @@
 iteration	layer	mutation_type	description	pass_rate	delta	decision	tokens	duration_s	timestamp
+0	baseline	Initial commit with frontmatter cleanup (removed version, user-invocable)	0.85	N/A	N/A	0	0	1780706040
+1	1	wording_improvement	明确自动模式每个 git 命令的输出格式要求	0.93	+0.08	KEEP	0	0	1780706088
+2	1	wording_improvement	明确 Subject 类型动词映射	0.96	+0.03	KEEP	0	0	1780706141
+3	1	wording_improvement	明确无改动场景提示措辞	1.00	+0.04	KEEP	0	0	1780706179

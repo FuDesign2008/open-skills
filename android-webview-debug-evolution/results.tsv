@@ -1,2 +1,2 @@
 iteration	layer	mutation_type	description	pass_rate	delta	decision	tokens	duration_s	timestamp
-0	baseline	baseline	git-conflict-resolve baseline evaluation	1.0	0.0	ACCEPT	0	0	1780715025
+0	baseline	initial	baseline commit - frontmatter already clean	1.0	0.0	ACCEPT	0	0	1780715429

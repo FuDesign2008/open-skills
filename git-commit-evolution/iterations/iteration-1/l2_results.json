@@ -1,0 +1,92 @@
+{
+  "iteration": 1,
+  "dev_pass_rate": 0.93,
+  "tokens": 0,
+  "duration_seconds": 0,
+  "baseline_comparison": {
+    "previous_pass_rate": 0.89,
+    "delta": "+0.04",
+    "improved": true
+  },
+  "cases": [
+    {
+      "id": "case-01",
+      "prompt": "帮我提交代码",
+      "passed": 5,
+      "total": 5,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-02",
+      "prompt": "提交代码，类型是 feat，描述是：新增用户登录功能",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-03",
+      "prompt": "手动提交，帮我生成提交命令，不要执行",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-04",
+      "prompt": "提交代码，Jira 号是 PROJ-1234，修复了空指针异常",
+      "passed": 4,
+      "total": 4,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "no_change"
+    },
+    {
+      "id": "case-05",
+      "prompt": "git commit",
+      "passed": 3,
+      "total": 3,
+      "pass_rate": 1.0,
+      "failed_expectations": [],
+      "improvement": "FIXED",
+      "fix_details": "Iteration-1 明确要求「1. git status — 输出当前改动摘要」，解决了之前「输出包含执行步骤」模糊的问题"
+    },
+    {
+      "id": "case-06",
+      "prompt": "提交代码，类型选 refactor，重构了数据库连接池模块",
+      "passed": 3,
+      "total": 4,
+      "pass_rate": 0.75,
+      "failed_expectations": [
+        "commit message 主题使用中文"
+      ],
+      "improvement": "no_change",
+      "note": "本次修改未涉及中文主题规则，预期保持 baseline 状态"
+    },
+    {
+      "id": "case-09",
+      "prompt": "帮我提交，但是我现在没有任何文件改动",
+      "passed": 2,
+      "total": 3,
+      "pass_rate": 0.67,
+      "failed_expectations": [
+        "告知用户没有需要提交的改动或处理方式"
+      ],
+      "improvement": "no_change",
+      "note": "本次修改未细化无改动场景的措辞，预期保持 baseline 状态"
+    }
+  ],
+  "regressions": [],
+  "new_passes": ["case-05"],
+  "mutation_summary": {
+    "layer": 1,
+    "type": "wording_improvement",
+    "target": "明确自动模式命令输出格式",
+    "affected_cases": ["case-05"],
+    "success": true
+  }
+}

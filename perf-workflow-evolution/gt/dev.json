@@ -1,0 +1,14 @@
+{
+  "skill_name": "perf-workflow",
+  "split": "dev",
+  "evals": [
+    {"id": "case-01", "prompt": "性能分析：六阶段流程", "expected_output": "执行完整六阶段性能分析", "expectations": ["[contains] 阶段 1：性能证据", "[contains] 阶段 2：性能定位", "[contains] 阶段 3：性能假设", "[contains] 阶段 5：性能优化", "[contains] 阶段 6：性能验证"], "difficulty": "standard", "tags": ["full-flow"]},
+    {"id": "case-02", "prompt": "性能证据：触发词识别", "expected_output": "展示触发词和阶段对应", "expectations": ["[contains] 触发词识别", "[contains] 性能分析", "[contains] 性能证据", "[contains] 性能定位", "[contains] 性能优化", "[contains] 性能验证"]},
+    {"id": "case-03", "prompt": "性能定位：通用原则", "expected_output": "展示性能分析原则", "expectations": ["[contains] 通用原则", "[contains] 数据驱动", "[contains] 自上而下", "[contains] 单一变量", "[contains] 禁止提前优化"]},
+    {"id": "case-04", "prompt": "性能假设：阶段流转", "expected_output": "展示正向流程和常见跳转", "expectations": ["[contains] 阶段流转", "[contains] 正向流程", "[contains] 常见跳转", "[contains] 回到阶段"]},
+    {"id": "case-05", "prompt": "性能监控：阶段1", "expected_output": "执行性能证据收集", "expectations": ["[contains] 阶段 1：性能证据", "[contains] 收集证据", "[contains] 复现路径", "[contains] 可分析数据"]},
+    {"id": "case-06", "prompt": "性能优化：阶段2", "expected_output": "执行性能定位分析", "expectations": ["[contains] 阶段 2：性能定位", "[contains] 谁慢", "[contains] 瓶颈", "[contains] 耗时"]},
+    {"id": "case-07", "prompt": "性能验证：阶段3-4", "expected_output": "执行假设和监控", "expectations": ["[contains] 阶段 3：性能假设", "[contains] 阶段 4：性能监控", "[contains] 根因假设", "[contains] 正规的性能监控"]},
+    {"id": "case-08", "prompt": "性能深入：阶段5-6", "expected_output": "执行优化和验证", "expectations": ["[contains] 阶段 5：性能优化", "[contains] 阶段 6：性能验证", "[contains] 优化固化成闭环", "[contains] 验证未达标回到阶段"]}
+  ]
+}
