@@ -49,7 +49,7 @@ description: 当用户说「提交代码」「git commit」「帮我提交」「
 ```
 
 规则：
-- Subject 不超过 50 字符，使用中文
+- Subject 不超过 50 字符，使用中文，必须包含与类型对应的中文动词（feat: 新增、fix: 修复、refactor: 重构、perf: 优化、style: 格式化、docs: 文档、test: 测试）
 - 有 Jira ID 时放在 subject 之前
 - 无 scope 时省略括号：`<type>: <subject>`
 - commit message 只含标题行，无正文
