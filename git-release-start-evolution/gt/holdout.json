@@ -1,0 +1,8 @@
+{
+  "skill_name": "git-release-start",
+  "split": "holdout",
+  "evals": [
+    {"id": "case-09", "prompt": "开分支：前置条件验证", "expected_output": "检查 CLI 和版本号", "expectations": ["[contains] 调用前置条件", "[contains] 已安装对应平台 CLI", "[contains] 确认版本号"]},
+    {"id": "case-10", "prompt": "create release branch：tracking 指向", "expected_output": "确保 tracking 指向 origin/release", "expectations": ["[contains] tracking 指向", "[contains] origin/release", "[not_contains] origin/master"]}
+  ]
+}

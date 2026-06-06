@@ -1,0 +1,7 @@
+{
+  "skill_name": "git-release-start",
+  "split": "regression",
+  "evals": [
+    {"id": "case-regression-01", "prompt": "创建release分支：核心要素", "expected_output": "展示核心原则和平台 CLI", "expectations": ["[contains] 核心原则", "[contains] 先在远程创建", "[contains] 平台 CLI 映射", "检查是否包含 GitLab/GitHub"]}
+  ]
+}

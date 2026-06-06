@@ -1,0 +1,14 @@
+{
+  "skill_name": "git-release-start",
+  "split": "dev",
+  "evals": [
+    {"id": "case-01", "prompt": "创建release分支：完整流程", "expected_output": "执行创建 release 分支的完整流程", "expectations": ["[contains] 阶段总览", "[contains] 平台 CLI 映射", "[contains] 适用 / 不适用", "[contains] 调用前置条件"], "difficulty": "standard", "tags": ["full-flow"]},
+    {"id": "case-02", "prompt": "开release分支：核心原则", "expected_output": "说明先在远程创建，再同步到本地", "expectations": ["[contains] 核心原则", "[contains] 先在远程创建", "[contains] 再同步到本地", "[contains] tracking 指向"]},
+    {"id": "case-03", "prompt": "迭代分支：平台 CLI 映射", "expected_output": "展示 GitLab/GitHub CLI 工具", "expectations": ["[contains] 平台 CLI 映射", "[contains] GitLab", "[contains] glab", "[contains] GitHub", "[contains] gh"]},
+    {"id": "case-04", "prompt": "create release branch：配对 skill", "expected_output": "说明与 git-release-finish 配对", "expectations": ["[contains] 配对 skill", "[contains] git-release-finish", "[contains] 迭代结束"]},
+    {"id": "case-05", "prompt": "开分支：适用场景", "expected_output": "列出适用和不适用场景", "expectations": ["[contains] 适用场景", "[contains] 不适用场景", "[contains] 多个仓库", "[contains] tracking 指向正确"]},
+    {"id": "case-06", "prompt": "迭代分支：多仓库支持", "expected_output": "说明多仓库并行执行", "expectations": ["[contains] 多个仓库", "[contains] 统一创建", "[contains] 并行执行"]},
+    {"id": "case-07", "prompt": "创建release分支：流程原则", "expected_output": "说明流程必须完整执行", "expectations": ["[contains] 原则", "[contains] 流程必须完整执行", "[contains] 每个阶段都不可跳过"]},
+    {"id": "case-08", "prompt": "git-release-start：阶段执行", "expected_output": "执行各阶段创建分支", "expectations": ["[contains] 阶段", "[contains] git checkout", "[contains] git fetch"]}
+  ]
+}
