@@ -1,0 +1,26 @@
+{
+  "iteration": 0,
+  "layer": "baseline",
+  "timestamp": "2026-06-06T00:00:00Z",
+  "summary": {
+    "total_cases": 8,
+    "passed_cases": 8,
+    "failed_cases": 0,
+    "pass_rate": 1.0,
+    "target_met": true
+  },
+  "results": [
+    {"id": "case-01", "status": "pass", "reason": "6 个阶段标题明确存在"},
+    {"id": "case-02", "status": "pass", "reason": "阶段 1 Tech Stack 检测表包含 package.json 和 TypeScript"},
+    {"id": "case-03", "status": "pass", "reason": "阶段 1 检测表包含 go.mod，阶段 2 说明 Go 内置 go test"},
+    {"id": "case-04", "status": "pass", "reason": "阶段 1 和阶段 2 检测表包含 Python 和 Pytest"},
+    {"id": "case-05", "status": "pass", "reason": "阶段 4 明确列出包含/排除规则和目录"},
+    {"id": "case-06", "status": "pass", "reason": "阶段 5 包含单元测试生成与运行和阻断条件说明"},
+    {"id": "case-07", "status": "pass", "reason": "阶段 6 标题和内容包含 E2E 检测和可选说明"},
+    {"id": "case-08", "status": "pass", "reason": "输出格式部分包含所有 GT 期望字段：【ensure-tests 执行结果】、Tech Stack、测试框架、单元测试、E2E 测试"}
+  ],
+  "mutation_applied": null,
+  "mutation_type": "baseline",
+  "tokens_used": 0,
+  "duration_s": 0
+}
