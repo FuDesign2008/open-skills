@@ -1,2 +1,3 @@
 iteration	layer	mutation_type	description	pass_rate	delta	decision	tokens	duration_s	timestamp
 0	baseline	initial	L1 cleanup - remove non-standard frontmatter fields	1.0	0.0	ACCEPT	0	0	1780715408
+real-world	behavior	验证真实场景行为	1.0	0.0	ACCEPT	58	300	1780715829

@@ -1,0 +1,172 @@
+{
+  "skill_name": "solve-workflow",
+  "split": "real-world",
+  "evals": [
+    {
+      "id": "scenario-01",
+      "prompt": "分析问题：用户反馈登录后数据显示不正确，可能是数据解析问题",
+      "expected_output": "完整执行阶段1分析，识别问题要素和根因",
+      "expectations": [
+        "[contains] 阶段 1",
+        "[contains] 问题复述",
+        "[contains] 要素",
+        "[contains] 疑问点",
+        "[contains] 存在性结论",
+        "[not_contains] 已修改文件",
+        "[not_contains] 已执行",
+        "[contains] 等用户确认"
+      ],
+      "difficulty": "hard",
+      "tags": ["real-scenario", "read-only"],
+      "notes": "验证阶段1只读不写，输出后停止"
+    },
+    {
+      "id": "scenario-02",
+      "prompt": "探索方案：需要修复 API 响应解析逻辑",
+      "expected_output": "提供至少2个方案并输出方案对比表",
+      "expectations": [
+        "[contains] 阶段 2",
+        "[contains] 方案对比表",
+        "[contains] 方案 A",
+        "[contains] 方案 B",
+        "[contains] 优缺点",
+        "[not_contains] 已修改文件",
+        "[contains] 等用户选择"
+      ],
+      "difficulty": "hard",
+      "tags": ["real-scenario", "multiple-solutions"],
+      "notes": "验证阶段2输出多个方案，不修改代码"
+    },
+    {
+      "id": "scenario-03",
+      "prompt": "自动模式：登录数据显示错误，自动分析并解决",
+      "expected_output": "自动执行完整流程，无需用户确认",
+      "expectations": [
+        "[contains] 自动模式",
+        "[contains] 阶段 1",
+        "[contains] 阶段 2",
+        "[contains] 阶段 3",
+        "[contains] 审查报告",
+        "[contains] 通过/不通过",
+        "[not_contains] 等用户确认",
+        "[not_contains] 等待用户"
+      ],
+      "difficulty": "hard",
+      "tags": ["real-scenario", "auto-mode"],
+      "notes": "验证自动模式全程执行，不停止"
+    },
+    {
+      "id": "scenario-04",
+      "prompt": "制定计划：修复数据解析错误，列出所有需要修改的文件",
+      "expected_output": "输出详细的文件修改清单和执行顺序",
+      "expectations": [
+        "[contains] 阶段 4",
+        "[contains] 文件修改清单",
+        "[contains] 顺序",
+        "[not_contains] 已执行修改",
+        "[contains] 等用户确认"
+      ],
+      "difficulty": "standard",
+      "tags": ["real-scenario", "planning"],
+      "notes": "验证阶段4只列计划，不执行"
+    },
+    {
+      "id": "scenario-05",
+      "prompt": "执行计划：按照清单修复数据解析逻辑",
+      "expected_output": "执行所有修改，输出执行报告",
+      "expectations": [
+        "[contains] 阶段 5",
+        "[contains] 执行报告",
+        "[contains] 已修改",
+        "[contains] 已完成",
+        "[not_contains] 等用户确认",
+        "[contains] 自动进入阶段 6"
+      ],
+      "difficulty": "standard",
+      "tags": ["real-scenario", "execution"],
+      "notes": "验证阶段5执行后自动进入阶段6"
+    },
+    {
+      "id": "scenario-06",
+      "prompt": "检查验证：验证数据解析修复是否生效",
+      "expected_output": "运行测试并输出检查结果",
+      "expectations": [
+        "[contains] 阶段 6",
+        "[contains] 检查结果",
+        "[contains] 验证",
+        "[contains] 达标",
+        "[not_contains] 已修改",
+        "[contains] 等用户确认"
+      ],
+      "difficulty": "standard",
+      "tags": ["real-scenario", "verification"],
+      "notes": "验证阶段6运行测试但不修改"
+    },
+    {
+      "id": "scenario-07",
+      "prompt": "回顾总结：总结本次问题解决过程",
+      "expected_output": "输出改进建议和沉淀载体",
+      "expectations": [
+        "[contains] 阶段 7",
+        "[contains] 改进建议",
+        "[contains] 沉淀载体",
+        "[contains] 文档",
+        "[contains] 测试用例",
+        "[not_contains] 继续修改"
+      ],
+      "difficulty": "standard",
+      "tags": ["real-scenario", "retrospective"],
+      "notes": "验证阶段7只输出建议，不修改"
+    },
+    {
+      "id": "scenario-08",
+      "prompt": "完整流程：分析问题→探索方案→审查方案→制定计划→执行计划→检查验证→回顾总结",
+      "expected_output": "手动模式完整执行所有7个阶段",
+      "expectations": [
+        "[contains] 阶段 1",
+        "[contains] 阶段 2",
+        "[contains] 阶段 3",
+        "[contains] 阶段 4",
+        "[contains] 阶段 5",
+        "[contains] 阶段 6",
+        "[contains] 阶段 7",
+        "[contains] 等用户确认",
+        "[contains] PDCA"
+      ],
+      "difficulty": "hard",
+      "tags": ["real-scenario", "full-flow", "manual-mode"],
+      "notes": "验证完整7阶段流程和PDCA对应"
+    },
+    {
+      "id": "scenario-09",
+      "prompt": "工具权限验证：阶段1.1只能Read/Grep，不能Edit/Write",
+      "expected_output": "遵守工具权限约束",
+      "expectations": [
+        "[contains] 阶段 1",
+        "[contains] Read",
+        "[contains] Grep",
+        "[not_contains] Edit",
+        "[not_contains] Write",
+        "[not_contains] 已修改文件"
+      ],
+      "difficulty": "hard",
+      "tags": ["constraint", "tool-permissions"],
+      "notes": "验证阶段1.1工具权限约束"
+    },
+    {
+      "id": "scenario-10",
+      "prompt": "模式切换：先手动分析，然后切换到自动模式执行",
+      "expected_output": "支持手动→自动模式切换",
+      "expectations": [
+        "[contains] 手动模式",
+        "[contains] 切换自动模式",
+        "[contains] 自动执行",
+        "[contains] 无需确认",
+        "[not_contains] 等用户确认"
+      ],
+      "difficulty": "hard",
+      "tags": ["real-scenario", "mode-switch"],
+      "notes": "验证模式切换功能"
+    }
+  ]
+}
