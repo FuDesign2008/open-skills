@@ -1,7 +1,5 @@
 ---
 name: git-commit
-version: "3.0.0"
-user-invocable: true
 description: 当用户说「提交代码」「git commit」「帮我提交」「写 commit message」「生成 commit」「提交一下」「git-commit」「自动提交代码」「git-commit-auto」，或由 jira-fix-workflow 阶段7触发时使用。
 ---
 

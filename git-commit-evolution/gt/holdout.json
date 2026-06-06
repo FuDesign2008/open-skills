@@ -1,0 +1,33 @@
+{
+  "skill_name": "git-commit",
+  "split": "holdout",
+  "evals": [
+    {
+      "id": "case-08",
+      "prompt": "提交代码，带 scope，模块是 auth，类型是 fix，修复了 token 过期问题",
+      "expected_output": "生成 fix(auth): 修复 token 过期问题 格式的 commit message",
+      "expectations": [
+        "[regex] fix\\(auth\\):",
+        "[contains] token",
+        "[contains] git commit",
+        "scope 正确使用括号包裹"
+      ],
+      "difficulty": "standard",
+      "tags": ["with-scope", "fix-type"]
+    },
+    {
+      "id": "case-10",
+      "prompt": "自动提交代码，这次改动了超过15个文件",
+      "expected_output": "检测到大批量改动时给出警告，但不阻断提交流程，继续执行",
+      "expectations": [
+        "[contains] git status",
+        "[contains] git add",
+        "[contains] git commit",
+        "出现大量文件改动时输出警告信息",
+        "警告不阻断提交，继续完成流程"
+      ],
+      "difficulty": "hard",
+      "tags": ["edge-case", "large-change"]
+    }
+  ]
+}

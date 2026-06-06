@@ -1,0 +1,20 @@
+{
+  "skill_name": "git-commit",
+  "split": "regression",
+  "note": "Populated after baseline run — only cases that pass baseline are added here",
+  "evals": [
+    {
+      "id": "case-07",
+      "prompt": "只生成 commit message，不要执行任何命令",
+      "expected_output": "仅输出 commit message 字符串，不执行 git 命令",
+      "expectations": [
+        "[not_contains] git add",
+        "[not_contains] 执行成功",
+        "输出格式符合约定式提交规范",
+        "明确告知用户这是手动模式"
+      ],
+      "difficulty": "standard",
+      "tags": ["manual-mode", "message-only"]
+    }
+  ]
+}

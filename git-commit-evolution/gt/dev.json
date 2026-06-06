@@ -1,0 +1,96 @@
+{
+  "skill_name": "git-commit",
+  "split": "dev",
+  "evals": [
+    {
+      "id": "case-01",
+      "prompt": "帮我提交代码",
+      "expected_output": "检测 git 变更文件，生成约定式提交规范 commit message 并自动执行 git add / commit / push",
+      "expectations": [
+        "[contains] git status",
+        "[contains] git add",
+        "[contains] git commit",
+        "输出包含自动模式标识或执行步骤说明",
+        "commit message 使用中文描述"
+      ],
+      "difficulty": "standard",
+      "tags": ["auto-mode", "basic-commit"]
+    },
+    {
+      "id": "case-02",
+      "prompt": "提交代码，类型是 feat，描述是：新增用户登录功能",
+      "expected_output": "生成 feat: 新增用户登录功能 格式的 commit message 并自动执行提交",
+      "expectations": [
+        "[contains] git commit",
+        "[regex] feat[:(]",
+        "[contains] 新增用户登录功能",
+        "commit message 主题不超过50字符"
+      ],
+      "difficulty": "standard",
+      "tags": ["auto-mode", "feat-type"]
+    },
+    {
+      "id": "case-03",
+      "prompt": "手动提交，帮我生成提交命令，不要执行",
+      "expected_output": "生成 git commit 命令字符串，但不执行，提示用户手动运行",
+      "expectations": [
+        "[contains] git commit -m",
+        "[not_contains] 自动执行",
+        "提示用户手动运行命令",
+        "包含完整的 git 命令序列"
+      ],
+      "difficulty": "standard",
+      "tags": ["manual-mode"]
+    },
+    {
+      "id": "case-04",
+      "prompt": "提交代码，Jira 号是 PROJ-1234，修复了空指针异常",
+      "expected_output": "生成包含 Jira ID 的 commit message：fix: PROJ-1234 修复空指针异常",
+      "expectations": [
+        "[contains] PROJ-1234",
+        "[contains] git commit",
+        "[regex] fix[:(]",
+        "commit message 中 Jira ID 位于主题前"
+      ],
+      "difficulty": "standard",
+      "tags": ["jira-id", "fix-type"]
+    },
+    {
+      "id": "case-05",
+      "prompt": "git commit",
+      "expected_output": "识别触发词，进入自动模式，检测变更并生成 commit",
+      "expectations": [
+        "[contains] git status",
+        "[contains] git add",
+        "输出包含提交结果或执行步骤"
+      ],
+      "difficulty": "standard",
+      "tags": ["auto-mode", "trigger-word"]
+    },
+    {
+      "id": "case-06",
+      "prompt": "提交代码，类型选 refactor，重构了数据库连接池模块",
+      "expected_output": "生成 refactor: 重构数据库连接池模块 格式的 commit message",
+      "expectations": [
+        "[regex] refactor[:(]",
+        "[contains] 重构",
+        "[contains] git commit",
+        "commit message 主题使用中文"
+      ],
+      "difficulty": "standard",
+      "tags": ["refactor-type"]
+    },
+    {
+      "id": "case-09",
+      "prompt": "帮我提交，但是我现在没有任何文件改动",
+      "expected_output": "检测到无变更文件，给出相应提示；自动模式下仍执行 git add 并提示无内容可提交",
+      "expectations": [
+        "[contains] git status",
+        "告知用户没有需要提交的改动或处理方式",
+        "[not_contains] error"
+      ],
+      "difficulty": "hard",
+      "tags": ["edge-case", "no-changes"]
+    }
+  ]
+}
