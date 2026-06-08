@@ -1,5 +1,7 @@
 ---
 name: typescript-check
+version: "1.0.0"
+user-invocable: true
 description: TypeScript 类型检查流程。当用户说"类型检查"、"type-check"、"tsc"或需要检查 TypeScript 类型错误时触发。
 ---
 

@@ -1,5 +1,7 @@
 ---
 name: git-release-start
+version: "1.0.0"
+user-invocable: true
 description: 当版本迭代开始时需要创建 release 分支时使用，适用于分支命名规范不统一、多仓库需同步创建、或需要确保本地 tracking 正确指向 origin/release/X.Y.Z 的场景。支持 GitLab、GitHub 等平台，单仓库和多仓库均可。触发词：创建release分支、开release分支、开分支、迭代分支、create release branch。
 ---
 

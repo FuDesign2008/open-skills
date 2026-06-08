@@ -1,5 +1,7 @@
 ---
 name: ensure-tests
+version: "1.0.0"
+user-invocable: true
 description: 当用户说"ensure-tests"、"补全测试"、"生成测试"、"确保测试"、"补充单元测试"、"添加单元测试"、"检查测试覆盖"时触发。也可被 opsx-solve-workflow 等工作流在开发完成后调用，确保交付物包含单元测试（必须）和 E2E 测试（可选，按工程支持情况）。
 ---
 
