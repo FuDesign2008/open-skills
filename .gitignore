@@ -152,3 +152,12 @@ vite.config.ts.timestamp-*
 
 # Playwright MCP
 .playwright-mcp/
+
+# Skill evolution workspaces (training artifacts)
+*-evolution/
+**/evolution/
+
+# Tool local state
+.omo/
+.opencode/
+.sisyphus/

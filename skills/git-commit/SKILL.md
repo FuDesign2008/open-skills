@@ -49,7 +49,7 @@ description: 当用户说「提交代码」「git commit」「帮我提交」「
 ```
 
 规则：
-- Subject 不超过 50 字符，使用中文
+- Subject 不超过 50 字符，使用中文，必须包含与类型对应的中文动词（feat: 新增、fix: 修复、refactor: 重构、perf: 优化、style: 格式化、docs: 文档、test: 测试）
 - 有 Jira ID 时放在 subject 之前
 - 无 scope 时省略括号：`<type>: <subject>`
 - commit message 只含标题行，无正文
@@ -58,15 +58,13 @@ description: 当用户说「提交代码」「git commit」「帮我提交」「
 
 **手动模式（execute=false）**：生成命令，不执行，提示用户手动运行。
 
-**自动模式（execute=true）**：依次执行以下命令：
+**自动模式（execute=true）**：依次执行以下命令，并输出每个命令的执行结果或状态：
 
-```bash
-git status
-git add .
-git commit -m "<type>(<scope>): <ID> <subject>"
-git log -1 --stat
-git push -u origin [branch-name]
-```
+1. **git status** — 输出当前改动摘要
+2. **git add .** — 输出文件暂存状态
+3. **git commit -m "..."** — 输出 commit hash 和提交信息
+4. **git log -1 --stat** — 输出提交统计（改动文件数和行数）
+5. **git push -u origin [branch-name]** — 输出推送结果或分支设置信息
 
 多项目时对每个项目独立执行上述步骤，末尾附汇总表。
 
@@ -106,7 +104,7 @@ git push -u origin [branch-name]  # 可选
 
 | 场景 | 处理方式 |
 |------|---------|
-| 无未提交改动 | 手动模式提示；自动模式执行 `git add .` 后继续 |
+| 无未提交改动 | 手动模式：告知用户没有需要提交的改动；自动模式：输出「无改动可提交」提示或执行 `git add .` 后显示「暂存区为空」 |
 | 分支不存在 | 报错，建议先创建分支 |
 | Git 操作失败 | 显示错误，提供降级方案（建议说「手动提交」重试） |
 | 不在 Git 仓库 | 报错并终止，提示检查目录 |

@@ -67,6 +67,12 @@ description: |               # 必须包含所有触发词
 5. 如需 OpenCode 支持 → 在 `.opencode/plugins/` 或 `.opencode/plugin/` 添加 JS/TS 代码
 6. 确认 `docs/generated/skills-index.md` 已更新并纳入提交（commit 时 pre-commit hook 自动处理；未安装 hook 则手动运行 `node scripts/gen-skill-docs.mjs` 后再提交）
 
+## Skill 精简原则
+
+- **规则只写一次**：参考表/速览表不应重复阶段详情中已有的规则
+- **Pitfall 只记非直觉陷阱**：不看规则就容易犯的错误才值得记，规则本身的重复罗列是 token 浪费
+- **输出模板超过 5 行抽 reference.md**：SKILL.md 用 `输出格式见 reference.md` 一句引用
+
 ## 反模式
 
 - ❌ SKILL.md 缺少 frontmatter 或 description 不含触发词
@@ -74,3 +80,6 @@ description: |               # 必须包含所有触发词
 - ❌ 目录名与 frontmatter `name` 不一致
 - ❌ 工作流 skill 跳过阶段（分析阶段禁止 Edit/Write）
 - ❌ 支持文件（如 reference.md）未在 SKILL.md 中引用
+- ❌ 参考表/速览表重复已有阶段详情（token 膨胀）
+- ❌ Red Flags/Pitfall 重复上方已写明的规则（Pitfall 只记非直觉陷阱）
+- ❌ PDCA 对应表等元认知框架（对 AI 无执行指导价值；人类可读内容放 reference.md）
