@@ -1,10 +1,10 @@
 # Skills 索引（自动生成）
 
-> **请勿手改。** 源数据：`skills/<name>/SKILL.md`。生成时间：2026-06-11。
+> **请勿手改。** 源数据：`skills/<name>/SKILL.md`。生成时间：2026-06-13。
 > 
 > 变更 skill 后：commit 时 pre-commit hook 自动更新；或手动执行 `node scripts/gen-skill-docs.mjs`
 
-本仓库当前共 **20** 个 skill。
+本仓库当前共 **21** 个 skill。
 
 | Skill | 版本 | 用户可唤起 | 描述（含触发条件） |
 | --- | --- | --- | --- |
@@ -17,6 +17,7 @@
 | **git-conflict-resolve** | 1.0.0 | 是 | 当 Git merge 或 rebase 过程中出现代码冲突时使用，尤其适用于 AI 自动解冲突容易出错（取错侧、丢失重构、还原旧版代码）、需要语义分析和逻辑验证的场景。也适用于 rebase 多轮停止需跨轮聚合冲突文件的情况。触发词：解冲突、处理冲突、git-conflict-resolve、解决 merge 冲突、解决 rebase 冲突、conflict resolve、冲突解决。 |
 | **git-release-finish** | 1.2.0 | 是 | Use when releasing a Git repository version — tagging, merging release branches into main, resolving conflicts, or syncing changes between release branches. Handles ambiguous tag naming (v-prefix vs plain), unknown main branch (master/main/develop), cross-release hash-sensitive rebase, and MR/PR extra file cleanup. GitLab, GitHub, Gitea; single or multi-repo. Triggers: 发版, 打tag, 发布版本, 版本发布, release流程, git-release, multi-repo release. |
 | **git-release-start** | 1.0.0 | 是 | 当版本迭代开始时需要创建 release 分支时使用，适用于分支命名规范不统一、多仓库需同步创建、或需要确保本地 tracking 正确指向 origin/release/X.Y.Z 的场景。支持 GitLab、GitHub 等平台，单仓库和多仓库均可。触发词：创建release分支、开release分支、开分支、迭代分支、create release branch。 |
+| **go-deploy** | 1.0.0 | 是 | 打开项目的部署平台链接。当用户说「去部署」「部署平台」「准备部署」时触发，即使用户没有明确说「打开链接」，只要意图是访问部署控制台或发布平台就应触发。Skill 自动读取项目中的 docs/deploy.md 获取部署链接；若不存在则扫描工程文档提取信息并生成；若扫描无果则提示用户补充。支持一个工程多个部署链接的场景。 |
 | **jira-fix-batch** | 1.0.0 | 是 | 当用户说「批量修复」「批量 jira-fix」「jira-fix-batch」「批量修复多个 Jira」「批量修复以下 bug」时触发。适用于需要对多个 Jira issue 进行批量端到端修复的编排场景。 |
 | **jira-fix-workflow** | 3.11.0 | 是 | 当用户说「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」时触发。适用于从 Jira 链接出发、对单个 bug 进行端到端修复的场景。 |
 | **jira-read** | 3.0.0 | 是 | 当用户说"jira-read [JIRA-ID]"，或需要读取、获取、下载 Jira issue 数据时触发。需配置 $JIRA_CACHE_DIR（如 ~/.cache/jira）。 |
