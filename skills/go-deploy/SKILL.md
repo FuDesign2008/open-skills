@@ -116,13 +116,13 @@ cmd.exe /c start "" "<URL>"
 ```markdown
 # 部署
 
-## 诺亚部署-集群页
+## 生产环境
 
-- **平台**: 诺亚 Poseidon
-- **链接**: https://noah.netease.com/#/poseidon/app/appDetail?appName=ynote-h5&appTab=cluster
+- **平台**: 内部部署平台
+- **链接**: https://deploy.example.com/console/my-project
 - **说明**: 主部署入口，查看集群状态、发布新版本
 
 ## 预发环境
 
-- **链接**: https://pre-deploy.example.com/ynote-h5
+- **链接**: https://pre-deploy.example.com/my-project
 ```
