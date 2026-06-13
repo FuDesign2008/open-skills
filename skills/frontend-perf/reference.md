@@ -661,7 +661,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 // contextBridge.exposeInMainWorld('ipc', ipcRenderer)
 
 // 正确：只暴露渲染进程真正需要的最小 API 集
-contextBridge.exposeInMainWorld('ynote', {
+contextBridge.exposeInMainWorld('myApp', {
   // 批量 API 设计：一次 invoke 处理多个操作，减少 IPC 往返次数
   batchQuery: (queries: BatchQuery[]) => ipcRenderer.invoke('batch-query', queries),
   // 单一功能 API
@@ -679,12 +679,12 @@ contextBridge.exposeInMainWorld('ynote', {
 
 ```typescript
 // 错误：多次单独 IPC（N 次网络往返）
-const title = await ynote.getNoteTitle(id)
-const content = await ynote.getNoteContent(id)
-const tags = await ynote.getNoteTags(id)
+const title = await myApp.getNoteTitle(id)
+const content = await myApp.getNoteContent(id)
+const tags = await myApp.getNoteTags(id)
 
 // 正确：一次 IPC 批量获取（1 次往返）
-const { title, content, tags } = await ynote.getNoteDetail(id)
+const { title, content, tags } = await myApp.getNoteDetail(id)
 ```
 
 ---
