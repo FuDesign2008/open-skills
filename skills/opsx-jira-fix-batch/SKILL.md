@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-batch
-version: "1.0.0"
+version: "1.1.0"
 user-invocable: true
 category: development
 tags: [jira, openspec, batch, workflow]
@@ -19,7 +19,7 @@ description: 当用户说「opsx 批量修复」「批量 opsx-jira-fix」「ops
 
 1. 将输入的 Jira ID / URL 拆分为独立 issue 任务。
 2. 执行前识别 issue 间的重复、依赖、重叠、冲突和派生关系。
-3. 为每个需要修复的 issue 确认或创建独立 OpenSpec change；若多个 issue 明确属于同一根因，可复用同一 change，但必须在 `design.md` 中说明覆盖范围。
+3. 为每个需要修复的 issue **先定位目标工程根**（workspace 多工程场景，定位逻辑见 `opsx-jira-fix-workflow` 阶段 0 第 4 步），再在对应工程中确认或创建独立 OpenSpec change；若多个 issue 明确属于同一根因且属于同一工程，可复用同一 change，但必须在 `design.md` 中说明覆盖范围。跨工程的 issue 各自建立独立 change，在各自 `design.md` 中互相引用。
 4. 对每个 issue 依次调用 `opsx-jira-fix-workflow`，不得绕过阶段 0～7 的 OpenSpec 记录、验证和归档要求。
 5. 每个 issue 完成后，基于最新代码状态、PR/MR diff 和 OpenSpec artifacts 重新评估剩余 issue。
 6. 单个 issue 失败不阻断后续 issue，但关系为「冲突待确认」的问题必须暂停，等待人工确认口径。

@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.2.0"
+version: "1.3.0"
 user-invocable: true
 description: 当用户说"opsx解决"、"OpenSpec解决"、"规范化解决"、"创建OpenSpec变更"、"创建opsx变更"、"用OpenSpec分析"、"用OpenSpec修复"、"opsx自动解决"、"OpenSpec自动解决"、"opsx-solve"或"opsx-solve-workflow"时触发。适用于需要将分析、方案、计划、实现、验证和归档沉淀到OpenSpec artifacts的功能开发、Bug修复、重构和复杂工程任务。
 ---
@@ -37,11 +37,41 @@ description: 当用户说"opsx解决"、"OpenSpec解决"、"规范化解决"、"
 
 ## 阶段 0：环境检查与路径选择
 
-本 skill 要求 OpenSpec 完整初始化，不设降级路径。启动后依次执行两道硬性门禁：
+本 skill 要求 OpenSpec 完整初始化，不设降级路径。启动后依次执行三道门禁（门禁 0 定位工程 → 门禁 1 检查 OpenSpec 目录 → 门禁 2 检查 OPSX skills）：
+
+### 门禁 0：OpenSpec 工程定位
+
+> 本步骤在门禁 1 之前执行，确定本次变更的目标工程根目录（后续简称**工程根**）。门禁 1、门禁 2 的检查以及后续所有阶段的 `openspec/` 路径解析和 CLI 命令执行，均基于此工程根。
+
+**为什么需要**：在 Workspace（多工程工作区）场景下，当前工作目录（cwd）可能不是 OpenSpec 工程根——OpenSpec 初始化在 workspace 下的某个子工程目录中。本步骤负责定位到真正的工程根。
+
+**定位优先级**（依次尝试，命中即停止）：
+
+1. **cwd 即工程根**：cwd 下存在 `openspec/` 目录 → 工程根 = cwd。（单工程场景，行为与原有完全一致）
+2. **当前编辑文件推断**：若可获取当前正在编辑的文件路径，从该文件所在目录向上逐级查找，第一个含 `openspec/` 的目录即为工程根。
+3. **cwd 子目录扫描**：扫描 cwd 的直接子目录，查找含 `openspec/` 的目录：
+   - 仅一个命中 → 工程根 = 该子目录
+   - 多个命中 → 列出所有候选工程，让用户选择
+4. **均未命中** → 输出："未在当前目录及其子目录中找到 OpenSpec 工程。请 cd 到已初始化 OpenSpec 的工程目录，或运行 `openspec init`。" 并停止。
+
+**渐进增强**：若检测到 `ows:select` skill 或 `workspace_list` 工具，可利用其 workspace 工程列表辅助第 3 步的子目录扫描。不存在时按通用扫描逻辑执行。
+
+**定位结果**（必须输出）：
+
+```text
+【工程定位结果】目标工程根：<绝对路径>
+```
+
+- 唯一命中（优先级 1/2/3a）：输出定位结果后继续门禁 1。
+- 多候选（优先级 3b）：列出候选，等用户选择后输出定位结果，再继续门禁 1。
+
+**后续使用约定**：本 skill 中所有 `openspec/`、`openspec/changes/`、`openspec/specs/` 等路径，均**相对于工程根**解析。`openspec` CLI 命令（init/validate/list/status/archive 等）均在工程根目录下执行。
 
 ### 门禁 1：OpenSpec 目录检查
 
-检查当前项目根目录是否存在 `openspec/`：
+> 基于门禁 0 定位到的工程根检查。
+
+检查工程根目录是否存在 `openspec/`：
 
 - **存在** → 通过，继续门禁 2。
 - **不存在** → **立即停止**，输出：
@@ -54,7 +84,7 @@ description: 当用户说"opsx解决"、"OpenSpec解决"、"规范化解决"、"
 
 ### 门禁 2：OPSX 原生 Skills 检查
 
-扫描当前项目中所有已安装工具的 skills 目录（如 `.claude/skills/`、`.cursor/skills/` 等），检查是否存在以下必需的原生 OPSX skills：
+扫描工程根中所有已安装工具的 skills 目录（如 `.claude/skills/`、`.cursor/skills/` 等），检查是否存在以下必需的原生 OPSX skills：
 
 | 所需 skill | 对应阶段 | 用途 |
 |-----------|---------|------|
@@ -65,7 +95,7 @@ description: 当用户说"opsx解决"、"OpenSpec解决"、"规范化解决"、"
 
 `openspec-verify-change` 为可选 skill，存在时在阶段 6 使用。
 
-**扫描范围**：不同 AI 工具的 skills 目录不同（Claude Code 用 `.claude/skills/`，Cursor 用 `.cursor/skills/`，Cline 用 `.cline/skills/` 等）。应依次检查项目内所有存在的工具目录；只要在任一目录下找到对应 skill，即视为存在。
+**扫描范围**：不同 AI 工具的 skills 目录不同（Claude Code 用 `.claude/skills/`，Cursor 用 `.cursor/skills/`，Cline 用 `.cline/skills/` 等）。应依次检查工程根内所有存在的工具目录；只要在任一目录下找到对应 skill，即视为存在。
 
 > ⚠️ **判断规则（严格）**：必须按上表的**精确 skill 名称**逐一核查。
 > 找到其他名称的 openspec skill（如旧版的 `openspec-propose`）**不算通过**，
@@ -84,7 +114,7 @@ description: 当用户说"opsx解决"、"OpenSpec解决"、"规范化解决"、"
 
 ### OPSX 原生 Skills 使用约定
 
-两道门禁通过后，各阶段委托原生 skill 前必须遵守：
+三道门禁通过后，各阶段委托原生 skill 前必须遵守：
 
 1. **调用前先读取 SKILL.md**：每次委托前必须先读取对应 skill 的 SKILL.md，不得凭记忆调用。
 2. **本 skill 保留阶段门禁**：原生 skill 执行完成后，本 skill 继续执行阶段确认、暂停、循环审查等门禁逻辑。
@@ -500,6 +530,7 @@ Superpowers 增强规则：
 | 分支收尾早于 archive | 归档产生的 specs 或 archive 目录可能遗漏出最终 diff | 先 archive 并检查 diff，再做 PR/合并/保留决策 |
 | 实现中发现设计错误却继续硬做 | artifacts 与代码分叉 | 回写 proposal/specs/design/tasks 后再继续 |
 | `openspec/` 不存在却强行推进 | 无 schema/context，artifacts 结构混乱 | 阶段 0 门禁 1 未通过时必须停止，要求用户运行 `openspec init` |
+| workspace 多工程下未先定位工程根 | 门禁检查在 workspace 根执行而非工程目录，artifact 写入错误位置 | 阶段 0 必须先执行门禁 0 工程定位，确定工程根后再执行门禁 1/2 |
 | 检测到原生 OPSX skills 却直接调 CLI 或手写 artifacts | 绕过 schema 模板和 context injection，artifacts 不符规范 | 委托原生 skill（先读 SKILL.md）；CLI 仅允许作为工具命令（`openspec validate`、`openspec status` 等） |
 | Phase 1.2 创建 proposal（根因未与方案结合） | proposal 的 Why 和 What 割裂，artifact 需重写 | proposal 在阶段 2 方案选定后才创建，通过 `openspec-continue-change` 一次性写完整 |
 | 使用不存在的 skill 名称（如 `openspec-apply`、`openspec-archive`） | 读不到 SKILL.md，委托失败 | 正确名称：`openspec-apply-change`、`openspec-archive-change`、`openspec-verify-change` |
