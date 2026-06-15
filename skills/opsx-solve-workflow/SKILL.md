@@ -67,6 +67,8 @@ description: 当用户说"opsx解决"、"OpenSpec解决"、"规范化解决"、"
 
 **后续使用约定**：本 skill 中所有 `openspec/`、`openspec/changes/`、`openspec/specs/` 等路径，均**相对于工程根**解析。`openspec` CLI 命令（init/validate/list/status/archive 等）均在工程根目录下执行。
 
+**执行约定**：定位后，通过 Bash `cd "<工程根绝对路径>"` 切换工作目录。后续所有 Read/Write/Bash 操作、`openspec` CLI 命令、委托原生 OPSX skill 均在工程根下执行。若无法切换 cwd，则所有 `openspec/` 路径必须使用工程根的绝对路径。
+
 ### 门禁 1：OpenSpec 目录检查
 
 > 基于门禁 0 定位到的工程根检查。
@@ -489,7 +491,7 @@ Superpowers 增强规则：
 
 若 `openspec-archive-change` skill 执行失败，**不得**手动操作 `openspec/` 目录；应停止并提示用户检查 openspec 安装状态。
 
-归档后必须检查 diff，确认主 specs 更新和 archive 目录迁移都进入当前工作区变更。若检测到 `finishing-a-development-branch`，在归档和 diff 检查完成后，再借鉴其流程做分支收尾决策：保留当前分支、创建 PR、合并或继续开发。不得在测试未通过、归档未完成或 diff 未审查时宣布完成。
+归档后必须检查 diff，确认主 specs 更新和 archive 目录迁移都进入工程根的 git 工作区变更。若检测到 `finishing-a-development-branch`，在归档和 diff 检查完成后，再借鉴其流程做分支收尾决策：保留当前分支、创建 PR、合并或继续开发。不得在测试未通过、归档未完成或 diff 未审查时宣布完成。
 
 ### AI 工程沉淀载体选择
 
