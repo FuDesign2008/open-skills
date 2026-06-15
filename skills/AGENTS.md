@@ -58,6 +58,10 @@ description: |               # 必须包含所有触发词
 - 冒号中英文均可，空格可有可无
 - 工作流 skill 的阶段名即为触发词（如"分析问题"触发 solve-workflow 的阶段 1）
 
+## frontmatter YAML 陷阱
+
+`description` 裸值含英文 `: `（冒号+空格，如 `Triggers: 发版`）会触发 YAML `Nested mappings are not allowed` 错误，导致 `npx skills` 安装/更新报 `No valid skills found`。值含 `: ` 时必须加双引号或用 `|` 块标量。中文冒号「：」不受影响。
+
 ## 新增 Skill 检查清单
 
 1. 目录名 kebab-case
@@ -83,3 +87,4 @@ description: |               # 必须包含所有触发词
 - ❌ 参考表/速览表重复已有阶段详情（token 膨胀）
 - ❌ Red Flags/Pitfall 重复上方已写明的规则（Pitfall 只记非直觉陷阱）
 - ❌ PDCA 对应表等元认知框架（对 AI 无执行指导价值；人类可读内容放 reference.md）
+- ❌ `description` 裸值含英文 `: ` 未加引号，破坏 YAML 解析导致 `npx skills` 安装失败
