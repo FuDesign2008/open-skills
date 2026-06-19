@@ -1,10 +1,10 @@
 # Skills 索引（自动生成）
 
-> **请勿手改。** 源数据：`skills/<name>/SKILL.md`。生成时间：2026-06-15。
+> **请勿手改。** 源数据：`skills/<name>/SKILL.md`。生成时间：2026-06-19。
 > 
 > 变更 skill 后：commit 时 pre-commit hook 自动更新；或手动执行 `node scripts/gen-skill-docs.mjs`
 
-本仓库当前共 **22** 个 skill。
+本仓库当前共 **23** 个 skill。
 
 | Skill | 版本 | 用户可唤起 | 描述（含触发条件） |
 | --- | --- | --- | --- |
@@ -12,6 +12,7 @@
 | **article-writer** | 1.0.0 | — | Use when 用户想写公众号、知乎技术文章、自媒体内容，或基于已有技术文档改写为可发布文章时。 |
 | **chinese-format** | 1.2.0 | 是 | 中文内容格式规范，供用户手动请求时使用。当用户明确说"中文格式"、"检查中文格式"、"中文标点检查"、"格式化中文"、"按中文格式规范处理"或"chinese-format"时触发。确保中文内容使用中文标点符号，技术术语保持原文格式。 |
 | **ensure-tests** | 1.0.0 | 是 | 当用户说"ensure-tests"、"补全测试"、"生成测试"、"确保测试"、"补充单元测试"、"添加单元测试"、"检查测试覆盖"时触发。也可被 opsx-solve-workflow 等工作流在开发完成后调用，确保交付物包含单元测试（必须）和 E2E 测试（可选，按工程支持情况）。 |
+| **essence-diagnosis** | 1.0.0 | 是 | Use when a complex problem seems unsolvable and needs digging to the essence — diagnosis only, not fixing. Symptoms include massive logs with no root cause surfaced, complex crashes, architectural essence analysis, requirement authenticity verification, systemic chronic issues, information overload, disconnect between symptoms and essence, multiple intertwined factors, or premature-convergence tendencies — even when the user never explicitly says "diagnose". Also triggers on 本质诊断, 根因诊断, 深度诊断, 诊断问题本质, 梳理问题逻辑, 证据链分析, 逻辑链分析, essence-diagnosis. |
 | **frontend-perf** | 2.0.0 | 否 | 前端（含 Electron 桌面端）性能优化领域知识库，含 React 16-19、Angular 9-18+、Electron 12-28+ 版本专属优化知识。配合 perf-workflow skill 使用：perf-workflow 驱动分析流程，本 skill 提供前端专属量化标准、版本感知优化方案、瓶颈模式与工具速查。当分析 Web 前端（React/Angular/Vue）、Electron 桌面端性能问题时使用。 |
 | **git-commit** | 3.0.0 | 是 | 当用户说「提交代码」「git commit」「帮我提交」「写 commit message」「生成 commit」「提交一下」「git-commit」「自动提交代码」「git-commit-auto」，或由 jira-fix-workflow 阶段7触发时使用。 |
 | **git-conflict-resolve** | 1.0.0 | 是 | 当 Git merge 或 rebase 过程中出现代码冲突时使用，尤其适用于 AI 自动解冲突容易出错（取错侧、丢失重构、还原旧版代码）、需要语义分析和逻辑验证的场景。也适用于 rebase 多轮停止需跨轮聚合冲突文件的情况。触发词：解冲突、处理冲突、git-conflict-resolve、解决 merge 冲突、解决 rebase 冲突、conflict resolve、冲突解决。 |
