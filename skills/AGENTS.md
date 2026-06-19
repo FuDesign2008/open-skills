@@ -21,7 +21,8 @@ skills/
 ├── jira-fix-workflow/
 ├── jira-read/
 ├── typescript-check/
-└── article-writer/
+├── article-writer/
+└── xquik-social-data/      # 公开 X/Twitter 数据采集（Xquik API）
 ```
 
 ## 分类与依赖
@@ -38,6 +39,7 @@ skills/
 | Jira | jira-fix-workflow | 默认自动模式；`--manual` 进手动确认模式；含规则制难度分级（极难自动终止）；批量场景可在外部编排工具中自行接入（非本仓库内置命令） |
 | Jira | jira-read | 本地缓存优先，支持 mcp-atlassian API 降级；需配置 `$JIRA_CACHE_DIR` |
 | 工具 | typescript-check | TypeScript 类型错误检查流程 |
+| 数据采集 | xquik-social-data | 调用 Xquik API 获取公开 X/Twitter 数据，证据优先 |
 
 ## SKILL.md 必须包含
 

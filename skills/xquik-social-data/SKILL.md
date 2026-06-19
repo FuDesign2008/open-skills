@@ -26,7 +26,6 @@ platform bypassing, or claims that need complete official analytics.
 
 - API base: `https://xquik.com/api/v1`
 - Docs: `https://docs.xquik.com`
-- Public skill package: `x-developer`
 - Authentication: send the user's Xquik API key as `x-api-key`.
 
 Never print or store API keys. If no API key is available, provide the exact

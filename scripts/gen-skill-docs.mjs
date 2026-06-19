@@ -67,7 +67,6 @@ function readModesIndex(skillDir) {
  */
 function writeModesDoc(skillName, modesIndex) {
   const { defaultModeId, modes } = modesIndex;
-  const now = new Date().toISOString().slice(0, 10);
 
   const core = modes.filter((m) => m.tier === "core");
   const extended = modes.filter((m) => m.tier !== "core");
@@ -75,7 +74,7 @@ function writeModesDoc(skillName, modesIndex) {
   const lines = [
     `# ${skillName} 模式文档（自动生成）`,
     "",
-    `> **请勿手改。** 源数据：\`skills/${skillName}/modes/_index.json\`。生成时间：${now}。`,
+    `> **请勿手改。** 由 \`node scripts/gen-skill-docs.mjs\` 从 \`skills/${skillName}/modes/_index.json\` 生成。`,
     "> ",
     "> 变更模式后在本仓库根目录执行：\`node scripts/gen-skill-docs.mjs\`",
     "",
@@ -180,11 +179,10 @@ function main() {
     console.error(`Wrote ${relPath} (${modesIndex.modes.length} modes)`);
   }
 
-  const now = new Date().toISOString().slice(0, 10);
   const lines = [
     "# Skills 索引（自动生成）",
     "",
-    `> **请勿手改。** 源数据：\`skills/<name>/SKILL.md\`。生成时间：${now}。`,
+    `> **请勿手改。** 由 \`node scripts/gen-skill-docs.mjs\` 从 \`skills/<name>/SKILL.md\` 生成。`,
     "> ",
     "> 变更 skill 后：commit 时 pre-commit hook 自动更新；或手动执行 `node scripts/gen-skill-docs.mjs`",
     "",

@@ -59,6 +59,7 @@ open-skills/
 | jira-read | Jira 工具 | 无 |
 | typescript-check | 工具 | 无 |
 | article-writer | 内容创作 | 无 |
+| xquik-social-data | 数据采集 | 无 |
 
 > 💕 AI 编码陪伴（coding-fangirl）已迁移至独立工程 [oh-my-fangirl](https://github.com/FuDesign2008/oh-my-fangirl)。
 

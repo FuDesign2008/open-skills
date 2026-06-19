@@ -40,8 +40,9 @@
 ## Contributing
 
 1. Fork → 新增或修改 `skills/<name>/SKILL.md`
-2. 运行 `node scripts/gen-skill-docs.mjs` 并提交 `docs/generated/skills-index.md`
-3. Pull Request
+2. 运行 `node scripts/gen-skill-docs.mjs` 重新生成索引并提交 `docs/generated/skills-index.md`（**禁止手改** 该文件，手改会导致 CI `verify` 失败）
+3. 遵循 [AGENTS.md](AGENTS.md) 的「AI 铁律」与 [skills/AGENTS.md](skills/AGENTS.md) 的 Skill 开发规范
+4. Pull Request
 
 Skill 编写规范见 [skills/AGENTS.md](skills/AGENTS.md)。仓库目录与协作约定见 [AGENTS.md](AGENTS.md)。
 
