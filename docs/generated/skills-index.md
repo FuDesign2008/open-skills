@@ -31,6 +31,7 @@
 | **test-guide-from-code** | 1.1.0 | 是 | 根据代码变更（diff、commit、MR/PR）生成面向人工测试人员的手工测试指南。Use when 用户说「生成测试指南」「测试指南」「人工测试指南」「测试指引」「test guide」「根据代码生成测试」「从 MR 生成测试指南」「从 PR 生成测试指南」，或提供 diff/MR/PR 链接并要求生成测试指南时触发。 |
 | **think-big** | 1.0.0 | 是 | Use when 用户需要从战略视角分析一件事——想清楚要不要做、值不值得做、风险在哪、长远影响是什么。触发词：战略思考、战略分析、从战略角度看、战略视角、帮我想清楚这件事、这件事值不值得做、从更高视角分析、think-big、strategic thinking、strategy。不适用于执行细节规划（那是战术层）。 |
 | **typescript-check** | 1.0.0 | 是 | TypeScript 类型检查流程。当用户说"类型检查"、"type-check"、"tsc"或需要检查 TypeScript 类型错误时触发。 |
+| **xquik-social-data** | 1.0.0 | 是 | Use when 用户需要从 Xquik 获取公开 X/Twitter 数据、搜索推文、查账号、看趋势、导出样本、整理社媒证据，或说 xquik、Xquik、X/Twitter data、tweet search、social evidence、社媒证据、推文搜索。 |
 
 ---
 
