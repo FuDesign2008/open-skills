@@ -1,10 +1,10 @@
 # Skills 索引（自动生成）
 
-> **请勿手改。** 源数据：`skills/<name>/SKILL.md`。生成时间：2026-06-19。
+> **请勿手改。** 由 `node scripts/gen-skill-docs.mjs` 从 `skills/<name>/SKILL.md` 生成。
 > 
 > 变更 skill 后：commit 时 pre-commit hook 自动更新；或手动执行 `node scripts/gen-skill-docs.mjs`
 
-本仓库当前共 **23** 个 skill。
+本仓库当前共 **24** 个 skill。
 
 | Skill | 版本 | 用户可唤起 | 描述（含触发条件） |
 | --- | --- | --- | --- |
