@@ -59,6 +59,8 @@ git rebase origin/<TARGET>
 # 若无冲突 rebase 一次完成 → 跳过 Y.1～Y.4，直接进入 Y.5
 ```
 
+> ⚠️ rebase 结果推送时若目标为保护分支（release/*、main、master），force push 可能被远端拒绝（`remote: rejected`）。推送前确认分支保护状态，必要时改推到新分支（如 `rebase-release/<VERSION>`）再创建新 MR，而非 force push 到原分支。
+
 ---
 
 ## 子阶段 Y.1 — 冲突清单盘点（多轮聚合）

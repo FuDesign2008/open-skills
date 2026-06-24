@@ -22,7 +22,7 @@
 
 ### 通用
 
-- [ ] 已在 [AGENTS.md](../AGENTS.md)「Skill 清单」表登记（新增 skill 时）
+- [ ] 已在 [AGENTS.md](../AGENTS.md)「Skill 清单」表登记类别与依赖（新增 skill 时）
 
 ## Validation
 
