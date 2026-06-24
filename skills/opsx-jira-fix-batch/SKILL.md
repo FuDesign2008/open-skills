@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-batch
-version: "1.1.0"
+version: "1.2.0"
 user-invocable: true
 category: development
 tags: [jira, openspec, batch, workflow]
@@ -24,6 +24,17 @@ description: 当用户说「opsx 批量修复」「批量 opsx-jira-fix」「ops
 5. 每个 issue 完成后，基于最新代码状态、PR/MR diff 和 OpenSpec artifacts 重新评估剩余 issue。
 6. 单个 issue 失败不阻断后续 issue，但关系为「冲突待确认」的问题必须暂停，等待人工确认口径。
 7. 批量结束时输出汇总，并列出每个 issue 的 Jira 状态、OpenSpec change、PR/MR、验证结果和归档状态。
+
+## 批量模式传播
+
+遵循 `jira-fix-batch` 的「批量模式传播」规则：编排工具根据用户在批量层面的意图，为每个子调用显式传递模式参数。
+
+| 批量触发词 | 编排工具行为 | 子调用模式 |
+|-----------|------------|----------|
+| 含「自动」（如「opsx 批量自动修复」） | 每个子调用附加 `--auto` | 🤖 自动 |
+| 不含「自动」（如「opsx 批量修复」） | 每个子调用不附加 `--auto` | 👤 手动 |
+
+子 SKU（opsx-jira-fix-workflow）的「完成一轮恢复手动」规则不影响批量连续性。每个 issue 的 OpenSpec change 中可在 `design.md` 的备注里记录本次使用的模式。
 
 ## Issue 关系识别
 
