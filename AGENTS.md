@@ -173,8 +173,8 @@ Invoke the <skill-name> skill and follow it exactly
 - ❌ Hook 脚本阻塞主流程（必须静默失败）
 - ❌ OpenCode 插件用 CommonJS（必须 ES Module）
 - ❌ 中文内容混用英文标点
-- ❌ SKILL.md 内引用其他 SKU 的规则定义作为唯一来源（通用安装模式下其他 SKU 可能未安装，引用失效；关键规则必须在每个 SKU 中自包含）
-- ❌ 多个 SKU 共享同一规则时只改一处（如模式生命周期规则，需同步更新 solve-workflow、opsx-solve-workflow、jira-fix-workflow、opsx-jira-fix-workflow）
+- ❌ SKILL.md 内引用其他 skill 的规则定义作为唯一来源（通用安装模式下其他 skill 可能未安装，引用失效；关键规则必须在每个 skill 中自包含）
+- ❌ 多个 skill 共享同一规则时只改一处（如模式生命周期规则，需同步更新 solve-workflow、opsx-solve-workflow、jira-fix-workflow、opsx-jira-fix-workflow）
 
 ## 验证命令
 
