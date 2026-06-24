@@ -15,7 +15,7 @@ description: "Use when releasing a Git repository version — tagging, merging r
 
 **依赖 skill：** 阶段6 冲突解决由 `git-conflict-resolve` skill 执行（语义分析驱动，支持 merge / rebase 多轮聚合）。
 
-**远程优先原则：** 与配对 skill `git-release-start` 一致——**先确认远端状态，再决定本地操作**。打 tag 前必须 `git fetch` + 验证远端 commit SHA，禁止在未验证的本地 HEAD 上直接打 tag。GitLab 优先使用 `glab api` 远程创建 tag，GitHub/Gitea 用本地 `git tag` 但锚定到远端 SHA。
+**远程优先原则：** **先确认远端状态，再决定本地操作**。打 tag 前必须 `git fetch` + 验证远端 commit SHA，禁止在未验证的本地 HEAD 上直接打 tag。GitLab 优先使用 `glab api` 远程创建 tag，GitHub/Gitea 用本地 `git tag` 但锚定到远端 SHA。
 
 ---
 
@@ -161,7 +161,6 @@ git ls-remote --tags origin | grep -q "refs/tags/<TAG_NAME>$" \
 # REMOTE_SHA 来自 2.0；若分步执行需重新获取
 REMOTE_SHA=$(git rev-parse origin/<RELEASE_BRANCH>)
 # 通过 GitLab API 直接在远端创建 tag（纯 tag，无 Release 对象）
-# 与 git-release-start 的 glab api 远程创建分支范式一致
 glab api POST "projects/:fullpath/repository/tags" \
   -f tag_name=<TAG_NAME> \
   -f ref=$REMOTE_SHA \
