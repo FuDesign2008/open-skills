@@ -9,6 +9,18 @@ on:
       - 'commands/**'
       - '.opencode/**'
       - '.cursor-plugin/**'
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: '版本 bump 类型（留空则从 commit 消息自动推断）'
+        required: false
+        default: ''
+        type: choice
+        options:
+          - ''
+          - 'minor'
+          - 'patch'
+          - 'major'
 
 permissions:
   contents: write
@@ -33,16 +45,19 @@ jobs:
       - name: Determine version bump
         id: bump-type
         run: |
-          # 获取最近一次提交消息
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-
-          if echo "$COMMIT_MSG" | grep -qi "BREAKING CHANGE"; then
-            echo "type=major" >> $GITHUB_OUTPUT
-          elif echo "$COMMIT_MSG" | grep -qE "^feat(\(.+\))?:|^feature(\(.+\))?:"; then
-            echo "type=minor" >> $GITHUB_OUTPUT
-          else
-            echo "type=patch" >> $GITHUB_OUTPUT
+          # 优先使用手动指定的 bump 类型
+          BUMP_TYPE="${{ inputs.bump_type }}"
+          if [ -z "$BUMP_TYPE" ]; then
+            COMMIT_MSG=$(git log -1 --pretty=%B)
+            if echo "$COMMIT_MSG" | grep -qi "BREAKING CHANGE"; then
+              BUMP_TYPE="major"
+            elif echo "$COMMIT_MSG" | grep -qE "^feat(\(.+\))?:|^feature(\(.+\))?:"; then
+              BUMP_TYPE="minor"
+            else
+              BUMP_TYPE="patch"
+            fi
           fi
+          echo "type=$BUMP_TYPE" >> $GITHUB_OUTPUT
 
       - name: Bump version
         id: new-version
@@ -92,7 +107,9 @@ jobs:
             --title "chore: bump version to ${VERSION}" \
             --body "由 Auto Version Bump workflow 自动创建。将以 squash 合并并附带 [skip ci]，避免再次触发 release workflow。")
           PR_NUM="${PR_URL##*/}"
-          gh pr merge "$PR_NUM" --squash --auto \
+          # 等待 verify CI 通过后同步合并（解决 --auto 竞态问题）
+          gh pr checks "$PR_NUM" --watch --required || true
+          gh pr merge "$PR_NUM" --squash \
             --subject "chore: bump version to ${VERSION} [skip ci]" \
             --delete-branch
           git fetch origin main
