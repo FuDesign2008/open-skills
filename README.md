@@ -34,7 +34,19 @@
 
 ## 安装与更新
 
-命令、更新、自测与排错请直接看 **[详细安装指南](docs/INSTALL.md)**。
+一行命令安装所有 skill（全局，适用于支持 `npx skills` 的编码助手）：
+
+```bash
+npx skills add FuDesign2008/open-skills -g
+```
+
+更新：
+
+```bash
+npx skills update
+```
+
+> 需要 **快捷命令、Hook、平台原生集成**（Claude Code / Cursor / OpenCode 全能力安装）？见 **[详细安装指南](docs/INSTALL.md)**。
 
 
 ## Contributing
