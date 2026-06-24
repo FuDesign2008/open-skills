@@ -1,6 +1,6 @@
 ---
 name: git-release-finish
-version: "1.2.0"
+version: "1.3.0"
 user-invocable: true
 description: "Use when releasing a Git repository version — tagging, merging release branches into main, resolving conflicts, or syncing changes between release branches. Handles ambiguous tag naming (v-prefix vs plain), unknown main branch (master/main/develop), cross-release hash-sensitive rebase, and MR/PR extra file cleanup. GitLab, GitHub, Gitea; single or multi-repo. Triggers: 发版, 打tag, 发布版本, 版本发布, release流程, git-release, multi-repo release."
 ---
@@ -14,6 +14,8 @@ description: "Use when releasing a Git repository version — tagging, merging r
 **配对 skill：** `git-release-start`（迭代开始，创建 release 分支）↔ `git-release-finish`（迭代结束，本 skill）
 
 **依赖 skill：** 阶段6 冲突解决由 `git-conflict-resolve` skill 执行（语义分析驱动，支持 merge / rebase 多轮聚合）。
+
+**远程优先原则：** 与配对 skill `git-release-start` 一致——**先确认远端状态，再决定本地操作**。打 tag 前必须 `git fetch` + 验证远端 commit SHA，禁止在未验证的本地 HEAD 上直接打 tag。GitLab 优先使用 `glab api` 远程创建 tag，GitHub/Gitea 用本地 `git tag` 但锚定到远端 SHA。
 
 ---
 
@@ -125,19 +127,71 @@ git tag --sort=-version:refname | head -30
 
 ## 阶段2：创建并推送 Tag
 
-对所有仓库**并行执行**：
+> ⚠️ **远程优先**：打 tag 前必须 fetch 并验证远端 commit SHA。禁止在未验证的本地 HEAD 上直接 `git tag`——本地分支可能落后远端，导致 tag 打在旧 commit 上。
+
+### 2.0 前置检查（所有平台，必须执行）
+
+对每个仓库**并行**执行：
 
 ```bash
-# 在对应仓库目录下
-git tag <TAG_NAME>
+# 1. Fetch 远端最新状态
+git fetch origin <RELEASE_BRANCH>
+
+# 2. 取远端 release 分支 HEAD SHA（tag 锚定目标）
+REMOTE_SHA=$(git rev-parse origin/<RELEASE_BRANCH>)
+echo "远端 $RELEASE_BRANCH HEAD: $REMOTE_SHA"
+
+# 3. 分叉检测：本地是否落后远端
+LOCAL_SHA=$(git rev-parse HEAD)
+BEHIND=$(git rev-list --count HEAD..origin/<RELEASE_BRANCH> 2>/dev/null || echo 0)
+[ "$BEHIND" -gt 0 ] && echo "⚠️ 本地落后远端 $BEHIND 个 commit，tag 将锚定到远端 SHA（非本地 HEAD）"
+
+# 4. tag 远端已存在检查
+git ls-remote --tags origin | grep -q "refs/tags/<TAG_NAME>$" \
+  && { echo "❌ tag <TAG_NAME> 已存在于远端，终止"; exit 1; }
+```
+
+### 2.1 创建 Tag（按平台分流）
+
+**GitLab — 远程创建（优先）**：
+
+```bash
+# 通过 GitLab API 直接在远端创建 tag（纯 tag，无 Release 对象）
+# 与 git-release-start 的 glab api 远程创建分支范式一致
+glab api POST "projects/:fullpath/repository/tags" \
+  -f tag_name=<TAG_NAME> \
+  -f ref=$REMOTE_SHA \
+  -f message="Release <VERSION>"
+# 无需 git push——API 直接在远端创建
+```
+
+**GitHub / Gitea — 本地创建锚定到远端 SHA**：
+
+```bash
+# 锚定到远端 SHA（非本地 HEAD），确保 tag 指向正确的 commit
+git tag <TAG_NAME> $REMOTE_SHA
 git push origin <TAG_NAME>
 ```
 
-验证：
+### 2.2 验证 Tag 指向正确 commit
 
 ```bash
-git ls-remote origin refs/tags/<TAG_NAME>
+# 远端 tag 的 commit SHA 必须等于 $REMOTE_SHA
+TAG_SHA=$(git ls-remote origin refs/tags/<TAG_NAME> | awk '{print $1}')
+echo "tag <TAG_NAME> -> $TAG_SHA"
+echo "expected        -> $REMOTE_SHA"
+# 若为 annotated tag，ls-remote 返回 tag 对象 SHA，需解引用：
+# git ls-remote origin refs/tags/<TAG_NAME>^{commit}
 ```
+
+> ⚠️ 若 `TAG_SHA` ≠ `REMOTE_SHA`（排除 annotated tag 解引用差异），说明 tag 打在了错误 commit 上，必须删除重打（见错误处理）。
+
+### 输出：确认表
+
+| 仓库 | tag 名称 | 远端 commit SHA | tag 验证 SHA | 状态 |
+|------|---------|----------------|-------------|------|
+| repo-A | `8.2.70` | `9bb86f93b` | `9bb86f93b` | ✅ |
+| repo-B | `desktop-8.2.70` | `a1b2c3d4e` | `a1b2c3d4e` | ✅ |
 
 ---
 
@@ -550,6 +604,8 @@ git rebase origin/<MAIN_BRANCH>
 | 场景 | 处理方式 |
 |------|---------|
 | tag 已存在 | 报错停止，询问是否覆盖（`git tag -f` + `git push --force`）|
+| 打 tag 前发现本地落后远端 | 阶段 2 前置检查已捕获；tag 锚定到 `$REMOTE_SHA`（`git rev-parse origin/<RELEASE_BRANCH>`），不使用本地 HEAD |
+| tag 打在了错误 commit 上 | 删除重打：`git push origin --delete <TAG>` + `git tag -d <TAG>` → 重新执行阶段 2（锚定到 `$REMOTE_SHA`）；GitLab 也可 `glab api DELETE "projects/:fullpath/repository/tags/<TAG>"` 远程删除 |
 | MR/PR 已存在（同源同目标） | 复用已有 MR/PR，不重新创建 |
 | merge-tree=0 但 MR 无法合并 | 改用 rebase 策略（阶段 6），创建 rebase-release 分支 |
 | rebase 冲突过多 | 切换为 merge 策略（在 git-conflict-resolve 中重新执行 Y.0 merge 模式） |
@@ -566,6 +622,27 @@ git rebase origin/<MAIN_BRANCH>
 ```bash
 # 查看 tag 历史
 git tag --sort=-version:refname | head -30
+
+# ── 阶段2：远程优先打 tag（前置检查 + 平台分流）──
+# 前置检查（所有平台）
+git fetch origin <RELEASE_BRANCH>
+REMOTE_SHA=$(git rev-parse origin/<RELEASE_BRANCH>)
+echo "remote HEAD: $REMOTE_SHA"
+# 分叉检测
+git rev-list --count HEAD..origin/<RELEASE_BRANCH>  # >0 说明本地落后
+# tag 远端已存在检查
+git ls-remote --tags origin | grep "refs/tags/<TAG_NAME>$"
+
+# GitLab：远程创建 tag（glab api，纯 tag 无 Release 对象）
+glab api POST "projects/:fullpath/repository/tags" \
+  -f tag_name=<TAG_NAME> -f ref=$REMOTE_SHA -f message="Release <VERSION>"
+
+# GitHub / Gitea：本地锚定到远端 SHA
+git tag <TAG_NAME> $REMOTE_SHA && git push origin <TAG_NAME>
+
+# 验证 tag 指向正确 commit
+git ls-remote origin refs/tags/<TAG_NAME>  # 应返回 $REMOTE_SHA
+# ── 阶段2 结束 ──
 
 # 查看主分支合并历史
 git log --oneline --merges -20 | grep -E "into '(master|main|develop)'"
