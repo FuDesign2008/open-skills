@@ -107,8 +107,14 @@ jobs:
             --title "chore: bump version to ${VERSION}" \
             --body "由 Auto Version Bump workflow 自动创建。将以 squash 合并并附带 [skip ci]，避免再次触发 release workflow。")
           PR_NUM="${PR_URL##*/}"
-          # 等待 verify CI 通过后同步合并（解决 --auto 竞态问题）
-          gh pr checks "$PR_NUM" --watch --required || true
+          # 等待 verify CI 出现并完成（GitHub 需要几秒调度，--watch 在 checks 未出现时会立即返回）
+          for i in $(seq 1 12); do
+            if gh pr checks "$PR_NUM" 2>/dev/null | grep -q "."; then
+              gh pr checks "$PR_NUM" --watch --required && break
+              break
+            fi
+            sleep 5
+          done
           gh pr merge "$PR_NUM" --squash \
             --subject "chore: bump version to ${VERSION} [skip ci]" \
             --delete-branch
