@@ -34,7 +34,7 @@ open-skills/
 
 | 任务 | 位置 | 注意事项 |
 |------|------|---------|
-| 新增/修改 Skill | `skills/<name>/SKILL.md` | 见 skills/AGENTS.md 了解格式和分类 |
+| 新增/修改 Skill | `skills/<name>/SKILL.md` | 格式和分类见下方「代码规范」 |
 | 新增快捷命令 | `commands/<name>.md` | 固定格式：`disable-model-invocation: true` + `Invoke the <skill> skill` |
 | 修改钩子行为 | `hooks/hooks.json` + 对应 shell 脚本 | Shell 脚本必须静默失败 |
 | OpenCode 插件开发 | `.opencode/plugins/` 和 `.opencode/plugin/` | 见 .opencode/AGENTS.md |
@@ -90,7 +90,11 @@ description: 触发条件和用途说明（必须包含触发词）
 Skill 内容...
 ```
 
-**触发词设计**：支持两种形式——单独触发词（如「分析问题」）或带冒号形式（如「分析问题： xxx」）；冒号和空格不限制中英文。详见 `skills/AGENTS.md`。
+**触发词设计**：支持两种形式——单独触发词（如「分析问题」）或带冒号形式（如「分析问题： xxx」）；冒号和空格不限制中英文。在 `description` 中列出所有触发词；工作流 skill 的阶段名即为触发词（如「分析问题」触发 solve-workflow 的阶段 1）。
+
+### frontmatter YAML 陷阱
+
+`description` 裸值含英文 `: `（冒号+空格，如 `Triggers: 发版`）会触发 YAML `Nested mappings are not allowed` 错误，导致 `npx skills` 安装/更新报 `No valid skills found`。值含 `: ` 时必须加双引号或用 `|` 块标量。中文冒号「：」不受影响。
 
 ### 命令文件格式（`commands/*.md`）
 
@@ -116,6 +120,21 @@ Invoke the <skill-name> skill and follow it exactly
 ### Shell 脚本（`hooks/`）
 
 - `#!/usr/bin/env bash`，用 `printf` 输出 JSON，静默失败
+
+### 新增 Skill 检查清单
+
+1. 目录名 kebab-case
+2. `SKILL.md` frontmatter 完整（name、version、description 含触发词）
+3. 如需命令入口 → 在 `commands/` 添加对应 `.md`
+4. 如需 Hook 触发 → 在 `hooks/hooks.json` 添加配置
+5. 如需 OpenCode 支持 → 在 `.opencode/plugins/` 或 `.opencode/plugin/` 添加 JS/TS 代码
+6. 确认 `docs/generated/skills-index.md` 已更新并纳入提交（commit 时 pre-commit hook 自动处理；未安装 hook 则手动运行 `node scripts/gen-skill-docs.mjs` 后再提交）
+
+### Skill 精简原则
+
+- **规则只写一次**：参考表/速览表不应重复阶段详情中已有的规则
+- **Pitfall 只记非直觉陷阱**：不看规则就容易犯的错误才值得记，规则本身的重复罗列是 token 浪费
+- **输出模板超过 5 行抽 reference.md**：SKILL.md 用 `输出格式见 reference.md` 一句引用
 
 ## 命名约定
 
@@ -173,6 +192,14 @@ Invoke the <skill-name> skill and follow it exactly
 - ❌ Hook 脚本阻塞主流程（必须静默失败）
 - ❌ OpenCode 插件用 CommonJS（必须 ES Module）
 - ❌ 中文内容混用英文标点
+- ❌ `user-invocable: false` 但无其他 skill 引用它
+- ❌ 目录名与 frontmatter `name` 不一致
+- ❌ 工作流 skill 跳过阶段（分析阶段禁止 Edit/Write）
+- ❌ 支持文件（如 reference.md）未在 SKILL.md 中引用
+- ❌ 参考表/速览表重复已有阶段详情（token 膨胀）
+- ❌ Red Flags/Pitfall 重复上方已写明的规则（Pitfall 只记非直觉陷阱）
+- ❌ PDCA 对应表等元认知框架（对 AI 无执行指导价值；人类可读内容放 reference.md）
+- ❌ `description` 裸值含英文 `: ` 未加引号，破坏 YAML 解析导致 `npx skills` 安装失败
 - ❌ SKILL.md 内引用其他 skill 的规则定义作为唯一来源（通用安装模式下其他 skill 可能未安装，引用失效；关键规则必须在每个 skill 中自包含）
 - ❌ 多个 skill 共享同一规则时只改一处（如模式生命周期规则，需同步更新 solve-workflow、opsx-solve-workflow、jira-fix-workflow、opsx-jira-fix-workflow）
 
@@ -201,5 +228,4 @@ git diff --exit-code docs/generated/skills-index.md
 
 ## 子目录知识库
 
-- `skills/AGENTS.md` — Skill 开发详细规范、分类、依赖关系
 - `.opencode/AGENTS.md` — OpenCode 插件架构、API 模式、安装机制

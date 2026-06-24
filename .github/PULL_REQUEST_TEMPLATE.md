@@ -18,11 +18,11 @@
 - [ ] **未手动编辑** `docs/generated/skills-index.md`（该文件由脚本生成，手改会导致 CI `verify` 失败）
 - [ ] `SKILL.md` frontmatter 完整：`name` 与目录名一致、`version` 语义化、`description` 含触发词
 - [ ] 遵循 [AGENTS.md「AI 铁律」](../AGENTS.md)：数据脱敏（不含内部平台/域名/项目标识）、内容用英文书写（触发词保留中文）
-- [ ] 遵循 [skills/AGENTS.md](../skills/AGENTS.md) 的 Skill 开发规范
+- [ ] 遵循 [AGENTS.md](../AGENTS.md) 的「代码规范」与「反模式」
 
 ### 通用
 
-- [ ] 已在 [AGENTS.md](../AGENTS.md)「Skill 清单」表和 [skills/AGENTS.md](../skills/AGENTS.md)「分类与依赖」表登记（新增 skill 时）
+- [ ] 已在 [AGENTS.md](../AGENTS.md)「Skill 清单」表登记（新增 skill 时）
 
 ## Validation
 
