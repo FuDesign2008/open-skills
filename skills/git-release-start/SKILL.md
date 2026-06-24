@@ -86,6 +86,8 @@ git fetch origin <BASE_BRANCH>
 git log --oneline origin/<BASE_BRANCH> -3
 ```
 
+> ⚠️ **remote HEAD 可能指向已废弃的分支**：仓库迁移或分支策略调整后，remote HEAD 可能仍指向旧主分支（如 `master`），而实际活跃主分支已变为 `main`。若 remote HEAD 指向的分支落后另一候选分支数百 commits，说明 HEAD 已过期。**以合并历史（`git log --merges | grep "into 'main'"`）为准，必要时向用户确认**。详见 `git-release-finish` 阶段3 的"常见场景"表。
+
 **输出：确认表（阶段1仅确认版本号与 base 分支，release 分支名由阶段2分析后确定）**
 
 | 仓库 | 版本号 | 基础分支 |

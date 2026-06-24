@@ -114,7 +114,7 @@ git tag --sort=-version:refname | head -30
 - 检查全部 tag（不只看最近 10 条），找有无 `product-` 前缀
 - 每条产品线独立维护 tag，本次发版只打当前产品线的 tag
 
-> ⚠️ **tag 命名可能随版本演变**：同一仓库的 tag 命名规范并非一成不变。例如 markdown-editor 仓库历史用 `v8.2.60`（v 前缀），后续版本改为 `8.2.63`（无前缀）。**以最新 tag 为准**，不要因为看到旧 tag 有前缀就假设新版本也必须有。若历史 tag 中存在命名规范不一致，向用户确认本次应遵循哪套规范。
+> ⚠️ **tag 命名可能随版本演变**：同一仓库的 tag 命名规范并非一成不变。例如某仓库历史用 `v8.2.60`（v 前缀），后续版本改为 `8.2.63`（无前缀）。**以最新 tag 为准**，不要因为看到旧 tag 有前缀就假设新版本也必须有。若历史 tag 中存在命名规范不一致，向用户确认本次应遵循哪套规范。
 
 ### 输出：确认表
 
@@ -198,7 +198,7 @@ echo "expected        -> $REMOTE_SHA"
 
 | 仓库 | tag 名称 | 远端 commit SHA | tag 验证 SHA | 状态 |
 |------|---------|----------------|-------------|------|
-| repo-A | `8.2.70` | `9bb86f93b` | `9bb86f93b` | ✅ |
+| repo-A | `8.2.70` | `abc123def` | `abc123def` | ✅ |
 | repo-B | `desktop-8.2.70` | `a1b2c3d4e` | `a1b2c3d4e` | ✅ |
 
 ---
@@ -241,7 +241,7 @@ git branch -r | grep "origin/HEAD"
 | `develop` 接收所有 feature，但 remote HEAD = `main` | 向用户确认 |
 | remote HEAD 指向某分支，但该分支落后另一分支数百 commits | **remote HEAD 已过期**，以合并历史为准，向用户确认（见下方） |
 
-> ⚠️ **remote HEAD 可能指向已废弃/落后的分支**：仓库迁移或分支策略调整后，remote HEAD 可能仍指向旧的主分支。例如 markdown-editor 仓库 remote HEAD = `master`，但 `master` 落后 `main` 402 commits，实际活跃主分支是 `main`。
+> ⚠️ **remote HEAD 可能指向已废弃/落后的分支**：仓库迁移或分支策略调整后，remote HEAD 可能仍指向旧的主分支。例如某仓库 remote HEAD = `master`，但 `master` 落后 `main` 数百个 commit，实际活跃主分支是 `main`。
 >
 > **排查方法**：当 remote HEAD 指向的分支与候选分支存在显著 commit 差距时，用合并历史确认：
 > ```bash
@@ -557,6 +557,11 @@ diff <(git show <SKIPPED_SHA> --format=) <(git show <TARGET_SHA> --format=)
 用户确认后，对所有仓库**并行**执行：
 
 ```bash
+# 📋 CI 门控检查：pipeline 红而合并 = 把未验证代码送进主干
+glab mr view <MR_ID> --json mergeStatus,detailedMergeStatus 2>/dev/null \
+  | grep -qiE '"mergeable"|\"can_be_merged\"' \
+  || echo "⚠️ MR 状态非可合并（CI 可能未通过），确认合并？"
+
 # GitLab
 glab mr merge <MR_ID> --squash=false --remove-source-branch=false --yes
 
@@ -645,7 +650,7 @@ git rebase origin/<MAIN_BRANCH>
 
 | 场景 | 处理方式 |
 |------|---------|
-| tag 已存在 | 报错停止，询问是否覆盖（`git tag -f` + `git push --force`）|
+| tag 已存在 | ⚠️ 已发布 tag 不可移动（下游 CI/CD 可能已基于该 tag 部署）。建议新建版本号；确需覆盖须用户明确确认 |
 | 打 tag 前发现本地落后远端 | 阶段 2 前置检查已捕获；tag 锚定到 `$REMOTE_SHA`（`git rev-parse origin/<RELEASE_BRANCH>`），不使用本地 HEAD |
 | tag 打在了错误 commit 上 | 删除重打：`git push origin --delete <TAG>` + `git tag -d <TAG>` → 重新执行阶段 2（锚定到 `$REMOTE_SHA`）；GitLab 也可 `glab api DELETE "projects/:fullpath/repository/tags/<TAG>"` 远程删除 |
 | MR/PR 已存在（同源同目标） | 复用已有 MR/PR，不重新创建 |
@@ -655,7 +660,7 @@ git rebase origin/<MAIN_BRANCH>
 | force push 被保护分支拒绝（`remote rejected` / `pre-receive hook declined`） | release 分支是保护分支（push=No one），改用"保护分支备选路径"：推到新分支 `rebase-release/<VERSION>` → 关闭原 MR → 创建新 MR（见阶段6 rebase 模式） |
 | 冲突解决出现逻辑错误 | 交由 `git-conflict-resolve` Y.5 逻辑验证捕获，按 ⚠️/❌ 提示处理 |
 | `git rm --cached` 报 "pathspec not found" | 文件不在 index，用 `git add -A` 先同步 worktree 再重试 |
-| pipeline 未运行警告 | 平台 CI 提示（`! No pipeline running`）为正常提示，不影响合并 |
+| pipeline 未运行/失败 | ⚠️ 检查 pipeline 状态。若 pipeline 失败（红色），禁止合并；若仓库无 CI 配置则可忽略 |
 | CLI 认证失败 | 检查 `<GIT_CLI> auth status`，重新执行 `<GIT_CLI> auth login` |
 
 ---

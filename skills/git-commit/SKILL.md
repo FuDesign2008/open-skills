@@ -23,7 +23,7 @@ description: 当用户说「提交代码」「git commit」「帮我提交」「
 - **type**：fix、feat、refactor、perf、style、docs、test
 - **scope**（可选）：ai-summary、share、auth、api、ui、core
 - **subject**：中文简要描述，不超过 50 字符
-- **jira_id**（可选）：如 YNOTR-12167
+- **jira_id**（可选）：如 PROJ-123
 
 （jira_id 可选；其余上下文字段如 branch、report_path 由调用方传入，不写入 commit）
 
@@ -61,10 +61,11 @@ description: 当用户说「提交代码」「git commit」「帮我提交」「
 **自动模式（execute=true）**：依次执行以下命令，并输出每个命令的执行结果或状态：
 
 1. **git status** — 输出当前改动摘要
-2. **git add .** — 输出文件暂存状态
-3. **git commit -m "..."** — 输出 commit hash 和提交信息
-4. **git log -1 --stat** — 输出提交统计（改动文件数和行数）
-5. **git push -u origin [branch-name]** — 输出推送结果或分支设置信息
+2. **保护分支检查** — main/master/develop 上直接提交会绕过 Review，生产代码未经审查即入主干。检测到时警告用户确认
+3. **git add .** — 输出文件暂存状态
+4. **git commit -m "..."** — 输出 commit hash 和提交信息
+5. **git log -1 --stat** — 输出提交统计（改动文件数和行数）
+6. **git push -u origin [branch-name]** — 输出推送结果或分支设置信息
 
 多项目时对每个项目独立执行上述步骤，末尾附汇总表。
 
@@ -74,7 +75,7 @@ description: 当用户说「提交代码」「git commit」「帮我提交」「
 ```
 ## Git 提交代码（自动模式）
 
-**项目**: backend   **分支**: fix/YNOTR-12167
+**项目**: backend   **分支**: fix/PROJ-123
 **Commit**: a1b2c3d  **推送状态**: ✅ 成功
 **改动**: +45/-12 (3 files)
 
@@ -86,12 +87,12 @@ description: 当用户说「提交代码」「git commit」「帮我提交」「
 ## Git 提交代码（手动模式）
 
 **生成的 Commit Message**：
-fix(ai-summary): YNOTR-12167 修复分享链接中AI摘要按钮显示问题
+fix(ai-summary): PROJ-123 修复分享链接中AI摘要按钮显示问题
 
 **执行命令**：
 git status
 git add .
-git commit -m "fix(ai-summary): YNOTR-12167 修复分享链接中AI摘要按钮显示问题"
+git commit -m "fix(ai-summary): PROJ-123 修复分享链接中AI摘要按钮显示问题"
 git log -1 --stat
 git push -u origin [branch-name]  # 可选
 
