@@ -92,7 +92,7 @@ jobs:
             --title "chore: bump version to ${VERSION}" \
             --body "由 Auto Version Bump workflow 自动创建。将以 squash 合并并附带 [skip ci]，避免再次触发 release workflow。")
           PR_NUM="${PR_URL##*/}"
-          gh pr merge "$PR_NUM" --squash \
+          gh pr merge "$PR_NUM" --squash --auto \
             --subject "chore: bump version to ${VERSION} [skip ci]" \
             --delete-branch
           git fetch origin main

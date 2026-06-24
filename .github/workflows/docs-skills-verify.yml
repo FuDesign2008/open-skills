@@ -2,10 +2,6 @@ name: Docs — Skills index
 
 on:
   pull_request:
-    paths:
-      - "skills/**"
-      - "scripts/gen-skill-docs.mjs"
-      - "docs/generated/skills-index.md"
   push:
     branches: [main]
     paths:
