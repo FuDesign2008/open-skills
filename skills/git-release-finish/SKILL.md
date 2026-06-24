@@ -114,6 +114,8 @@ git tag --sort=-version:refname | head -30
 - 检查全部 tag（不只看最近 10 条），找有无 `product-` 前缀
 - 每条产品线独立维护 tag，本次发版只打当前产品线的 tag
 
+> ⚠️ **tag 命名可能随版本演变**：同一仓库的 tag 命名规范并非一成不变。例如 markdown-editor 仓库历史用 `v8.2.60`（v 前缀），后续版本改为 `8.2.63`（无前缀）。**以最新 tag 为准**，不要因为看到旧 tag 有前缀就假设新版本也必须有。若历史 tag 中存在命名规范不一致，向用户确认本次应遵循哪套规范。
+
 ### 输出：确认表
 
 | 仓库 | release 分支 | tag 名称 | 示例（历史最新）|
@@ -156,6 +158,8 @@ git ls-remote --tags origin | grep -q "refs/tags/<TAG_NAME>$" \
 **GitLab — 远程创建（优先）**：
 
 ```bash
+# REMOTE_SHA 来自 2.0；若分步执行需重新获取
+REMOTE_SHA=$(git rev-parse origin/<RELEASE_BRANCH>)
 # 通过 GitLab API 直接在远端创建 tag（纯 tag，无 Release 对象）
 # 与 git-release-start 的 glab api 远程创建分支范式一致
 glab api POST "projects/:fullpath/repository/tags" \
@@ -168,6 +172,8 @@ glab api POST "projects/:fullpath/repository/tags" \
 **GitHub / Gitea — 本地创建锚定到远端 SHA**：
 
 ```bash
+# REMOTE_SHA 来自 2.0；若分步执行需重新获取
+REMOTE_SHA=$(git rev-parse origin/<RELEASE_BRANCH>)
 # 锚定到远端 SHA（非本地 HEAD），确保 tag 指向正确的 commit
 git tag <TAG_NAME> $REMOTE_SHA
 git push origin <TAG_NAME>
@@ -176,12 +182,14 @@ git push origin <TAG_NAME>
 ### 2.2 验证 Tag 指向正确 commit
 
 ```bash
+# REMOTE_SHA 来自 2.0；若分步执行需重新获取
+REMOTE_SHA=$(git rev-parse origin/<RELEASE_BRANCH>)
 # 远端 tag 的 commit SHA 必须等于 $REMOTE_SHA
 TAG_SHA=$(git ls-remote origin refs/tags/<TAG_NAME> | awk '{print $1}')
 echo "tag <TAG_NAME> -> $TAG_SHA"
 echo "expected        -> $REMOTE_SHA"
 # 若为 annotated tag，ls-remote 返回 tag 对象 SHA，需解引用：
-# git ls-remote origin refs/tags/<TAG_NAME>^{commit}
+# git ls-remote origin "refs/tags/<TAG_NAME>^{}"
 ```
 
 > ⚠️ 若 `TAG_SHA` ≠ `REMOTE_SHA`（排除 annotated tag 解引用差异），说明 tag 打在了错误 commit 上，必须删除重打（见错误处理）。
@@ -231,6 +239,17 @@ git branch -r | grep "origin/HEAD"
 | 有 `Merge branch 'release/X.Y.Z' into 'master'` 记录 | 主分支 = `master` |
 | `origin/HEAD -> origin/main`，且无 release 合并记录 | 主分支 = `main` |
 | `develop` 接收所有 feature，但 remote HEAD = `main` | 向用户确认 |
+| remote HEAD 指向某分支，但该分支落后另一分支数百 commits | **remote HEAD 已过期**，以合并历史为准，向用户确认（见下方） |
+
+> ⚠️ **remote HEAD 可能指向已废弃/落后的分支**：仓库迁移或分支策略调整后，remote HEAD 可能仍指向旧的主分支。例如 markdown-editor 仓库 remote HEAD = `master`，但 `master` 落后 `main` 402 commits，实际活跃主分支是 `main`。
+>
+> **排查方法**：当 remote HEAD 指向的分支与候选分支存在显著 commit 差距时，用合并历史确认：
+> ```bash
+> # 对比候选分支的 commit 差距
+> echo "HEAD branch ahead of main: $(git rev-list --count origin/main..origin/<HEAD_BRANCH> 2>/dev/null)"
+> echo "main ahead of HEAD branch: $(git rev-list --count origin/<HEAD_BRANCH>..origin/main 2>/dev/null)"
+> # 若 HEAD branch 落后数百 commits → remote HEAD 已过期，以合并历史为准
+> ```
 
 ### 输出：确认表
 
@@ -358,6 +377,29 @@ git push origin rebase-release/<VERSION>:<RELEASE_BRANCH> --force-with-lease
 > ⚠️ `--force-with-lease` 比 `--force` 更安全：若远端在此期间有新提交，会拒绝推送，避免覆盖他人提交。
 >
 > ⚠️ **Force push 前确认**：若 `<RELEASE_BRANCH>` 是共享分支（多人协作），force push 会破坏他人的工作基础。执行前询问用户：**"是否有他人基于此分支工作？确认 force push？"**
+
+#### 保护分支备选路径（force push 被拒时）
+
+> ⚠️ 若 `<RELEASE_BRANCH>` 是**保护分支**（GitLab `release/*` 保护规则常见 push=No one），force push 会被远端直接拒绝（`remote: rejected`），即使非 force 的普通 push 也可能被拒。
+
+**检测**：force push 返回 `! [remote rejected]` 或 `pre-receive hook declined`。
+
+**处理**：不修改 release 分支，改为推到新分支并创建新 MR：
+
+```bash
+# 1. 将 rebase 结果推到新分支（非 force push，普通 push）
+git push origin rebase-release/<VERSION>
+
+# 2. 关闭原来因冲突而搁置的 MR/PR
+glab mr close <OLD_ID>   # GitLab
+gh pr close <OLD_ID>     # GitHub
+
+# 3. 创建指向 rebase-release/<VERSION> 的新 MR/PR（参考阶段4命令）
+#    源分支: rebase-release/<VERSION>
+#    目标分支: <MAIN_BRANCH>
+```
+
+> **注意**：此路径下原 release 分支保持不变（仍指向 rebase 前的 commit）。后续若有 release → main 的同步需求，需注意 hash 一致性问题（见"跨 release 同步"场景）。
 
 ### rebase 后检查：跳过 commit 审查
 
@@ -610,6 +652,7 @@ git rebase origin/<MAIN_BRANCH>
 | merge-tree=0 但 MR 无法合并 | 改用 rebase 策略（阶段 6），创建 rebase-release 分支 |
 | rebase 冲突过多 | 切换为 merge 策略（在 git-conflict-resolve 中重新执行 Y.0 merge 模式） |
 | rebase 自动跳过 commit | 对比被跳过 commit 与 target 对应 commit 的 diff（阶段 6 审查流程） |
+| force push 被保护分支拒绝（`remote rejected` / `pre-receive hook declined`） | release 分支是保护分支（push=No one），改用"保护分支备选路径"：推到新分支 `rebase-release/<VERSION>` → 关闭原 MR → 创建新 MR（见阶段6 rebase 模式） |
 | 冲突解决出现逻辑错误 | 交由 `git-conflict-resolve` Y.5 逻辑验证捕获，按 ⚠️/❌ 提示处理 |
 | `git rm --cached` 报 "pathspec not found" | 文件不在 index，用 `git add -A` 先同步 worktree 再重试 |
 | pipeline 未运行警告 | 平台 CI 提示（`! No pipeline running`）为正常提示，不影响合并 |
