@@ -2,115 +2,115 @@
 name: git-commit
 version: "3.0.0"
 user-invocable: true
-description: 当用户说「提交代码」「git commit」「帮我提交」「写 commit message」「生成 commit」「提交一下」「git-commit」「自动提交代码」「git-commit-auto」，或由 jira-fix-workflow 阶段7触发时使用。
+description: Git commit unified entry point. Triggers when user says 「提交代码」「git commit」「帮我提交」「写 commit message」「生成 commit」「提交一下」「git-commit」「自动提交代码」「git-commit-auto」 (commit code / help me commit / write commit message / generate commit / auto commit), or when invoked by jira-fix-workflow phase 7.
 ---
 
-# Git Commit - 统一入口（默认自动模式）
+# Git Commit — Unified Entry (Auto Mode by Default)
 
-## 模式判断规则
+## Mode Detection Rules
 
-| 信号 | 结果 |
-|------|------|
-| 上层传入 `execute=true`，或由 `jira-fix-workflow` 阶段7触发 | 自动模式 |
-| 用户说「手动提交」「只生成命令」「不要执行」「给我命令」 | 手动模式 |
-| 其他触发词或上下文不明确 | 默认自动模式 |
+| Signal | Result |
+|--------|--------|
+| Caller passes `execute=true`, or triggered by `jira-fix-workflow` phase 7 | Auto mode |
+| User says 「手动提交」「只生成命令」「不要执行」「给我命令」 (manual commit / only generate command / don't execute / give me the command) | Manual mode |
+| Other triggers or unclear context | Default to auto mode |
 
-## 执行流程
+## Execution Flow
 
-### 步骤1：收集提交信息
+### Step 1: Collect Commit Info
 
-写入 commit message 的字段：
-- **type**：fix、feat、refactor、perf、style、docs、test
-- **scope**（可选）：ai-summary、share、auth、api、ui、core
-- **subject**：中文简要描述，不超过 50 字符
-- **jira_id**（可选）：如 PROJ-123
+Fields for the commit message:
+- **type**: fix, feat, refactor, perf, style, docs, test
+- **scope** (optional): ai-summary, share, auth, api, ui, core
+- **subject**: brief description in the user's preferred language, max 50 chars
+- **jira_id** (optional): e.g. PROJ-123
 
-（jira_id 可选；其余上下文字段如 branch、report_path 由调用方传入，不写入 commit）
+(jira_id is optional; other context fields like branch, report_path are passed by the caller and not written into the commit)
 
-### 步骤2：判断模式
+### Step 2: Determine Execution Mode
 
-确定 `execute=false`（手动）或 `execute=true`（自动），规则见「模式判断规则」。
+Decide `execute=false` (manual) or `execute=true` (auto). See "Mode Detection Rules" above.
 
-### 步骤3：多项目检测
+### Step 3: Multi-Project Detection
 
-**扫描规则**：
-- 扫描范围：workspace 根目录的一级和二级子目录
-- 识别标准：存在 `.git` 目录
-- 排除目录：`node_modules`、`.cursor`、`dist`、`build`、`.git`、隐藏目录（`.` 开头）
-- 对每个候选目录执行 `git status` 验证是否有效
+**Scan rules**:
+- Scan scope: first and second-level subdirectories of the workspace root
+- Identification: presence of a `.git` directory
+- Exclude: `node_modules`, `.cursor`, `dist`, `build`, `.git`, hidden directories (starting with `.`)
+- For each candidate directory, run `git status` to verify validity
 
-**多项目场景**：报告文件只在主项目（第一个）中提交；为每个有改动的项目独立生成 commit message。
+**Multi-project scenario**: Report files are committed only in the primary project (the first one); each project with changes gets its own commit message.
 
-### 步骤4：生成 Commit Message
+### Step 4: Generate Commit Message
 
-**格式**：
+**Format**:
 ```
 <type>(<scope>): <Jira-ID> <subject>
 ```
 
-规则：
-- Subject 不超过 50 字符，使用中文，必须包含与类型对应的中文动词（feat: 新增、fix: 修复、refactor: 重构、perf: 优化、style: 格式化、docs: 文档、test: 测试）
-- 有 Jira ID 时放在 subject 之前
-- 无 scope 时省略括号：`<type>: <subject>`
-- commit message 只含标题行，无正文
+Rules:
+- Subject: max 50 chars, in the user's preferred language, must include a verb matching the type (e.g. feat: 新增/Add, fix: 修复/Fix, refactor: 重构/Refactor, perf: 优化/Optimize, style: 格式化/Format, docs: 文档/Docs, test: 测试/Test)
+- Jira ID goes before the subject when present
+- Omit parentheses when no scope: `<type>: <subject>`
+- Commit message contains only the title line, no body
 
-### 步骤5：执行 Git 操作
+### Step 5: Execute Git Operations
 
-**手动模式（execute=false）**：生成命令，不执行，提示用户手动运行。
+**Manual mode** (`execute=false`): Generate commands, don't execute, prompt user to run manually.
 
-**自动模式（execute=true）**：依次执行以下命令，并输出每个命令的执行结果或状态：
+**Auto mode** (`execute=true`): Execute the following commands in order, outputting each command's result or status:
 
-1. **git status** — 输出当前改动摘要
-2. **保护分支检查** — main/master/develop 上直接提交会绕过 Review，生产代码未经审查即入主干。检测到时警告用户确认
-3. **git add .** — 输出文件暂存状态
-4. **git commit -m "..."** — 输出 commit hash 和提交信息
-5. **git log -1 --stat** — 输出提交统计（改动文件数和行数）
-6. **git push -u origin [branch-name]** — 输出推送结果或分支设置信息
+1. **git status** — output current changes summary
+2. **Protected branch check** — committing directly to main/master/develop bypasses code review; unreviewed production code lands on main. Warn the user if detected
+3. **git add .** — output staged file status
+4. **git commit -m "..."** — output commit hash and message
+5. **git log -1 --stat** — output commit stats (changed files and line counts)
+6. **git push -u origin [branch-name]** — output push result or branch tracking info
 
-多项目时对每个项目独立执行上述步骤，末尾附汇总表。
+For multi-project, execute these steps independently for each project, with a summary table at the end.
 
-## 输出格式
+## Output Format
 
-**自动模式**（默认）：
+**Auto mode** (default):
 ```
-## Git 提交代码（自动模式）
+## Git Commit (Auto Mode)
 
-**项目**: backend   **分支**: fix/PROJ-123
-**Commit**: a1b2c3d  **推送状态**: ✅ 成功
-**改动**: +45/-12 (3 files)
+**Project**: backend   **Branch**: fix/PROJ-123
+**Commit**: a1b2c3d  **Push**: ✅ Success
+**Changes**: +45/-12 (3 files)
 
-**下一步**：创建 PR → Code Review → 测试验证
+**Next**: Create PR → Code Review → Test Verification
 ```
 
-**手动模式**（显式请求时）：
+**Manual mode** (on explicit request):
 ```
-## Git 提交代码（手动模式）
+## Git Commit (Manual Mode)
 
-**生成的 Commit Message**：
+**Generated Commit Message**:
 fix(ai-summary): PROJ-123 修复分享链接中AI摘要按钮显示问题
 
-**执行命令**：
+**Commands**:
 git status
 git add .
 git commit -m "fix(ai-summary): PROJ-123 修复分享链接中AI摘要按钮显示问题"
 git log -1 --stat
-git push -u origin [branch-name]  # 可选
+git push -u origin [branch-name]  # optional
 
-**提示**：请确认后手动执行上述命令。
+**Note**: Please review and execute the above commands manually.
 ```
 
-多项目时对每个项目独立输出，末尾附汇总表。
+For multi-project, output independently for each project, with a summary table at the end.
 
-## 错误处理
+## Error Handling
 
-| 场景 | 处理方式 |
-|------|---------|
-| 无未提交改动 | 手动模式：告知用户没有需要提交的改动；自动模式：输出「无改动可提交」提示或执行 `git add .` 后显示「暂存区为空」 |
-| 分支不存在 | 报错，建议先创建分支 |
-| Git 操作失败 | 显示错误，提供降级方案（建议说「手动提交」重试） |
-| 不在 Git 仓库 | 报错并终止，提示检查目录 |
-| 多项目检测失败 | 降级为单项目模式，使用当前目录 |
+| Scenario | Handling |
+|----------|----------|
+| No uncommitted changes | Manual mode: inform user nothing to commit; Auto mode: output "No changes to commit" or run `git add .` then show "Staging area empty" |
+| Branch doesn't exist | Error out, suggest creating a branch first |
+| Git operation fails | Show error, provide fallback (suggest "manual commit" to retry) |
+| Not in a Git repo | Error out and terminate, suggest checking the directory |
+| Multi-project detection fails | Fallback to single-project mode using the current directory |
 
-## 安全机制（自动模式）
+## Safety Mechanisms (Auto Mode)
 
-- 改动 >10 文件/500 行时警告，>20 文件/1000 行时再次警告（均不阻断）；单项目失败不影响其他项目
+- Warn when changes exceed 10 files / 500 lines; warn again at 20 files / 1000 lines (warnings don't block); failure in one project doesn't affect others

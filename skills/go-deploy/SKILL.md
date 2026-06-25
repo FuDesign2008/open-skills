@@ -2,97 +2,97 @@
 name: go-deploy
 version: "1.0.0"
 user-invocable: true
-description: 打开项目的部署平台链接。当用户说「去部署」「部署平台」「准备部署」时触发，即使用户没有明确说「打开链接」，只要意图是访问部署控制台或发布平台就应触发。Skill 自动读取项目中的 docs/deploy.md 获取部署链接；若不存在则扫描工程文档提取信息并生成；若扫描无果则提示用户补充。支持一个工程多个部署链接的场景。
+description: Open the project's deployment platform link. Triggers when user says 「去部署」「部署平台」「准备部署」 (go deploy / deploy platform / prepare to deploy) — even without explicitly saying "open link", as long as the intent is to access a deployment console or release platform. The skill reads docs/deploy.md for deployment links; if absent, scans project docs to extract and generate config; if nothing found, prompts user to provide. Supports multiple deployment links per project.
 ---
 
-# Go Deploy — 打开部署链接
+# Go Deploy — Open Deployment Links
 
-## 触发词
+## Triggers
 
-- **去部署**
-- **部署平台**
-- **准备部署**
+- 「去部署」 (go deploy)
+- 「部署平台」 (deploy platform)
+- 「准备部署」 (prepare to deploy)
 
-触发后执行唯一行为：**打开部署平台链接**。不做部署执行、不做状态查询、不做构建操作。
-
----
-
-## 阶段 1：读取 docs/deploy.md
-
-1. 在项目根目录查找 `docs/deploy.md`
-2. **存在** → 进入阶段 3（解析链接）
-3. **不存在** → 进入阶段 2（扫描工程）
+On trigger, execute one action: **open the deployment platform link**. No deployment execution, no status queries, no build operations.
 
 ---
 
-## 阶段 2：扫描工程
+## Phase 1: Read docs/deploy.md
 
-`docs/deploy.md` 不存在，说明项目尚未配置部署信息。扫描已有文档，尝试自动提取并生成配置，减少用户手动填写的负担。
+1. Look for `docs/deploy.md` in the project root
+2. **Exists** → proceed to Phase 3 (parse links)
+3. **Does not exist** → proceed to Phase 2 (scan project)
 
-按优先级扫描以下来源（优先级高的来源通常是维护者主动整理的，信息更可信）：
+---
 
-| 优先级 | 来源 | 扫描逻辑 |
-|--------|------|----------|
-| 1 | `AGENTS.md` | 查找含「部署」「deploy」「发布」关键词的 section，提取其中的 URL |
-| 2 | `README.md` | 同上 |
-| 3 | `scripts/` 目录 | 查找文件名含 `deploy`/`open`/`publish` 的脚本，读取其中的 URL 变量 |
-| 4 | CI/CD 配置 | `.github/workflows/*.yml`、`.gitlab-ci.yml`、`Jenkinsfile` |
-| 5 | `package.json` | `scripts` 字段中含 `deploy`/`publish`/`release` 的命令 |
+## Phase 2: Scan Project
 
-**链接过滤**：项目文档中通常有大量无关 URL（依赖官网、参考文档等），只提取看起来像部署控制台的 URL（含 `deploy`/`console`/`cluster`/`release` 等关键词，或已知平台域名）；同一 URL 去重并标注来源。
+`docs/deploy.md` doesn't exist — the project hasn't configured deployment info yet. Scan existing docs to auto-extract and generate config, reducing manual input burden.
 
-### 扫描结果处理
+Scan these sources in priority order (higher-priority sources are typically maintained by project owners and more reliable):
 
-- **找到候选链接** → 列出所有候选（含来源文件），让用户确认哪些是真正的部署链接（关键词匹配有误报率，用户确认可避免写入错误信息）→ 确认后生成 `docs/deploy.md`（见下方格式约定）→ 进入阶段 3
-- **未找到候选链接** → 向用户输出提示：
+| Priority | Source | Scan Logic |
+|----------|--------|------------|
+| 1 | `AGENTS.md` | Find sections with 「部署」「deploy」「发布」 keywords, extract URLs |
+| 2 | `README.md` | Same as above |
+| 3 | `scripts/` directory | Find scripts with `deploy`/`open`/`publish` in filename, read URL variables |
+| 4 | CI/CD config | `.github/workflows/*.yml`, `.gitlab-ci.yml`, `Jenkinsfile` |
+| 5 | `package.json` | `scripts` field with `deploy`/`publish`/`release` commands |
+
+**Link filtering**: Project docs often contain many irrelevant URLs (dependency sites, reference docs, etc.). Only extract URLs that look like deployment consoles (containing `deploy`/`console`/`cluster`/`release` keywords, or known platform domains). Deduplicate and annotate each with its source.
+
+### Scan Result Handling
+
+- **Candidate links found** → list all candidates (with source files), ask user to confirm which are actual deployment links (keyword matching has false positives — user confirmation avoids writing wrong info) → after confirmation, generate `docs/deploy.md` (see format below) → proceed to Phase 3
+- **No candidate links found** → output this prompt:
 
 ```
-未在工程中找到部署相关信息。
+No deployment-related information found in the project.
 
-请提供以下信息，我将为你创建 docs/deploy.md：
-1. 部署链接 URL（必需）
-2. 部署平台名称（可选，如「Vercel」「内部部署平台」）
-3. 简要说明（可选）
+Please provide the following and I'll create docs/deploy.md:
+1. Deployment link URL (required)
+2. Deployment platform name (optional, e.g. "Vercel", "Internal Deploy Platform")
+3. Brief description (optional)
 
-若一个工程有多个部署链接，请分别列出。
+If the project has multiple deployment links, list them separately.
 ```
 
-用户提供后，生成 `docs/deploy.md`，进入阶段 3。
+After user provides info, generate `docs/deploy.md` and proceed to Phase 3.
 
 ---
 
-## 阶段 3：解析链接
+## Phase 3: Parse Links
 
-从 `docs/deploy.md` 中提取部署链接：
+Extract deployment links from `docs/deploy.md`:
 
-1. 查找所有 `##` 二级标题（每个标题 = 一个部署目标）
-2. 在每个标题下查找 `**链接**:` 或 `**URL**:` 开头的行，提取 URL
-3. 可选读取 `**平台**:` 和 `**说明**:` 行
-4. 汇总为链接列表
+1. Find all `##` level-2 headings (each heading = one deployment target)
+2. Under each heading, find lines starting with `**Link**:` or `**链接**:` or `**URL**:` and extract the URL
+3. Optionally read `**Platform**:` / `**平台**:` and `**Description**:` / `**说明**:` lines
+4. Aggregate into a link list
 
-**异常处理**：`docs/deploy.md` 存在但未找到任何 `**链接**:` 行 → 提示格式不符合约定，进入阶段 2（扫描）；URL 不以 `http://` 或 `https://` 开头 → 跳过并提示。
-
----
-
-## 阶段 4：选择链接
-
-- **仅 1 个链接** → 直接进入阶段 5
-- **多个链接** → 列出全部，请用户选择（每次都问，不记忆上次选择）：
-
-```
-检测到以下部署链接：
-
-1. <第一个 ## 标题>
-2. <第二个 ## 标题>
-
-请输入序号选择要打开的链接：
-```
+**Error handling**: `docs/deploy.md` exists but no link line found → prompt that format doesn't match convention, proceed to Phase 2 (scan). URL not starting with `http://` or `https://` → skip and warn.
 
 ---
 
-## 阶段 5：打开链接
+## Phase 4: Select Link
 
-根据操作系统执行对应命令：
+- **Only 1 link** → proceed directly to Phase 5
+- **Multiple links** → list all, ask user to select (ask every time, don't remember previous choice):
+
+```
+Detected the following deployment links:
+
+1. <first ## heading>
+2. <second ## heading>
+
+Enter the number of the link to open:
+```
+
+---
+
+## Phase 5: Open Link
+
+Execute the OS-appropriate command:
 
 ```bash
 # macOS
@@ -103,26 +103,26 @@ xdg-open "<URL>"
 cmd.exe /c start "" "<URL>"
 ```
 
-**降级**：无法打开浏览器或命令失败 → 直接输出 URL，提示用户手动复制。打开后说明：「已打开：<链接名称>」。
+**Fallback**: If browser can't open or command fails → output the URL directly, prompt user to copy manually. After opening, state: "Opened: \<link name\>".
 
 ---
 
-## docs/deploy.md 格式约定
+## docs/deploy.md Format Convention
 
-每个部署目标是一个 `##` 二级标题，下方列表中 `**链接**:` 行为 URL（必需），`**平台**:` 和 `**说明**:` 可选。生成时若 `docs/` 目录不存在则创建。
+Each deployment target is a `##` level-2 heading. Under it, a list with `**Link**:` line for URL (required); `**Platform**:` and `**Description**:` are optional. Create the `docs/` directory if it doesn't exist when generating.
 
-**示例**：
+**Example**:
 
 ```markdown
-# 部署
+# Deployment
 
-## 生产环境
+## Production
 
-- **平台**: 内部部署平台
-- **链接**: https://deploy.example.com/console/my-project
-- **说明**: 主部署入口，查看集群状态、发布新版本
+- **Platform**: Internal Deploy Platform
+- **Link**: https://deploy.example.com/console/my-project
+- **Description**: Main deployment entry — view cluster status, release new versions
 
-## 预发环境
+## Staging
 
-- **链接**: https://pre-deploy.example.com/my-project
+- **Link**: https://pre-deploy.example.com/my-project
 ```
