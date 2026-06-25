@@ -25,7 +25,15 @@ function parseFrontmatter(block) {
       (val.startsWith('"') && val.endsWith('"')) ||
       (val.startsWith("'") && val.endsWith("'"))
     ) {
+      const quote = val[0];
       val = val.slice(1, -1);
+      if (quote === '"') {
+        // YAML double-quoted escapes
+        val = val.replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+      } else {
+        // YAML single-quoted: '' -> '
+        val = val.replace(/''/g, "'");
+      }
     }
     if (val === "true") data[key] = true;
     else if (val === "false") data[key] = false;
