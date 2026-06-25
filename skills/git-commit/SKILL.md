@@ -22,12 +22,12 @@ description: Git commit unified entry point. Triggers when user says 「提交�
 Fields for the commit message:
 - **type**: fix, feat, refactor, perf, style, docs, test
 - **scope** (optional): ai-summary, share, auth, api, ui, core
-- **subject**: brief description in Chinese, max 50 chars
+- **subject**: brief description in the user's preferred language, max 50 chars
 - **jira_id** (optional): e.g. PROJ-123
 
 (jira_id is optional; other context fields like branch, report_path are passed by the caller and not written into the commit)
 
-### Step 2: Determine Mode
+### Step 2: Determine Execution Mode
 
 Decide `execute=false` (manual) or `execute=true` (auto). See "Mode Detection Rules" above.
 
@@ -49,7 +49,7 @@ Decide `execute=false` (manual) or `execute=true` (auto). See "Mode Detection Ru
 ```
 
 Rules:
-- Subject: max 50 chars, in Chinese, must include a Chinese verb matching the type (feat: 新增, fix: 修复, refactor: 重构, perf: 优化, style: 格式化, docs: 文档, test: 测试)
+- Subject: max 50 chars, in the user's preferred language, must include a verb matching the type (e.g. feat: 新增/Add, fix: 修复/Fix, refactor: 重构/Refactor, perf: 优化/Optimize, style: 格式化/Format, docs: 文档/Docs, test: 测试/Test)
 - Jira ID goes before the subject when present
 - Omit parentheses when no scope: `<type>: <subject>`
 - Commit message contains only the title line, no body

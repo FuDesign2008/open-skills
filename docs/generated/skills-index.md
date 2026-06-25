@@ -30,7 +30,7 @@
 | **solve-workflow** | 1.9.0 | 是 | 当用户说"明确问题"、"分析问题"、"探索方案"、"审查方案"、"制定计划"、"执行计划"、"检查验证"、"回顾总结"，或"继续分析"、"深入分析"、"修改方案"、"完善方案"、"优化方案"、"更新计划"、"修订计划"、"修改计划"，或"自动模式"、"自动分析"、"自动解决"时触发。适用于 bug 修复、代码重构、功能开发等需系统性分析的复杂任务。 |
 | **test-guide-from-code** | 1.1.0 | 是 | Generate a manual test guide for human testers from code changes (diff, commit, MR/PR). Triggers when user says 「生成测试指南」「测试指南」「人工测试指南」「测试指引」「test guide」「根据代码生成测试」「从 MR 生成测试指南」「从 PR 生成测试指南」 (generate test guide / manual test guide / test guide from code / from MR / from PR), or provides a diff/MR/PR link and asks for a test guide. |
 | **think-big** | 1.0.0 | 是 | Use when 用户需要从战略视角分析一件事——想清楚要不要做、值不值得做、风险在哪、长远影响是什么。触发词：战略思考、战略分析、从战略角度看、战略视角、帮我想清楚这件事、这件事值不值得做、从更高视角分析、think-big、strategic thinking、strategy。不适用于执行细节规划（那是战术层）。 |
-| **typescript-check** | 1.0.0 | 是 | TypeScript type-checking workflow. Triggers when user says "类型检查" (type check), "type-check", "tsc", "检查类型", or needs to check for TypeScript type errors. |
+| **typescript-check** | 1.0.0 | 是 | TypeScript type-checking workflow. Use this skill whenever the user works with TypeScript and mentions type errors, type checking, or says "类型检查" (type check), "type-check", "tsc", "检查类型" — even if they don't explicitly ask for a "type check" but are encountering compilation or type issues in a TypeScript project. |
 | **xquik-social-data** | 1.0.0 | 是 | Use when 用户需要从 Xquik 获取公开 X/Twitter 数据、搜索推文、查账号、看趋势、导出样本、整理社媒证据，或说 xquik、Xquik、X/Twitter data、tweet search、social evidence、社媒证据、推文搜索。 |
 
 ---

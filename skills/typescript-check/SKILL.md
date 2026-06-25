@@ -2,7 +2,7 @@
 name: typescript-check
 version: "1.0.0"
 user-invocable: true
-description: TypeScript type-checking workflow. Triggers when user says "类型检查" (type check), "type-check", "tsc", "检查类型", or needs to check for TypeScript type errors.
+description: TypeScript type-checking workflow. Use this skill whenever the user works with TypeScript and mentions type errors, type checking, or says "类型检查" (type check), "type-check", "tsc", "检查类型" — even if they don't explicitly ask for a "type check" but are encountering compilation or type issues in a TypeScript project.
 ---
 
 # TypeScript Type-Check Workflow
