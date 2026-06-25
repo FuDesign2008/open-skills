@@ -6,6 +6,7 @@
 2. **数据脱敏** — Skill 中不得包含任何内部平台名称、内部域名、内部项目标识等非公开信息。示例和模板必须使用通用占位（如 `example.com`、`my-project`），不使用真实内部信息。提交前自查：URL、平台名、项目名、路径段、Jira ID、commit SHA 是否暴露内部信息。
 3. **Skill 正文用英文书写，触发词必须包含中文** — Skill body（正文、reference.md、description 中的说明文字）是给 LLM 读的指令，英文书写可获得更高的理解精度与执行准确度（主流 LLM 的训练语料以英文为主）；同时英文 skill 面向全球用户，传播面更广。**触发词必须包含中文**——用户以自然语言唤起 skill，中文用户说中文（如「提交代码」「分析问题」），因此即使 skill 正文全英文，description 和 Triggers 区段也必须列出中文触发词，可同时附带英文等价词（如 `「提交代码」 / "commit code"`）。中文专属 skill（如 `chinese-format`、`article-writer`）为整体例外，正文也用中文。新增 skill 适用此规则；存量中文 skill 在重构时逐步迁移，不做一次性批量翻译。
 4. **每个 Skill 必须可独立安装和执行** — 通用安装（`npx skills`）仅打包单个 `SKILL.md`，不包含其他 skill、`_shared/`、`reference.md` 或 `AGENTS.md`。因此每个 `SKILL.md` 必须完全自包含：跨 skill 引用只能是信息性的（"配对 skill 是 X"），不得是指令性的（"见 X 的 Y 章节"）。多 skill 共享的规则（如 Git 约定俗成规则）须内联到各自 skill 中，不依赖外部文件。
+5. **创建 Skill 必须走 `/skill-creator` 工作流** — 新建 skill 或大幅重写已有 skill 时，先 `/skill-creator` 唤起 skill-creator（捕获意图 → 写草稿 → 测试用例 → 评估迭代 → 描述优化），而非凭经验直接手写 `SKILL.md`。skill-creator 提供渐进式披露（SKILL.md <500 行 + reference 详表）、frontmatter 规范、触发词 eval 优化等工程化约束，能显著提升触发准确率与执行质量。仅在以下情况可跳过完整流程直接编辑：① skill 内容极简（纯指令、无测试需求）；② 维护已有 skill 的小修小补（改触发词、修正文）。
 
 ---
 
@@ -96,6 +97,8 @@ Skill 内容...
 ### frontmatter YAML 陷阱
 
 `description` 裸值含英文 `: `（冒号+空格，如 `Triggers: 发版`）会触发 YAML `Nested mappings are not allowed` 错误，导致 `npx skills` 安装/更新报 `No valid skills found`。值含 `: ` 时必须加双引号或用 `|` 块标量。中文冒号「：」不受影响。
+
+> ⚠️ **本仓库额外约束（与 `gen-skill-docs.mjs` 冲突）**：`|` 块标量和多行 description 虽能通过 `npx skills` 的真 YAML 解析，但本仓库 `scripts/gen-skill-docs.mjs` 用**简易行解析器**（按行首个 `:` 切分、不识别缩进块），会把 `|` 当成 description 的字面值（解析为 `"|"`），导致 `docs/generated/skills-index.md` 中该 skill 的描述列变成 `|`。**因此本仓库的 description 一律用单行双引号字符串**，禁用 `|` 块标量和多行 description。
 
 ### 新增 Skill 检查清单
 
@@ -199,6 +202,8 @@ Invoke the <skill-name> skill and follow it exactly
 - ❌ Red Flags/Pitfall 重复上方已写明的规则（Pitfall 只记非直觉陷阱）
 - ❌ PDCA 对应表等元认知框架（对 AI 无执行指导价值；人类可读内容放 reference.md）
 - ❌ `description` 裸值含英文 `: ` 未加引号，破坏 YAML 解析导致 `npx skills` 安装失败（见 frontmatter YAML 陷阱）
+- ❌ `description` 用 `|` 块标量或多行字符串，被 `gen-skill-docs.mjs` 简易解析器解析成 `"|"`，导致 skills-index 描述列变 `|`（见 frontmatter YAML 陷阱）
+- ❌ 新建 skill 不走 `/skill-creator` 直接手写（见 AI 铁律 5）
 - ❌ SKILL.md 中包含跨 skill 的指令性引用（如"见 X skill 的 Y 章节"），导致独立安装时引用断裂；关键规则必须在每个 skill 中自包含
 - ❌ 多个 skill 共享同一规则时只改一处（如模式生命周期规则，需同步更新所有相关 skill）
 - ❌ Hook 脚本阻塞主流程（必须静默失败）
