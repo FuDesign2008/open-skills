@@ -2,97 +2,97 @@
 name: jira-read
 version: "3.0.0"
 user-invocable: true
-description: 当用户说"jira-read [JIRA-ID]"，或需要读取、获取、下载 Jira issue 数据时触发。需配置 $JIRA_CACHE_DIR（如 ~/.cache/jira）。
+description: Read Jira issue data from local cache or API. Triggers when user says "jira-read [JIRA-ID]", 「读取 Jira」「查看 Jira」「下载 Jira」 (read/view/download Jira), or needs to fetch Jira issue data. Requires $JIRA_CACHE_DIR (e.g. ~/.cache/jira).
 ---
 
-# Jira Read - 执行规则
+# Jira Read — Execution Rules
 
-> 从本地缓存快速读取已下载的 Jira 信息，无需访问网络
+> Quickly read downloaded Jira data from local cache — no network access required.
 
-## 配置
+## Configuration
 
-使用前设置缓存目录环境变量（推荐写入 `.zshrc` / `.bashrc`）：
+Set the cache directory environment variable before use (recommend adding to `.zshrc` / `.bashrc`):
 
 ```bash
 export JIRA_CACHE_DIR="$HOME/.cache/jira"
 ```
 
-未设置时默认使用 `~/.cache/jira/`。
+Defaults to `~/.cache/jira/` if not set.
 
-## 触发词与参数
+## Triggers & Parameters
 
-**主要触发词**：`jira-read [JIRA-ID]`，支持大小写（自动转换为大写）
+**Primary trigger**: `jira-read [JIRA-ID]` — case-insensitive (auto-converted to uppercase)
 
-| 用法 | 行为 | 输出模式 |
-|------|------|---------|
-| `jira-read {ID}` | 读本地缓存，不存在则自动 API 获取 | 摘要 |
-| `jira-read {ID} --live` | 跳过缓存，API 获取并更新缓存 | 摘要 |
-| `jira-read {ID} --force` | 强制 API 获取，覆盖本地缓存 | 摘要 |
-| `jira-read {ID} --no-download` | 仅读本地，不存在则只提示 | 摘要 |
-| `jira-read {ID} --full` | 同默认，输出完整内容含所有评论 | 完整 |
-| `jira-read {ID} --meta` | 同默认，只输出 YAML Front Matter | 元数据 |
-| `jira-read ID1 ID2 ID3` | 批量读取本地缓存 | 摘要 |
-| `jira-read --live ID1 ID2 ID3` | 批量从 API 获取并缓存 | 摘要 |
-| `jira-read --force ID1 ID2 ID3` | 批量强制重新获取（覆盖本地缓存） | 摘要 |
-| `jira-read --list` / `-l` | 列出所有本地缓存 | 列表 |
-
----
-
-## 存储路径
-
-- **主文件**：`$JIRA_CACHE_DIR/{JIRA-ID}.md`
-- **字段映射缓存**：`$JIRA_CACHE_DIR/.field-mapping.json`
-
-首次使用时自动调用 `jira_search_fields` 建立字段 ID 映射，后续直接使用缓存；`--force` 时自动刷新。
+| Usage | Behavior | Output Mode |
+|-------|----------|-------------|
+| `jira-read {ID}` | Read local cache; auto-fetch from API if missing | Summary |
+| `jira-read {ID} --live` | Skip cache, fetch from API and update cache | Summary |
+| `jira-read {ID} --force` | Force API fetch, overwrite local cache | Summary |
+| `jira-read {ID} --no-download` | Local only; prompt if missing | Summary |
+| `jira-read {ID} --full` | Same as default, output full content including all comments | Full |
+| `jira-read {ID} --meta` | Same as default, output YAML front matter only | Metadata |
+| `jira-read ID1 ID2 ID3` | Batch read from local cache | Summary |
+| `jira-read --live ID1 ID2 ID3` | Batch fetch from API and cache | Summary |
+| `jira-read --force ID1 ID2 ID3` | Batch force re-fetch (overwrite local cache) | Summary |
+| `jira-read --list` / `-l` | List all local cache entries | List |
 
 ---
 
-## 执行流程
+## Storage Paths
 
-### 步骤 1：解析 Jira ID
+- **Main file**: `$JIRA_CACHE_DIR/{JIRA-ID}.md`
+- **Field mapping cache**: `$JIRA_CACHE_DIR/.field-mapping.json`
 
-提取（正则：`([A-Za-z]+-\d+)`）并转换为大写，构建本地文件路径。
-
-### 步骤 2：检查文件是否存在
-
-**文件存在**：继续步骤 3
-
-**文件不存在**：
-- **默认**：调用 `jira_get_issue(issue_key="{JIRA-ID}", fields="*all", comment_limit=50)` → 成功则格式化保存并继续；失败则提示检查配置
-- **--no-download**：仅提示，不自动下载
-- **--live**：跳过本地检查，直接 API 获取并更新缓存
-- **--force**：API 获取并覆盖本地缓存
-
-### 步骤 3：读取、解析、输出
-
-读取 Markdown → 解析 YAML Front Matter 与正文 → 按结构化中文 Markdown 输出。
-
-**解析字段**：`jira_id`、`title`、`priority`、`status`、`reporter`、`assignee`、`created_at`、`updated_at`、`downloaded_at`、`source_url`；正文含问题描述、复现步骤、期望/实际结果、评论历史。
-
-**附件处理**：不下载、不展示附件内容。若 Jira 描述或评论中引用了附件（如截图、日志文件），在输出末尾提示：「该 issue 包含附件，如需查看请访问 Jira：{issue_url}」。
-
-> 各场景输出格式示例见 [`reference.md`](reference.md)
+On first use, automatically calls `jira_search_fields` to build field ID mapping; subsequent reads use the cache directly. `--force` refreshes the mapping.
 
 ---
 
-## 缓存时效提示
+## Execution Flow
 
-| 缓存时长 | 提示 |
-|---------|------|
-| < 1 小时 | 无提示 |
-| 1–24 小时 | 「缓存于 X 小时前」 |
-| 1–7 天 | 「缓存于 X 天前，建议更新」 |
-| > 7 天 | 「缓存已过期（X 天前），强烈建议更新」 |
+### Step 1: Parse Jira ID
+
+Extract (regex: `([A-Za-z]+-\d+)`) and convert to uppercase, build the local file path.
+
+### Step 2: Check File Existence
+
+**File exists**: continue to step 3
+
+**File does not exist**:
+- **Default**: call `jira_get_issue(issue_key="{JIRA-ID}", fields="*all", comment_limit=50)` → on success, format and save, then continue; on failure, prompt to check configuration
+- **--no-download**: prompt only, don't auto-download
+- **--live**: skip local check, fetch from API and update cache
+- **--force**: fetch from API and overwrite local cache
+
+### Step 3: Read, Parse, Output
+
+Read Markdown → parse YAML front matter and body → output as structured Markdown.
+
+**Parsed fields**: `jira_id`, `title`, `priority`, `status`, `reporter`, `assignee`, `created_at`, `updated_at`, `downloaded_at`, `source_url`; body contains issue description, reproduction steps, expected/actual results, comment history.
+
+**Attachment handling**: Do not download or display attachment content. If the Jira description or comments reference attachments (e.g., screenshots, log files), note at the end of output: "This issue contains attachments. To view them, visit Jira: {issue_url}".
+
+> Output format examples for each scenario: see [`reference.md`](reference.md)
 
 ---
 
-## 错误处理
+## Cache Freshness Prompts
 
-| 错误场景 | 处理方式 |
-|---------|---------|
-| Jira ID 格式错误 | 提示正确格式 |
-| 文件不存在 | 自动从 API 获取（`--no-download` 时只提示）|
-| mcp-atlassian 不可用 | 提示检查配置和网络 |
-| PAT 认证失败 | 提示检查 Token 有效性 |
-| Issue 不存在 | 提示 Jira ID 可能错误 |
-| 文件解析失败 | 输出原始文件内容 |
+| Cache Age | Prompt |
+|-----------|--------|
+| < 1 hour | None |
+| 1–24 hours | "Cached X hours ago" |
+| 1–7 days | "Cached X days ago, recommend updating" |
+| > 7 days | "Cache expired (X days ago), strongly recommend updating" |
+
+---
+
+## Error Handling
+
+| Error Scenario | Handling |
+|----------------|----------|
+| Invalid Jira ID format | Prompt correct format |
+| File not found | Auto-fetch from API (prompt only with `--no-download`) |
+| mcp-atlassian unavailable | Prompt to check configuration and network |
+| PAT auth failed | Prompt to check token validity |
+| Issue not found | Prompt that Jira ID may be incorrect |
+| File parse failure | Output raw file content |

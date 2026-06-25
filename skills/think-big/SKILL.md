@@ -2,183 +2,183 @@
 name: think-big
 version: "1.0.0"
 user-invocable: true
-description: Use when 用户需要从战略视角分析一件事——想清楚要不要做、值不值得做、风险在哪、长远影响是什么。触发词：战略思考、战略分析、从战略角度看、战略视角、帮我想清楚这件事、这件事值不值得做、从更高视角分析、think-big、strategic thinking、strategy。不适用于执行细节规划（那是战术层）。
+description: Strategic thinking framework — analyze whether something is worth doing, what the risks are, and what the long-term impact will be. Use when user says 「战略思考」「战略分析」「从战略角度看」「战略视角」「帮我想清楚这件事」「这件事值不值得做」「从更高视角分析」 / think-big, strategic thinking, strategy. Not for execution-level planning (that's tactical).
 ---
 
-# Think Big — 战略性思考框架
+# Think Big — Strategic Thinking Framework
 
-> 帮你从执行层跳出来，以更长的时间维度、更大的系统范围，想清楚一件事要不要做、值不值得做、怎么才算做对了。
+> Helps you step out of the execution layer and think — with a longer time horizon and broader system scope — about whether to do something, whether it's worth it, and what "doing it right" looks like.
 
-## 触发词与模式
+## Triggers & Modes
 
-| 说法示例 | 模式 |
+| Example | Mode |
 |---------|------|
-| `think-big: xxx`、「战略思考 xxx」、「帮我想清楚 xxx」、「这件事值不值得做 xxx」 | ⚡ 快速模式 |
-| `think-big --deep: xxx`、「深度分析 xxx」、「从战略角度深度聊聊 xxx」 | 🔍 深度模式 |
+| `think-big: xxx`, 「战略思考 xxx」, 「帮我想清楚 xxx」, 「这件事值不值得做 xxx」 | ⚡ Quick mode |
+| `think-big --deep: xxx`, 「深度分析 xxx」, 「从战略角度深度聊聊 xxx」 | 🔍 Deep mode |
 
-**默认行为**：未指定模式时进入 ⚡ 快速模式；触发词含「深度」「deep」「--deep」时进入 🔍 深度模式。
+**Default**: ⚡ Quick mode when no mode is specified; 🔍 Deep mode when the trigger includes "深度", "deep", or "--deep".
 
-**不适用场景**（触发后立即说明并退出）：
-- 用户要规划执行细节 → 告知「这是战术层，think-big 专注战略」
-- 用户背景信息极少（< 2 句话）→ 先追问基本背景再进入分析
-- 用户只是要寻求情绪安慰，而非做决策 → 不适合用结构化框架
-
----
-
-## 通用原则
-
-1. **不替用户做决定**：输出分析框架和洞察，帮用户看清楚，最终判断由用户自己做
-2. **取舍是核心**：任何战略选择都有代价，不存在「全都要」的战略，分析时必须点出取舍
-3. **本质追问优先**：先问「为什么做这件事」，再问「怎么做」
-4. **承认不确定性**：战略性思考不是给出确定答案，而是识别关键不确定性并想清楚如何应对
+**Not applicable** (state why and exit on trigger):
+- User wants to plan execution details → "This is tactical; think-big focuses on strategy"
+- User provides minimal context (< 2 sentences) → ask for basic background first
+- User is seeking emotional comfort, not decision-making → not suited for a structured framework
 
 ---
 
-## ⚡ 快速模式
+## Core Principles
 
-从四个战略维度依次分析，每个维度有引导问题，AI 代入用户描述的具体事项后输出分析。
+1. **Don't decide for the user**: Output analysis frameworks and insights that help the user see clearly; the final judgment is theirs
+2. **Trade-offs are central**: Every strategic choice has a cost — there's no "have it all" strategy. Analysis must surface the trade-offs
+3. **Essence-first questioning**: Ask "why do this" before "how to do it"
+4. **Acknowledge uncertainty**: Strategic thinking isn't about giving certain answers — it's about identifying key uncertainties and figuring out how to respond
 
-### 维度 1：时间轴视角（Across Time）
+---
 
-| 时间层 | 引导问题 |
-|--------|---------|
-| **过去** | 这件事为什么会发展成现在这样？有没有历史路径依赖或沉没成本？ |
-| **现在** | 现状的本质是什么（不是表象，是结构性原因）？ |
-| **未来** | 如果什么都不变，1-3 年后会怎样？做了这件事，格局会有什么不同？ |
+## ⚡ Quick Mode
 
-### 维度 2：系统视角（Systems View）
+Analyze from four strategic dimensions in sequence. Each dimension has guiding questions; the AI projects the user's specific situation into the analysis.
 
-| 角度 | 引导问题 |
-|------|---------|
-| **影响方** | 这件事会影响哪些人、团队、系统或流程？ |
-| **被影响方** | 有什么外部因素在影响这件事的成败（市场、组织、技术、人）？ |
-| **连带效应** | 做了这件事，会不经意间改变哪些没有预期的东西？ |
+### Dimension 1: Across Time
 
-### 维度 3：取舍视角（Trade-offs）
+| Time Layer | Guiding Questions |
+|------------|-------------------|
+| **Past** | Why did this develop into what it is now? Is there historical path dependency or sunk cost? |
+| **Present** | What is the essential nature of the current state (not symptoms, but structural causes)? |
+| **Future** | If nothing changes, where will things be in 1–3 years? If this is done, how will the landscape shift? |
 
-| 问题 | 说明 |
-|------|-----|
-| 选了这个，放弃了什么？ | 明确机会成本 |
-| 这个代价可以接受吗？ | 判断取舍是否合理 |
-| 有没有「假性两全」的陷阱？ | 警惕看似没有代价的选项 |
+### Dimension 2: Systems View
 
-### 维度 4：不确定性视角（Key Unknowns）
+| Angle | Guiding Questions |
+|-------|-------------------|
+| **Affected parties** | Who/what teams/systems/processes will this affect? |
+| **External factors** | What external forces influence this outcome (market, organization, technology, people)? |
+| **Side effects** | What unintended things might change if this is done? |
 
-1. 这件事最关键的不确定性是什么（最多列 3 个）？
-2. 哪个不确定性一旦变化，整个判断就会反转？
-3. 能不能用低成本的行动先验证这个最关键的不确定性？
+### Dimension 3: Trade-offs
 
-### ⚡ 输出格式
+| Question | Notes |
+|----------|-------|
+| What are you giving up by choosing this? | Clarify opportunity cost |
+| Is this cost acceptable? | Judge whether the trade-off is reasonable |
+| Is there a "fake win-win" trap? | Beware of options that appear cost-free |
+
+### Dimension 4: Key Unknowns
+
+1. What are the most critical uncertainties (max 3)?
+2. Which uncertainty, if it changes, would flip the entire judgment?
+3. Can you validate the most critical uncertainty with a low-cost action?
+
+### ⚡ Output Format
 
 ```
-【事项】用户描述的这件事
+【Item】The thing the user described
 
-【时间轴】
-- 过去路径：...
-- 现在本质：...
-- 未来走向：做 → ... / 不做 → ...
+【Timeline】
+- Past path: ...
+- Present essence: ...
+- Future trajectory: Do it → ... / Don't do it → ...
 
-【系统影响】
-- 影响方：...
-- 连带效应：...
+【System Impact】
+- Affected parties: ...
+- Side effects: ...
 
-【核心取舍】
-- 做这件事意味着放弃：...
-- 代价判断：可接受 / 需权衡 / 代价过高
+【Core Trade-off】
+- Doing this means giving up: ...
+- Cost judgment: Acceptable / Needs weighing / Too high
 
-【关键不确定性】
-1. ...（如果这个变化，结论会...）
+【Key Unknowns】
+1. ... (if this changes, the conclusion would...)
 2. ...
 3. ...
 
-【战略性建议】
-（方向指针，不是决策命令）
-这件事的核心判断在于：...
-如果 [关键不确定性X] 成立，倾向 [方向A]；如果不成立，倾向 [方向B]。
-最小验证行动：...（用最低成本先把最重要的不确定性确认清楚）
+【Strategic Direction】
+(Direction pointers, not decisions)
+The core judgment of this matter comes down to: ...
+If [key unknown X] holds, lean toward [direction A]; if not, lean toward [direction B].
+Minimum validation action: ... (confirm the most important uncertainty at the lowest cost)
 ```
 
-> **注意**：「战略性建议」只给方向指针和验证路径，不替用户做最终决定。避免写「你应该做 X」，改用「如果……则倾向……」的条件式表述。
+> **Note**: "Strategic Direction" provides direction pointers and validation paths only — it doesn't make the final decision for the user. Avoid "you should do X"; use conditional phrasing like "if X then lean toward Y."
 
 ---
 
-## 🔍 深度模式
+## 🔍 Deep Mode
 
-苏格拉底式逐层追问，帮用户自己想清楚——不是 AI 给答案，而是通过问题帮用户找到自己的判断。
+Socratic layered questioning that helps the user think it through themselves — the AI doesn't give answers, but guides the user to find their own judgment through questions.
 
-### 追问协议
+### Questioning Protocol
 
-- **一次只问一个问题**，等用户回答后再追问
-- **最多 5 轮**，第 5 轮后强制收敛，输出综合结论
-- **每轮追问前**，先用一句话回应用户的上一个答案（确认理解 + 推进方向）
-- **追问方向**：现象 → 本质 → 影响 → 取舍 → 行动
+- **Ask one question at a time**, wait for the user's answer before following up
+- **Maximum 5 rounds**; after round 5, force convergence and output a synthesis
+- **Before each follow-up**, acknowledge the user's previous answer in one sentence (confirm understanding + advance direction)
+- **Questioning path**: Symptom → Essence → Impact → Trade-off → Action
 
-**收敛失败处理**：若用户连续 2 轮给出极短回答（如「不知道」「随便」）或明显岔开话题，不再追问，直接切换为 ⚡ 快速模式完成分析，并在输出末尾注明「因信息有限，以下为基于已知背景的推断」。
+**Convergence failure handling**: If the user gives very short answers (e.g., "don't know", "whatever") or goes off-topic for 2 consecutive rounds, stop questioning, switch to ⚡ Quick mode to complete the analysis, and note at the end: "Due to limited information, the following is based on known background."
 
-### 追问路径参考
-
-```
-第 1 轮：「你说的这件事，最让你困惑或纠结的核心点是什么？」
-目的：定位真正的问题，不被表面说法牵着走
-
-第 2 轮：「为什么这是核心困惑？如果这个问题不存在，结果会有什么不同？」
-目的：挖根因，建立因果感
-
-第 3 轮：「如果从 3 年后回头看，做了这件事和没做，最大的差异会是什么？」
-目的：引入时间维度，建立长远视角
-
-第 4 轮：「你现在最不确定的是什么——方向问题、资源问题，还是别的？」
-目的：识别关键不确定性
-
-第 5 轮（收敛）：「基于你刚才说的，你内心其实倾向于怎么做？」
-目的：帮用户听见自己的判断，而不是依赖 AI 的判断
-```
-
-### 🔍 输出格式（第 5 轮后）
+### Questioning Path Reference
 
 ```
-【对话回顾】
-（3-5 句话总结追问过程中用户的核心观点与关键转折）
+Round 1: "About this thing you mentioned — what's the core point that confuses or troubles you the most?"
+Purpose: Locate the real problem, don't get led by surface statements
 
-【战略性洞察】
-- 这件事的本质问题是：...
-- 关键取舍在于：...
-- 最重要的不确定性：...
+Round 2: "Why is this the core confusion? If this problem didn't exist, how would the outcome differ?"
+Purpose: Dig for root cause, build causal sense
 
-【你的判断】
-你在对话中表达的倾向是：...
-支撑这个判断的核心理由：...
+Round 3: "Looking back from 3 years later, what would be the biggest difference between doing this and not doing it?"
+Purpose: Introduce time dimension, build long-term perspective
 
-【建议的下一步】
-1. ...（最小可验证行动，用于降低最关键的不确定性）
+Round 4: "What are you most uncertain about right now — direction, resources, or something else?"
+Purpose: Identify key uncertainties
+
+Round 5 (convergence): "Based on what you've said, what does your gut lean toward?"
+Purpose: Help the user hear their own judgment rather than relying on the AI's
+```
+
+### 🔍 Output Format (after round 5)
+
+```
+【Conversation Recap】
+(3–5 sentences summarizing the user's core viewpoints and key turning points during questioning)
+
+【Strategic Insights】
+- The essential problem is: ...
+- The key trade-off is: ...
+- The most important uncertainty: ...
+
+【Your Judgment】
+Your expressed lean during the conversation: ...
+Core reasoning supporting this judgment: ...
+
+【Suggested Next Steps】
+1. ... (minimum viable action to reduce the most critical uncertainty)
 2. ...
 ```
 
 ---
 
-## 适用场景
+## Use Cases
 
-| 场景 | 推荐模式 |
-|------|---------|
-| 判断一个新机会 / 新项目值不值得投入 | ⚡ 快速 |
-| 遇到推进阻力，想从更高视角重新审视 | ⚡ 快速 |
-| 面对重大决策，真正纠结、没有头绪 | 🔍 深度 |
-| 想培养战略性思考的思维习惯 | 🔍 深度 |
-| 团队讨论前的个人预热思考 | ⚡ 快速 |
+| Scenario | Recommended Mode |
+|----------|-----------------|
+| Judging whether a new opportunity / project is worth investing in | ⚡ Quick |
+| Hitting resistance and wanting to re-examine from a higher perspective | ⚡ Quick |
+| Facing a major decision, genuinely torn and lost | 🔍 Deep |
+| Wanting to develop strategic thinking habits | 🔍 Deep |
+| Personal warm-up thinking before a team discussion | ⚡ Quick |
 
-## 常见误用
+## Common Misuses
 
-- ❌ 把 think-big 当成决策机器——AI 输出的是视角，不是答案，最终判断由用户做
-- ❌ 只提供 1 句话背景就要求完整分析——先补充足够背景
-- ❌ 把它用于战术执行规划——think-big 只处理「要不要做、为什么做」，不处理「怎么做」
+- ❌ Treating think-big as a decision machine — the AI outputs perspectives, not answers; the user makes the final call
+- ❌ Providing 1 sentence of background and expecting a full analysis — provide sufficient context first
+- ❌ Using it for tactical execution planning — think-big only handles "should we do this and why," not "how to do it"
 
-## AI 使用时的常见违规（REFACTOR 补充）
+## Common AI Violations (REFACTOR notes)
 
-以下是未加载 skill 时 AI 的自然行为偏差，skill 必须覆盖这些场景：
+These are natural behavioral biases when the skill isn't loaded; the skill must override them:
 
-| 自然行为（违规） | Skill 要求的正确行为 |
-|----------------|-------------------|
-| 第一句直接给出结论（「大概率不应该…」） | 先输出四维分析，结论放在最后的「战略性建议」 |
-| 自由段落叙述，没有结构 | 严格使用`【事项】【时间轴】【系统影响】【核心取舍】【关键不确定性】【战略性建议】`模板 |
-| 不确定性只在段落里暗示，未显式列出 | 必须显式列出最多 3 个 Unknown，每个配上验证方法 |
-| 「战略性建议」写成「你应该 X」的决策语句 | 改用「如果 X 成立，倾向 Y；否则倾向 Z」的条件式表述 |
+| Natural behavior (violation) | Correct behavior per skill |
+|------------------------------|---------------------------|
+| Leading with a conclusion ("probably shouldn't...") | Output the four-dimension analysis first; conclusion goes last in "Strategic Direction" |
+| Free-form prose with no structure | Strictly use the `【Item】【Timeline】【System Impact】【Core Trade-off】【Key Unknowns】【Strategic Direction】` template |
+| Uncertainties hinted at in paragraphs, never listed | Must explicitly list up to 3 Unknowns, each with a validation method |
+| "Strategic Direction" written as "you should X" | Use conditional phrasing: "if X holds, lean toward Y; otherwise lean toward Z" |

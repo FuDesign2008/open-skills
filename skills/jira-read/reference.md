@@ -1,171 +1,171 @@
-# Jira Read - 输出格式参考
+# Jira Read — Output Format Reference
 
-本文件为 `jira-read` skill 的输出格式示例，供 AI 参考。
-
----
-
-## 1. 正常读取输出
-
-```
-## YNOTR-12167 信息（本地缓存）
-
-**标题**: [标题]
-**优先级**: P1
-**状态**: 待处理
-
-### 基本信息
-
-| 字段 | 值 |
-|------|-----|
-| 报告人 | xxx |
-| 经办人 | xxx |
-| 创建时间 | 2026-01-10 10:00 |
-| 更新时间 | 2026-01-15 14:30 |
-
-### 问题描述
-
-[描述内容]
-
-### 复现步骤
-
-1. 步骤1
-2. 步骤2
-
-### 期望结果
-
-[期望]
-
-### 实际结果
-
-[实际]
-
-### 评论摘要
-
-共 5 条评论，最新评论：
-
-> **张三** (2026-01-15 14:30): 这个问题在 Chrome 浏览器上可以复现...
+This file provides output format examples for the `jira-read` skill.
 
 ---
 
-**缓存时间**: 2026-01-16 10:30
-**本地文件**: $JIRA_CACHE_DIR/YNOTR-12167.md
+## 1. Normal Read Output
 
-使用 `jira-read YNOTR-12167 --live` 更新缓存
+```
+## YNOTR-12167 Info (Local Cache)
+
+**Title**: [title]
+**Priority**: P1
+**Status**: Open
+
+### Basic Info
+
+| Field | Value |
+|-------|-------|
+| Reporter | xxx |
+| Assignee | xxx |
+| Created | 2026-01-10 10:00 |
+| Updated | 2026-01-15 14:30 |
+
+### Description
+
+[description content]
+
+### Reproduction Steps
+
+1. Step 1
+2. Step 2
+
+### Expected Result
+
+[expected]
+
+### Actual Result
+
+[actual]
+
+### Comment Summary
+
+5 comments total, latest:
+
+> **Zhang San** (2026-01-15 14:30): This issue can be reproduced on Chrome...
+
+---
+
+**Cache time**: 2026-01-16 10:30
+**Local file**: $JIRA_CACHE_DIR/YNOTR-12167.md
+
+Use `jira-read YNOTR-12167 --live` to update cache
 ```
 
 ---
 
-## 2. 本地缓存不存在提示
+## 2. Local Cache Not Found Prompt
 
 ```
-## Jira 本地缓存不存在
+## Jira Local Cache Not Found
 
 **Jira ID**: YNOTR-12167
-**查找路径**: $JIRA_CACHE_DIR/YNOTR-12167.md
+**Lookup path**: $JIRA_CACHE_DIR/YNOTR-12167.md
 
-该 Jira 尚未下载到本地，请先执行：
+This Jira has not been downloaded locally. Please run:
 
     jira-read YNOTR-12167 --live
 ```
 
 ---
 
-## 3. 自动下载后读取输出
+## 3. Auto-Download Read Output
 
 ```
-## jira-read（自动下载）
+## jira-read (Auto-Download)
 
 **Jira ID**: YNOTR-12167
-**状态**: 本地缓存不存在，已自动下载
-**数据来源**: mcp-atlassian API
+**Status**: Local cache not found, auto-downloaded
+**Data source**: mcp-atlassian API
 
 ---
 
-## YNOTR-12167 信息（本地缓存）
+## YNOTR-12167 Info (Local Cache)
 
-**标题**: [标题]
-**优先级**: P1
-**状态**: 待处理
+**Title**: [title]
+**Priority**: P1
+**Status**: Open
 
-[... 正常的读取输出内容 ...]
+ [... normal read output ...]
 
 ---
 
-**缓存时间**: 刚刚下载
-**本地文件**: $JIRA_CACHE_DIR/YNOTR-12167.md
+**Cache time**: Just downloaded
+**Local file**: $JIRA_CACHE_DIR/YNOTR-12167.md
 ```
 
 ---
 
-## 4. 批量读取输出
+## 4. Batch Read Output
 
-命令：`jira-read YNOTR-12167 YNOTR-12168 YNOTR-12169`
+Command: `jira-read YNOTR-12167 YNOTR-12168 YNOTR-12169`
 
 ```
-## 批量读取结果（3 个）
+## Batch Read Results (3 items)
 
 ### 1. YNOTR-12167
-**标题**: [标题1]
-**优先级**: P1
-**状态**: 待处理
+**Title**: [title 1]
+**Priority**: P1
+**Status**: Open
 
 ---
 
 ### 2. YNOTR-12168
-**标题**: [标题2]
-**优先级**: P2
-**状态**: 处理中
+**Title**: [title 2]
+**Priority**: P2
+**Status**: In Progress
 
 ---
 
 ### 3. YNOTR-12169
-**标题**: [标题3]
-**优先级**: P3
-**状态**: 已解决
+**Title**: [title 3]
+**Priority**: P3
+**Status**: Resolved
 
 ---
 
-**缓存状态**:
-- YNOTR-12167: 2 小时前
-- YNOTR-12168: 1 天前 (建议更新)
-- YNOTR-12169: 未找到 ❌
-```
-
----
-
-## 5. 批量 API 获取输出
-
-命令：`jira-read --live YNOTR-12167 YNOTR-12168 YNOTR-12169`
-
-执行规则：逐个调用 API，单个失败不阻断后续，实时输出进度，完成后汇总。
-
-```
-## 批量获取结果（3 个）
-
-| # | Jira ID | 标题 | 优先级 | 状态 |
-|---|---------|------|--------|------|
-| 1 | YNOTR-12167 | [标题1] | P1 | ✅ 已获取 |
-| 2 | YNOTR-12168 | [标题2] | P2 | ✅ 已获取 |
-| 3 | YNOTR-12169 | [标题3] | - | ❌ 获取失败 |
-
-**成功**: 2/3，**失败**: 1/3
-**数据来源**: mcp-atlassian API
+**Cache status**:
+- YNOTR-12167: 2 hours ago
+- YNOTR-12168: 1 day ago (recommend update)
+- YNOTR-12169: not found ❌
 ```
 
 ---
 
-## 6. 列出所有缓存输出
+## 5. Batch API Fetch Output
 
-命令：`jira-read --list` 或 `jira-read -l`
+Command: `jira-read --live YNOTR-12167 YNOTR-12168 YNOTR-12169`
+
+Execution rule: fetch from API one by one; single failure doesn't block subsequent items; output progress in real time; summarize at end.
 
 ```
-## 本地 Jira 缓存列表
+## Batch Fetch Results (3 items)
 
-| # | Jira ID | 标题 | 优先级 | 缓存时间 |
-|---|---------|------|--------|---------|
-| 1 | YNOTR-12167 | [标题1] | P1 | 2 小时前 |
-| 2 | YNOTR-12168 | [标题2] | P2 | 1 天前 |
-| 3 | YNOTR-12169 | [标题3] | P3 | 3 天前 |
+| # | Jira ID | Title | Priority | Status |
+|---|---------|-------|----------|--------|
+| 1 | YNOTR-12167 | [title 1] | P1 | ✅ Fetched |
+| 2 | YNOTR-12168 | [title 2] | P2 | ✅ Fetched |
+| 3 | YNOTR-12169 | [title 3] | - | ❌ Failed |
 
-共 3 个缓存，存储路径: $JIRA_CACHE_DIR/
+**Success**: 2/3, **Failed**: 1/3
+**Data source**: mcp-atlassian API
+```
+
+---
+
+## 6. List All Cache Entries Output
+
+Command: `jira-read --list` or `jira-read -l`
+
+```
+## Local Jira Cache List
+
+| # | Jira ID | Title | Priority | Cache Time |
+|---|---------|-------|----------|------------|
+| 1 | YNOTR-12167 | [title 1] | P1 | 2 hours ago |
+| 2 | YNOTR-12168 | [title 2] | P2 | 1 day ago |
+| 3 | YNOTR-12169 | [title 3] | P3 | 3 days ago |
+
+3 cached items, storage path: $JIRA_CACHE_DIR/
 ```
