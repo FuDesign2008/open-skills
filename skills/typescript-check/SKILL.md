@@ -2,25 +2,26 @@
 name: typescript-check
 version: "1.0.0"
 user-invocable: true
-description: TypeScript 类型检查流程。当用户说"类型检查"、"type-check"、"tsc"或需要检查 TypeScript 类型错误时触发。
+description: TypeScript type-checking workflow. Triggers when user says "类型检查" (type check), "type-check", "tsc", "检查类型", or needs to check for TypeScript type errors.
 ---
 
-# TypeScript 类型检查流程
+# TypeScript Type-Check Workflow
 
-## 触发词
+## Triggers
 
 - "类型检查"
 - "type-check"
 - "tsc"
 - "检查类型"
 
-## 检查流程
+## Workflow
 
-### 步骤1：智能检测命令
+### Step 1: Detect the Right Command
 
-按优先级尝试以下命令：
+Try the following commands in priority order:
+
 ```bash
-# 优先使用项目配置的脚本
+# Prefer project-configured scripts
 if grep -q '"type-check"' package.json; then
     npm run type-check
 elif grep -q '"check"' package.json; then
@@ -28,44 +29,44 @@ elif grep -q '"check"' package.json; then
 elif [ -f "tsconfig.json" ]; then
     npx tsc --noEmit
 else
-    echo "⚠️ 未找到 TypeScript 配置"
+    echo "⚠️ No TypeScript configuration found"
 fi
 ```
 
-### 步骤2：汇报结果
+### Step 2: Report Results
 
-**如果检查通过：**
+**If the check passes:**
 ```
-✅ TypeScript 类型检查通过
-```
-
-**如果检查失败：**
-```
-❌ 发现 TypeScript 类型错误：
-
-文件:xxx.ts:行号:列号 - 错误描述
-文件:yyy.tsx:行号:列号 - 错误描述
-
-共发现 N 个错误
+✅ TypeScript type check passed
 ```
 
-### 步骤3：主动修复方案
-
-对于每个错误，按以下格式提供修复方案：
-
+**If the check fails:**
 ```
-### 错误 N: [简要描述]
+❌ TypeScript type errors found:
 
-📍 位置: 文件:行号
+file:xxx.ts:line:column - error description
+file:yyy.tsx:line:column - error description
 
-🔧 修复方案:
-[说明修复思路]
-
-是否应用此修复？(等待用户同意)
+Total: N errors
 ```
 
-**重要**：必须等待用户明确同意后才能执行修复。
+### Step 3: Propose Fixes
 
-### 步骤4：批量修复
+For each error, present the fix in this format:
 
-如果用户同意，可以逐个或批量修复，每修复一个后重新检查，直到所有错误解决。
+```
+### Error N: [brief description]
+
+📍 Location: file:line
+
+🔧 Fix:
+[explain the fix approach]
+
+Apply this fix? (wait for user confirmation)
+```
+
+**Important**: Never apply a fix without explicit user confirmation.
+
+### Step 4: Batch Fix
+
+Once the user confirms, fix errors one by one or in batch. After each fix, re-run the type check until all errors are resolved.

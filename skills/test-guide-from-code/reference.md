@@ -1,281 +1,281 @@
-# 参考资料与模板
+# Reference and Templates
 
-## 输入形式（自动检测）
+## Input Formats (Auto-detected)
 
-| 输入 | 检测方式 | 获取方法 |
-|------|---------|---------|
-| MR/PR URL（GitLab） | 含 `/merge_requests/` | `glab mr diff <iid>` 或提示用户粘贴 diff |
-| MR/PR URL（GitHub） | 含 `/pull/` | `gh pr diff <number>` 或提示用户粘贴 diff |
-| commit hash | 40 位或短 hash，不含 `/` | `git show <hash>` 或 `git diff <hash>~1 <hash>` |
-| diff 文本 | 以 `diff --git` 或 `+++` / `---` 开头 | 直接使用 |
-| 分支名 | 非 URL、非 hash 的短字符串 | `git diff main...<branch>` |
-| 无输入 | — | `git diff`（未提交变更）或 `git diff HEAD~1`（最近提交） |
+| Input | Detection Method | Retrieval |
+|-------|-----------------|-----------|
+| MR/PR URL (GitLab) | Contains `/merge_requests/` | `glab mr diff <iid>` or prompt user to paste diff |
+| MR/PR URL (GitHub) | Contains `/pull/` | `gh pr diff <number>` or prompt user to paste diff |
+| Commit hash | 40-char or short hash, no `/` | `git show <hash>` or `git diff <hash>~1 <hash>` |
+| Diff text | Starts with `diff --git` or `+++` / `---` | Use directly |
+| Branch name | Short string, not URL or hash | `git diff main...<branch>` |
+| No input | — | `git diff` (uncommitted changes) or `git diff HEAD~1` (latest commit) |
 
-**降级策略**：若平台 CLI 未安装或鉴权失败，提示用户手动粘贴 diff 内容。
+**Fallback**: If the platform CLI is not installed or auth fails, prompt user to manually paste the diff content.
 
-## 文件命名规则
+## File Naming Rules
 
-默认保存到 **当前工作目录**（AI 执行环境的 cwd，不一定是代码仓库根目录）。
+Default save location: **current working directory** (the AI execution environment's cwd, not necessarily the repo root).
 
-**命名格式**：`<功能>_人工测试指南_<YYYY-MM-DD>.md`
+**Format**: `<feature>_manual_test_guide_<YYYY-MM-DD>.md`
 
-- `<功能>`：从变更内容中提取核心功能名
-  - 使用中文短语或 kebab-case，**避免** 空格、`/`、`\`、`:`、`*`、`?`、`"`、`<`、`>`、`|` 等文件系统特殊字符
-  - 多功能场景取最主要的一个；难以判断时用 `综合` 作为兜底
-- `<YYYY-MM-DD>`：生成时的日期
-- **示例**：
-  - `手机号登录_人工测试指南_2026-06-15.md`
-  - `user-auth_人工测试指南_2026-06-15.md`
-  - `综合_人工测试指南_2026-06-15.md`（兜底）
+- `<feature>`: Extract the core feature name from the changes
+  - Use kebab-case or a short phrase; **avoid** spaces and special filesystem characters (`/`, `\`, `:`, `*`, `?`, `"`, `<`, `>`, `|`)
+  - For multi-feature changes, use the primary one; if hard to determine, use `general` as fallback
+- `<YYYY-MM-DD>`: Date at generation time
+- **Examples**:
+  - `phone-login_manual_test_guide_2026-06-15.md`
+  - `user-auth_manual_test_guide_2026-06-15.md`
+  - `general_manual_test_guide_2026-06-15.md` (fallback)
 
-**用户覆盖**：用户在触发时可指定自定义路径或文件名（绝对路径 / 相对路径 / 仅文件名），按用户指定保存，命名规则不生效。
+**User override**: User can specify a custom path or filename at trigger time (absolute path / relative path / filename only); save as specified, naming rules don't apply.
 
-**路径确认**：写入前明确告知用户完整保存路径（`已保存到：<绝对路径>`），便于用户定位文件。
+**Path confirmation**: Before writing, clearly state the full save path to the user (`Saved to: <absolute path>`) so the user can locate the file.
 
-## 工具约束
+## Tool Constraints
 
-| 步骤 | Edit/Write | Bash | 说明 |
-|------|-----------|------|------|
-| 步骤 1：获取变更 | ❌ | ✅（仅 git/CLI 读取命令） | 只读获取 diff |
-| 步骤 2：变更分析 | ❌ | ❌ | 纯分析 |
-| 步骤 3：生成指南 | ❌ | ❌ | 纯生成 |
-| 步骤 4：补充回归 | ❌ | ❌ | 纯分析 |
-| 步骤 5：输出 | ✅（默认写入文件） | ❌ | 默认保存到当前工作目录 |
+| Step | Edit/Write | Bash | Notes |
+|------|-----------|------|-------|
+| Step 1: Obtain changes | ❌ | ✅ (read-only git/CLI commands) | Read-only diff retrieval |
+| Step 2: Change analysis | ❌ | ❌ | Pure analysis |
+| Step 3: Generate guide | ❌ | ❌ | Pure generation |
+| Step 4: Supplement regression | ❌ | ❌ | Pure analysis |
+| Step 5: Output | ✅ (write to file by default) | ❌ | Default save to current working directory |
 
-## 对话输出策略
+## Conversation Output Strategy
 
-生成并保存文件后，**不在对话中重复完整内容**，仅输出简短摘要：
+After generating and saving the file, **do not repeat full content in the conversation** — only output a brief summary:
 
-1. **保存路径**：完整绝对路径
-2. **测试项统计**：总数 + 按优先级分布（P0/P1/P2 各多少）
-3. **核心变更点**：3-5 条最重要的用户可感知变更
-4. **回归范围**：列出需回归的模块名（不展开验证方式）
+1. **Save path**: Full absolute path
+2. **Test item statistics**: Total count + distribution by priority (how many P0/P1/P2)
+3. **Core change points**: 3–5 most important user-perceivable changes
+4. **Regression scope**: List module names requiring regression (don't expand verification methods)
 
-> 完整测试项、前置条件、步骤、预期结果等内容一律只写入文件。
+> Full test items, prerequisites, steps, expected results, etc. are always written to the file only.
 
 ---
 
-## 测试指南输出模板
+## Test Guide Output Template
 
 ```markdown
-# 📋 人工测试指南
+# 📋 Manual Test Guide
 
-> 基于 [变更来源] 生成 | 生成时间：YYYY-MM-DD
+> Generated from [change source] | Generated: YYYY-MM-DD
 
-## 变更概览
+## Change Overview
 
-| 项目 | 内容 |
-|------|------|
-| 变更来源 | [commit / MR / PR / 分支] |
-| 变更范围 | [N 个文件，M 个模块] |
-| 变更类型 | [新增/修改/修复/配置/删除] |
-
----
-
-## 🔍 变更点列表
-
-### 模块 1：[模块名称]
-
-#### 变更 1.1：[简要描述]
-- **文件**：`path/to/file`
-- **类型**：[🆕新增 / 🔄修改 / 🐛修复 / ⚙️配置 / 🗑️删除]
-- **用户影响**：[对用户/系统行为的影响描述]
+| Item | Details |
+|------|---------|
+| Change source | [commit / MR / PR / branch] |
+| Change scope | [N files, M modules] |
+| Change types | [Added/Modified/Fixed/Config/Removed] |
 
 ---
 
-## ✅ 测试项
+## 🔍 Change List
 
-### [P0] 测试项 1：[测试目标]
+### Module 1: [module name]
 
-**前置条件**：
-- [条件 1]
-- [条件 2]
-
-**测试步骤**：
-1. [操作步骤 1]
-2. [操作步骤 2]
-3. [操作步骤 3]
-
-**预期结果**：
-- [通过标准 1]
-- [通过标准 2]
+#### Change 1.1: [brief description]
+- **File**: `path/to/file`
+- **Type**: [🆕 Added / 🔄 Modified / 🐛 Fixed / ⚙️ Config / 🗑️ Removed]
+- **User impact**: [description of impact on user/system behavior]
 
 ---
 
-### [P1] 测试项 2：[测试目标]
+## ✅ Test Items
 
-**前置条件**：
-- [条件]
+### [P0] Test Item 1: [test objective]
 
-**测试步骤**：
-1. [步骤]
+**Prerequisites**:
+- [condition 1]
+- [condition 2]
 
-**预期结果**：
-- [标准]
+**Test steps**:
+1. [step 1]
+2. [step 2]
+3. [step 3]
 
----
-
-## 🔄 回归验证
-
-| 验证项 | 验证方式 | 关联变更 |
-|--------|---------|---------|
-| [功能点] | [简要操作] | [关联变更编号] |
+**Expected results**:
+- [pass criterion 1]
+- [pass criterion 2]
 
 ---
 
-## ⚠️ 注意事项
+### [P1] Test Item 2: [test objective]
 
-- [需要特别关注的点]
-- [环境/数据要求]
+**Prerequisites**:
+- [condition]
+
+**Test steps**:
+1. [step]
+
+**Expected results**:
+- [criterion]
+
+---
+
+## 🔄 Regression Verification
+
+| Verification item | Verification method | Related change |
+|-------------------|---------------------|----------------|
+| [feature point] | [brief operation] | [change ID] |
+
+---
+
+## ⚠️ Notes
+
+- [points requiring special attention]
+- [environment/data requirements]
 ```
 
 ---
 
-## 完整示例
+## Full Example
 
-**输入**：一个 MR 的 diff，涉及用户登录功能修改和密码规则配置变更。
+**Input**: A MR diff involving user login feature changes and password rule config updates.
 
-**输出**：
+**Output**:
 
 ```markdown
-# 📋 人工测试指南
+# 📋 Manual Test Guide
 
-> 基于 MR !123（feat: 支持手机号登录 + 密码规则升级）生成 | 生成时间：2026-06-11
+> Generated from MR !123 (feat: phone number login + password rule upgrade) | Generated: 2026-06-11
 
-## 变更概览
+## Change Overview
 
-| 项目 | 内容 |
-|------|------|
-| 变更来源 | MR !123 |
-| 变更范围 | 5 个文件，2 个模块 |
-| 变更类型 | 🆕新增 + 🔄修改 + ⚙️配置 |
-
----
-
-## 🔍 变更点列表
-
-### 模块 1：用户登录
-
-#### 变更 1.1：新增手机号 + 验证码登录方式
-- **文件**：`src/pages/Login.vue`、`src/api/auth.js`
-- **类型**：🆕 新增
-- **用户影响**：登录页面新增「手机号登录」Tab，用户可通过手机号 + 短信验证码登录
-
-#### 变更 1.2：密码错误提示文案优化
-- **文件**：`src/pages/Login.vue`
-- **类型**：🔄 修改
-- **用户影响**：密码错误时提示从「密码错误」改为「账号或密码不正确，请重试」
-
-### 模块 2：安全配置
-
-#### 变更 2.1：密码最小长度从 6 位调整为 8 位
-- **文件**：`config/security.yaml`
-- **类型**：⚙️ 配置
-- **用户影响**：新注册用户和修改密码的用户，密码必须至少 8 位
+| Item | Details |
+|------|---------|
+| Change source | MR !123 |
+| Change scope | 5 files, 2 modules |
+| Change types | 🆕 Added + 🔄 Modified + ⚙️ Config |
 
 ---
 
-## ✅ 测试项
+## 🔍 Change List
 
-### [P0] 测试项 1：手机号登录完整流程
+### Module 1: User Login
 
-**前置条件**：
-- 准备一个已注册的手机号
-- 确保短信网关正常（测试环境可使用固定验证码 123456）
+#### Change 1.1: Added phone number + verification code login
+- **File**: `src/pages/Login.vue`, `src/api/auth.js`
+- **Type**: 🆕 Added
+- **User impact**: Login page adds a "Phone Login" tab; users can log in via phone number + SMS verification code
 
-**测试步骤**：
-1. 打开登录页面，确认页面显示「账号登录」和「手机号登录」两个 Tab
-2. 点击「手机号登录」Tab
-3. 输入已注册的手机号，点击「获取验证码」
-4. 输入验证码，点击「登录」
-5. 验证登录成功后跳转到首页
+#### Change 1.2: Password error message copy refined
+- **File**: `src/pages/Login.vue`
+- **Type**: 🔄 Modified
+- **User impact**: Password error prompt changed from "Incorrect password" to "Account or password is incorrect, please try again"
 
-**预期结果**：
-- Tab 切换正常，手机号登录表单显示手机号输入框和验证码输入框
-- 点击获取验证码后按钮进入 60 秒倒计时
-- 输入正确验证码后登录成功，跳转首页
-- 登录成功后用户信息正确显示
+### Module 2: Security Config
 
----
-
-### [P0] 测试项 2：密码长度规则生效
-
-**前置条件**：
-- 准备一个未注册的手机号/邮箱
-
-**测试步骤**：
-1. 进入注册页面
-2. 输入 6 位密码（如 `abc123`），尝试提交
-3. 输入 8 位密码（如 `abcd1234`），尝试提交
-
-**预期结果**：
-- 6 位密码时提示「密码至少 8 位」
-- 8 位密码时通过校验，可正常注册
+#### Change 2.1: Minimum password length increased from 6 to 8
+- **File**: `config/security.yaml`
+- **Type**: ⚙️ Config
+- **User impact**: New registrations and password changes now require at least 8 characters
 
 ---
 
-### [P0] 测试项 3：原有账号密码登录不受影响
+## ✅ Test Items
 
-**前置条件**：
-- 准备一个已有的账号密码
+### [P0] Test Item 1: Phone login complete flow
 
-**测试步骤**：
-1. 打开登录页面，保持在「账号登录」Tab
-2. 输入已有账号和正确密码，点击登录
-3. 输入已有账号和错误密码，点击登录
+**Prerequisites**:
+- Have a registered phone number
+- Ensure SMS gateway is working (test environment may use fixed code 123456)
 
-**预期结果**：
-- 正确密码登录成功
-- 错误密码显示提示「账号或密码不正确，请重试」（验证文案变更）
+**Test steps**:
+1. Open the login page, confirm it shows "Account Login" and "Phone Login" tabs
+2. Click the "Phone Login" tab
+3. Enter the registered phone number, click "Get Verification Code"
+4. Enter the verification code, click "Login"
+5. Verify successful login and redirect to home page
 
----
-
-### [P1] 测试项 4：手机号登录异常场景
-
-**前置条件**：
-- 准备已注册和未注册的手机号
-
-**测试步骤**：
-1. 输入未注册的手机号，获取验证码并登录
-2. 验证码为空时点击登录
-3. 验证码错误时点击登录
-
-**预期结果**：
-- 未注册手机号提示「该手机号未注册」
-- 空验证码提示「请输入验证码」
-- 错误验证码提示「验证码错误」
+**Expected results**:
+- Tab switching works; phone login form shows phone number input and verification code input
+- "Get Verification Code" button enters 60-second countdown after click
+- Correct verification code logs in successfully and redirects to home
+- User info displays correctly after login
 
 ---
 
-### [P2] 测试项 5：Tab 切换交互
+### [P0] Test Item 2: Password length rule enforced
 
-**前置条件**：
-- 打开登录页面
+**Prerequisites**:
+- Have an unregistered phone number/email
 
-**测试步骤**：
-1. 在「账号登录」Tab 输入部分内容后切换到「手机号登录」Tab
-2. 切换回「账号登录」Tab
+**Test steps**:
+1. Go to the registration page
+2. Enter a 6-character password (e.g. `abc123`), attempt to submit
+3. Enter an 8-character password (e.g. `abcd1234`), attempt to submit
 
-**预期结果**：
-- Tab 切换流畅，无页面闪烁
-- 切换后之前的输入内容是否保留均可接受，但不应出现报错
-
----
-
-## 🔄 回归验证
-
-| 验证项 | 验证方式 | 关联变更 |
-|--------|---------|---------|
-| 登出功能 | 登出后重新登录，验证流程正常 | 1.1 |
-| 找回密码 | 通过手机号找回密码，验证短信发送正常 | 1.1 |
-| 修改密码 | 修改密码时验证 8 位规则生效 | 2.1 |
-| 第三方登录（如有） | 微信/Google 登录流程正常 | 1.1 |
+**Expected results**:
+- 6-character password shows "Password must be at least 8 characters"
+- 8-character password passes validation and registration succeeds
 
 ---
 
-## ⚠️ 注意事项
+### [P0] Test Item 3: Existing account login unaffected
 
-- 手机号登录依赖短信网关，测试前确认测试环境短信服务正常
-- 密码规则变更仅影响**新注册和修改密码**，已有用户密码不受影响（仍可登录）
-- 如有多个环境（Web/H5/APP），需各环境分别验证手机号登录功能
+**Prerequisites**:
+- Have an existing account with password
+
+**Test steps**:
+1. Open the login page, stay on "Account Login" tab
+2. Enter existing account and correct password, click login
+3. Enter existing account and wrong password, click login
+
+**Expected results**:
+- Correct password logs in successfully
+- Wrong password shows "Account or password is incorrect, please try again" (verifies copy change)
+
+---
+
+### [P1] Test Item 4: Phone login edge cases
+
+**Prerequisites**:
+- Have registered and unregistered phone numbers
+
+**Test steps**:
+1. Enter an unregistered phone number, get verification code and attempt login
+2. Click login with empty verification code
+3. Click login with wrong verification code
+
+**Expected results**:
+- Unregistered phone number shows "This phone number is not registered"
+- Empty verification code shows "Please enter verification code"
+- Wrong verification code shows "Incorrect verification code"
+
+---
+
+### [P2] Test Item 5: Tab switching interaction
+
+**Prerequisites**:
+- Open the login page
+
+**Test steps**:
+1. Type partial content in "Account Login" tab, then switch to "Phone Login" tab
+2. Switch back to "Account Login" tab
+
+**Expected results**:
+- Tab switching is smooth, no page flicker
+- Whether previous input is preserved after switching is acceptable, but no errors should occur
+
+---
+
+## 🔄 Regression Verification
+
+| Verification item | Verification method | Related change |
+|-------------------|---------------------|----------------|
+| Logout | Log out and log back in, verify flow works | 1.1 |
+| Password recovery | Recover password via phone number, verify SMS works | 1.1 |
+| Change password | Verify 8-character rule enforced when changing password | 2.1 |
+| Third-party login (if any) | WeChat/Google login flow works | 1.1 |
+
+---
+
+## ⚠️ Notes
+
+- Phone login depends on SMS gateway; confirm test environment SMS service is working before testing
+- Password rule change only affects **new registrations and password changes**; existing user passwords are unaffected (still work)
+- If multiple platforms exist (Web/H5/App), phone login must be verified on each platform
 ```

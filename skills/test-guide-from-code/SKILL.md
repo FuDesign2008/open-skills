@@ -2,80 +2,80 @@
 name: test-guide-from-code
 version: "1.1.0"
 user-invocable: true
-description: 根据代码变更（diff、commit、MR/PR）生成面向人工测试人员的手工测试指南。Use when 用户说「生成测试指南」「测试指南」「人工测试指南」「测试指引」「test guide」「根据代码生成测试」「从 MR 生成测试指南」「从 PR 生成测试指南」，或提供 diff/MR/PR 链接并要求生成测试指南时触发。
+description: Generate a manual test guide for human testers from code changes (diff, commit, MR/PR). Triggers when user says 「生成测试指南」「测试指南」「人工测试指南」「测试指引」「test guide」「根据代码生成测试」「从 MR 生成测试指南」「从 PR 生成测试指南」 (generate test guide / manual test guide / test guide from code / from MR / from PR), or provides a diff/MR/PR link and asks for a test guide.
 ---
 
-# 人工测试指南生成
+# Manual Test Guide Generation
 
-> 根据代码变更自动生成结构化的人工测试指南，让测试人员精准验证变更功能。
+> Automatically generate a structured manual test guide from code changes, enabling testers to precisely verify changed functionality.
 >
-> **输入形式、输出模板与示例见 [reference.md](reference.md)。**
+> **Input formats, output templates, and examples: see [reference.md](reference.md).**
 
-## 触发词
+## Triggers
 
-- 「生成测试指南」「测试指南」「人工测试指南」「测试指引」
+- 「生成测试指南」「测试指南」「人工测试指南」「测试指引」 (generate test guide / manual test guide)
 - 「test guide」
-- 「根据代码生成测试」「从代码生成测试指南」
-- 「从 MR 生成测试指南」「从 PR 生成测试指南」
-- 支持带参数：「生成测试指南：https://gitlab.example.com/merge_requests/123」
+- 「根据代码生成测试」「从代码生成测试指南」 (generate test from code)
+- 「从 MR 生成测试指南」「从 PR 生成测试指南」 (test guide from MR / from PR)
+- Supports arguments: 「生成测试指南：https://gitlab.example.com/merge_requests/123」
 
-## 适用场景
+## When to Use
 
-- MR/PR 提交后，为测试人员提供验证指南
-- 版本发布前，基于代码变更梳理人工回归测试范围
-- 功能交付验收，从代码变更反向推导可测试的用户行为
+- After an MR/PR is submitted, provide a verification guide for testers
+- Before a release, outline manual regression testing scope based on code changes
+- For feature delivery acceptance, derive testable user behaviors from code changes
 
-## 执行流程
+## Execution Flow
 
-### 步骤 1：获取变更内容
+### Step 1: Obtain Changes
 
-1. 检测输入类型（见 [reference.md](reference.md) 输入形式表），选择对应获取方式
-2. 若为 URL：尝试 CLI 获取 diff；失败则提示用户粘贴
-3. 若无输入：`git diff`（工作区）或 `git diff HEAD~1`（最近提交）
-4. 确认获取到有效 diff
+1. Detect input type (see input format table in [reference.md](reference.md)), choose the appropriate retrieval method
+2. If URL: try CLI to get diff; if fails, prompt user to paste
+3. If no input: `git diff` (working tree) or `git diff HEAD~1` (latest commit)
+4. Confirm a valid diff was obtained
 
-### 步骤 2：变更分析
+### Step 2: Change Analysis
 
-1. **变更文件清单**：按功能模块分组
-2. **变更类型分类**：🆕 新增 / 🔄 修改 / 🐛 修复 / ⚙️ 配置 / 🗑️ 删除
-3. **用户可感知的行为变更**：推导对用户/系统行为的影响
-4. **隐式变更识别**：配置文件、依赖升级、数据库迁移、API 接口变更
+1. **Changed file inventory**: grouped by functional module
+2. **Change type classification**: 🆕 Added / 🔄 Modified / 🐛 Fixed / ⚙️ Config / 🗑️ Removed
+3. **User-perceivable behavior changes**: infer impact on user/system behavior
+4. **Implicit change identification**: config files, dependency upgrades, database migrations, API contract changes
 
-### 步骤 3：生成测试指南
+### Step 3: Generate Test Guide
 
-每个测试项包含：测试目标、前置条件、测试步骤（面向非开发人员）、预期结果、优先级。
+Each test item includes: test objective, prerequisites, test steps (non-developer friendly), expected results, priority.
 
-**优先级**：P0 核心业务/数据写入/安全 → P1 辅助功能/UI/性能 → P2 样式/文案/内部重构
+**Priority**: P0 core business/data writes/security → P1 auxiliary features/UI/performance → P2 styling/copy/internal refactoring
 
-**变更类型 → 测试策略**：
-- 🆕 → 正向流程 + 边界/异常
-- 🔄 → 变更点验证 + 原有功能回归
-- 🐛 → bug 场景验证 + 关联功能回归
-- ⚙️ → 配置生效 + 受影响功能回归
-- 🗑️ → 确认移除 + 关联不受影响
+**Change type → Test strategy**:
+- 🆕 → Happy path + boundary/edge cases
+- 🔄 → Verify changed points + regression of existing functionality
+- 🐛 → Bug scenario verification + regression of related features
+- ⚙️ → Config effectiveness + regression of affected features
+- 🗑️ → Confirm removal + verify related features are unaffected
 
-### 步骤 4：补充回归验证
+### Step 4: Supplement Regression Verification
 
-从变更模块推导关联模块，列出需回归的功能点和验证方式。
+Derive related modules from changed modules, list functional points requiring regression and verification methods.
 
-### 步骤 5：输出
+### Step 5: Output
 
-按 [reference.md](reference.md) 中的模板格式生成测试指南，**默认保存为 markdown 文件到当前工作目录**。
+Generate the test guide using the template format in [reference.md](reference.md), **saving as a markdown file to the current working directory by default**.
 
-**文件命名**：`<功能>_人工测试指南_<YYYY-MM-DD>.md`（命名规则与示例见 [reference.md](reference.md)「文件命名规则」）
+**File naming**: `<feature>_manual_test_guide_<YYYY-MM-DD>.md` (naming rules and examples: see [reference.md](reference.md) "File Naming Rules")
 
-**用户覆盖**：用户在触发时可指定自定义路径或文件名，按用户指定保存。
+**User override**: User can specify a custom path or filename at trigger time; save as specified.
 
-**对话输出**：**不重复完整内容**，仅输出简短摘要——保存路径、测试项统计（按 P0/P1/P2 分布）、核心变更点 3-5 条、回归范围。完整测试项一律只写入文件（策略详见 [reference.md](reference.md)「对话输出策略」）。
+**Conversation output**: **Do not repeat full content** — only output a brief summary: save path, test item statistics (by P0/P1/P2 distribution), 3–5 core change points, regression scope. Full test items are always written to file only (strategy: see [reference.md](reference.md) "Conversation Output Strategy").
 
 ## Red Flags
 
-- ❌ 跳过隐式变更识别，只分析业务代码
-- ❌ 测试步骤用开发术语（「调用 API」「返回 200」）
-- ❌ 遗漏 Bug 修复的原始 bug 场景
-- ❌ 将自动化测试混入人工测试指南
-- ❌ 忽略回归验证范围
-- ❌ 未获取到 diff 时凭空生成测试项
-- ❌ 未确认当前工作目录直接写入文件，导致文件存到错误位置
-- ❌ 文件名含空格或文件系统特殊字符（`/` `\` `:` `*` `?` `"` `<` `>` `|`）
-- ❌ 生成文件后未在对话中告知完整保存路径
+- ❌ Skipping implicit change identification, only analyzing business code
+- ❌ Test steps using developer jargon ("call API", "returns 200")
+- ❌ Missing the original bug scenario for bug fixes
+- ❌ Mixing automated tests into the manual test guide
+- ❌ Ignoring regression verification scope
+- ❌ Generating test items from nothing when no diff was obtained
+- ❌ Writing files without confirming the current working directory, causing files to land in the wrong location
+- ❌ Filename containing spaces or special filesystem characters (`/` `\` `:` `*` `?` `"` `<` `>` `|`)
+- ❌ Not reporting the full save path in the conversation after generating the file

@@ -1,20 +1,20 @@
 ---
 name: android-webview-debug
-description: Android 工程内统一 WebView 远程调试开关。android-webview-debug-enable 将 setWebContentsDebuggingEnabled 全部设为 true 并记录修改位置与修改前内容；android-webview-debug-revert 按记录恢复，与记录不符的项在最后列出并等待人工确认。适用于需要统一开启或恢复 WebView 调试的 Android 项目。
+description: Unified WebView remote debugging toggle for Android projects. `android-webview-debug-enable` sets all `setWebContentsDebuggingEnabled` calls to `true` and records modified locations with their original content; `android-webview-debug-revert` restores from the record, listing any mismatched entries at the end for manual confirmation. Triggers: 「开启 WebView 调试」「恢复 WebView 调试」 / android-webview-debug-enable, android-webview-debug-revert. Suitable for Android projects that need to uniformly enable or restore WebView debugging.
 ---
 
-# Android WebView 调试统一
+# Android WebView Debug Toggle
 
-## 触发词
+## Triggers
 
-- **android-webview-debug-enable**：将工程内所有 `setWebContentsDebuggingEnabled` 改为 `true`，并**记录**修改位置与修改前内容，供后续 revert 使用。
-- **android-webview-debug-revert**：根据记录**恢复**之前被 enable 改过的位置；与记录不符的项**不自动恢复**，在最后列出并提示，由用户确认是否恢复或跳过。
+- 「开启 WebView 调试」 / **android-webview-debug-enable**: Change all `setWebContentsDebuggingEnabled` calls in the project to `true`, and **record** modified locations with their original content for later revert.
+- 「恢复 WebView 调试」 / **android-webview-debug-revert**: **Restore** previously modified locations from the record; entries that don't match the record are **not auto-reverted** — they are listed at the end for user confirmation.
 
-## 状态文件约定
+## State File Convention
 
-- **路径**：当前工程/工作区**根目录**下的 `.android-webview-debug-state.json`。
-- **生成时机**：仅在执行 **android-webview-debug-enable** 时创建或覆盖；revert 只读不写（恢复完成后可删除或归档）。
-- **格式**：
+- **Path**: `.android-webview-debug-state.json` in the project/workspace **root directory**.
+- **Creation timing**: Only created or overwritten when **android-webview-debug-enable** runs; revert only reads (can be deleted or archived after restore is complete).
+- **Format**:
 
 ```json
 {
@@ -32,44 +32,44 @@ description: Android 工程内统一 WebView 远程调试开关。android-webvie
 }
 ```
 
-- **说明**：只记录**本轮 enable 实际改动的项**（原本已是 `true` 的不写入 entries）。建议将 `.android-webview-debug-state.json` 加入 `.gitignore`，避免误提交。
+- **Note**: Only entries **actually changed in this enable session** are recorded (calls already set to `true` are not included). Recommend adding `.android-webview-debug-state.json` to `.gitignore` to avoid accidental commits.
 
 ---
 
-## android-webview-debug-enable 流程
+## android-webview-debug-enable Flow
 
-1. **搜索**：用 grep 或 codebase 搜索 `setWebContentsDebuggingEnabled`（含注释行），列出所有出现位置。
-2. **分类**：对每个位置标记为「已是 true」「条件或其它表达式」「被注释」。
-3. **可选确认**：若需用户决策，可用 1～2 个选择题（例如：是否全部改为 true？被注释的是否也改？），用户可简答 1A 2B。
-4. **已有记录**：若工程根目录已存在 `.android-webview-debug-state.json`，先提示「已有 enable 记录，是否覆盖并继续？」待用户确认后再覆盖。
-5. **写状态文件**：在**执行任何代码替换之前**，根据即将被改动的项生成 `entries`，写入 `.android-webview-debug-state.json`（路径为工程根目录）。
-6. **执行替换**：将「条件或其它表达式」的调用改为 `setWebContentsDebuggingEnabled(true)`；**默认不修改被注释的调用**，除非用户明确说「连注释的也改」或「取消注释」。
-7. **收尾**：简要列出已修改文件与条目数。
-
----
-
-## android-webview-debug-revert 流程
-
-1. **读取状态文件**：从当前工程根目录读取 `.android-webview-debug-state.json`。若不存在则提示「未找到 enable 记录，无法执行 revert」并结束。
-2. **遍历 entries**：
-   - 对每条：读取对应文件的对应行，与 `replaced` 比较（或判断是否包含 `setWebContentsDebuggingEnabled(true)`）。
-   - **一致**：将该行替换为 `original`（恢复为修改前内容）。
-   - **不一致**：不自动恢复，将该条加入「与记录不符」列表（记录 file、line、当前行摘要）。
-3. **先完成所有可恢复项**：只对「当前行与记录一致」的项执行替换。
-4. **最后提示与人工确认**：若有「与记录不符」的项，在最后统一输出列表并说明：「以下 N 处与 enable 时的记录不符（可能已被人工修改），请确认是否仍要按记录恢复或跳过。」根据用户选择逐条恢复或跳过。
-5. **收尾**：说明已恢复条目数；若全部恢复完毕，可提示「可将 .android-webview-debug-state.json 删除或加入 .gitignore」。
+1. **Search**: Use grep or codebase search to find all `setWebContentsDebuggingEnabled` occurrences (including commented lines), list all locations.
+2. **Classify**: Mark each location as "already true", "conditional or other expression", or "commented out".
+3. **Optional confirmation**: If user input is needed, present 1–2 quick choices (e.g., "Change all to true?" "Also modify commented-out calls?"). User can answer briefly like "1A 2B".
+4. **Existing state**: If `.android-webview-debug-state.json` already exists in the project root, first prompt: "An enable record already exists. Overwrite and continue?" Wait for user confirmation before overwriting.
+5. **Write state file**: **Before making any code replacements**, generate `entries` for items about to be changed and write `.android-webview-debug-state.json` (path: project root).
+6. **Execute replacements**: Change "conditional or other expression" calls to `setWebContentsDebuggingEnabled(true)`. **Do not modify commented-out calls by default**, unless the user explicitly says "also change commented ones" or "uncomment them".
+7. **Summary**: Briefly list modified files and entry count.
 
 ---
 
-## 默认规则
+## android-webview-debug-revert Flow
 
-- **enable**：默认**不修改**被注释的 `setWebContentsDebuggingEnabled` 调用；用户可一句话覆盖（如「注释的也改」）。
-- **revert**：只恢复状态文件中记录的条目；与记录不符的**不自动恢复**，一律放到最后提示并等待人工确认。
-- **状态文件**：仅项目根目录一份；enable 覆盖写入，revert 只读。
+1. **Read state file**: Read `.android-webview-debug-state.json` from the project root. If not found, prompt: "No enable record found, cannot revert" and exit.
+2. **Iterate entries**:
+   - For each entry: read the corresponding file/line and compare with `replaced` (or check if it contains `setWebContentsDebuggingEnabled(true)`).
+   - **Match**: Replace the line with `original` (restore pre-modification content).
+   - **Mismatch**: Do not auto-revert; add to the "mismatched" list (record file, line, current line summary).
+3. **Complete all restorable items first**: Only apply replacements for entries where the current line matches the record.
+4. **Final prompt and manual confirmation**: If there are mismatched entries, output the list at the end: "The following N entries don't match the enable record (may have been manually modified). Confirm whether to restore per the record or skip." Restore or skip each entry based on user choice.
+5. **Summary**: Report number of restored entries; if all restored, prompt: "You can now delete .android-webview-debug-state.json or add it to .gitignore."
 
 ---
 
-## 验证要点
+## Default Rules
 
-- enable 后：工程内所有非注释的 `setWebContentsDebuggingEnabled` 应为 `true`，且根目录存在 `.android-webview-debug-state.json` 且 `entries` 与本次修改一一对应。
-- revert 后：被恢复的行内容与状态文件中 `original` 一致；与记录不符的项已列出并经用户确认处理。
+- **enable**: **Does not modify** commented-out `setWebContentsDebuggingEnabled` calls by default; user can override with a single phrase (e.g., "also change commented ones").
+- **revert**: Only restores entries recorded in the state file; mismatched entries are **not auto-reverted** — always listed at the end for manual confirmation.
+- **State file**: Only one copy in the project root; enable overwrites, revert only reads.
+
+---
+
+## Verification Checklist
+
+- After **enable**: All non-commented `setWebContentsDebuggingEnabled` calls in the project should be `true`, and `.android-webview-debug-state.json` should exist in the root with `entries` matching this session's modifications.
+- After **revert**: Restored lines should match the `original` in the state file; mismatched entries should be listed and processed per user confirmation.
