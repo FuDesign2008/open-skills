@@ -45,9 +45,9 @@ Before any web search, decide whether external research is even the right move. 
 
 ---
 
-## Default mode — 4 maxims (always-on for every external lookup)
+## Default mode — 4 maxims (applied to every web search within an active task)
 
-These apply automatically to every web search / `webfetch`, with no extra artifact produced. They exist because the web is full of outdated, low-authority, copied, and AI-generated content — without discipline, agents amplify the noise.
+When this skill is active for a task, apply these to every web search / `webfetch` you perform during that task. (Skills activate per-task when their description matches — these maxims then govern every search inside that task, not searches in unrelated tasks.) No extra artifact is produced. They exist because the web is full of outdated, low-authority, copied, and AI-generated content — without discipline, agents amplify the noise.
 
 ### 1. Authority-first
 
@@ -60,12 +60,14 @@ These apply automatically to every web search / `webfetch`, with no extra artifa
 
 For **fast-moving topics** (frameworks, APIs, tools, security), find the page's publish/update date before trusting it. Content older than ~2 years is "possibly stale" — verify the claim against the official current-version docs.
 
-**Apply**: after `webfetch`, look for "Last updated" / article date / `<time>` tags. A page with no date at all is suspect — treat as stale until proven otherwise.
+**Apply**: after `webfetch`, look for "Last updated" / article date / `<time>` tags. A page with no date at all is suspect — treat as stale until proven otherwise. **Exception**: official living-reference doc sites (`react.dev/reference/*`, `developer.mozilla.org`, the official docs of a framework) carry no per-page date but are kept evergreen-current by the vendor; treat them as authoritative for the current version. If you need to pin a specific minor version, check the page's version selector or the project changelog.
 **Why it matters**: a 2021 Node.js article describes v16 behavior; on v22 the API may have changed.
 
 ### 3. Cross-validate non-trivial claims
 
 Any **non-obvious claim** — a behavior assertion, a performance number, a security statement, a compatibility claim, a "best practice" opinion — needs **≥2 independent sources** before you relay it as fact.
+
+**Sharper test**: if the claim will **influence a decision** (which library to install, how to architect something, whether an approach is safe), it is non-trivial — cross-validate. Trivial facts (syntax, parameter names, type signatures) need only one authoritative source.
 
 **Apply**: when a single source makes a non-trivial claim, run a second search to corroborate. Two sites with near-identical wording do **not** count as independent (one likely copied the other); look for independent reasoning or primary evidence.
 **Why it matters**: one wrong blog post, repeated across aggregators, becomes an "everyone says" myth.
@@ -90,6 +92,8 @@ This is the natural output of the four maxims, not a fifth rule.
 
 Triggered when the user explicitly asks for rigor: 「严格调研」「深度调研」「严格查证」「严谨调研」/ "strict research", "deep research", "fact-check" — **and** the target is external (Step 0 confirms). Use this when the conclusion matters (technology selection, security decisions, claims that will be acted on).
 
+If the user asks for strict research but the target is **internal code** (e.g.,「严格分析我们 auth 模块的实现」), this skill does not apply — internal deep analysis is a different task; hand off to `explore` / `debug-workflow` / code-review tools instead.
+
 Strict mode **includes** default mode (the 4 maxims still govern the search phase) and adds a structured evaluation.
 
 ### The 7 dimensions (CRAAP + E-E-A-T merged)
@@ -111,9 +115,9 @@ Each dimension is scored **High / Med / Low** with concrete criteria — the ful
 ### Workflow
 
 1. **Decompose** the research question into verifiable sub-claims.
-2. **Search** under the default-mode 4 maxims.
+2. **Search** under the default-mode 4 maxims. Stop searching when you have enough — for security/safety-critical conclusions, that means **≥2 independent primary sources** agreeing; for ordinary claims, enough sources to cover the sub-claims without obvious gaps.
 3. **Score each source** across the 7 dimensions; assign aggregate Trust.
-4. **Synthesize at the claim level** — which claims are multi-source High, which are single-source, which conflict.
+4. **Synthesize at the claim level** — which claims are multi-source High, which are single-source, which conflict. **For security/safety-critical claims, require multi-source High on Authority + Accuracy before marking a claim "Strong/Trustworthy"** (the bar is higher than for ordinary claims).
 5. **Emit the report** using the template below.
 6. **Flag gaps** — what still needs checking, where sources disagree.
 
@@ -160,6 +164,8 @@ A fully worked example (a sample strict-mode report on a real-ish question) is i
 - **Dateless pages ≠ evergreen.** Some undated pages are timeless (specs, algorithms); most undated web content is just neglected. For fast-moving topics, treat undated as stale.
 - **StackOverflow high-vote answers can be a decade old.** Vote count reflects historical usefulness, not current correctness. Always cross-check the date and test against the current version.
 - **Two sources, one origin.** If blog B cites blog A, they are not independent. Independence requires separate reasoning or separate primary evidence.
+- **AI-generated search summaries are aggregations, not sources.** Google AI Overviews, Perplexity, Bing Copilot, and similar synthesize from other pages — they are convenient starting points but secondary. Before relaying a claim sourced only to an AI summary, trace it to the underlying primary source the summary cites; if none, treat as single-source and cross-validate.
+- **Same package name, different ecosystem.** Package names collide across ecosystems — `jsonwebtoken` (npm) vs `jsonwebtoken` (Rust crate, `Keats/jsonwebtoken`); `jwt-go` vs `golang-jwt`. When a search/advisory mentions a package, check the **ecosystem field** (npm/cargo/go/pypi) before matching it to your target. A CVE for the Rust crate is irrelevant to the npm user and vice versa.
 - **Default mode is not a pre-flight checklist the user sees.** It is silent behavioral discipline. Don't narrate "applying maxim 2…" — just do it and cite well.
 
 ---
