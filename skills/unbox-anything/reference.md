@@ -183,12 +183,12 @@ The inspiration case (a Youdao Cloud Note installer). Four hops:
 
 ```bash
 # Hop 1: NSIS exe → inner payload
-7z x "App-1.2.3.exe" -oApp-unboxed -y
+7z x "App-1.2.3.exe" -oApp-1-2-3-exe-unboxed -y
 # Hop 2: payload 7z → Electron runtime
-7z x "App-unboxed/\$PLUGINSDIR/app-64.7z" -oApp-unboxed/app -y
+7z x "App-1-2-3-exe-unboxed/\$PLUGINSDIR/app-64.7z" -oApp-1-2-3-exe-unboxed/app -y
 # Hop 3: detect app.asar in app/resources/
 # Hop 4: asar → readable JS source
-npx @electron/asar extract "App-unboxed/app/resources/app.asar" App-unboxed/app-src
+npx @electron/asar extract "App-1-2-3-exe-unboxed/app/resources/app.asar" App-1-2-3-exe-unboxed/app-src
 ```
 
 Note the `\$PLUGINSDIR` shell-escaping. The unbox-anything pipeline does all four hops automatically via step 5 recursion.
@@ -197,11 +197,11 @@ Note the `\$PLUGINSDIR` shell-escaping. The unbox-anything pipeline does all fou
 
 ```bash
 # Hop 1: xar unpack
-7z x "Thing.pkg" -oThing-unboxed -y     # or: xar -xf Thing.pkg -C Thing-unboxed
+7z x "Thing.pkg" -oThing-pkg-unboxed -y     # or: xar -xf Thing.pkg -C Thing-pkg-unboxed
 # Hop 2: Payload is cpio, optionally gzip'd — naming and compression both vary.
 #   - 7z may extract the payload as "Payload~" (with tilde), not "Payload".
 #   - Some pkgs (e.g. Microsoft Office) ship raw cpio, others gzip-wrap it.
-cd Thing-unboxed
+cd Thing-pkg-unboxed
 PAYLOAD=$(find . -maxdepth 1 -iname "Payload*" -type f | head -1)
 case "$(file "$PAYLOAD")" in
   *gzip*) gunzip -c "$PAYLOAD" | cpio -idmv ;;

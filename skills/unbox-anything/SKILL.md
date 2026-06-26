@@ -18,7 +18,7 @@ These exist because unpacking unknown files can be dangerous. An `.exe` you unpa
 1. **Extract only. Never execute.** Never run, `source`, `open`, or double-click anything inside the extracted directory. Binaries (`.exe`, `.dll`, `.so`, `.dylib`, `.app`, scripts) are extracted as *bytes for inspection*, never launched. If a downstream task needs to run them, that is a separate human-approved step.
 2. **Mount disk images read-only and quietly.** For `.dmg`/`.iso` on macOS, always pass `-nobrowse -readonly` to `hdiutil` so Finder does not auto-open and trigger preview handlers. Unmount immediately after copying files out.
 3. **Detect encryption before extracting.** Run `7z l -slt <file>` first; if the output shows `Encrypted = +`, stop and report — do not let `7z` hang waiting on a password prompt. Ask the user for the password explicitly or skip.
-4. **Always extract into a fresh directory.** Output to `<filename>-unboxed/` (suffix, never overwrite). Never extract into `.` or an existing populated dir — `7z`/`unar` will silently clobber.
+4. **Always extract into a fresh directory.** Output to `<outname>-unboxed/` (suffix, never overwrite). Never extract into `.` or an existing populated dir — `7z`/`unar` will silently clobber.
 5. **One source of truth per run.** Do not pipeline two different tools on the same source simultaneously; finish one extraction, verify, then recurse.
 
 ## Prerequisites
@@ -80,7 +80,14 @@ This belongs in Step 3 rather than only in the Iron Rules, because an agent foll
 
 ### Step 4 — Extract
 
-Extract into a fresh `<basename>-unboxed/` directory, where `<basename>` is the filename **with its final extension removed** (`app-1.2.3.exe` → `app-1.2.3-unboxed/`; `report.docx` → `report-unboxed/`). Never extract into `.` or an existing populated directory. The exact command is in each category's workflow below. Always pass `-y` (assume yes) so the agent does not hang on a prompt, and quote paths that may contain spaces or CJK characters.
+Extract into a fresh `<outname>-unboxed/` directory. `<outname>` is the input file's **full name including its extension**, with every `.` replaced by `-` (hyphen). Keeping the extension (as `-docx`, `-exe`) records what type of container was unpacked; dots become hyphens so the directory name has no ambiguous extension separators.
+
+| Input file | `<outname>` | Output dir |
+|------------|-------------|------------|
+| `report.docx` | `report-docx` | `report-docx-unboxed/` |
+| `有道云笔记-8.2.70-x64.exe` | `有道云笔记-8-2-70-x64-exe` | `有道云笔记-8-2-70-x64-exe-unboxed/` |
+
+Never extract into `.` or an existing populated directory. The exact command is in each category's workflow below. Always pass `-y` (assume yes) so the agent does not hang on a prompt, and quote paths that may contain spaces or CJK characters.
 
 ### Step 5 — Scan for nested containers and recurse
 
@@ -96,7 +103,7 @@ Recursion is how an Electron installer becomes source code: `setup.exe` (categor
 
 ### Step 6 — Write the manifest
 
-After the top-level extraction and any recursion completes, write `<basename>-unboxed/README.md` recording:
+After the top-level extraction and any recursion completes, write `<outname>-unboxed/README.md` recording:
 
 - Source file: name, size, detected type (`file` output), SHA-256.
 - Extraction chain: a tree of every tool invoked and the directory it produced (so a reader can reproduce the chain by hand).
@@ -131,20 +138,20 @@ Formats not listed here (`.snap`, `.AppImage`, encrypted/packed malware like UPX
 ### A. Standard archive (`zip`, `7z`, `tar*`, `gz`, `rar`, …)
 
 ```bash
-7z x "<input>" -o"<basename>-unboxed" -y
+7z x "<input>" -o"<outname>-unboxed" -y
 # For .rar without unar installed, install it first:
 #   brew install unar  /  sudo apt install unar
-unar "<input>" -o "<basename>-unboxed"
+unar "<input>" -o "<outname>-unboxed"
 ```
 
-`bsdtar` (macOS default `tar`) is a zero-dependency alternative for tar/zip/zst on Mac when 7z is unavailable: `bsdtar -xf "<input>" -C "<basename>-unboxed"`.
+`bsdtar` (macOS default `tar`) is a zero-dependency alternative for tar/zip/zst on Mac when 7z is unavailable: `bsdtar -xf "<input>" -C "<outname>-unboxed"`.
 
 ### B. ZIP container (`docx`, `xlsx`, `apk`, `jar`, `whl`, …)
 
 Identical command to A — they are all ZIP. After extraction, note in the manifest that structured content is available for downstream reading: OOXML exposes `word/document.xml`, `xl/sharedStrings.xml`, etc.; `.apk`/`.jar` expose `AndroidManifest.xml` / `META-INF/MANIFEST.MF`; `.whl` exposes `METADATA` and the package source.
 
 ```bash
-7z x "<input>" -o"<basename>-unboxed" -y
+7z x "<input>" -o"<outname>-unboxed" -y
 ```
 
 ### C. System package (`deb`, `rpm`, `msi`, `cab`)
@@ -152,7 +159,7 @@ Identical command to A — they are all ZIP. After extraction, note in the manif
 `7z` treats all four as archives and extracts their payload. For `.deb` on Linux, `dpkg-deb -x` is the native tool; for `.rpm`, `rpm2cpio <file> | cpio -idmv`. Prefer the native tool when on the matching platform, fall back to `7z` elsewhere.
 
 ```bash
-7z x "<input>" -o"<basename>-unboxed" -y
+7z x "<input>" -o"<outname>-unboxed" -y
 ```
 
 ### D. Installer / disk image (NSIS `exe`, Inno `exe`, `dmg`, `iso`)
@@ -161,24 +168,24 @@ These need format-specific handling because their headers differ.
 
 **NSIS installer** (the most common `.exe` installer; detected by `file` reporting "Nullsoft Installation"):
 ```bash
-7z x "<input>" -o"<basename>-unboxed" -y
+7z x "<input>" -o"<outname>-unboxed" -y
 # The payload is usually in $PLUGINSDIR/app-*.7z — recurse on it in step 5.
 ```
 
 **Inno Setup installer** (detected by "Inno Setup" in `file` output, or magic bytes):
 ```bash
-innoextract -d "<basename>-unboxed" "<input>"
+innoextract -d "<outname>-unboxed" "<input>"
 ```
 
 **`.dmg` on macOS** (always `-nobrowse -readonly`, mount-then-copy-then-unmount):
 ```bash
 hdiutil attach "<input>" -nobrowse -readonly -mountpoint /tmp/unbox-dmg-$$
-cp -R /tmp/unbox-dmg-$$/* "<basename>-unboxed"/ 2>/dev/null
+cp -R /tmp/unbox-dmg-$$/* "<outname>-unboxed"/ 2>/dev/null
 hdiutil detach /tmp/unbox-dmg-$$
 ```
 On Linux/Windows, `7z` can read many DMGs but not all (UDZO vs UDIF): try `7z x`, and if it fails, tell the user DMG extraction on their platform is unreliable for this file.
 
-**`.iso`**: `7z x "<input>" -o"<basename>-unboxed" -y` (or `bsdtar -xf` on macOS).
+**`.iso`**: `7z x "<input>" -o"<outname>-unboxed" -y` (or `bsdtar -xf` on macOS).
 
 ### E. Chain / nested (`.pkg`, `.asar`, and anything step 5 finds)
 
@@ -186,8 +193,8 @@ Two sub-types:
 
 **`.pkg` (macOS installer)** — `xar` archive containing a `Payload` file (a cpio archive, optionally gzip'd):
 ```bash
-7z x "<input>" -o"<basename>-unboxed" -y          # or: xar -xf "<input>" -C "<basename>-unboxed"
-cd "<basename>-unboxed"
+7z x "<input>" -o"<outname>-unboxed" -y          # or: xar -xf "<input>" -C "<outname>-unboxed"
+cd "<outname>-unboxed"
 # Payload naming + compression both vary across pkgs — do not hardcode.
 # 7z sometimes renames it "Payload~"; some pkgs gzip it, some ship raw cpio.
 PAYLOAD=$(find . -maxdepth 1 -iname "Payload*" -type f | head -1)
@@ -200,7 +207,7 @@ esac
 
 **`.asar` (Electron bundle)** — reached almost always via recursion from an Electron installer (NSIS exe → app-*.7z → app.asar):
 ```bash
-npx @electron/asar extract "<input>" "<basename>-unboxed"
+npx @electron/asar extract "<input>" "<outname>-unboxed"
 ```
 
 For any *other* nested container found in step 5, just re-run the whole workflow (steps 1–6) on it.
