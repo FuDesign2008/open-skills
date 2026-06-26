@@ -4,7 +4,7 @@
 > 
 > 变更 skill 后：commit 时 pre-commit hook 自动更新；或手动执行 `node scripts/gen-skill-docs.mjs`
 
-本仓库当前共 **24** 个 skill。
+本仓库当前共 **25** 个 skill。
 
 | Skill | 版本 | 用户可唤起 | 描述（含触发条件） |
 | --- | --- | --- | --- |
@@ -31,6 +31,7 @@
 | **test-guide-from-code** | 1.1.0 | 是 | Generate a manual test guide for human testers from code changes (diff, commit, MR/PR). Triggers when user says 「生成测试指南」「测试指南」「人工测试指南」「测试指引」「test guide」「根据代码生成测试」「从 MR 生成测试指南」「从 PR 生成测试指南」 (generate test guide / manual test guide / test guide from code / from MR / from PR), or provides a diff/MR/PR link and asks for a test guide. |
 | **think-big** | 1.0.0 | 是 | Strategic thinking framework — analyze whether something is worth doing, what the risks are, and what the long-term impact will be. Use when user says 「战略思考」「战略分析」「从战略角度看」「战略视角」「帮我想清楚这件事」「这件事值不值得做」「从更高视角分析」 / think-big, strategic thinking, strategy. Not for execution-level planning (that's tactical). |
 | **typescript-check** | 1.0.0 | 是 | TypeScript type-checking workflow. Use this skill whenever the user works with TypeScript and mentions type errors, type checking, or says "类型检查" (type check), "type-check", "tsc", "检查类型" — even if they don't explicitly ask for a "type check" but are encountering compilation or type issues in a TypeScript project. |
+| **unbox-anything** | 1.0.0 | 是 | Universal file/container unpacker for AI agents. Use whenever the user has a specific named file that is secretly a container of other files (an .exe installer, .docx document, .apk app, .asar Electron bundle, .dmg disk image, .deb/.rpm package, .jar/.war, .iso, .pkg, .whl, or any archive) and wants to extract or inspect its inner contents — even when they don't say 'unbox' explicitly. Cracks ~30 'box-like' formats into clean directories with a structured manifest: standard archives (zip/tar/7z/rar/zst/lz4), ZIP containers (docx/xlsx/pptx/jar/war/apk/ipa/whl), system packages (deb/rpm/msi/cab), installers & disk images (NSIS exe/Inno Setup/dmg/iso/pkg), and chained nested containers (exe→7z→asar, pkg→xar→cpio). Cross-platform (mac/linux/windows) via 7z as primary tool with graceful fallbacks. Triggers: 「拆箱」「开箱」「解压文件」「拆包」「解压任意文件」「提取容器内容」「拆开[文件]」「看[文件]里面」 / unbox, unpack any file, extract container, what's inside this file. Do NOT use for: writing extraction code/scripts, creating or editing Office documents, installing software, comparing archive formats, or merging files — those are different tasks. |
 | **xquik-social-data** | 1.0.0 | 是 | Use when 用户需要从 Xquik 获取公开 X/Twitter 数据、搜索推文、查账号、看趋势、导出样本、整理社媒证据，或说 xquik、Xquik、X/Twitter data、tweet search、social evidence、社媒证据、推文搜索。 |
 
 ---
