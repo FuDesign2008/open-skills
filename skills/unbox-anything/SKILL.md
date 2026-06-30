@@ -85,7 +85,7 @@ Extract into a fresh `<outname>-unboxed/` directory. `<outname>` is the input fi
 | Input file | `<outname>` | Output dir |
 |------------|-------------|------------|
 | `report.docx` | `report-docx` | `report-docx-unboxed/` |
-| `有道云笔记-8.2.70-x64.exe` | `有道云笔记-8-2-70-x64-exe` | `有道云笔记-8-2-70-x64-exe-unboxed/` |
+| `App-1.2.3-x64.exe` | `App-1-2-3-x64-exe` | `App-1-2-3-x64-exe-unboxed/` |
 
 Never extract into `.` or an existing populated directory. The exact command is in each category's workflow below. Always pass `-y` (assume yes) so the agent does not hang on a prompt, and quote paths that may contain spaces or CJK characters.
 

@@ -179,7 +179,7 @@ The two famous chains that motivated this skill. Reproduce them by hand if recur
 
 ### Electron installer → JS source
 
-The inspiration case (a Youdao Cloud Note installer). Four hops:
+The inspiration case (an Electron app installer). Four hops:
 
 ```bash
 # Hop 1: NSIS exe → inner payload
