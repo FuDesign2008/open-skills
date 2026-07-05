@@ -1,6 +1,6 @@
 ---
 name: git-release-finish
-version: "1.3.0"
+version: "1.4.0"
 user-invocable: true
 description: "Use when releasing a Git repository version — tagging, merging release branches into main, resolving conflicts, or syncing changes between release branches. Handles ambiguous tag naming (v-prefix vs plain), unknown main branch (master/main/develop), cross-release hash-sensitive rebase, and MR/PR extra file cleanup. GitLab, GitHub, Gitea; single or multi-repo. Triggers: 发版, 打tag, 发布版本, 版本发布, release流程, git-release, multi-repo release."
 ---
@@ -66,6 +66,7 @@ description: "Use when releasing a Git repository version — tagging, merging r
 
 | 阶段 | 操作 | 关键工具 |
 |------|------|---------|
+| **0** | **前置健康检查（残留冲突标记扫描）** | **`git grep` + `git log -S`** |
 | 1 | 分析各仓库 tag 命名规范 | `git tag` |
 | 2 | 创建并推送 tag | `git tag` + `git push` |
 | 3 | 分析各仓库主开发分支 | `git remote show` + `git log` |
@@ -74,7 +75,7 @@ description: "Use when releasing a Git repository version — tagging, merging r
 | 5.5 | 验证 MR 可合并性（merge-tree=0 后强制执行） | `glab mr view` / `gh pr view` |
 | 6 | 解决冲突（有则处理） | `git-conflict-resolve` skill |
 | 7 | 清理 MR/PR 分支多余文件 | `git ls-tree` + `comm` |
-| 8 | AI 审查冲突文件（门控） | `git diff` + `grep` |
+| 8 | **独立残留扫描门控（无条件执行）** | `git grep` + 精确正则 |
 | 9 | 合并 MR/PR | `<GIT_CLI> mr/pr merge` |
 | 10 | 输出报告 | — |
 
@@ -82,14 +83,61 @@ description: "Use when releasing a Git repository version — tagging, merging r
 
 ### 执行路径
 
-根据阶段 5 / 5.5 的结果，阶段 6–8 按以下路径选择执行：
+根据阶段 5 / 5.5 的结果，阶段 6–7 按以下路径选择执行。**阶段 0 和阶段 8 在所有路径中无条件执行**——阶段 0 是前置保险，阶段 8 是合并前最终门控，两者不依赖冲突检测结果。
 
 | 情况 | 执行路径 |
 |------|---------|
-| merge-tree=0 且 MR 可合并 | 1→2→3→4→5→**5.5**→**9**→10（跳过 6/7/8） |
-| merge-tree=0 但 MR 不可合并 | 1→2→3→4→5→**5.5**→**6(rebase)**→**8**→**9**→10（跳过 7） |
-| 冲突 > 0，source ≤ 3 commits 且冲突 ≤ 1 文件 | 1→2→3→4→5→**6(rebase)**→**8**→**9**→10（跳过 7） |
-| 冲突 > 0，其余情况 | 1→2→3→4→5→**6(merge)**→**7**→**8**→**9**→10 |
+| merge-tree=0 且 MR 可合并 | **0**→1→2→3→4→5→**5.5**→**8**→**9**→10（跳过 6/7） |
+| merge-tree=0 但 MR 不可合并 | **0**→1→2→3→4→5→**5.5**→**6(rebase)**→**8**→**9**→10（跳过 7） |
+| 冲突 > 0，source ≤ 3 commits 且冲突 ≤ 1 文件 | **0**→1→2→3→4→5→**6(rebase)**→**8**→**9**→10（跳过 7） |
+| 冲突 > 0，其余情况 | **0**→1→2→3→4→5→**6(merge)**→**7**→**8**→**9**→10 |
+
+> ⚠️ **阶段 8 不再是"AI 审查冲突文件"（仅阶段 6 后触发），而是独立的残留扫描门控**。无论阶段 5 是否检测到冲突、阶段 6 是否执行，合并 MR 前都必须通过阶段 8 的残留冲突标记扫描。这覆盖了"分支已有 merge commit 残留冲突标记但 merge-tree 未检测到新冲突"的场景。
+
+---
+
+## 阶段0：前置健康检查（残留冲突标记扫描）
+
+> ⚠️ **无条件执行**——在阶段 1（tag 分析）之前对每个仓库运行。这是防御历史残留的第一道保险：如果工作区或最近的 commit 中已有冲突标记残留，必须先清理再发版，否则残留会随 merge 进入主干。
+
+### 为什么需要前置检查
+
+阶段 5 的 `git merge-tree` 只检测**未来合并时的新冲突**，对**分支已有 commit 中残留的冲突标记**无感知。如果 merge-release 分支的某个历史 commit 已经包含了带冲突标记的文件（常见于 AI 自动解冲突失败但 commit 推送了的场景），merge-tree 不会报错，阶段 8 旧版本也不会触发（因为它依赖阶段 5/6 触发），最终残留标记随合并进入主干。
+
+### 检测命令
+
+**L4a — 工作区残留扫描**：
+
+```bash
+# 精确正则匹配 git 冲突标记格式（行首 7+ 字符 + 空格/行尾）
+# 覆盖标准 7 字符、非标准 8+ 字符、diff3 的 ||||||| base 标记
+# git grep 自动遵循 .gitignore，排除 untracked 构建产物
+git grep -lE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' 2>/dev/null
+```
+
+**L4b — 历史 merge commit 残留扫描**（pickaxe 搜索）：
+
+```bash
+# 搜索最近 30 天的 merge commits 是否引入了冲突标记
+# -S + --pickaxe-regex 搜索 commit diff 内容
+git log --all --merges --since="30 days ago" \
+  -S'^<<<<<<< ' --pickaxe-regex \
+  --format="COMMIT: %h %s" --name-only 2>/dev/null
+```
+
+### 结果判定
+
+| 检测结果 | 处理 |
+|---------|------|
+| L4a 和 L4b 均为空 | ✅ 健康状态，进入阶段 1 |
+| L4a 非空（工作区有残留） | ❌ **中止发版**。在工作区清理残留文件（手动解决或 checkout 干净版本）后重新执行 |
+| L4b 非空（历史 commit 有残留） | ❌ **中止发版**。在对应 commit 上修复残留（或新建 fixup commit 清理）后重新执行 |
+
+> ⚠️ **禁止"先发版后清理"**：残留冲突标记进入主干后，下游 CI/CD 可能基于错误内容构建。必须在发版前彻底清理。
+
+### 共享检测协议
+
+本阶段使用的冲突标记检测正则与 `git-conflict-resolve` Y.4.5/Y.5/Y.6 保持一致。精确正则 `^<{7,} |^={7,}$|^>{7,} |^\|{7,} ` 锁定 git 冲突标记格式，排除 CSS 注释（`/* ====== */`）和 ASCII 艺术等假阳性。
 
 ---
 
@@ -480,22 +528,33 @@ comm -23 \
 
 ---
 
-## 阶段8：AI 审查冲突文件（门控）
+## 阶段8：独立残留扫描门控（无条件执行）
 
-> ⚠️ **门控阶段**：审查不通过 → 禁止进入阶段 9 合并。必须逐文件审查，确认所有冲突处理正确后才能合并 MR/PR。
+> ⚠️ **无条件门控**：无论阶段 5 是否检测到冲突、阶段 6 是否执行，合并 MR 前都必须通过阶段 8。这是合并前的最后一道防线——即使 `git-conflict-resolve` 的 L1/L2 防御都失效，阶段 8 仍能拦截带冲突标记的 commit。
 
-冲突解决后、合并前，AI 需主动审查所有冲突文件，确保合并结果完整且正确。
+### 8.1 残留冲突标记扫描（L3 防御 — 必执行）
 
-### 8.1 无残留冲突标记
+扫描合并分支相对 target 的所有变更文件，检测残留冲突标记。
 
-扫描工作区，确认无遗留的 `<<<<<<` / `======` / `>>>>>>` 标记：
+> **为什么扫描范围是 `git diff --name-only` 而非全仓**：全仓扫描会被构建产物的 CSS 注释 `=========` 等假阳性淹没。只扫合并涉及的文件——这是唯一可能残留标记的位置。
 
 ```bash
-grep -rn "<<<<<<< \|=======\|>>>>>>>" --include="*" . 2>/dev/null | grep -v node_modules | grep -v .git
-# 输出应为空
+# 精确正则：匹配 git 冲突标记格式（行首 7+ 字符 + 空格/行尾）
+# 覆盖标准 7 字符、非标准 8+ 字符、diff3 的 ||||||| base 标记
+# git grep 自动遵循 .gitignore，排除 untracked 构建产物
+BASE=$(git merge-base origin/<MAIN_BRANCH> HEAD)
+git diff --name-only $BASE..HEAD | while read f; do
+  git grep -nE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' -- "$f" 2>/dev/null \
+    && { echo "❌ $f 含残留冲突标记，禁止合并"; exit 1; }
+done
+# exit 1 → 阻断合并，回到阶段 6 修复后重新审查
 ```
 
-### 8.2 冲突文件 diff 审查
+> ⚠️ **精确正则排除假阳性**：`^={7,}$` 要求纯等号到行尾，CSS 注释 `/* ====== */` 不匹配（等号后有 `*/`）。`^<{7,} ` 要求 7+ 个 `<` 后跟空格，排除普通代码中的 `<` 操作符。
+
+### 8.2 冲突文件 diff 审查（仅阶段 6 执行时增强）
+
+> 本节仅在阶段 6 执行了冲突解决时适用。若阶段 5 未检测到冲突（跳过了 6），8.1 通过后直接进入阶段 9。
 
 对阶段 5 记录的每个冲突文件，执行 diff 审查：
 
@@ -530,24 +589,24 @@ diff <(git show <SKIPPED_SHA> --format=) <(git show <TARGET_SHA> --format=)
 
 | 结论 | 判定 | 后续 |
 |------|------|------|
-| ✅ 通过 | 全部检查项无 ❌，⚠️ 不超过 2 个且均有合理解释 | 进入阶段 9 合并 |
-| ❌ 不通过 | 任一项为 ❌ | **禁止合并**，回到阶段 6 修复后重新审查 |
+| ✅ 通过 | 8.1 无残留标记 + 8.2/8.3（若执行）全部检查项无 ❌ | 进入阶段 9 合并 |
+| ❌ 不通过 | 8.1 检测到残留标记，或 8.2/8.3 任一项为 ❌ | **禁止合并**，回到阶段 6 修复后重新审查 |
 
 ### 审查报告输出
 
-对每个冲突文件输出一份审查结论：
-
 ```
-【冲突文件审查报告】
-- .gitignore: ✅ 8.2.70 的 .omc/.sisyphus 改动叠加在 master 之上，无残留标记，两侧均有
-- release-branch: ✅ 已解决为 release/8.2.70
-- src/bridge/api/MainProcessAPI.ts: ✅ registerResourceInterceptors(8.2.61) + selectCollectFolder(8.2.70) 均完整保留
-- skipped commit 7437368df: ✅ 与 master 7421ca91b diff 一致
+【残留扫描报告】
+- 8.1 残留标记扫描：✅ 合并涉及 42 个文件，无残留冲突标记
+- 8.2 冲突文件 diff 审查（若执行）：
+  - .gitignore: ✅ 8.2.70 的 .omc/.sisyphus 改动叠加在 master 之上
+  - src/bridge/api/MainProcessAPI.ts: ✅ 两侧新函数均完整保留
+- 8.3 rebase 跳过 commit（若执行）：
+  - skipped commit 7437368df: ✅ 与 master 7421ca91b diff 一致
 
 结论：✅ 通过，可进入阶段 9 合并
 ```
 
-> ⛔ **门控**：审查结论为 ❌ 时，**不得继续执行阶段 9**。修复冲突后必须重新通过阶段 8 审查。
+> ⛔ **门控**：8.1 检测到残留冲突标记时，**不得继续执行阶段 9**。修复后必须重新通过阶段 8 扫描。
 
 ---
 
@@ -717,8 +776,50 @@ diff <(git show <SKIPPED_SHA> --format=) <(git show <TARGET_SHA> --format=)
 # 跨 release 同步：检查 release/A 合入主分支方式
 git log origin/<MAIN_BRANCH> --oneline --merges | grep "release/A"
 
-# AI 审查冲突文件（阶段8）
-grep -rn "<<<<<<< \|=======\|>>>>>>>" --include="*" . | grep -v node_modules | grep -v .git
-git diff origin/<MAIN_BRANCH>..HEAD -- <conflict_file>
+# ── 阶段0 前置健康检查 ──
+# 工作区残留扫描（精确正则 + git grep）
+git grep -lE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' 2>/dev/null
+# 历史 merge commit 残留扫描（pickaxe）
+git log --all --merges --since="30 days ago" \
+  -S'^<<<<<<< ' --pickaxe-regex --format="%h %s" 2>/dev/null
+
+# ── 阶段8 独立残留扫描门控（无条件执行） ──
+BASE=$(git merge-base origin/<MAIN_BRANCH> HEAD)
+git diff --name-only $BASE..HEAD | while read f; do
+  git grep -nE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' -- "$f" 2>/dev/null && echo "❌ $f"
+done
+git diff origin/<MAIN_BRANCH>..HEAD -- <conflict_file>  # diff 审查（若阶段6执行了）
 ```
+
+---
+
+## 附录：pre-commit hook 脚本（L5 可选增强）
+
+> **持续防护**：将此脚本安装到 `.git/hooks/pre-commit`，每次 `git commit` 都自动检测 staged 内容的冲突标记。不依赖任何 skill 执行——这是 git 原生 hook，安装后永久生效。
+>
+> **与 skill 的关系**：skill 的 L1-L4 防御在 skill 执行时触发；pre-commit hook 在**任何 commit 操作**时触发（包括手动 commit、其他 skill 的 commit）。两者互补，不冲突。
+
+### 安装
+
+```bash
+# 保存到项目的 .git/hooks/pre-commit
+cat > .git/hooks/pre-commit << 'HOOK'
+#!/bin/bash
+# 检测 staged 内容中的 git 冲突标记
+# 精确正则匹配：行首 7+ 字符 + 空格/行尾
+git diff --cached | grep -qE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' \
+  && {
+    echo "❌ pre-commit: staged 内容含冲突标记，禁止提交"
+    echo "请先解决冲突标记后再 commit"
+    exit 1
+  } || exit 0
+HOOK
+chmod +x .git/hooks/pre-commit
+```
+
+### 注意事项
+
+- hook 可被 `git commit --no-verify` 绕过——L5 是可选增强，L1-L4 不依赖它
+- 若项目已有 pre-commit hook（如 lint），将冲突标记检测追加到现有 hook 末尾
+- hook 内容与 `git-conflict-resolve` Y.6 门控、`git-release-finish` 阶段 8 扫描使用相同的精确正则，保持一致性
 
