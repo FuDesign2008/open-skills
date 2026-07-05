@@ -1,90 +1,145 @@
 ---
 name: browser-debug-toolkit
-version: "1.0.0"
+version: "1.1.0"
 user-invocable: true
-description: "浏览器运行时调试工具箱——在调试 UI/CSS/DOM 布局、前端交互、渲染性能等问题时，引导优先使用浏览器 DevTools、CDP 协议工具（chrome-devtools-connect）、Playwright 等运行时分析手段，而非仅依赖静态代码分析。触发词：「浏览器调试」「UI 调试」「DOM 检查」「CSS 调试」「页面布局问题」「前端运行时调试」「chrome devtools」「CDP 调试」 / browser debug, devtools, dom inspect, css debug, runtime debugging"
+description: "Browser runtime debugging toolkit — guides AI to prioritize browser DevTools, CDP-based MCP tools (chrome-devtools-mcp), and Playwright for runtime inspection when debugging UI/CSS/DOM layout, frontend interaction, and rendering issues, rather than relying solely on static code analysis. Triggers: 「浏览器调试」「UI 调试」「DOM 检查」「CSS 调试」「页面布局问题」「前端运行时调试」「chrome devtools」「CDP 调试」 / browser debug, devtools, dom inspect, css debug, runtime debugging"
 ---
 
-# 浏览器运行时调试工具箱（browser-debug-toolkit）
+# Browser Runtime Debugging Toolkit
 
 ## Overview
 
-UI/CSS/DOM 布局问题的根因往往在运行时才显现——DOM 结构动态生成、CSS 优先级冲突、布局计算异常。静态代码分析（Read/Grep）和打点调试（console.log）有边界：无法观测渲染后的 DOM 树、计算后的 CSS 属性、布局盒模型。
+UI/CSS/DOM layout issues often have root causes that only manifest at runtime — dynamically generated DOM structures, CSS specificity conflicts, layout calculation anomalies. Static code analysis (Read/Grep) and console-based debugging (console.log) have a fundamental limitation: they cannot observe the rendered DOM tree, computed CSS properties, or box model geometry.
 
-本 skill 提供「场景 → 工具」决策表和各工具的使用引导，作为 `solve-workflow`、`debug-workflow` 等工作流 skill 的增强能力。被这些工作流的环境能力探索机制发现后，在 UI 调试场景自动引导调用。
+This skill provides a scene-to-tool decision table and usage guides for each tool. It serves as an enhancement capability for workflow skills like `solve-workflow` and `debug-workflow` — invoked automatically through their environment capability discovery mechanism when UI debugging scenarios are detected.
 
-## 场景 → 工具决策表
+## Prerequisites
 
-| 问题场景 | 首选工具 | 次选工具 | 关键能力 |
-|---------|---------|---------|---------|
-| DOM 结构异常（元素缺失/层级错误） | chrome-devtools-connect / DevTools Elements | playwright screenshot | 实时 DOM 树浏览、元素选中、属性检查 |
-| CSS 样式不生效 / 优先级冲突 | DevTools Elements → Styles | — | 计算后样式、覆盖链、盒模型 |
-| 布局偏移 / 盒模型异常 | DevTools Elements → Computed/Layout | — | 盒模型可视化、flex/grid 网格线 |
-| 交互行为异常（点击无响应等） | DevTools Console + Event Listeners | playwright click + screenshot | 事件监听器检查、JS 运行时错误 |
-| 渲染性能（卡顿/掉帧） | DevTools Performance 面板 | `frontend-perf` skill | 火焰图、Long Tasks、渲染统计 |
-| 视觉回归（样式被覆盖） | `visual-qa` skill | playwright screenshot | 截图对比、设计审查 |
-| 异步加载 / 网络问题 | DevTools Network 面板 | — | 请求/响应、瀑布图、状态码 |
-| 状态管理异常（React/Vue） | React/Vue DevTools | — | 组件树、props/state、时间旅行 |
+### Step 1: Check MCP Availability
 
-## 工具使用引导
+Before using browser debugging tools, check if `chrome-devtools-mcp` (sometimes called chrome-devtools-connect) is available:
 
-### chrome-devtools-connect（MCP 工具）
+| Platform | Check Method |
+|----------|-------------|
+| Claude Code | Run `claude mcp list` and look for "chrome-devtools" |
+| OpenCode | Check available tools, or `cat ~/.config/opencode/opencode.json` |
+| Cursor | Settings → MCP → view server list |
 
-> 类型：MCP server（通过 CDP 协议连接浏览器） / 可用性：环境相关（需配置 MCP server）
+### Step 2: If MCP Is Missing — Adaptive Choice
 
-**何时使用**：需要实时检查页面 DOM、CSS、网络、控制台——AI 可直接操作 DevTools，无需人工切换。
+When chrome-devtools-mcp is not available, present the user with three options:
 
-**核心能力**：DOM 检查（querySelector、计算样式、元素属性）、CSS 调试（匹配规则、覆盖链、盒模型）、Console（执行 JS、读取输出）、Network（请求/响应检查）、Screenshot（页面或元素截图）。
+**Option A: Auto-install (Recommended)**
 
-**使用模式**：探索到 MCP 可用时，在工作流的阶段 1.2（技术分析）中连接浏览器 → 检查目标元素的 DOM 结构和计算样式 → 对比预期 vs 实际锚定根因；在阶段 6（检查验证）中验证修复后的效果。
+The AI runs the installation command directly for the detected platform:
 
-> ⚠️ MCP 工具是环境能力——不一定所有环境都有。探索到时优先使用，未探索到时降级为引导用户手动打开浏览器 DevTools。
+| Platform | Install Command |
+|----------|----------------|
+| Claude Code | `claude mcp add chrome-devtools --scope user npx chrome-devtools-mcp@latest` |
+| OpenCode | Add MCP config to `~/.config/opencode/opencode.json` |
+| Cursor | Use "Install in Cursor" button from [official README](https://github.com/ChromeDevTools/chrome-devtools-mcp), or manually add to MCP settings |
 
-### playwright / webapp-testing（skill）
+After installation, restart the AI tool to load the MCP server.
 
-> 类型：skill（浏览器自动化） / 可用性：OpenCode 内置 playwright；user skill webapp-testing
+**Option B: Manual Install**
 
-**何时使用**：需要自动化复现交互（点击、输入、导航）、截图对比、端到端验证。
+Provide the exact commands (same as Option A) for the user to copy-paste and run themselves. Wait for user confirmation before proceeding.
 
-**与 chrome-devtools-connect 的区别**：playwright 偏向**自动化操作**（脚本驱动、批量验证）；chrome-devtools-connect 偏向**实时检查**（交互式调试、即时反馈）。
+**Option C: Skip — Use Manual DevTools**
 
-### visual-qa（skill）
+Fallback: guide the user to open browser DevTools manually (F12) and inspect elements by hand. Slower than MCP but requires no setup.
 
-> 类型：skill（视觉质量保证） / 可用性：shared/opencode skill
+### Step 3: Environment Prerequisites
 
-**何时使用**：需要截图对比、设计审查、视觉回归验证。特别适合「修复前后对比」场景。
+- **Node.js LTS** + npm (required by chrome-devtools-mcp)
+- **Chrome browser** (stable version; Google Chrome or Chrome for Testing)
 
-### 框架 DevTools（浏览器扩展）
+### Step 4: Verify Installation
 
-| 框架 | DevTools | 核心能力 |
-|------|---------|---------|
-| React | React DevTools | 组件树、props/state、Profiler 时间轴 |
-| Vue | Vue DevTools | 组件树、Vuex/Pinia 状态、路由 |
-| Angular | Angular DevTools | 组件树、变更检测、Signal 依赖图 |
+After install/enable, verify the MCP is loaded:
 
-> 框架 DevTools 是浏览器扩展，AI 无法直接操作。引导用户安装并手动检查。
+| Platform | Verification |
+|----------|-------------|
+| Claude Code | `claude mcp list` shows chrome-devtools |
+| OpenCode | Config file contains chrome-devtools entry |
+| Cursor | Settings → MCP shows server with green status |
 
-## 与工作流 skill 的协作
+## Scene → Tool Decision Table
 
-本 skill 被 `solve-workflow`、`debug-workflow` 等工作流的「环境能力探索」机制发现后：
+| Problem Scene | Primary Tool | Secondary Tool | Key Capability |
+|--------------|-------------|---------------|----------------|
+| DOM structure anomaly (missing/wrong elements) | chrome-devtools-mcp / DevTools Elements | playwright screenshot | Live DOM tree, element selection, attribute inspection |
+| CSS not applying / specificity conflict | DevTools Elements → Styles | — | Computed styles, override chain, box model |
+| Layout shift / box model anomaly | DevTools Elements → Computed/Layout | — | Box model visualization, flex/grid guides |
+| Interaction anomaly (click not responding) | DevTools Console + Event Listeners | playwright click + screenshot | Event listener inspection, JS runtime errors |
+| Render performance (jank/frame drops) | DevTools Performance panel | `frontend-perf` skill | Flame chart, Long Tasks, render stats |
+| Visual regression (style overwritten) | `visual-qa` skill | playwright screenshot | Screenshot diff, design review |
+| Async loading / network issues | DevTools Network panel | — | Request/response, waterfall, status codes |
+| State management anomaly (React/Vue) | React/Vue DevTools | — | Component tree, props/state, time travel |
 
-1. **阶段 1.2（技术分析）**：UI/CSS/DOM 问题 → 优先引导使用浏览器工具检查运行时状态
-2. **打点调试前置**：UI 问题时，先用浏览器 DevTools 检查（比 console.log 打点更高效），仍无法定位再打点
-3. **阶段 6（检查验证）**：修复后用浏览器工具验证渲染结果
+## Tool Usage Guides
 
-> 渐进增强原则：本 skill 不替代工作流的核心流程。探索到浏览器工具时引导使用，未探索到时按原有流程执行。
+### chrome-devtools-mcp (MCP Server)
 
-## 快速参考
+> Type: MCP server (Chrome DevTools Protocol) / Availability: Environment-dependent (see Prerequisites)
+
+**When to use**: Real-time inspection of page DOM, CSS, network, and console — AI operates DevTools directly without manual context switching.
+
+**Core capabilities**: DOM inspection (querySelector, computed styles, element attributes), CSS debugging (matched rules, override chain, box model), Console (execute JS, read output), Network (request/response inspection), Screenshot (page or element capture).
+
+**Usage pattern**: When MCP is available, connect to the browser in workflow stage 1.2 (technical analysis) → inspect target element's DOM structure and computed styles → compare expected vs actual to anchor root cause; in stage 6 (verification) validate the fix result.
+
+> Note: If MCP is not installed, see the Prerequisites section above for adaptive setup options (auto-install / manual / skip).
+
+### playwright / webapp-testing (Skill)
+
+> Type: Skill (browser automation) / Availability: OpenCode built-in playwright; user skill webapp-testing
+
+**When to use**: Automated interaction reproduction (click, type, navigate), screenshot comparison, end-to-end verification.
+
+**Difference from chrome-devtools-mcp**: Playwright focuses on **automated operations** (script-driven, batch verification); chrome-devtools-mcp focuses on **real-time inspection** (interactive debugging, instant feedback).
+
+### visual-qa (Skill)
+
+> Type: Skill (visual quality assurance) / Availability: shared/opencode skill
+
+**When to use**: Screenshot comparison, design review, visual regression verification. Especially suited for before/after fix comparison scenarios.
+
+### Framework DevTools (Browser Extensions)
+
+| Framework | DevTools | Core Capability |
+|-----------|---------|----------------|
+| React | React DevTools | Component tree, props/state, Profiler timeline |
+| Vue | Vue DevTools | Component tree, Vuex/Pinia state, routing |
+| Angular | Angular DevTools | Component tree, change detection, Signal dependency graph |
+
+> Framework DevTools are browser extensions that AI cannot operate directly. Guide the user to install and inspect manually.
+
+## Workflow Integration
+
+This skill is discovered by the environment capability exploration mechanism of `solve-workflow`, `debug-workflow`, and similar workflow skills:
+
+1. **Stage 1.2 (Technical Analysis)**: UI/CSS/DOM issues → prioritize browser tools for runtime state inspection
+2. **Before console.log debugging**: For UI issues, inspect with browser DevTools first (more efficient than console.log), then fall back to logging if still unresolved
+3. **Stage 6 (Verification)**: After fix, use browser tools to verify render results
+
+> Progressive enhancement: This skill does not replace the workflow's core process. When browser tools are available, it guides their use; when unavailable, the original process executes unchanged.
+
+## Quick Reference
 
 ```
-场景判断：这个问题是 UI/CSS/DOM 相关吗？
-关键词信号：样式、布局、渲染、显示、可见性、位置、尺寸、颜色、动画
-→ 是 → 优先使用浏览器工具（本 skill 决策表引导）
-→ 否 → 按原有静态分析/打点调试流程
+Scene detection: Is this a UI/CSS/DOM issue?
+Signal keywords: style, layout, render, display, visibility, position, size, color, animation
+→ Yes → Prioritize browser tools (this skill's decision table guides selection)
+→ No → Follow original static analysis / console.log debugging process
 
-工具选择优先级：
-1. chrome-devtools-connect（MCP 可用时）—— 实时检查，AI 直接操作
-2. playwright / webapp-testing —— 自动化操作，截图验证
-3. visual-qa —— 视觉对比，设计审查
-4. 引导用户手动打开 DevTools —— MCP 不可用时的降级方案
+Tool selection priority:
+1. chrome-devtools-mcp (when MCP available) — real-time inspection, AI-operated
+2. playwright / webapp-testing — automated operations, screenshot verification
+3. visual-qa — visual comparison, design review
+4. Guide user to manually open DevTools — fallback when MCP unavailable
+
+MCP prerequisite check:
+→ MCP missing? Present adaptive choice: A=auto-install / B=manual / C=skip
+→ See Prerequisites section for platform-specific commands
 ```
