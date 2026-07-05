@@ -1,617 +1,567 @@
 ---
 name: solve-workflow
-version: "1.9.0"
+version: "2.0.0"
 user-invocable: true
-description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审查方案"、"制定计划"、"执行计划"、"检查验证"、"回顾总结"，或"继续分析"、"深入分析"、"修改方案"、"完善方案"、"优化方案"、"更新计划"、"修订计划"、"修改计划"，或"自动模式"、"自动分析"、"自动解决"时触发。适用于 bug 修复、代码重构、功能开发等需系统性分析的复杂任务。
+description: "当用户说「明确问题」「分析问题」「探索方案」「审查方案」「制定计划」「执行计划」「检查验证」「回顾总结」，或「继续分析」「深入分析」「修改方案」「完善方案」「优化方案」「更新计划」「修订计划」「修改计划」，或「自动模式」「自动分析」「自动解决」时触发。适用于 bug 修复、代码重构、功能开发等需系统性分析的复杂任务。 / Seven-phase PDCA workflow triggered by Chinese phrases like 「分析问题」「执行计划」 or English equivalents."
 ---
 
-# 七阶段问题解决工作流
+# Seven-Phase Problem-Solving Workflow
 
-> 七阶段 PDCA 流程，阶段 1～4 只读不写。默认手动模式，说「自动模式」或「自动分析」进入全流程自动执行。
+> Seven-phase PDCA workflow. Phases 1–4 are read-only. Default is manual mode; say 「自动模式」 / "auto mode" or 「自动分析」 / "auto analyze" to run the full pipeline without confirmation gates.
 >
-> **输出格式参考**：各阶段输出模板见 [reference.md](reference.md)。
+> Output templates for each phase: see [reference.md](reference.md).
 
-## 与戴明环（PDCA）的对应
+## Calling Convention
 
-| PDCA | 阶段 | 说明 |
-|------|------|------|
-| **Plan** | 阶段 1～4 | 分析问题（含明确问题）、探索方案、审查方案、制定计划 |
-| **Do** | 阶段 5 | 执行计划 |
-| **Check** | 阶段 6 | 检查验证 |
-| **Act** | 阶段 7 | 回顾总结与 AI 工程沉淀 |
+- **Default behavior**: When the user input does not contain any trigger phrase, default to Phase 1 (Analyze Problem) and treat the input as the problem statement.
+- **Matching rule**: A trigger phrase contained anywhere in the input counts as a hit; exact match is not required.
+- **Out of scope**: Single-step edits (e.g. renaming a variable) or quick-advice requests may bypass this workflow and be handled directly.
+- **Related skills**: `perf-workflow` (performance-specific analysis), `jira-fix-workflow` (end-to-end Jira fix, built on this workflow).
 
-执行完成后进入阶段 6；若阶段 7 结论为「未达标需再改」，可回到「分析问题」、「探索方案」或「审查方案」开启下一轮循环。
+## Triggers and Modes
 
-## 调用约定
+| Example input | Mode | Description |
+|---------------|------|-------------|
+| 「分析问题」「探索方案」/ "analyze problem" `/solve xxx` | 👤 Manual | Default; user confirms between phases |
+| 「自动分析 xxx」「自动解决 xxx」「自动模式」/ "auto analyze" "auto mode" | 🤖 Auto | Full pipeline runs without confirmation |
 
-- **触发词**（以 description 为准）：明确问题、分析问题、探索方案、审查方案、制定计划、执行计划、检查验证、回顾总结；继续分析、深入分析、修改方案、完善方案、优化方案、更新计划、修订计划、修改计划；自动模式、自动分析、自动解决
-- **命令形式**：`/solve-workflow xxx`、`/solve xxx` 等，`xxx` 为后续内容
-- **默认行为**：当 `xxx` 不包含上述任一触发词时，默认进入阶段 1（分析问题），将 `xxx` 视为待分析的问题描述
-- **匹配规则**：`xxx` 中包含触发词即视为命中，无需精确匹配
-- **不适用场景**：单步修改（如改一个变量名）、用户仅需快速建议而非完整执行流程时，可跳过本工作流直接处理。
+**Mode detection**: If the trigger contains 「自动」 / "auto", enter auto mode; otherwise default to manual mode. The user may switch at any time by saying 「切换自动模式」 / "switch to auto mode" or 「切换手动模式」 / "switch to manual mode". In 👤 manual mode each phase ends with a stop point waiting for user confirmation; in 🤖 auto mode the workflow runs end-to-end and only pauses when Phase 3 review exceeds 3 rounds. Per-phase differences are noted inline as [👤] / [🤖].
 
-**相关 skill**：`perf-workflow`（性能专项分析）、`jira-fix-workflow`（Jira 端到端修复，内置本工作流）
+## Mode Lifecycle
 
-## 触发词与模式
+> Defines how auto mode is entered, sustained, and exited, to prevent "mode stickiness" that causes unnoticed automatic decisions.
 
-| 说法示例 | 模式 | 说明 |
-|---------|------|------|
-| 「分析问题」「探索方案」`/solve xxx` | 👤 手动 | 默认，阶段间需用户确认 |
-| 「自动分析 xxx」「自动解决 xxx」「自动模式」 | 🤖 自动 | 全流程自动执行，无需确认 |
+### Core rule: auto mode always recovers to manual
 
-**模式识别规则**：触发词中含「自动」→ 自动模式；其余默认手动模式。运行中可随时说「切换自动模式」或「切换手动模式」切换。👤 手动各阶段停等用户确认；🤖 自动全程推进，仅阶段3超3轮时暂停。各阶段差异详见各阶段内的 [👤]/[🤖] 说明。
+Auto mode **automatically falls back to manual mode** in any of these cases:
 
-## 模式生命周期
+| Recovery trigger | Description |
+|------------------|-------------|
+| Phase 7 completes normally | Whether closing the loop or starting a new PDCA cycle |
+| Workflow is interrupted for any reason | Failure termination, hard-problem termination, user-initiated stop, user intervention after a review-cap pause |
+| Phase 7 decides to loop back to Phase 2 or 3 | A new PDCA round defaults to manual mode |
 
-> 定义自动模式的进入、持续与退出规则，避免模式粘滞导致用户未察觉的自动决策。
+### Re-entering auto mode
 
-### 核心规则：自动恢复手动
+After recovery to manual, the user must **explicitly trigger** auto mode again:
 
-自动模式在以下情况**自动恢复为手动模式**：
+- Say 「自动 xxx」「自动分析」「自动解决」 / "auto ..." / "auto analyze" / "auto solve"
+- Say 「切换自动模式」 / "switch to auto mode"
 
-| 恢复场景 | 说明 |
-|---------|------|
-| 正常完成阶段 7 | 无论收尾还是决定进入下一轮 PDCA 循环 |
-| 流程被任意中断 | 失败终止、极难终止、用户主动停止、审查超限暂停后用户介入终止 |
-| 阶段 7 决定循环回阶段 2/3 | 新一轮 PDCA 默认手动模式 |
+Implicit continuations (e.g. 「继续」 / "continue", 「再改一下」 / "tweak again", 「深入分析」 / "dig deeper") do **not** reactivate auto mode.
 
-### 重新进入自动模式
+### Batch scenarios
 
-恢复手动后，用户必须**显式触发**才能再次进入自动模式：
-
-- 说「自动 xxx」「自动分析」「自动解决」
-- 说「切换自动模式」
-
-隐式延续（如「继续」「再改一下」「深入分析」）**不会**重新激活自动模式。
-
-### 批量场景
-
-批量编排场景（如 jira-fix-batch、opsx-jira-fix-batch）由编排工具根据用户在批量层面的意图，为每个子调用显式传递模式参数，不受单次恢复规则影响。
+Batch orchestration scenarios (e.g. `jira-fix-batch`, `opsx-jira-fix-batch`) pass the mode parameter explicitly per child invocation based on the user's batch-level intent, and are not subject to the single-invocation recovery rule.
 
 ---
 
-## ⚡ 快速参考（执行前必读，修改阶段时同步更新）
+## ⚡ Quick Reference (read before execution; sync this table when modifying phases)
 
-> 模式生命周期规则见上方「模式生命周期」小节：自动模式完成一轮或中断后自动恢复手动。
+> Mode lifecycle rules: see "Mode Lifecycle" above — auto mode recovers to manual after one round or on interruption.
 
-| 阶段 | 工具权限 | 👤 手动停止点 | 必须输出 |
-|------|---------|-------------|--------|
-| 1.1 明确问题 | ❌ Read/Grep（例外见1.1正文） | ⛔ 输出后停止，等用户确认 | 问题复述／要素／疑问点 |
-| 1.2 技术分析 | ✅ Read/Grep；✅ WebSearch（步骤2.5/3.5/5.5专用）；❌ Edit/Write | 继续进入阶段2 | 存在性结论／根因／影响范围 |
-| 2 探索方案 | ✅ Read；❌ Edit/Write | ⛔ 输出方案表后停止，等用户选择 | 方案对比表（≥2个） |
-| 3 审查方案 | ✅ Read；❌ Edit/Write | ⛔ 审查报告输出后停止，等用户判定 | 审查报告＋通过/不通过 |
-| 4 制定计划 | ✅ Read；❌ Edit/Write/Bash | ⛔ 输出计划后停止，等用户确认 | 文件修改清单＋顺序 |
-| 5 执行计划 | ✅ 全部 | 无坑时自动进入阶段6 | 执行报告 |
-| 6 检查验证 | ✅ Bash；❌ Edit/Write | ⛔ 输出结果后停止，等用户确认 | 检查结果 |
-| 7 回顾总结 | ❌ Edit/Write（除非用户确认写入或进入下一轮） | 结束 / 或循环回阶段2/3 | 改进建议＋沉淀载体 |
+**Global notes**:
+
+- **Stop points**: Unless otherwise noted in the "Manual stop point" column, each phase in manual mode ends with ⛔ — wait for user confirmation before proceeding. Auto mode skips these stop points (only the Phase 3 review cap pauses auto mode).
+- **Enhancement capabilities (🔌)**: If environment capability exploration finds enhancement capabilities (🔍 debug, 🌐 web research, 💡 design, etc.), they are called at the corresponding phase. See "Environment Capability Exploration" for details. Enhancement calls never expand a phase's tool permissions and never block the workflow on failure.
+- **Tool permission abbreviations**: ✅ allowed, ❌ forbidden. "Read/Grep" includes SemanticSearch and equivalent read-only tools.
+
+| Phase | Tool permissions | 👤 Manual stop point | Required output |
+|-------|------------------|----------------------|-----------------|
+| 1.1 Clarify Problem | ❌ Read/Grep (exceptions in 1.1 body) | ⛔ Stop after output, wait for user confirmation | Problem restatement / key elements / questions |
+| 1.2 Technical Analysis | ✅ Read/Grep; ✅ WebSearch (steps 2.5 / 3.5 / 5.5 only); ❌ Edit/Write | Continue to Phase 2 | Existence conclusion / root cause / impact scope |
+| 2 Explore Solutions | ✅ Read; ❌ Edit/Write | ⛔ Stop after solution table, wait for user choice | Solution comparison table (≥2 solutions, or 1 in streamlined path) |
+| 3 Review Solution | ✅ Read; ❌ Edit/Write | ⛔ Stop after review report, wait for user verdict | Review report + pass/fail |
+| 4 Make Plan | ✅ Read; ❌ Edit/Write/Bash | ⛔ Stop after plan output, wait for user confirmation | File change list + ordering |
+| 5 Execute Plan | ✅ All (Edit/Write/Bash); use TodoWrite | Auto-advance to Phase 6 when no blockers | Execution report |
+| 6 Check & Verify | ✅ Bash (test commands); ❌ Edit/Write | ⛔ Stop after result output, wait for user confirmation | Verification result |
+| 7 Review & Summarize | ❌ Edit/Write (unless user confirms a write or a new round) | End / loop back to Phase 2 or 3 | Improvement suggestions + sediment carrier |
 
 ---
 
-## 通用原则
+## General Principles
 
-### 调查优先、证据驱动
+### Investigate before advising
 
-1. **先调查再发言** - 对于不确定的问题，先调查再给出建议或方案；没有调查就没有发言权。
-2. **证据说话** - 尽量以数据、事实和证据说话，避免虚空假设。
+For uncertain problems, investigate first, then advise. No investigation, no recommendation. Back claims with data, facts, and evidence; avoid speculation.
 
-### 主动提问
+### Ask one question at a time
 
-各阶段进行中，若当前信息不足以保证输出质量，每次只提出 **1 个最关键的问题**，待用户回答后再继续（或提下一个问题）。
+Whenever information is insufficient to guarantee output quality, ask **only one most-critical question** at a time. Wait for the answer, then continue (or ask the next question).
 
-**提问格式**：
+**Question format**:
 ```
-[题干（一句话说清问题）]
-- A 选项一
-- B 选项二
+[One-sentence question stem]
+- A option one
+- B option two
 ```
 
-**简答约定**：用户可直接回复「A」「B」等选项字母，AI 解析后继续。
+The user may reply with just `A` or `B`; parse the letter and continue.
 
 ---
 
-## 环境能力探索（跨平台自适应）
+<!-- SYNC-SECTION: environment-capability-exploration -->
+## Environment Capability Exploration (cross-platform self-adaptation)
 
-> 本工作流可在 Claude Code、OpenCode、Cursor 等不同平台运行。每个环境安装的 skill、插件、agent 不同。工作流应**主动探索当前环境中可用的增强能力**，在合适的阶段自动调用，而非仅依赖自身定义的流程。
+> This workflow may run under Claude Code, OpenCode, Cursor, or other platforms. The skills, plugins, and agents installed in each environment differ. The workflow must **actively probe the current environment for available enhancement capabilities** and invoke them at the appropriate phase, rather than relying solely on its own built-in flow.
 
-### 探索时机
+### When to probe
 
-**工作流启动时（进入阶段1之前）**，执行一次环境能力扫描。扫描结果记在会话上下文中，后续阶段直接引用，无需重复扫描。
+**At workflow startup (before entering Phase 1)**, perform one environment capability scan. Record the result in the session context so later phases can reference it without re-scanning.
 
-### 探索方法（跨平台）
+### How to probe (cross-platform)
 
-使用当前平台的 skill 发现能力，检查可用的 skill、agent、插件列表：
+Use the current platform's skill discovery mechanism to inspect the available skill / agent / plugin list:
 
-- **Claude Code / OpenCode**：查看系统提示中的 `<available_items>` 列表，或使用 `skill` 工具列出可用 skill
-- **Cursor**：检查系统提示中注入的 skill 列表
-- **通用降级**：若上述方法均不可用，跳过增强能力探索，按原有流程执行
+- **Claude Code / OpenCode**: Inspect the `<available_items>` list in the system prompt, or call the `skill` tool to list skills.
+- **Cursor**: Inspect the skill list injected into the system prompt.
+- **Generic fallback**: If none of the above is available, skip enhancement exploration and proceed with the native flow.
 
-### 能力类型与阶段映射
+### Capability types and phase mapping
 
-扫描时，按以下能力类型关键词匹配可用 skill/agent 的 name 和 description：
+Match available skill/agent `name` and `description` against these keywords:
 
-| 能力类型 | 匹配关键词 | 对应阶段 | 用途 |
-|---------|-----------|---------|------|
-| 🔍 调试分析 | debug, root-cause, investigate, systematic-debugging | 阶段1（技术分析） | 辅助根因定位、假设驱动调查 |
-| 🌐 Web 调研 | research, web, look up, investigate, web-research | 阶段1.2（步骤 2.5/3.5/5.5） | 外部 web 调研纪律：Step 0 分流 + 4 口诀 + 严格模式 |
-| 💡 方案设计 | brainstorm, design, architect | 阶段2（探索方案） | 辅助多方案生成与对比 |
-| 📋 代码审查 | code-review, review, requesting-review | 阶段3（审查方案） | 辅助方案深度审查 |
-| 📝 计划制定 | plan, writing-plan | 阶段4（制定计划） | 辅助生成结构化执行计划 |
-| ⚡ 代码执行 | execute, executing-plan, subagent, parallel | 阶段5（执行计划） | 多文件修改的批量编排 |
-| 🧪 测试驱动 | test, tdd, test-driven | 阶段5（执行计划） | 先写测试再实现 |
-| 🔧 构建修复 | build-fix, build, linter, type-check | 阶段5（执行计划） | 构建/编译/类型错误修复 |
-| ✅ 完成验证 | verify, verification, complete | 阶段6（检查验证） | 执行后独立验证 |
-| 🎭 浏览器/UI 调试 | browser, devtools, cdp, playwright, screenshot, dom, css, visual-qa | 阶段1.2（技术分析）+ 阶段6（检查验证） | UI/CSS/DOM 问题时优先连接浏览器实时调试（见 `browser-debug-toolkit` skill） |
+| Capability type | Match keywords | Phase | Purpose |
+|------------------|----------------|-------|---------|
+| 🔍 Debug analysis | debug, root-cause, investigate, systematic-debugging | Phase 1.2 (Technical Analysis) | Assists root-cause localization and hypothesis-driven investigation |
+| 🌐 Web research | research, web, look up, investigate, web-research | Phase 1.2 (steps 2.5 / 3.5 / 5.5) | External web research discipline: Step 0 triage + 4 maxims + strict mode |
+| 💡 Solution design | brainstorm, design, architect | Phase 2 (Explore Solutions) | Multi-solution generation and comparison |
+| 📋 Code review | code-review, review, requesting-review | Phase 3 (Review Solution) | Deep solution review |
+| 📝 Plan authoring | plan, writing-plan | Phase 4 (Make Plan) | Structured execution plan generation |
+| ⚡ Code execution | execute, executing-plan, subagent, parallel | Phase 5 (Execute Plan) | Batch orchestration of multi-file changes |
+| 🧪 Test-driven | test, tdd, test-driven | Phase 5 (Execute Plan) | Write failing tests before implementation |
+| 🔧 Build fix | build-fix, build, linter, type-check | Phase 5 (Execute Plan) | Build / compile / type error fixes |
+| ✅ Completion verification | verify, verification, complete | Phase 6 (Check & Verify) | Independent post-execution verification |
+| 🎭 Browser / UI debug | browser, devtools, cdp, playwright, screenshot, dom, css, visual-qa | Phase 1.2 (Technical Analysis) + Phase 6 (Check & Verify) | For UI/CSS/DOM issues, prefer connecting a browser for live debugging (see `browser-debug-toolkit` skill) |
 
-### 探索结果处理
+### Handling probe results
 
-- **匹配到增强能力**：记在会话上下文中，在对应阶段自动加载并调用（具体调用点见各阶段的「🔌 增强能力集成」提示）
-- **未匹配到**：静默跳过，按原有流程执行。**不报错，不阻断**
-- **匹配到多个同类能力**：优先选择 description 更具体的
+- **Matched**: Record in session context; load and invoke at the corresponding phase (call sites are noted inline per phase as 🔌).
+- **No match**: Skip silently and proceed with the native flow. **Never error, never block.**
+- **Multiple matches of the same type**: Prefer the one with the more specific description.
 
-### 调用原则
+### Invocation principles
 
-- **渐进增强，不替代核心流程**：增强能力是辅助手段，不改变阶段顺序和门控逻辑
-- **只读阶段不因增强能力获得写权限**：阶段工具约束不变（阶段 1～4 禁止 Edit/Write）
-- **增强能力失败不阻断流程**：调用增强 skill/agent 报错时，记录警告，按原有流程继续
-- **调用前先读最新说明**：调用增强 skill/agent 前，先读取其当前说明文件（SKILL.md 或等价文档），不得凭记忆调用，避免使用过期规则
-
----
-
-## 路径选择
-
-根据任务复杂度选择路径，并在阶段 1.1 确认问题时声明：
-
-| 路径 | 适用场景 | 要求 |
-|------|----------|------|
-| 完整路径 | 新功能开发、多模块联动、需求模糊 | 阶段 1～7 全部执行；优先使用 `brainstorming` 类增强能力 |
-| 增量路径 | 存量行为修改、重构、普通 Bug | 阶段 1～7 执行，但方案和计划可保持精简 |
-| 精简路径 | 热修复、单文件高确定性变更 | 精简输出；方案可 1 个 + 风险说明，计划可合并为描述。不跳过阶段 6/7 |
-
-执行中发现范围扩大时必须升级路径：精简 → 增量，增量 → 完整。手动模式下升级需用户确认。
-
-精简路径下，阶段 2（探索方案）可只输出 1 个方案 + 风险说明，阶段 4（制定计划）可合并到方案描述中。但阶段 6（检查验证）和阶段 7（回顾总结）不可跳过。
+- **Progressive enhancement, not replacement**: Enhancement capabilities are auxiliary; they do not change phase ordering or gate logic.
+- **Read-only phases do not gain write permission**: Phase tool constraints are unchanged (Phases 1–4 forbid Edit/Write).
+- **Failure does not block**: If an enhancement skill/agent errors, log a warning and continue with the native flow.
+- **Read the latest docs before calling**: Before invoking an enhancement skill/agent, read its current spec file (SKILL.md or equivalent). Never invoke from memory — rules may have drifted.
+<!-- /SYNC-SECTION: environment-capability-exploration -->
 
 ---
 
-## 阶段1：分析问题
+## Path Selection
 
-> ⚠️ 本阶段禁止 Edit/Write。仅输出分析结论，不修改任何文件。
+Select a path by task complexity and declare it in Phase 1.1 when confirming the problem:
 
-> 原则：先明确问题再技术分析；只读分析为主，不修改实现逻辑
+| Path | Applicable scenarios | Requirements |
+|------|----------------------|--------------|
+| Full path | New feature development, multi-module integration, ambiguous requirements | Execute Phases 1–7 in full; prefer `brainstorming`-type enhancements |
+| Incremental path | Behavioral changes to existing code, refactors, ordinary bugs | Execute Phases 1–7; solution and plan may stay concise |
+| Streamlined path | Hot-fixes, single-file high-confidence changes | Concise output; solution may be 1 + risk note, plan may collapse into a description. Phases 6 and 7 are NOT skippable |
 
-### 1.1 明确问题（小节）
+If scope expands mid-execution, the path MUST be upgraded: streamlined → incremental, incremental → full. In manual mode, upgrading requires user confirmation.
 
-> **[🤖 自动]** 跳过本小节，直接进入 1.2 技术分析，将用户输入视为已确认的问题描述。
+Under the streamlined path, Phase 2 may output only 1 solution + risk note, and Phase 4 may collapse the plan into the solution description. Phase 6 and Phase 7 are never skippable.
+
+---
+
+## Phase 1: Analyze Problem
+
+> Principle: Clarify the problem before technical analysis. Read-only; do not modify implementation logic.
+
+### 1.1 Clarify Problem (sub-section)
+
+> **[🤖 Auto]** Skip this sub-section, enter 1.2 directly, treat user input as the confirmed problem statement.
 >
-> **[👤 手动]** 必须先完成本小节并获用户确认后，才能进入 1.2 技术分析。
+> **[👤 Manual]** Must complete this sub-section and obtain user confirmation before entering 1.2 Technical Analysis.
 
-1. **问题复述** - 用自己的话重新描述用户的问题
-2. **关键要素提取** - 目标、约束、背景、期望结果
-3. **疑问点列出** - 列出需要进一步确认的地方
-3.5 **Scope 拆解**（若适用）- 若问题涉及多个独立子系统（如「聊天 + 文件存储 + 计费」），先协助拆解：独立模块、依赖关系、建议处理顺序，再对首个子问题进行分析。**本步骤仍在本小节内，禁止主动探索代码；用户已引用的内容可读取**，拆解主要依据用户描述。
-4. **等待用户确认**
+1. **Restate the problem** — Paraphrase the user's problem in your own words.
+2. **Extract key elements** — Goal, constraints, context, expected outcome.
+3. **List open questions** — Points needing further confirmation.
+3.5 **Scope decomposition** (if applicable) — If the problem spans multiple independent subsystems (e.g. "chat + file storage + billing"), help decompose first: independent modules, dependency relationships, suggested processing order, then analyze the first sub-problem. **This step stays inside this sub-section; do not proactively explore code. Content the user already referenced may be read.** Decomposition is based primarily on the user's description.
+4. **Wait for user confirmation.**
 
-**工具限制**：禁止 Read/Grep/SemanticSearch，以下情况**例外**：
-- 用户消息中含 `@文件路径`（含可选行号，如 `@SKILL.md:83-89`）
-- 用户消息中粘贴了代码片段（`` ``` `` 包裹或缩进代码块）
-- 用户明确指出了「函数/类名 + 所在文件」的组合
+**Tool restriction**: Read/Grep/SemanticSearch are forbidden, with these **exceptions**:
 
-例外时：**仅读取用户直接引用的文件与行号**，不得扩展到其他文件。
-读取结果仅用于辅助理解问题，**1.1 输出中不得出现技术分析结论**。
+- The user message contains `@filepath` (with optional line numbers, e.g. `@SKILL.md:83-89`).
+- The user message contains a pasted code block (``` fenced or indented).
+- The user explicitly provides a "function/class name + file path" combination.
 
-### 1.2 技术分析
+When an exception applies: **read only the files and line ranges the user directly referenced**; do not expand to other files. Read results are used only to aid understanding; **the 1.1 output must not contain technical analysis conclusions**.
 
-🔌 若环境探索发现「🔍 调试分析」类能力，在根因分析环节调用（假设驱动调查、证据链构建）。
+### 1.2 Technical Analysis
 
-0. **存在性验证**（门控，必须最先执行）
-   - 用 Read/Grep/SemanticSearch 定位问题相关代码
-   - 判断结论并按下表处理：
+0. **Existence validation** (gate; must run first)
+   - Use Read/Grep/SemanticSearch to locate the relevant code.
+   - Decide the conclusion and act per the table below.
 
-   | 结论 | 处理方式 |
-   |------|---------|
-   | ✅ 问题存在 | 继续执行步骤 0.5（调研路由判断）→ 1～4 |
-   | ❌ 问题已不存在 | 报告「在当前代码库中未发现该问题，可能已被修复或逻辑已变更」，附相关代码位置，**停止分析，等待用户确认** |
-   | ⚠️ 描述与代码不符 | 报告「代码行为与描述存在出入」，列出实际发现，**回到 1.1 重新对齐问题描述** |
+   | Conclusion | Action |
+   |------------|--------|
+   | ✅ Problem exists | Continue to step 0.5 (research routing) → steps 1–4 |
+   | ❌ Problem no longer exists | Report "Problem not found in the current codebase; it may already be fixed or the logic may have changed", cite the relevant code locations, **stop analysis, wait for user confirmation** |
+   | ⚠️ Description does not match code | Report "Code behavior differs from the description", list actual findings, **return to 1.1 to realign the problem statement** |
 
-0.5 **调研路由判断**（存在性验证通过后立即执行，决定后续步骤侧重）
+0.5 **Research routing** (run immediately after existence validation passes; determines the emphasis of subsequent steps)
 
-   判断这个**已确认存在**的问题，根因更可能落在哪类——这决定步骤 2.5/3/3.5 的执行侧重（不替换它们，只调整优先级）：
+   Judge whether the **confirmed-existing** problem's root cause is more likely internal or external — this adjusts the priority of steps 2.5 / 3 / 3.5 (it does not replace them):
 
-   | 路由 | 判定信号 | 后续侧重 |
-   |------|---------|---------|
-   | 🟢 **内部为主** | 问题讲「我们的代码/逻辑/规范」；根因疑似本仓库实现 | 步骤 1-2 代码定位为主；2.5 可选兜底；步骤 3 根因分析为核心 |
-   | 🔵 **外部为主** | 具名第三方库/框架/API + 版本；或问「怎么用/为什么/有没有已知问题」；或命中下方 2.5 触发条件（平台静默失败 / 宿主嵌套 / 代码层无嫌疑） | **2.5 升为首要动作**（先 web 搜已知案例）；搜到根因跳步骤 4；搜不到回步骤 3 |
-   | 🟣 **Hybrid 先外后内** | 外部概念 +「我们的/应用到/检查我们」内部对象（如「我们用的 X 库有没有 Y 漏洞」「把模式 X 用到我们代码」） | 先走 2.5 外部调研搞懂概念，再走步骤 3 内部分析应用 |
+   | Route | Signals | Subsequent emphasis |
+   |-------|---------|---------------------|
+   | 🟢 **Internal-first** | Problem talks about "our code/logic/conventions"; root cause suspected in this repo's implementation | Steps 1–2 code localization are primary; 2.5 is optional fallback; step 3 root-cause analysis is the core |
+   | 🔵 **External-first** | Named third-party library/framework/API + version; or asks "how to use / why / known issues"; or matches any 2.5 trigger below (platform silent failure / host nesting / no code-level suspicion) | **2.5 becomes the first action** (web-search known cases first); if root cause is found, skip step 4; otherwise fall back to step 3 |
+   | 🟣 **Hybrid, external then internal** | External concept + "our / apply to / check our" internal object (e.g. "does the X library we use have Y vulnerability" / "apply pattern X to our code") | First run 2.5 external research to understand the concept, then run step 3 internal analysis to apply it |
 
-   > 判断不准时默认 **🟢 内部为主**（solve-workflow 本质是改代码工作流，根因多在仓库内）。
-   > 🔌 若 `effective-web-research` skill 可用，本判断可参考其 Step 0 分流逻辑（它判断的是「单次检索本身要不要做外部」；本步骤判断的是「整个代码问题的调研成分」，两者互补）。
+   > If uncertain, default to **🟢 Internal-first** (solve-workflow is fundamentally a code-change workflow; root causes are usually in the repo).
+   > 🔌 If the `effective-web-research` skill is available, this routing decision may reference its Step 0 triage logic (that skill decides whether a single search should go external; this step decides the research component of an entire code problem — the two are complementary).
 
-1. **问题现象描述** - 复现条件和步骤
-2. **相关代码定位** - 文件路径+行号、关键函数/类
-2.5 **已知问题快搜**（路由判定为 🔵外部/🟣hybrid 时为**首要执行**；🟢内部时为**可选兜底**——保留下方触发条件作为内部路由下的回退信号）
-   - **触发条件**（满足任一即触发，在步骤 3 根因分析之前执行）：
-     - 问题涉及**平台/原生组件**（Android WebView、iOS UIPickerView、浏览器 API、OS 级控件等），且表现为**静默失败**（无报错、无 crash、调用正确但行为完全无响应）
-     - 问题涉及**宿主环境嵌套**（React Native、Electron、Cordova、WebView in App 等），且前端代码逻辑看起来完全正确
-     - 代码层面**找不到任何可疑点**（调用链完整、参数正确、日志显示执行到位），但运行时就是不生效
-   - **执行**：用 WebSearch 以「症状关键词 + 平台/框架 + 年份」搜索 StackOverflow、GitHub Issues、官方文档中的已知案例
-     - 🔌 若 `effective-web-research` skill 可用，本步骤的 WebSearch 应用其调研纪律——先 Step 0 分流（确认是外部问题、非内部代码可解），再按 4 口诀执行（官方优先 / 查时效 / 非平凡双源印证 / 避内容农场）；用户要严格调研时转其严格模式出报告。skill 不可用时按原 WebSearch 流程执行。
-   - **结果处理**：
+1. **Phenomenon description** — Reproduction conditions and steps.
+2. **Relevant code localization** — File paths + line numbers, key functions/classes.
+2.5 **Known-issue quick search** (when routing is 🔵 external or 🟣 hybrid, this is the **primary action**; under 🟢 internal it is an **optional fallback** — the triggers below still serve as fallback signals under the internal route)
+   - **Triggers** (any one triggers, executed before step 3 root-cause analysis):
+     - Problem involves a **platform / native component** (Android WebView, iOS UIPickerView, browser API, OS-level control, etc.) and manifests as **silent failure** (no error, no crash, call is correct but behavior is completely unresponsive).
+     - Problem involves **host environment nesting** (React Native, Electron, Cordova, in-app WebView, etc.) and the front-end code logic appears entirely correct.
+     - **No suspicious points found at the code level** (call chain complete, parameters correct, logs show execution reached the right place), yet it does not work at runtime.
+   - **Execution**: Use WebSearch with "symptom keywords + platform/framework + year" to look up known cases on StackOverflow, GitHub Issues, and official docs.
+     - 🔌 If `effective-web-research` is available, apply its research discipline to this WebSearch — Step 0 triage first (confirm this is an external problem, not solvable by internal code), then execute the 4 maxims (official sources first / check recency / cross-validate non-trivial claims with two sources / skip content farms); switch to its strict mode for a report when the user asks for rigorous research. If the skill is unavailable, follow the native WebSearch flow.
+   - **Result handling**:
 
-   | 搜索结论 | 处理方式 |
-   |---------|---------|
-   | ✅ 找到已知案例，根因明确 | 输出【已知问题快搜结论】，**直接跳到步骤 4**（影响范围评估），跳过步骤 3 |
-   | ⚠️ 找到相关讨论，根因部分明确 | 将搜索结论作为参考依据纳入步骤 3，继续根因分析 |
-   | ❌ 未找到相关案例 | 静默跳过，继续步骤 3 |
+   | Search conclusion | Action |
+   |-------------------|--------|
+   | ✅ Known case found, root cause clear | Output [Known-issue quick-search conclusion], **jump directly to step 4** (impact evaluation), skip step 3 |
+   | ⚠️ Related discussions found, root cause partially clear | Fold the search conclusion into step 3 as supporting evidence, continue root-cause analysis |
+   | ❌ No related cases found | Skip silently, continue to step 3 |
 
-   > 💡 与步骤 3.5 的区分：本步骤是「按症状提前搜索已知案例」（有解/无解均适用）；3.5 是「根因已明确后评估业界是否有公认解法」（专门处理无解场景）。两者时机与目的不同，不重叠。
+   > 💡 Distinction from step 3.5: This step "pre-searches known cases by symptom" (applies whether or not a fix exists); 3.5 "evaluates whether the industry has a consensus fix after the root cause is clear" (specifically for unsolvable cases). Different timing and purpose; they do not overlap.
 
-3. **问题根因分析** - 数据流和调用链分析
-3.5 **行业通病评估**（可选，根因明确指向硬限制时触发）
-   - 仅当根因**明确指向**平台/语言/协议/标准的硬性限制（如浏览器安全策略、JS 单线程、网络协议约束），且无明显应用层绕过路径时触发
-   - 若触发，用 WebSearch 调研：业界是否有公认记录、主流框架/大厂如何处理、是否存在可行绕过方案
-     - 🔌 若 `effective-web-research` skill 可用，本步骤的 WebSearch 应用其调研纪律——先 Step 0 分流，再按 4 口诀执行（官方优先 / 查时效 / 非平凡双源印证 / 避内容农场）；用户要严格调研时转其严格模式出报告。skill 不可用时按原 WebSearch 流程执行。
-   - 按下表处理：
+3. **Root-cause analysis** — Data flow and call-chain analysis.
+3.5 **Industry-ailment assessment** (optional; triggered when the root cause clearly points to a hard limit)
+   - Trigger only when the root cause **clearly points to** a hard limit of platform / language / protocol / standard (e.g. browser security policy, JS single-threadedness, network protocol constraint) AND no obvious application-layer bypass exists.
+   - If triggered, use WebSearch to investigate: whether the industry has a recognized record, how mainstream frameworks / major companies handle it, whether any viable bypass exists.
+     - 🔌 If `effective-web-research` is available, apply its research discipline — Step 0 triage first, then execute the 4 maxims (official sources first / check recency / cross-validate non-trivial claims / skip content farms); switch to its strict mode for a report when the user asks for rigorous research. If the skill is unavailable, follow the native WebSearch flow.
+   - Handle per the table:
 
-   | 结论 | 处理方式 |
-   |------|---------|
-   | 🚫 行业公认难题，目前无可行解 | 输出【行业通病评估报告】，**暂停，等用户决定**（继续探索绕过方案 / 接受现状） |
-   | ⚠️ 存在局限但有绕过方案 | 在后续方案探索中将绕过方案列为候选，继续步骤 4 |
-   | ✅ 非行业通病，属可修复问题 | 继续步骤 4 |
+   | Conclusion | Action |
+   |------------|--------|
+   | 🚫 Industry-recognized hard problem, no viable solution | Output [Industry-ailment assessment report], **pause, wait for user decision** (continue exploring bypasses / accept status quo) |
+   | ⚠️ Has limitations but a bypass exists | List the bypass as a candidate in subsequent solution exploration, continue to step 4 |
+   | ✅ Not an industry ailment; fixable | Continue to step 4 |
 
-4. **影响范围评估** - 受影响的模块/功能
+4. **Impact scope assessment** — Affected modules / features.
 
-**工具限制**：✅ Read/Grep/SemanticSearch；✅ WebSearch（步骤 2.5 已知问题快搜、步骤 3.5 行业通病评估、打点失效逃生出口 5.5 专用）；❌ Edit/Write；❌ Bash 执行改变实现逻辑的命令
+### Output format
 
-### 🔬 打点调试（静态分析受阻时，主动升级为运行时调试）
+**1.1 Clarify Problem**: see [reference.md](reference.md) "Phase 1.1 Clarify Problem".
 
-**触发条件**（满足任一即触发，优先于进入阶段 2）：
-- 根因置信度为「模糊」或「未知」——能定位到大概模块，但无法确定具体逻辑或触发路径
-- 当前是重试场景——已基于静态分析修复过一次，但问题仍然存在
+**1.2 Technical Analysis**: First report the existence-validation conclusion → 0.5 research routing (🟢 / 🔵 / 🟣) → then by route emphasis output phenomenon, localization, root cause; if step 3.5 was triggered, output the industry-ailment conclusion after the root cause; then output impact scope.
 
-> 静态分析有边界：运行时数据流、调用顺序、变量取值只能在真实执行中观测。置信度不足时，主动升级为打点调试，用运行时事实锚定根因。
+**Industry-ailment assessment report** (output when conclusion is "no viable solution"): see [reference.md](reference.md) "Phase 1.2 Industry-ailment assessment report".
 
-> 🔌 **UI/CSS/DOM 问题优先使用浏览器 DevTools**：若问题涉及样式、布局、渲染、DOM 结构，且有浏览器调试能力可用（chrome-devtools-connect MCP / playwright / webapp-testing），优先连接浏览器实时检查（DOM 树、计算样式、盒模型），比 console.log 打点更高效。详见 `browser-debug-toolkit` skill。
+### Red Flags — forbidden behaviors
 
-**执行步骤**：
+- Proactively using Read/Grep to explore code in 1.1 before it is complete, when the user did not reference any code.
+- Skipping the 1.1 sub-section with the excuse "the user already explained clearly".
+- Exploring code in 1.1 before completion with the excuse "analyzing while clarifying".
+- Mixing technical conclusions (root-cause judgments, fix suggestions) into 1.1 "problem restatement" or "open questions".
+- **Routing decided as 🔵 external / 🟣 hybrid but skipping 2.5 known-issue quick search** (2.5 is the primary action under these routes; skipping it violates the routing decision); OR **under 🟢 internal routing, a 2.5 trigger is hit but skipped with the excuse "look at code first" / "instrument first"** (violates early-search principle; WebSearch for known cases is allowed before code-level suspicion is established).
 
-| 步骤 | 内容 |
-|------|------|
-| 1. 打点设计 | 识别 2-5 个关键节点（函数入口/出口、状态变更点、数据流转点） |
-| 2. 生成打点代码 | `console.log('[DEBUG-<位置标识>]', { key: value, timestamp: Date.now() })`（按项目语言调整；含位置标识、关键变量、时间戳） |
-| 3. 操作指引 | 告知用户：添加位置、复现步骤、日志查看位置（浏览器控制台/终端/日志文件） |
-| 4. 等待日志 | ⛔ 停止，等用户执行并提供日志输出 |
-| 5. 日志分析 | 分析实际调用链和数据流，给出根因结论，更新阶段 1.2 输出 |
-| 6. 清理建议 | （可选）根因确认后，说明哪些打点可删除，哪些值得保留为正式监控 |
-
-**逃生出口 5.5**（步骤 5 后根因仍为「模糊/未知」时触发）：
-
-> 打点只能观测「代码层执行路径」，无法穿透平台层/宿主环境的静默拦截。
-
-1. **升级搜索**：用 WebSearch 以「症状关键词 + 平台/框架版本 + 年份」搜索已知案例
-   - 🔌 若 `effective-web-research` skill 可用，本步骤的 WebSearch 应用其调研纪律——先 Step 0 分流，再按 4 口诀执行（官方优先 / 查时效 / 非平凡双源印证 / 避内容农场）。skill 不可用时按原 WebSearch 流程执行。
-2. **结果处理**：找到 → 更新根因假设，回到步骤 5；未找到 → 输出「已排除假设清单」，**暂停等用户决定**（继续打点 / 外部支持 / 带假设进入阶段 2）
-
-**工具限制**：✅ Read/Grep 辅助确定打点位置；❌ Edit/Write（打点代码由用户手动添加，或经用户明确确认后 AI 添加）；❌ 未经用户确认不得自行运行复现步骤
-
-### 输出格式
-
-**1.1 明确问题**：输出格式见 [reference.md](reference.md)「阶段 1.1 明确问题」。
-
-> ⛔ **[手动模式 — 1.1 出口]** 输出以上内容后**立即停止**，等用户明确确认理解正确后，才能进入 1.2 技术分析。
-> 🤖 **[自动模式]** 跳过 1.1，直接从 1.2 开始执行。
-
-**1.2 技术分析**：先报告存在性验证结论 → 0.5 调研路由判断（🟢/🔵/🟣）→ 再按路由侧重依次输出现象、定位、根因；若触发步骤3.5，在根因后输出行业通病评估结论；继续输出影响范围。
-
-**行业通病评估报告**（结论为「无可行解」时输出）：输出格式见 [reference.md](reference.md)「阶段 1.2 行业通病评估报告」。
-
-### Red Flags - 禁止行为
-
-- 用户未引用代码，却在 1.1 未完成时主动使用 Read/Grep 探索代码
-- 以「用户已经说得很清楚」为由跳过 1.1 小节
-- 以「边分析边澄清」为由在 1.1 未完成时主动探索代码
-- 以「先看看代码再确认」为由在 1.1 未完成时主动探索代码
-- 在 1.1 的「问题复述」或「疑问点」中混入技术分析结论（如根因判断、修复建议）
-- **路由判定为 🔵外部/🟣hybrid 却跳过 2.5 已知问题快搜**（此时 2.5 为首要动作，跳过即违反路由判定）；或 **🟢内部路由下 2.5 触发条件命中，却以「先看代码」「先打点」为由跳过 WebSearch**（违反早搜原则，允许在代码层无可疑点前先搜索已知案例）
-
-**违反即违反原则。[👤 手动模式] 必须先完成 1.1 明确问题并获确认，再进入 1.2。[🤖 自动模式] 跳过 1.1 不受此限制。**
+**Violation of these is a principle violation. [👤 Manual] Must complete 1.1 Clarify Problem and obtain confirmation before entering 1.2. [🤖 Auto] Skipping 1.1 is not bound by this restriction.**
 
 ---
 
-## 阶段2：探索方案
+<!-- SYNC-SECTION: instrumentation-debugging -->
+### 🔬 Instrumentation Debugging (when static analysis stalls, proactively upgrade to runtime debugging)
 
-> 原则：基于阶段1的分析，提供2-5个解决方案；方案中剔除非必要功能与过度设计（YAGNI）
+**Triggers** (any one triggers; takes priority over entering Phase 2):
 
-🔌 若环境探索发现「💡 方案设计」类能力，在方案生成环节调用（多方案生成与对比）。
+- Root-cause confidence is "fuzzy" or "unknown" — the rough module is locatable, but the specific logic or trigger path cannot be determined.
+- The current attempt is a retry — a fix based on static analysis has already been tried, but the problem persists.
 
-### [🤖 自动模式] 方案选择
+> Static analysis has limits: runtime data flow, call ordering, and variable values can only be observed in real execution. When confidence is insufficient, proactively upgrade to instrumentation debugging and anchor the root cause with runtime facts.
 
-自动生成 2-5 个方案，AI 自动推荐并选择最优方案（优先：更彻底解决 > 符合最佳实践 > 改善代码质量 > 改动较少），直接进入阶段3审查。
+> 🔌 **UI/CSS/DOM problems should prefer browser DevTools**: if the issue concerns styles, layout, rendering, or DOM structure, and a browser-debug capability is available (chrome-devtools-connect MCP / playwright / webapp-testing), prefer connecting a browser for live inspection (DOM tree, computed styles, box model) — far more efficient than `console.log` instrumentation. See the `browser-debug-toolkit` skill.
 
-### [👤 手动模式] 方案选择
+**Execution steps**:
 
-输出方案对比表，等用户选择后进入阶段3审查。
+| Step | Content |
+|------|---------|
+| 1. Design instrumentation | Identify 2–5 key nodes (function entry/exit, state-change points, data-flow points) |
+| 2. Generate probe code | `console.log('[DEBUG-<location-id>]', { key: value, timestamp: Date.now() })` (adapt to project language; include location id, key variables, timestamp) |
+| 3. User instructions | Tell the user: where to add the probes, reproduction steps, where to view logs (browser console / terminal / log file) |
+| 4. Wait for logs | ⛔ Stop; wait for the user to execute and provide log output |
+| 5. Log analysis | Analyze the actual call chain and data flow, produce a root-cause conclusion, update the Phase 1.2 output |
+| 6. Cleanup suggestion | (Optional) After the root cause is confirmed, indicate which probes can be removed and which are worth keeping as permanent monitoring |
 
-### 输出格式
+**Escape hatch 5.5** (triggers when the root cause is still "fuzzy/unknown" after step 5):
 
-1. **开头**：方案对比表
-2. **中间**：每个方案详细展开（见下方「每个方案包含」）
-3. **结尾**：再次输出方案对比表，便于快速回顾
+> Instrumentation can only observe "code-layer execution paths"; it cannot pierce silent interception by the platform layer / host environment.
 
-| 方案 | 描述 | 优点 | 缺点 | 复杂度 | 推荐度 |
-|------|------|------|------|--------|--------|
-| 方案1 | ... | ... | ... | 低/中/高 | ⭐⭐⭐⭐⭐ |
-| 方案2 | ... | ... | ... | 低/中/高 | ⭐⭐⭐ |
-
-### 每个方案包含
-
-- 核心思路（1-2句话）
-- 需要修改的文件/模块
-- 实施难度评估、潜在风险、适用场景
-
-**工具限制**：禁止使用 Edit/Write；可使用 Read 查看代码细节
-
-> ⛔ **[手动模式 — 阶段2 出口]** 输出方案对比表后**立即停止**，等用户选择方案编号后进入阶段3审查。
-> 🤖 **[自动模式]** 自动选定最优方案，直接进入阶段3审查。
-
-### Red Flags — 禁止行为
-
-- 只生成 1 个方案，以「方向已明确」为由跳过方案对比
-- **[👤 手动]** 用户未选方案时自行推进到审查阶段
+1. **Escalate the search**: Use WebSearch with "symptom keywords + platform/framework version + year" to find known cases.
+   - 🔌 If `effective-web-research` is available, apply its research discipline — Step 0 triage first, then execute the 4 maxims (official sources first / check recency / cross-validate non-trivial claims / skip content farms). If the skill is unavailable, follow the native WebSearch flow.
+2. **Result handling**: Found → update the root-cause hypothesis, return to step 5; Not found → output "list of ruled-out hypotheses", **pause and wait for user decision** (continue instrumenting / seek external support / enter Phase 2 with a hypothesis).
+<!-- /SYNC-SECTION: instrumentation-debugging -->
 
 ---
 
-## 阶段3：审查方案
+## Phase 2: Explore Solutions
 
-> 原则：对选定方案进行深度审查，明确其具体内容和风险，再决定是否进入制定计划
+> Principle: Based on Phase 1's analysis, provide 2–5 solutions. Strip unnecessary features and over-engineering from solutions (YAGNI).
 
-🔌 若环境探索发现「📋 代码审查」类能力，在方案审查环节调用（辅助深度审查）。
+### [🤖 Auto] Solution selection
 
-### 审查维度（每轮必须覆盖）
+Auto-generate 2–5 solutions; the AI auto-recommends and selects the best one (priority: more thorough fix > matches best practice > improves code quality > fewer changes), then enter Phase 3 directly.
 
-1. **解决有效性**：是否完整覆盖根因、能否高效高质量解决问题、核心逻辑与关键实现点
-2. **副作用与风险**：改动是否在其他模块引发新问题（功能副作用）、是否带来性能/安全/可维护性问题（非功能副作用）、已识别问题有无缓解措施
-3. **实现可行性**：改动范围、依赖关系、涉及文件/模块是否明确可执行
-4. **代码规范符合度**：是否符合项目现有模式和最佳实践
+### [👤 Manual] Solution selection
 
-### 审查结论（二级制）
+Output a solution comparison table; after the user selects, enter Phase 3.
 
-| 结论 | 判定标准 | 后续动作 |
-|------|---------|---------|
-| ✅ **通过** | 四项审查维度均无阻断问题，仅存在可接受的低风险 | 进入阶段4 |
-| ❌ **不通过** | 任一维度存在需解决的问题或不可接受的风险 | 进入优化→重新审查循环 |
+### Output format
 
-**阻断问题判定指引**（满足任一即为 ❌ 不通过）：
+1. **Opening**: solution comparison table.
+2. **Middle**: each solution expanded in detail (see "Each solution contains" below).
+3. **Closing**: repeat the comparison table for quick review.
 
-- 方案无法完整覆盖根因，或解决质量明显低效低质（解决有效性不足）
-- 存在已识别但未提出缓解措施的中/高风险
-- 涉及的修改文件或依赖关系不明确，无法据此制定可执行计划
-- 与项目现有设计模式或编码规范明显冲突
-- 可能引入新 bug 或破坏现有功能的副作用未被处理
+| Solution | Description | Pros | Cons | Complexity | Recommendation |
+|----------|-------------|------|------|------------|----------------|
+| Solution 1 | ... | ... | ... | Low/Med/High | ⭐⭐⭐⭐⭐ |
+| Solution 2 | ... | ... | ... | Low/Med/High | ⭐⭐⭐ |
 
-**非阻断问题**（可标注为建议，但不阻止通过）：
+### Each solution contains
 
-- 已有缓解措施的低风险项
-- 代码风格偏好（不影响正确性）
-- 可在后续迭代中优化的性能改进
+- Core idea (1–2 sentences).
+- Files / modules to modify.
+- Implementation difficulty assessment, potential risks, applicable scenarios.
 
-### 循环流程
+### Red Flags — forbidden behaviors
+
+- Generating only 1 solution with the excuse "the direction is already clear", skipping the comparison.
+- **[👤 Manual]** Self-advancing to the review phase before the user picks a solution.
+
+---
+
+## Phase 3: Review Solution
+
+> Principle: Deeply review the selected solution, clarify its specific content and risks, then decide whether to proceed to planning.
+
+### Review dimensions (every round must cover all)
+
+1. **Resolution effectiveness**: Does it fully cover the root cause, efficiently and with high quality? Core logic and key implementation points.
+2. **Side effects and risks**: Does the change cause new problems in other modules (functional side effects)? Does it introduce performance / security / maintainability issues (non-functional side effects)? Are mitigation measures identified for known issues?
+3. **Implementation feasibility**: Scope of changes, dependencies, are the files / modules involved clearly actionable?
+4. **Coding-standard conformance**: Does it match the project's existing patterns and best practices?
+
+### Review conclusion (two-level)
+
+| Conclusion | Criteria | Next action |
+|------------|----------|-------------|
+| ✅ **Pass** | None of the four dimensions has a blocking issue; only acceptable low-risk items remain | Enter Phase 4 |
+| ❌ **Fail** | Any dimension has an unresolved issue or an unacceptable risk | Enter optimize → re-review loop |
+
+**Blocking-issue criteria** (any one means ❌ Fail):
+
+- Solution cannot fully cover the root cause, or resolution quality is clearly inefficient or low-quality (resolution effectiveness insufficient).
+- Identified medium/high risks without proposed mitigation.
+- Files to modify or dependencies are unclear; an executable plan cannot be derived.
+- Clear conflict with the project's existing design patterns or coding standards.
+- Possible new bugs or breakage of existing functionality, with side effects unaddressed.
+
+**Non-blocking issues** (may be noted as suggestions; do not block pass):
+
+- Low-risk items with mitigation in place.
+- Code-style preferences (not affecting correctness).
+- Performance improvements that can be deferred to a later iteration.
+
+### Loop flow
 
 ```
-方案选定 → 审查（第 N 轮）→ 输出审查报告
-                ↓
-          审查结论判定
-           ├── ✅ 通过 → 进入阶段4
-           └── ❌ 不通过 → 方案优化 → 回到审查（第 N+1 轮）
-                              ↓
-                        [🤖 自动] 达到循环上限？
-                         ├── 否 → 继续循环
-                         └── 是 → 暂停，等用户介入
+Solution selected → Review (round N) → Output review report
+                       ↓
+              Conclusion assessment
+               ├── ✅ Pass → Enter Phase 4
+               └── ❌ Fail → Optimize solution → Return to review (round N+1)
+                                  ↓
+                            [🤖 Auto] Cap reached?
+                             ├── No → Continue loop
+                             └── Yes → Pause, wait for user intervention
 ```
 
-### [🤖 自动模式] 审查循环
+### [🤖 Auto] Review loop
 
-- **判定者**：AI 自动判定通过/不通过
-- **不通过时**：AI 根据审查报告中的问题清单**自动优化方案**，输出优化说明，然后重新审查
-- **循环上限**：**3 轮**（第 1 轮为初次审查，最多优化 2 次后重审）
-- **超限处理**：暂停，输出 3 轮审查摘要（每轮的问题与优化记录），等用户介入决策。用户可选操作：
-  - 说「继续审查」→ 追加审查轮次（上限重置为 +3 轮）
-  - 说「重选方案」→ 回到阶段2方案选择环节
-  - 手动调整方案方向后说「重新审查」
+- **Decider**: AI decides pass/fail automatically.
+- **On fail**: AI auto-optimizes the solution based on the issue list in the review report, outputs an optimization note, then re-reviews.
+- **Cap**: **3 rounds** (round 1 is the initial review; at most 2 optimize-and-re-review cycles).
+- **Cap exceeded**: Pause, output a 3-round review summary (issues + optimization record per round), wait for user decision. User options:
+  - Say 「继续审查」 / "continue review" → append review rounds (cap reset to +3 rounds).
+  - Say 「重选方案」 / "re-pick solution" → return to Phase 2 solution selection.
+  - Manually adjust the solution direction, then say 「重新审查」 / "re-review".
 
-### [👤 手动模式] 审查循环
+### [👤 Manual] Review loop
 
-- **判定者**：用户判定通过/不通过
-- AI 输出审查报告后，等用户响应：
-  - 用户说「通过」「确认」「OK」→ 进入阶段4
-  - 用户说「修改方案」「完善方案」「优化方案」→ 按用户指导优化方案，重新审查
-  - 用户说「重选方案」→ 回到阶段2方案选择环节
-- **循环上限**：无（用户自主控制）
+- **Decider**: User decides pass/fail.
+- AI outputs the review report, then waits:
+  - User says 「通过」「确认」「OK」 / "pass" "confirm" "OK" → Enter Phase 4.
+  - User says 「修改方案」「完善方案」「优化方案」 / "modify solution" "refine solution" "optimize solution" → Optimize per the user's guidance, then re-review.
+  - User says 「重选方案」 / "re-pick solution" → Return to Phase 2 solution selection.
+- **Cap**: None (user-controlled).
 
-### 审查报告输出字段
+### Review report output fields
 
-审查报告输出格式见 [reference.md](reference.md)「阶段 3 审查报告」。
+See [reference.md](reference.md) "Phase 3 Review report".
 
-> ⛔ **[手动模式 — 阶段3 出口]** 输出审查报告后**立即停止**，等用户明确说「通过」后进入阶段4；说「修改方案」则进入优化→重新审查循环。
-> 🤖 **[自动模式]** AI 自动判定通过/不通过；通过进入阶段4，不通过自动优化后重新审查（上限3轮，超限暂停）。
+### Red Flags — forbidden behaviors
 
-**工具限制**：禁止使用 Edit/Write；可使用 Read 查看代码细节
+- Skipping the solution review and entering Phase 4 directly (risks go unidentified).
+- Modifying code during the review phase (violates the read-only constraint).
+- **[🤖 Auto]** Not optimizing the solution on fail, advancing directly to Phase 4.
+- **[🤖 Auto]** Exceeding the 3-round cap without pausing.
+- **[🤖 Auto]** Optimizing the solution without outputting an optimization note, making the review record untraceable.
+- **[👤 Manual]** Self-advancing without an explicit user pass/fail verdict.
 
-### Red Flags — 禁止行为
+### Post-pass design summary
 
-- 跳过方案审查直接进入阶段4（风险未识别）
-- 在审查阶段修改代码（违反只读约束）
-- **[🤖 自动]** 审查不通过时不优化方案，直接进入阶段4
-- **[🤖 自动]** 审查循环超过 3 轮上限仍不暂停
-- **[🤖 自动]** 优化方案时未输出优化说明，导致审查记录不可追溯
-- **[👤 手动]** 用户未明确判定通过/不通过，AI 自行推进
-
-### 审查通过后的设计摘要
-
-审查通过后，输出结构化的**设计摘要**供阶段 4 和 5 引用：
+After the review passes, output a structured **design summary** for Phases 4 and 5 to reference:
 
 ```
-【设计摘要】
-- 目标（Goals）：本次变更要达成什么
-- 非目标（Non-Goals）：明确不在本次范围内的内容
-- 关键决策（Decisions）：方案选择理由和取舍
-- 风险与缓解（Risks）：已识别风险和缓解措施
-- 开放问题（Open Questions）：待确认或待后续跟进的点
+[Design Summary]
+- Goals: what this change achieves
+- Non-Goals: explicitly out of scope
+- Decisions: rationale and trade-offs for the chosen solution
+- Risks: identified risks and mitigations
+- Open Questions: items to confirm or follow up later
 ```
 
-此摘要不是独立文件，而是阶段 3 输出的一部分，供后续阶段引用。
+This summary is part of the Phase 3 output, not a separate file, and is referenced by later phases.
 
 ---
 
-## 阶段4：制定计划
+## Phase 4: Make Plan
 
-> 原则：详细的、可执行的修改计划，只输出计划文本，不执行代码修改
+> Principle: A detailed, executable change plan. Output plan text only; do not execute code changes.
 
-🔌 若环境探索发现「📝 计划制定」类能力，在计划生成环节调用（结构化执行计划）。
+1. **Goal solution recap** — Core idea of the review-approved solution.
+2. **File change list** — File path, modification location, specific change description.
+3. **Modification order** — Execution order accounting for dependencies.
 
-1. **目标方案回顾** - 经审查确认的方案核心思路
-2. **文件修改清单** - 文件路径、修改位置、具体改动描述
-3. **修改顺序** - 考虑依赖关系的执行顺序
+### Output format
 
-### 输出格式
+See [reference.md](reference.md) "Phase 4 Make plan".
 
-输出格式见 [reference.md](reference.md)「阶段 4 制定计划」。
+### Update Plan (sub-phase)
 
-**工具限制**：禁止使用 Edit/Write/Bash 修改代码；可使用 Read 确认细节
-
-> ⛔ **[手动模式 — 阶段4 出口]** 输出计划后**立即停止**，等用户确认计划无误后进入阶段5执行。
-> 🤖 **[自动模式]** 自动确认，直接进入阶段5。
-
-### 更新计划（子阶段）
-
-当用户说「更新计划」「修订计划」「修改计划」时，按本阶段执行，额外标注**变更对比**和**变更原因**。
+When the user says 「更新计划」「修订计划」「修改计划」 / "update plan" "revise plan" "modify plan", execute this phase and additionally annotate the **change diff** and **change reason**.
 
 ---
 
-## 阶段5：执行计划
+## Phase 5: Execute Plan
 
-> 原则：严格按计划执行，完成后确认
+> Principle: Execute strictly per plan; confirm on completion.
 
-🔌 若环境探索发现「🧪 测试驱动」类能力，先写失败测试再实现；「⚡ 代码执行」类能力，批量编排多文件修改；「🔧 构建修复」类能力，在构建失败时调用。
+### Execution flow
 
-### 执行流程
+1. Modify files in the planned order.
+2. After each modification, state what was completed.
+3. If the Phase 4 plan uses checkbox format (`- [ ]` / `- [x]`), **flip the corresponding `[ ]` to `[x]` immediately after each item is completed** — do not defer to a batch update at the end.
+4. After all modifications, output the execution report.
+5. **Auto-advance to Phase 6**: When execution is smooth with no blockers or decisions needed, enter Phase 6 immediately after the report. If a problem arises or a decision is needed, confirm with the user first.
 
-1. 按计划顺序修改文件
-2. 每次修改后说明完成内容
-3. 若阶段 4 计划使用了 checkbox 格式（`- [ ]` / `- [x]`），**每完成一项后立即将对应 `[ ]` 改为 `[x]`**，不得延后到一批任务结束后再批量更新
-4. 全部完成后输出执行报告
-5. **自动进入阶段 6**：执行顺利、无坑无阻塞时，报告输出后立即进入阶段 6；遇问题或需决策时，先与用户确认
+### Execution report
 
-### 执行报告
+- List of modified files, key change notes.
+- Suggested test steps.
+- Whether any deviation from the plan was made (and why, if so).
+- Verification checklist / self-check items (for Phase 6 to use).
 
-- 已修改文件列表、关键改动说明
-- 建议的测试步骤
-- 是否有偏离计划的调整（如有，说明原因）
-- 验证要点/自查清单（便于阶段6使用）
+### Test-suite suggestion (before the execution report)
 
-### 测试套件建议（执行报告前）
+After all modifications, before emitting the execution report, **check whether this change has test coverage**:
 
-全部修改完成后，在输出执行报告前，**检查本次变更是否有测试覆盖**：
+- If the change **already has test coverage** → continue.
+- If the change **has no test coverage** and involves business logic → **explicitly flag in the execution report**: "This change touches business logic but no tests were generated. Consider adding unit tests to prevent regression."
+- If the change is config / style / docs only → no reminder needed.
 
-- 若本次变更**已有测试覆盖** → 继续
-- 若本次变更**无测试覆盖**且变更涉及业务逻辑 → **在执行报告中明确提醒**：「本次变更涉及业务逻辑但未生成测试。建议补充单元测试以防止回归。」
-- 若本次变更仅为配置/样式/文档 → 无需提醒
-
-> 💡 此步骤为建议性提醒，不阻断流程。若项目配置了 `ensure-tests` skill，可委托其执行测试生成和运行。
-
-**工具权限**：✅ 允许使用 Edit/Write/Bash；使用 TodoWrite 跟踪进度
+> 💡 This step is advisory and non-blocking. If the project has the `ensure-tests` skill, it may be delegated to handle test generation and execution.
 
 ---
 
-## 阶段6：检查验证（Check）
+## Phase 6: Check & Verify
 
-> 原则：只输出检查结果，不输出改进建议；改进建议在阶段 7（回顾总结）
+> Principle: Output verification results only; do not output improvement suggestions. Improvement suggestions belong to Phase 7.
 
-🔌 若环境探索发现「✅ 完成验证」类能力，在验证环节调用（运行测试、确认修复、检查回归）。
+1. **Goal attainment** — Whether the expected outcome from Phase 1.1 is achieved.
+2. **Plan comparison** — Compare against the Phase 4 plan.
+3. **Verification and tests** — May cite the Phase 5 execution report; **if test-related content exists, execute the tests**.
+4. **Side-effect verification** — Check whether the change introduced new problems or unexpected behavioral changes in other modules (functional side effects), and whether it introduced unexpected performance / security / maintainability impacts (non-functional side effects).
+5. **Logic and flow review** — Check for gaps or omissions.
 
-1. **目标达成情况** - 是否达成阶段 1 明确问题小节的期望结果
-2. **与计划对比** - 与阶段 4 的计划对比
-3. **验证与测试** - 可引用阶段 5 执行报告；**若有测试相关内容，需执行测试**
-4. **副作用验证** - 检查改动是否在其他模块引发了新问题或预期外的行为变化（功能副作用），以及是否带来性能/安全/可维护性方面的预期外影响（非功能副作用）
-5. **逻辑与流程审查** - 检查是否存在漏洞或遗漏
+### Test execution
 
-### 测试执行
+If the Phase 4 plan or Phase 5 execution report involves tests (e.g. unit tests, integration tests, manual verification steps):
 
-若阶段 4 计划或阶段 5 执行报告涉及测试（如单元测试、集成测试、手动验证步骤）：
+- **AI-executable**: Use Bash to run test commands (e.g. `npm test`, `pytest`, `go test`); fold results into the verification conclusion.
+- **AI-not-executable** (no Bash, environment limits, tests require human action): **Explicitly remind the user**: "This change involves tests; please run [specific test command/steps] yourself and confirm pass before closing out."
 
-- **AI 可执行**：使用 Bash 运行测试命令（如 `npm test`、`pytest`、`go test`），将结果纳入检查结论
-- **AI 无法执行**（无 Bash、环境限制、测试需人工操作）：**明确提醒用户**：「本次修改涉及测试，请自行执行 [具体测试命令/步骤] 验证，确认通过后再收尾」
+### Verification honesty principle
 
-### 验证报告诚实原则
+Every verification result must be annotated in parentheses with its **actual execution status**:
 
-每一项验证结果必须在括号中明确标注**实际执行状态**：
+- **Executed**: Note the command and output summary (e.g. `Executed (npm test; result: 3 passed)`).
+- **Pending**: Note the specific human-action steps required (e.g. `Pending (verify modal behavior in browser)`).
 
-- **已执行**：标注执行的命令和输出摘要（如 `已执行（npm test，结果：3 passed）`）
-- **待执行**：标注需人工操作的具体步骤（如 `待执行（需在浏览器中验证弹窗行为）`）
+**Forbidden**:
 
-**禁止**：
-- 将"设计了验证场景"误写为"验证已通过"
-- 将"代码逻辑上应该没问题"作为验证结论
-- 对 AI 无法执行的步骤（如浏览器交互）不标注"待执行"
+- Writing "designed a verification scenario" as "verification passed".
+- Using "the code logic should be fine" as a verification conclusion.
+- Failing to annotate AI-unexecutable steps (e.g. browser interaction) as "Pending".
 
-### 输出格式
+### Output format
 
-输出格式见 [reference.md](reference.md)「阶段 6 检查结果」。
-
-**工具限制**：禁止 Edit/Write；✅ 允许 Bash 执行测试命令
-
-> ⛔ **[阶段6 出口]** 输出检查结果后**立即停止**，等用户确认后进入阶段7（或根据结论决定是否需要新一轮修复循环）。
+See [reference.md](reference.md) "Phase 6 Check result".
 
 ---
 
-## 阶段7：回顾总结（Act）
+## Phase 7: Review & Summarize
 
-> 原则：只做总结、沉淀建议与下一步建议，不默认写入文件；若用户明确要求写入规则、创建 skill 或根据改进点再改，则进入新一轮「制定计划 → 执行计划」；亦可回到「审查方案」重新选定或调整方案。
+> Principle: Only summarize, suggest sediment, and propose next steps. Do not write files by default. If the user explicitly requests writing rules, creating a skill, or making further changes per the improvement points, enter a new round of "Make Plan → Execute Plan"; alternatively return to "Review Solution" to re-pick or adjust the solution.
 
-1. **复盘有效做法与失败教训** - 哪些做法值得保留，哪些做法不应复用
-2. **判断沉淀价值** - 仅将高复用、已验证、对团队或工程有长期价值的经验建议固化；一次性经验、未验证判断、个人临时偏好不建议写入长期规则
-3. **推荐 AI 工程沉淀载体** - 说明建议写入哪类载体，以及为什么
-4. **未达标时的下一步** - 是否进入下一轮，回到哪个阶段
-5. **收尾与可选总结文档** - 记录遗留风险与后续改进点；输出【改进建议】后，主动询问「是否需要生成总结文档」；若用户需要，则生成总结文档（路径由用户指定或 AI 建议），内容包含：问题复述、方案选择、执行结果、遗留与改进点
+1. **Retrospective on effective practices and failures** — Which practices are worth keeping; which should not be reused.
+2. **Assess sediment value** — Only codify high-reuse, already-validated, long-term-value experience for the team or engineering. One-off experience, unvalidated judgments, and personal temporary preferences should not be written into long-term rules.
+3. **Recommend an AI-engineering sediment carrier** — Indicate which type of carrier is recommended, and why.
+4. **Next step when goals are not met** — Whether to enter the next round, and which phase to return to.
+5. **Close-out and optional summary doc** — Record residual risks and follow-up improvements; after emitting [Improvement suggestions], proactively ask "Do you want a summary doc?"; if yes, generate one (path user-specified or AI-suggested), covering: problem restatement, solution selection, execution result, residual items and improvements.
 
-### AI 工程沉淀载体选择
+### AI-engineering sediment carrier selection
 
-| 载体 | 适用内容 |
-|------|----------|
-| `AGENTS.md` | 项目级、跨工具、团队共享的长期规则与工程约定 |
-| `CLAUDE.md` | Claude Code 专属的行为约束、工作流偏好或工具使用约定 |
-| `.cursor/rules/` | Cursor 专属规则、文件模式规则、编辑器内 AI 指导 |
-| 项目内 skill | 步骤稳定、可复用、未来可被明确触发的工作流或领域知识 |
-| 总结文档 | 一次性复盘、背景记录、暂不适合固化为规则的经验 |
+| Carrier | Applicable content |
+|---------|--------------------|
+| `AGENTS.md` | Project-level, cross-tool, team-shared long-term rules and engineering conventions |
+| `CLAUDE.md` | Claude-Code-specific behavioral constraints, workflow preferences, or tool-usage conventions |
+| `.cursor/rules/` | Cursor-specific rules, file-pattern rules, in-editor AI guidance |
+| In-project skill | Stable, reusable workflows or domain knowledge that can be triggered explicitly in the future |
+| Summary doc | One-off retrospective, background record, experience not yet suitable for codifying as rules |
 
-### 输出格式
+### Output format
 
-输出格式见 [reference.md](reference.md)「阶段 7 改进建议」。
+See [reference.md](reference.md) "Phase 7 Improvement suggestions".
 
-输出后主动询问：「是否需要生成总结文档？」
-
-**工具限制**：禁止使用 Edit/Write；除非用户明确要求「写入规则」「创建 skill」「更新文档」或进入下一轮修改，否则不得落盘修改文件
+After output, proactively ask: 「是否需要生成总结文档？」 / "Do you want a summary doc?"
 
 ---
 
-## 常见错误
+## Common Pitfalls (non-obvious; full table in reference.md)
 
-| 错误 | 后果 | 修正 |
-|------|------|------|
-| 跳过 1.1 直接读代码 | 误解问题、无效分析 | 手动模式必须先完成明确问题并获确认；自动模式可跳过 1.1 |
-| 跳过存在性验证直接进入根因分析 | 分析不存在的问题、浪费上下文 | 1.2 必须以存在性验证为第一步 |
-| 存在性验证结论为「不存在/描述不符」但继续分析 | 方向全错 | 立即停止并报告，等待用户确认 |
-| 行业通病评估结论为「无可行解」但未暂停等用户确认 | 可能产出无意义方案 | 输出评估报告后暂停，等用户决定是否继续 |
-| 评估/审查/制定计划时修改代码 | 破坏只读约束 | 仅用 Read，禁止 Edit/Write |
-| 制定计划后未经确认即执行 | 方向偏差 | 手动模式必须等用户确认；自动模式可自动确认 |
-| 信息不足时一次抛出多个问题 | 用户认知负担重，答复质量下降 | 每次只问 1 个最关键问题，得到回答后再提下一个 |
-| 「用户提了即必要」为由不剔除 | 方案臃肿 | 剔除非必要功能（YAGNI） |
-| 审查不通过仍直接进入阶段4 | 带问题的方案进入执行，返工成本高 | 必须循环审查直到通过或达到上限 |
-| 自动模式审查循环超过3轮不暂停 | 无限循环浪费资源 | 达到3轮上限必须暂停等用户介入 |
-| 审查循环中未记录每轮优化内容 | 审查过程不可追溯 | 每轮审查必须输出完整审查报告 |
-| 增强能力探索失败后阻断流程 | 不必要的中断 | 增强能力是可选的，探索失败必须静默跳过 |
-| 增强能力突破阶段工具约束 | 只读阶段被写入 | 增强能力不改变阶段工具约束 |
-| 阶段7默认写入规则文件或创建 skill | 污染长期规则、破坏只总结不强制修改的边界 | 阶段7只输出沉淀建议；必须等用户明确要求后才进入「制定计划 → 执行计划」 |
-| 路由判定为 🔵/🟣 却跳过 2.5；或 🟢内部路由下触发条件命中却跳过早搜 | 浪费多轮调试时间，可能在已知解上反复踩坑 | 🔵/🟣 路由下 2.5 为首要动作必须先执行；🟢 路由下满足触发条件时先执行 WebSearch 再打点 |
+Only entries an LLM would get wrong without explicit instruction are kept here. The full table is in [reference.md](reference.md) "Common Pitfalls (full table)".
 
+| Pitfall | Consequence | Fix |
+|---------|-------------|-----|
+| Skipping 1.1 to read code directly | Misunderstands the problem, invalid analysis | Manual mode must complete Clarify Problem and obtain confirmation; auto mode may skip 1.1 |
+| Skipping existence validation, jumping into root-cause analysis | Analyzes a non-existent problem, wastes context | 1.2 must start with existence validation |
+| Existence-validation conclusion is "does not exist / mismatch" but analysis continues | Entire direction is wrong | Stop immediately, report, wait for user confirmation |
+| Industry-ailment conclusion is "no viable solution" but does not pause for user confirmation | May produce meaningless solutions | Pause after the assessment report, wait for user decision on whether to continue |
+| Asking multiple questions at once when information is insufficient | Cognitive overload on the user, lower-quality answers | Ask only the 1 most-critical question per turn; wait for the answer before asking the next |
+| "User mentioned = necessary" — failing to strip | Bloated solutions | Strip unnecessary features (YAGNI) |
+| Auto-mode review loop exceeds 3 rounds without pausing | Infinite loop wastes resources | Must pause at the 3-round cap and wait for user intervention |
+| Review loop fails to record each round's optimization | Review process is untraceable | Every round must output a complete review report |
+| Phase 7 default-writes rule files or creates skills | Pollutes long-term rules; breaks the "summarize only, don't force changes" boundary | Phase 7 outputs sediment suggestions only; only enter "Make Plan → Execute Plan" after explicit user request |
+| Route decided as 🔵/🟣 but skipping 2.5; OR 🟢 internal route with triggers hit but skipping early search | Wastes many debugging rounds; may repeatedly step on a known-issue mine | Under 🔵/🟣, 2.5 is the primary action and must run first; under 🟢, when triggers are met, run WebSearch before instrumenting |
 
 ---
