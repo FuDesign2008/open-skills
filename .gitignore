@@ -158,6 +158,9 @@ vite.config.ts.timestamp-*
 *-evolution/
 **/evolution/
 
+# Skill-creator eval workspaces (iteration artifacts + baseline snapshots)
+skills/*-workspace/
+
 # Tool local state
 .omo/
 .opencode/
