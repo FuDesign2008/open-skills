@@ -140,6 +140,7 @@ description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审
 | 🧪 测试驱动 | test, tdd, test-driven | 阶段5（执行计划） | 先写测试再实现 |
 | 🔧 构建修复 | build-fix, build, linter, type-check | 阶段5（执行计划） | 构建/编译/类型错误修复 |
 | ✅ 完成验证 | verify, verification, complete | 阶段6（检查验证） | 执行后独立验证 |
+| 🎭 浏览器/UI 调试 | browser, devtools, cdp, playwright, screenshot, dom, css, visual-qa | 阶段1.2（技术分析）+ 阶段6（检查验证） | UI/CSS/DOM 问题时优先连接浏览器实时调试（见 `browser-debug-toolkit` skill） |
 
 ### 探索结果处理
 
@@ -268,6 +269,8 @@ description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审
 - 当前是重试场景——已基于静态分析修复过一次，但问题仍然存在
 
 > 静态分析有边界：运行时数据流、调用顺序、变量取值只能在真实执行中观测。置信度不足时，主动升级为打点调试，用运行时事实锚定根因。
+
+> 🔌 **UI/CSS/DOM 问题优先使用浏览器 DevTools**：若问题涉及样式、布局、渲染、DOM 结构，且有浏览器调试能力可用（chrome-devtools-connect MCP / playwright / webapp-testing），优先连接浏览器实时检查（DOM 树、计算样式、盒模型），比 console.log 打点更高效。详见 `browser-debug-toolkit` skill。
 
 **执行步骤**：
 
