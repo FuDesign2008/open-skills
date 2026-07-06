@@ -1,6 +1,6 @@
 ---
 name: git-conflict-resolve
-version: "1.1.0"
+version: "1.2.0"
 user-invocable: true
 description: 当 Git merge 或 rebase 过程中出现代码冲突时使用，尤其适用于 AI 自动解冲突容易出错（取错侧、丢失重构、还原旧版代码）、需要语义分析和逻辑验证的场景。也适用于 rebase 多轮停止需跨轮聚合冲突文件的情况。触发词：解冲突、处理冲突、git-conflict-resolve、解决 merge 冲突、解决 rebase 冲突、conflict resolve、冲突解决。
 ---
@@ -14,6 +14,8 @@ description: 当 Git merge 或 rebase 过程中出现代码冲突时使用，尤
 对每个冲突文件：先做语义分析理解两侧意图，再推导解决规则（含置信度）。高置信度自动解决，中置信度展示建议等确认，低置信度展示三方视图等人工决定。解决后逐文件逻辑验证，最终生成人工复查清单。
 
 **配对 skill**：被 `git-release-finish` 阶段6 调用；也可独立调用处理任意 merge/rebase 冲突。
+
+> 📖 扩展错误处理表与详细输出模板见同目录 `reference.md`。注意：通用安装（`npx skills`）仅打包 SKILL.md，核心执行逻辑全部在本文件内自包含。
 
 ---
 
@@ -31,6 +33,7 @@ description: 当 Git merge 或 rebase 过程中出现代码冲突时使用，尤
 
 ---
 
+<!-- SYNC-SECTION: Y.0 -->
 ## 子阶段 Y.0 — 模式识别与初始化
 
 1. 读取输入参数，确认 `mode`（`merge` 或 `rebase`）
@@ -63,6 +66,7 @@ git rebase origin/<TARGET>
 
 ---
 
+<!-- SYNC-SECTION: Y.1 -->
 ## 子阶段 Y.1 — 冲突清单盘点（多轮聚合）
 
 > ⚠️ rebase 每次 `git rebase --continue` 后若再次遇到冲突，**必须重新执行 Y.1**，将新增文件追加到累积清单，不得替换。
@@ -72,26 +76,9 @@ git rebase origin/<TARGET>
 git diff --name-only --diff-filter=U
 ```
 
-**追加规则**：
+**追加规则**：`累积清单 = 累积清单 ∪ 当前轮冲突文件`（集合追加，相同文件不重复，但保留出现的轮次信息）。
 
-```
-累积清单 = 累积清单 ∪ 当前轮冲突文件
-（集合追加，相同文件不重复，但保留出现的轮次信息）
-```
-
-**输出格式**：
-
-```
-【冲突盘点 — 第 N 轮】
-当前轮新增冲突文件（M 个）：
-  - path/to/file-a.ts（新增）
-  - path/to/file-b.ts（新增）
-
-累积冲突文件总清单（K 个，含历史各轮）：
-  - path/to/file-a.ts（第1轮）
-  - path/to/file-b.ts（第2轮）
-  ...
-```
+> 详细输出格式（累积清单模板）见 `reference.md` § Y.1 输出格式。
 
 **若当前轮冲突文件清单为空**：
 
@@ -104,6 +91,7 @@ git diff --name-only --diff-filter=U
 
 ---
 
+<!-- SYNC-SECTION: Y.2 -->
 ## 子阶段 Y.2 — 语义分析
 
 > ⚠️ 本阶段只读，禁止修改任何文件。
@@ -133,21 +121,13 @@ git diff $MERGE_BASE origin/<TARGET> -- <FILE>
 git diff $MERGE_BASE origin/<SOURCE> -- <FILE>
 ```
 
-**3. 语义描述输出**
+**3. 语义描述**：分别为 main 侧/release 侧标注意图（保持不变 / hotfix / 功能开发 / 重构 / 删除 / 版本字段更新 / 其他），并标注两侧关系：互斥 / 互补 / 单侧有变动。
 
-```
-【语义分析 — <FILE>】
-main 侧意图：[保持不变 / hotfix / 功能开发 / 重构 / 删除 / 版本字段更新 / 其他]
-  具体改动：...
-
-release 侧意图：[保持不变 / hotfix / 功能开发 / 重构 / 删除 / 版本字段更新 / 其他]
-  具体改动：...
-
-两侧关系：[互斥（一方覆盖另一方）/ 互补（两侧都要保留）/ 单侧有变动（另一侧与 BASE 相同）]
-```
+> 详细输出模板见 `reference.md` § Y.2 输出模板。
 
 ---
 
+<!-- SYNC-SECTION: Y.3 -->
 ## 子阶段 Y.3 — 规则推导
 
 基于 Y.2 的语义分析结论，为每个文件推导解决规则并判定置信度。
@@ -228,6 +208,7 @@ echo "$FILE" | grep -qE '(^|/)(package\.json|tsconfig\.json|\.config\.(js|ts))$'
 
 ---
 
+<!-- SYNC-SECTION: Y.4 -->
 ## 子阶段 Y.4 — 分类执行
 
 按 Y.3 的置信度分类，依次处理每个文件：
@@ -268,46 +249,15 @@ git add "$NEW_FILE"
 
 > ⚠️ **为什么不能简单 `git checkout --theirs`**：rename 冲突中 `--theirs` 的文件路径可能与工作区当前路径不同。不删旧文件 → 仓库中残留两个功能相同的 chunk（旧 hash + 新 hash），构建时可能引用错误版本。
 
-输出日志：
-
-```
-✅ [高置信度] <FILE>
-   规则：release 重构，main 未改 → 取 release 侧
-   操作：git checkout --theirs <FILE> && git add <FILE>
-```
-
 ### 🟡 中置信度 — 展示建议，等用户确认
 
-```
-【冲突文件】<FILE>
-【main 侧改动】...
-【release 侧改动】...
-【AI 建议】以 release 为主体，main 的 hotfix 已被 release 中的 xxx 覆盖
-【请选择】
-A = 接受 AI 建议（取 release 侧）
-B = 保留 main 侧
-C = 我来手动编辑，完成后通知我
-```
+展示 main/release 两侧改动摘要 + AI 建议，提供 A/B/C 三选项（A=接受建议取 release 侧 / B=保留 main 侧 / C=手动编辑后通知）。
 
 ### 🔴 低置信度 — 三方视图，等用户决定
 
-```
-【冲突文件】<FILE>
-【BASE（公共祖先）第 X-Y 行】
-...（代码）
+展示 BASE / main / release 三方代码视图 + AI 分析，提供 A/B/C 三选项（A=取 release / B=取 main / C=手动合并后通知）。
 
-【main 侧（ours）第 X-Y 行】
-...（代码）
-
-【release 侧（theirs）第 X-Y 行】
-...（代码）
-
-【AI 分析】两侧逻辑均有实质变动，无法判断权威侧
-【请选择】
-A = 取 release 侧
-B = 取 main 侧
-C = 我来手动合并，完成后通知我
-```
+> 详细 A/B/C 提示模板见 `reference.md` § Y.4 提示模板。
 
 ### Y.4.5 — 即时验证（每个文件解决后强制执行）
 
@@ -331,6 +281,8 @@ git grep -nE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' -- "$FILE" 2>/dev/null \
 
 **为什么用 `git grep` 而非 `grep -r`**：`git grep` 自动遵循 `.gitignore`，只扫 tracked 文件，天然排除 untracked 构建产物，配合精确正则形成双重过滤。
 
+> 注：本正则在 Y.5 与 Y.6 门控中复用，统一为 `^<{7,} |^={7,}$|^>{7,} |^\|{7,} `。
+
 ### rebase 多轮继续
 
 当前轮所有文件处理完毕后：
@@ -344,6 +296,7 @@ git rebase --continue
 
 ---
 
+<!-- SYNC-SECTION: Y.5 -->
 ## 子阶段 Y.5 — 逻辑验证
 
 > 对**累积清单中所有文件**逐一验证（不只是本轮）。
@@ -371,7 +324,7 @@ git show origin/<TARGET> -- <FILE>
 > 不再全仓扫描。只扫 Y.1 累积清单中的文件——这些是本次冲突涉及的文件，是唯一可能残留标记的位置。全仓扫描会被构建产物的 CSS 注释等假阳性淹没。
 
 ```bash
-# 只扫累积清单文件，用精确正则匹配 git 冲突标记格式
+# 只扫累积清单文件，用 Y.4.5 定义的同一精确正则
 for FILE in $CONFLICT_FILES_CUMULATIVE; do
   git grep -nE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' -- "$FILE" 2>/dev/null \
     && echo "❌ $FILE 有残留标记"
@@ -392,37 +345,20 @@ done
 - 解决结果中同一函数/变量出现两份实现（合并重复）
 - 语法层面明显错误（如多余的 `}`、未闭合的括号）
 
-**验证标记输出**：
-
-```
-✅ <FILE> — 逻辑一致（release 意图完整保留，main 必要变更已处理）
-⚠️ <FILE> — 疑似丢失 release 变更：xxx 函数/逻辑未出现在解决结果中
-❌ <FILE> — 逻辑冲突：存在残留 <<<<< 标记或明显语义矛盾
-```
+**验证标记输出**：`✅ <FILE> — 逻辑一致` / `⚠️ <FILE> — 疑似丢失 release 变更：xxx` / `❌ <FILE> — 残留标记或语义矛盾`。
 
 > ⚠️ / ❌ 文件：**禁止继续提交**，必须重新处理后再进入 Y.6。
 
 ---
 
+<!-- SYNC-SECTION: Y.6 -->
 ## 子阶段 Y.6 — 全局复查清单 + 提交
 
-**输出汇总表**（含累积清单中所有文件）：
-
-```
-⚠️ 以下文件在本次冲突解决过程中有变动，请人工重点 review：
-
-| 文件 | 出现轮次 | 解决方式 | 置信度 | 逻辑验证 | 需重点复查 |
-|------|---------|---------|--------|---------|----------|
-| src/effects/database/search-database.ts | 第1轮 | AI 自动（取 release 侧）| 🟢 高 | ✅ | — |
-| package.json | 第1轮 | AI 自动（version 字段取 release）| 🟢 高 | ✅ | — |
-| src/components/editor.tsx | 第2轮 | 用户选 A（release 侧）| 🟡 中 | ✅ | — |
-| src/utils/helper.ts | 第1轮 | 用户手动合并 | 🔴 低 | ⚠️ | ⚠️ 重点复查 |
-
-重点需要 review 的文件（⚠️/❌ 验证 或 🔴 低置信度）：
-  - src/utils/helper.ts：验证结论 ⚠️，疑似丢失 release 变更
+**输出汇总表**（含累积清单中所有文件）：列出每个文件的 `出现轮次 / 解决方式 / 置信度 / 逻辑验证 / 需重点复查`，并标出需要 review 的文件（⚠️/❌ 验证 或 🔴 低置信度）。
 
 确认以上文件逻辑正确后，回复「继续」以完成提交。
-```
+
+> 详细汇总表模板见 `reference.md` § Y.6 汇总表模板。
 
 **用户确认后（按 mode 执行）**：
 
@@ -435,7 +371,7 @@ git add -A
 > ⚠️ **commit 前强制门控（L2 防御）**：在 `git commit` 前扫描所有 staged 文件，检测残留冲突标记。这是提交前的最后一道防线——即使 Y.4.5 即时验证被跳过或执行走样，这里仍能拦截。
 
 ```bash
-# 扫描所有 staged 文件
+# 扫描所有 staged 文件（用 Y.4.5 定义的同一精确正则）
 git diff --cached --name-only | while read f; do
   git grep -lE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' -- "$f" 2>/dev/null \
     && { echo "❌ 禁止提交：$f 含残留冲突标记"; exit 1; }
@@ -464,77 +400,19 @@ git rebase --continue   # 若最后一轮有残余提交待完成
 
 ## 禁止行为（Red Flags）
 
-> 以下行为违反本协议。AI 发现自己即将这样做时，必须立即停止并回到正确步骤。
+> 仅记录非直觉陷阱——LLM 容易踩但读规则不会自动想到的坑。阶段本身的硬性规则（如「累积清单禁止清空」「Y.4.5 必须执行」「⚠️/❌ 禁止提交」）已在对应阶段声明，此处不重复。
 
 | 违规行为 | 正确做法 |
 |---------|---------|
-| rebase 新一轮冲突出现后，**清空**累积清单重新开始 | 必须**追加**，累积清单贯穿全程，禁止清空 |
-| Y.4 解决文件后跳过 Y.4.5 即时验证，直接处理下一个 | Y.4.5 对每个文件必须执行，fail fast 原则 |
-| Y.5 逻辑验证因"高置信度文件应该没问题"而跳过 | Y.5 对**累积清单中所有文件**必须逐一执行，无例外 |
-| Y.6 复查清单生成后未等用户确认就自动 commit | 必须等用户回复「继续」后再执行 `git commit` |
-| Y.6 commit 前门控检测到冲突标记后以"影响不大"为由强行提交 | 门控是硬性阻断，必须回 Y.4 修复后重新走门控 |
 | 语义分析（Y.2）未实际运行 `git show :1:/:2:/:3:`，凭印象描述两侧内容 | 必须先执行命令读取三方内容，基于实际内容分析 |
 | 对 rename + 构建产物 hash 冲突用 `git checkout --theirs`（不删旧文件） | 必须用 Y.4 rename+hash 专用策略：删旧 + 取新 |
 | 对复杂双侧改动文件套用高置信度规则，跳过中/低置信度的人工确认 | 置信度必须依据 Y.3 判定标准推导，不得主观拔高 |
-| 逻辑验证出现 ⚠️/❌ 后以"影响不大"为由继续提交 | ⚠️/❌ 文件禁止继续提交，必须重新处理 |
 
 ---
 
 ## 错误处理
 
-| 场景 | 处理方式 |
-|------|---------|
-| `git show :1:/:2:/:3:` 无输出 | 文件无对应阶段，用 `git status` 确认文件状态（可能已自动解决或为新增文件） |
-| `git merge-base` 报错 | 用 `git log --oneline --graph -10` 确认分支拓扑，手动指定 base commit |
-| rebase 中 `git rebase --continue` 再次报冲突 | 正常，回到 Y.1 追加累积清单，继续循环 |
-| 逻辑验证出现 ❌ 后无法确定正确解法 | 暂停，向用户展示 ❌ 文件的三方视图，等待人工决定 |
-| `git checkout --theirs/--ours` 报 pathspec not found | 先 `git add -A`，再重试 |
+> 完整错误恢复表见 `reference.md` § 错误处理。常见两条：
 
----
-
-## 快速参考命令
-
-```bash
-# ── 冲突标记检测（精确正则，所有防御层共享） ──
-# 匹配 git 冲突标记格式：行首 7+ 字符 + 空格/行尾
-# 覆盖标准 7 字符、非标准 8+ 字符、diff3 的 ||||||| base 标记
-RE='^<{7,} |^={7,}$|^>{7,} |^\|{7,} '
-
-# Y.4.5 单文件即时验证
-git grep -nE "$RE" -- "$FILE" 2>/dev/null
-
-# Y.5 累积清单扫描
-for f in $CONFLICT_FILES; do git grep -lE "$RE" -- "$f" 2>/dev/null; done
-
-# Y.6 commit 前门控（staged 文件）
-git diff --cached --name-only | while read f; do
-  git grep -lE "$RE" -- "$f" 2>/dev/null && echo "❌ $f"
-done
-
-# ── 三方版本内容 ──
-git show :1:<file>   # BASE
-git show :2:<file>   # main 侧（ours）
-git show :3:<file>   # release 侧（theirs）
-
-# 各侧增量（需先计算 MERGE_BASE）
-MERGE_BASE=$(git merge-base origin/$SRC origin/$TGT)
-git diff $MERGE_BASE origin/$TGT -- <file>   # main 增量
-git diff $MERGE_BASE origin/$SRC -- <file>   # release 增量
-
-# ── 冲突类型识别 ──
-git status --porcelain                        # 冲突状态码（UU/AA/DU/UD）
-git diff --name-status --diff-filter=U        # rename 信息
-
-# ── 按置信度执行解决 ──
-git checkout --theirs <file> && git add <file>   # 取 release 侧
-git checkout --ours <file> && git add <file>     # 取 main 侧
-
-# rename + 构建产物 hash 专用（删旧 + 取新）
-OLD=$(grep "^<<<<<<<" "$f" | sed 's/^.*HEAD://')
-NEW=$(grep "^>>>>>>>" "$f" | sed 's/^.*://' | tail -1)
-git rm -f "$OLD" 2>/dev/null
-git checkout origin/<SOURCE> -- "$NEW" && git add "$NEW"
-
-# rebase 继续
-git rebase --continue
-```
+- `git checkout --theirs/--ours` 报 pathspec not found → 先 `git add -A`，再重试。
+- rebase 中 `git rebase --continue` 再次报冲突 → 正常，回到 Y.1 追加累积清单，继续循环。
