@@ -13,7 +13,7 @@ The seven phases map onto the Deming cycle (PDCA) as follows:
 | **Plan** | Phases 1–4 | Analyze Problem (incl. Clarify Problem), Explore Solutions, Review Solution, Make Plan |
 | **Do** | Phase 5 | Execute Plan |
 | **Check** | Phase 6 | Check & Verify |
-| **Act** | Phase 7 | Review & Summarize and AI-engineering sediment |
+| **Act** | Phase 7 | Review & Summarize and AI-engineering codification |
 
 After execution completes, enter Phase 6; if Phase 7 concludes "goals not met, more changes needed", the workflow may loop back to "Analyze Problem", "Explore Solutions", or "Review Solution" to start the next round.
 
@@ -33,10 +33,10 @@ Please confirm whether my understanding is correct.
 
 ---
 
-## Phase 1.2 Industry-ailment Assessment Report
+## Phase 1.2 Industry-wide limitation Assessment Report
 
 ```
-[Industry-ailment Assessment]
+[Industry-wide limitation Assessment]
 - Problem essence: ... (one-sentence root-cause summary)
 - Industry status: ... (known public records, mainstream-framework stance, how major companies handle it)
 - Research conclusion: This problem is a [platform limit / protocol constraint / language property / standard spec], and the industry currently has no viable solution.
@@ -102,7 +102,7 @@ Please confirm whether this is acceptable, or say 「修改方案」「完善方
 [Improvement Suggestions]
 - Practices worth codifying: ...
 - Practices NOT recommended for codifying: ...
-- Recommended sediment carrier: AGENTS.md / CLAUDE.md / .cursor/rules/ / in-project skill / summary doc / none for now, reason: ...
+- Recommended codification target: AGENTS.md / CLAUDE.md / .cursor/rules/ / in-project skill / summary doc / none for now, reason: ...
 - Recommendation: Enter next round / close out. If close out, residual items and follow-ups: ...
 - Whether user confirmation is needed before writing: Yes / No; if yes, wait for explicit user request before entering "Make Plan → Execute Plan".
 - [Mode state] Auto mode has completed this round and recovered to manual. To run the next round in auto, explicitly say 「自动 xxx」 / "auto ...".
@@ -119,7 +119,7 @@ The complete pitfall table. SKILL.md keeps only the non-obvious subset (entries 
 | Skip 1.1 and read code directly | Misunderstands problem; invalid analysis | Manual mode must complete Clarify Problem and obtain confirmation; auto mode may skip 1.1 |
 | Skip existence validation, jump into root-cause analysis | Analyzes a non-existent problem; wastes context | 1.2 must start with existence validation |
 | Existence-validation conclusion is "does not exist / mismatch" but analysis continues | Entire direction is wrong | Stop immediately, report, wait for user confirmation |
-| Industry-ailment conclusion is "no viable solution" but does not pause for user confirmation | May produce meaningless solutions | Pause after the assessment report, wait for user decision on whether to continue |
+| Industry-wide limitation conclusion is "no viable solution" but does not pause for user confirmation | May produce meaningless solutions | Pause after the assessment report, wait for user decision on whether to continue |
 | Modify code during analyze / review / make-plan | Breaks read-only constraint | Use Read only; Edit/Write forbidden |
 | Execute code without confirmation after planning | Direction drifts | Manual mode must wait for user confirmation; auto mode may auto-confirm |
 | Ask multiple questions at once when information is insufficient | Cognitive overload on user; lower-quality answers | Ask only the 1 most-critical question per turn; wait for the answer before asking the next |
@@ -129,7 +129,7 @@ The complete pitfall table. SKILL.md keeps only the non-obvious subset (entries 
 | Review loop fails to record each round's optimization content | Review process is untraceable | Every round must output a complete review report |
 | Enhancement-capability exploration failure blocks the flow | Unnecessary interruption | Enhancement capabilities are optional; on failure, skip silently |
 | Enhancement capability breaks phase tool constraints | Read-only phase gets writes | Enhancement capabilities do not change phase tool constraints |
-| Phase 7 default-writes rule files or creates skills | Pollutes long-term rules; breaks the "summarize only, don't force changes" boundary | Phase 7 outputs sediment suggestions only; only enter "Make Plan → Execute Plan" after explicit user request |
+| Phase 7 default-writes rule files or creates skills | Pollutes long-term rules; breaks the "summarize only, don't force changes" boundary | Phase 7 outputs codification suggestions only; only enter "Make Plan → Execute Plan" after explicit user request |
 | Route decided as 🔵/🟣 but skipping 2.5; OR 🟢 internal route with triggers hit but skipping early search | Wastes many debugging rounds; may repeatedly step on a known-issue mine | Under 🔵/🟣, 2.5 is the primary action and must run first; under 🟢, when triggers are met, run WebSearch before instrumenting |
 
 ---

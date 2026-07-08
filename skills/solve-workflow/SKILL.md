@@ -38,7 +38,7 @@ Auto mode **automatically falls back to manual mode** in any of these cases:
 | Recovery trigger | Description |
 |------------------|-------------|
 | Phase 7 completes normally | Whether closing the loop or starting a new PDCA cycle |
-| Workflow is interrupted for any reason | Failure termination, hard-problem termination, user-initiated stop, user intervention after a review-cap pause |
+| Workflow is interrupted for any reason | Failure termination, intractable-problem termination, user-initiated stop, user intervention after a review-cap pause |
 | Phase 7 decides to loop back to Phase 2 or 3 | A new PDCA round defaults to manual mode |
 
 ### Re-entering auto mode
@@ -65,6 +65,7 @@ Batch orchestration scenarios (e.g. `jira-fix-batch`, `opsx-jira-fix-batch`) pas
 - **Stop points**: Unless otherwise noted in the "Manual stop point" column, each phase in manual mode ends with ⛔ — wait for user confirmation before proceeding. Auto mode skips these stop points (only the Phase 3 review cap pauses auto mode).
 - **Enhancement capabilities (🔌)**: If environment capability exploration finds enhancement capabilities (🔍 debug, 🌐 web research, 💡 design, etc.), they are called at the corresponding phase. See "Environment Capability Exploration" for details. Enhancement calls never expand a phase's tool permissions and never block the workflow on failure.
 - **Tool permission abbreviations**: ✅ allowed, ❌ forbidden. "Read/Grep" includes SemanticSearch and equivalent read-only tools.
+- **Read-only phases (1–4)**: Bash commands that modify project state (e.g. `npm install`, `git checkout`, `git reset`) are forbidden alongside Edit/Write.
 
 | Phase | Tool permissions | 👤 Manual stop point | Required output |
 |-------|------------------|----------------------|-----------------|
@@ -75,7 +76,7 @@ Batch orchestration scenarios (e.g. `jira-fix-batch`, `opsx-jira-fix-batch`) pas
 | 4 Make Plan | ✅ Read; ❌ Edit/Write/Bash | ⛔ Stop after plan output, wait for user confirmation | File change list + ordering |
 | 5 Execute Plan | ✅ All (Edit/Write/Bash); use TodoWrite | Auto-advance to Phase 6 when no blockers | Execution report |
 | 6 Check & Verify | ✅ Bash (test commands); ❌ Edit/Write | ⛔ Stop after result output, wait for user confirmation | Verification result |
-| 7 Review & Summarize | ❌ Edit/Write (unless user confirms a write or a new round) | End / loop back to Phase 2 or 3 | Improvement suggestions + sediment carrier |
+| 7 Review & Summarize | ❌ Edit/Write (unless user confirms a write or a new round) | End / loop back to Phase 2 or 3 | Improvement suggestions + codification target |
 
 ---
 
@@ -235,7 +236,7 @@ When an exception applies: **read only the files and line ranges the user direct
    > 💡 Distinction from step 3.5: This step "pre-searches known cases by symptom" (applies whether or not a fix exists); 3.5 "evaluates whether the industry has a consensus fix after the root cause is clear" (specifically for unsolvable cases). Different timing and purpose; they do not overlap.
 
 3. **Root-cause analysis** — Data flow and call-chain analysis.
-3.5 **Industry-ailment assessment** (optional; triggered when the root cause clearly points to a hard limit)
+3.5 **Industry-wide limitation assessment** (optional; triggered when the root cause clearly points to a hard limit)
    - Trigger only when the root cause **clearly points to** a hard limit of platform / language / protocol / standard (e.g. browser security policy, JS single-threadedness, network protocol constraint) AND no obvious application-layer bypass exists.
    - If triggered, use WebSearch to investigate: whether the industry has a recognized record, how mainstream frameworks / major companies handle it, whether any viable bypass exists.
      - 🔌 If `effective-web-research` is available, apply its research discipline — Step 0 triage first, then execute the 4 maxims (official sources first / check recency / cross-validate non-trivial claims / skip content farms); switch to its strict mode for a report when the user asks for rigorous research. If the skill is unavailable, follow the native WebSearch flow.
@@ -243,7 +244,7 @@ When an exception applies: **read only the files and line ranges the user direct
 
    | Conclusion | Action |
    |------------|--------|
-   | 🚫 Industry-recognized hard problem, no viable solution | Output [Industry-ailment assessment report], **pause, wait for user decision** (continue exploring bypasses / accept status quo) |
+   | 🚫 Industry-recognized hard problem, no viable solution | Output [Industry-wide limitation Assessment Report], **pause, wait for user decision** (continue exploring bypasses / accept status quo) |
    | ⚠️ Has limitations but a bypass exists | List the bypass as a candidate in subsequent solution exploration, continue to step 4 |
    | ✅ Not an industry ailment; fixable | Continue to step 4 |
 
@@ -253,9 +254,9 @@ When an exception applies: **read only the files and line ranges the user direct
 
 **1.1 Clarify Problem**: see [reference.md](reference.md) "Phase 1.1 Clarify Problem".
 
-**1.2 Technical Analysis**: First report the existence-validation conclusion → 0.5 research routing (🟢 / 🔵 / 🟣) → then by route emphasis output phenomenon, localization, root cause; if step 3.5 was triggered, output the industry-ailment conclusion after the root cause; then output impact scope.
+**1.2 Technical Analysis**: First report the existence-validation conclusion → 0.5 research routing (🟢 / 🔵 / 🟣) → then by route emphasis output phenomenon, localization, root cause; if step 3.5 was triggered, output the industry-wide limitation conclusion after the root cause; then output impact scope.
 
-**Industry-ailment assessment report** (output when conclusion is "no viable solution"): see [reference.md](reference.md) "Phase 1.2 Industry-ailment assessment report".
+**Industry-wide limitation Assessment Report** (output when conclusion is "no viable solution"): see [reference.md](reference.md) "Phase 1.2 Industry-wide limitation Assessment Report".
 
 ### Red Flags — forbidden behaviors
 
@@ -406,7 +407,7 @@ Solution selected → Review (round N) → Output review report
 
 ### Review report output fields
 
-See [reference.md](reference.md) "Phase 3 Review report".
+See [reference.md](reference.md) "Phase 3 Review Report".
 
 ### Red Flags — forbidden behaviors
 
@@ -444,7 +445,7 @@ This summary is part of the Phase 3 output, not a separate file, and is referenc
 
 ### Output format
 
-See [reference.md](reference.md) "Phase 4 Make plan".
+See [reference.md](reference.md) "Phase 4 Make Plan".
 
 ### Update Plan (sub-phase)
 
@@ -515,21 +516,21 @@ Every verification result must be annotated in parentheses with its **actual exe
 
 ### Output format
 
-See [reference.md](reference.md) "Phase 6 Check result".
+See [reference.md](reference.md) "Phase 6 Check Result".
 
 ---
 
 ## Phase 7: Review & Summarize
 
-> Principle: Only summarize, suggest sediment, and propose next steps. Do not write files by default. If the user explicitly requests writing rules, creating a skill, or making further changes per the improvement points, enter a new round of "Make Plan → Execute Plan"; alternatively return to "Review Solution" to re-pick or adjust the solution.
+> Principle: Only summarize, suggest codification, and propose next steps. Do not write files by default. If the user explicitly requests writing rules, creating a skill, or making further changes per the improvement points, enter a new round of "Make Plan → Execute Plan"; alternatively return to "Review Solution" to re-pick or adjust the solution.
 
 1. **Retrospective on effective practices and failures** — Which practices are worth keeping; which should not be reused.
-2. **Assess sediment value** — Only codify high-reuse, already-validated, long-term-value experience for the team or engineering. One-off experience, unvalidated judgments, and personal temporary preferences should not be written into long-term rules.
-3. **Recommend an AI-engineering sediment carrier** — Indicate which type of carrier is recommended, and why.
+2. **Assess codification value** — Only codify high-reuse, already-validated, long-term-value experience for the team or engineering. One-off experience, unvalidated judgments, and personal temporary preferences should not be written into long-term rules.
+3. **Recommend an AI-engineering codification target** — Indicate which type of carrier is recommended, and why.
 4. **Next step when goals are not met** — Whether to enter the next round, and which phase to return to.
 5. **Close-out and optional summary doc** — Record residual risks and follow-up improvements; after emitting [Improvement suggestions], proactively ask "Do you want a summary doc?"; if yes, generate one (path user-specified or AI-suggested), covering: problem restatement, solution selection, execution result, residual items and improvements.
 
-### AI-engineering sediment carrier selection
+### AI-engineering codification target selection
 
 | Carrier | Applicable content |
 |---------|--------------------|
@@ -541,7 +542,7 @@ See [reference.md](reference.md) "Phase 6 Check result".
 
 ### Output format
 
-See [reference.md](reference.md) "Phase 7 Improvement suggestions".
+See [reference.md](reference.md) "Phase 7 Improvement Suggestions".
 
 After output, proactively ask: 「是否需要生成总结文档？」 / "Do you want a summary doc?"
 
@@ -556,12 +557,12 @@ Only entries an LLM would get wrong without explicit instruction are kept here. 
 | Skipping 1.1 to read code directly | Misunderstands the problem, invalid analysis | Manual mode must complete Clarify Problem and obtain confirmation; auto mode may skip 1.1 |
 | Skipping existence validation, jumping into root-cause analysis | Analyzes a non-existent problem, wastes context | 1.2 must start with existence validation |
 | Existence-validation conclusion is "does not exist / mismatch" but analysis continues | Entire direction is wrong | Stop immediately, report, wait for user confirmation |
-| Industry-ailment conclusion is "no viable solution" but does not pause for user confirmation | May produce meaningless solutions | Pause after the assessment report, wait for user decision on whether to continue |
+| Industry-wide limitation conclusion is "no viable solution" but does not pause for user confirmation | May produce meaningless solutions | Pause after the assessment report, wait for user decision on whether to continue |
 | Asking multiple questions at once when information is insufficient | Cognitive overload on the user, lower-quality answers | Ask only the 1 most-critical question per turn; wait for the answer before asking the next |
 | "User mentioned = necessary" — failing to strip | Bloated solutions | Strip unnecessary features (YAGNI) |
 | Auto-mode review loop exceeds 3 rounds without pausing | Infinite loop wastes resources | Must pause at the 3-round cap and wait for user intervention |
 | Review loop fails to record each round's optimization | Review process is untraceable | Every round must output a complete review report |
-| Phase 7 default-writes rule files or creates skills | Pollutes long-term rules; breaks the "summarize only, don't force changes" boundary | Phase 7 outputs sediment suggestions only; only enter "Make Plan → Execute Plan" after explicit user request |
+| Phase 7 default-writes rule files or creates skills | Pollutes long-term rules; breaks the "summarize only, don't force changes" boundary | Phase 7 outputs codification suggestions only; only enter "Make Plan → Execute Plan" after explicit user request |
 | Route decided as 🔵/🟣 but skipping 2.5; OR 🟢 internal route with triggers hit but skipping early search | Wastes many debugging rounds; may repeatedly step on a known-issue mine | Under 🔵/🟣, 2.5 is the primary action and must run first; under 🟢, when triggers are met, run WebSearch before instrumenting |
 
 ---
