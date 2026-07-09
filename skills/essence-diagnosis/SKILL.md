@@ -24,6 +24,7 @@ The sole value of this skill is to fight these two cognitive traps with a struct
 | `solve-workflow` | Full workflow (analyze → solution → execute → verify → recap) | This skill is the heavy-weight deep-dive of its phase 1.2, focused purely on analysis/diagnosis; can also be used standalone |
 | `multi-agent-debate` | Three-agent adversarial verification of existing conclusions | This skill's output = its input; **one-way orchestration**, debate does not call back into this skill |
 | `diagnose` / `debug-workflow` | Single-bug diagnosis/debugging | They assume "known to be a bug"; this skill makes no such assumption and fits the foggy state of "not even sure what the problem is yet" |
+| `hybrid-debug` | Hybrid app (WebView/WKWebView/Electron + H5) four-layer debugging | Domain-specific pre-filter: for hybrid problems, apply its four-layer model first; escalate to this skill only when the problem is still foggy after structured layer-by-layer analysis |
 
 ## Triggers and mode
 
