@@ -155,7 +155,7 @@ description: 当用户说「修复这个 bug [URL]」「帮我修复 [URL]」「
 | 📋 代码审查 | code-review, review, requesting-review | 阶段7 | 代码审查 |
 | 🌿 分支管理 | worktree, branch, git-worktree | 阶段1 | 工作区隔离 |
 | 🎭 浏览器/UI 调试 | browser, devtools, cdp, playwright, screenshot, dom, css, visual-qa | 阶段2（技术分析）+ 阶段6 | UI/CSS/DOM 问题时优先连接浏览器实时调试（见 `browser-debug-toolkit` skill） |
-| 🔄 Hybrid 全栈调试 | hybrid, webview, wkwebview, electron, react-native, native-web, cross-platform, 跨端, 平台差异, 跨端调试 | 阶段2（技术分析） | hybrid 应用（native + WebView/WKWebView/Electron + H5）问题的四层全链条分析方法论（见 `hybrid-fullstack-debugging` skill） |
+| 🔄 Hybrid 全栈调试 | hybrid, webview, wkwebview, electron, react-native, native-web, cross-platform, 跨端, 平台差异, 跨端调试 | 阶段2（技术分析） | hybrid 应用（native + WebView/WKWebView/Electron + H5）问题的四层全链条分析方法论（见 `hybrid-debug` skill） |
 
 ### 探索结果处理
 
