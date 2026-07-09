@@ -145,7 +145,7 @@ description: 当用户说「修复这个 bug [URL]」「帮我修复 [URL]」「
 | 能力类型 | 匹配关键词 | 对应阶段 | 用途 |
 |---------|-----------|---------|------|
 | 🔍 调试分析 | debug, root-cause, investigate, systematic-debugging, 分析问题 | 阶段2 | 辅助根因定位 |
-| 🌐 Web 调研 | research, web, look up, investigate, web-research | 阶段2（已知快搜/行业通病/打点逃生） | 外部 web 调研纪律：Step 0 分流 + 4 口诀 + 严格模式 |
+| 🌐 Web 调研 | research, web, look up, investigate, web-research, effective-web-research | 阶段2（已知快搜/行业通病/打点逃生） | 外部 web 调研纪律：Step 0 分流 + 4 口诀 + 严格模式（见 `effective-web-research` skill） |
 | 💡 方案设计 | brainstorm, design, architect, 探索方案 | 阶段3 | 辅助方案探索 |
 | 📝 计划制定 | plan, writing-plan, 制定计划 | 阶段4 | 辅助计划细化 |
 | ⚡ 代码执行 | execute, executing-plan, subagent, parallel | 阶段5 | 批量任务编排 |
