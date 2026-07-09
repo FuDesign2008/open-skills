@@ -132,7 +132,7 @@ description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审
 | 能力类型 | 匹配关键词 | 对应阶段 | 用途 |
 |---------|-----------|---------|------|
 | 🔍 调试分析 | debug, root-cause, investigate, systematic-debugging | 阶段1（技术分析） | 辅助根因定位、假设驱动调查 |
-| 🌐 Web 调研 | research, web, look up, investigate, web-research | 阶段1.2（步骤 2.5/3.5/5.5） | 外部 web 调研纪律：Step 0 分流 + 4 口诀 + 严格模式 |
+| 🌐 Web 调研 | research, web, look up, investigate, web-research, effective-web-research | 阶段1.2（步骤 2.5/3.5/5.5） | 外部 web 调研纪律：Step 0 分流 + 4 口诀 + 严格模式（见 `effective-web-research` skill） |
 | 💡 方案设计 | brainstorm, design, architect | 阶段2（探索方案） | 辅助多方案生成与对比 |
 | 📋 代码审查 | code-review, review, requesting-review | 阶段3（审查方案） | 辅助方案深度审查 |
 | 📝 计划制定 | plan, writing-plan | 阶段4（制定计划） | 辅助生成结构化执行计划 |
