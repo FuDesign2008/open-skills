@@ -161,6 +161,7 @@ description: 当用户说"opsx解决"、"OpenSpec解决"、"规范化解决"、"
    | 🔧 构建修复 | build-fix, build, linter, type-check | 阶段 5（执行计划） | 构建/编译/类型错误修复 |
    | ✅ 完成验证 | verify, verification, complete | 阶段 6（检查验证） | 执行后独立验证 |
    | 🎭 浏览器/UI 调试 | browser, devtools, cdp, playwright, screenshot, dom, css, visual-qa | 阶段 1.2（技术分析）+ 阶段 6（检查验证） | UI/CSS/DOM 问题时优先连接浏览器实时调试（见 `browser-debug-toolkit` skill） |
+   | 🔄 Hybrid 全栈调试 | hybrid, webview, wkwebview, electron, react-native, native-web, cross-platform, 跨端, 平台差异, 跨端调试 | 阶段 1.2（技术分析） | hybrid 应用（native + WebView/WKWebView/Electron + H5）问题的四层全链条分析方法论（见 `hybrid-fullstack-debugging` skill） |
 
    **探索结果处理**：
 
