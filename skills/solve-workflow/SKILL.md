@@ -373,18 +373,7 @@ description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审
 2. **副作用与风险**：改动是否在其他模块引发新问题（功能副作用）、是否带来性能/安全/可维护性问题（非功能副作用）、已识别问题有无缓解措施
 3. **实现可行性**：改动范围、依赖关系、涉及文件/模块是否明确可执行
 4. **代码规范符合度**：是否符合项目现有模式和最佳实践
-5. **架构与设计质量**（若解决方案涉及代码修改）：
-
-   - **偶然复杂度审查**（Fred Brooks, *No Silver Bullet* 1986）：方案是否引入了不映射到问题域固有复杂度的间接层、配置或抽象？每个新增抽象都应有当前就需要的明确理由；理由为"以后可能用得上"的属偶然复杂度，应在审查阶段削减
-   - **耦合类型分级**（Myers 耦合分类法）：识别改动引入的耦合类型——数据耦合（传参数据，可接受）、Stamp 耦合（共享复合结构但只用部分字段，低风险）、控制耦合（传 flag 控制他模块分支，泄露决策权，需审视）、公共耦合（共享可变状态，高风险，破坏可推理性）、内容耦合（直接操作他模块内部，不可接受）
-   - **内聚度评估**（Yourdon-Constantine 内聚梯度）：改动后模块内部元素是否朝同一目标聚合（Functional 内聚，最强），还是因时间/逻辑/巧合而捆绑（Temporal / Logical / Coincidental，最弱）？内聚度从 Functional 降级是设计退化早期信号——即使当前能运行，后续每次修改都波及不相关元素
-   - **变更传播半径**（Fowler 坏味道 Shotgun Surgery + Open-Closed Principle）：方案是否将高频变更局部化？还是让一次修改散布到多处（霰弹枪修改）？好的设计分离"可变决策"（业务规则、配置）与"稳定内核"（数据模型、核心算法），使前者变更不波及后者
-   - **技术债定性**（Fowler 技术债象限）：本方案引入的技术债属于哪个象限？Prudent-Deliberate（明知有更优方案但因约束主动权衡，需记录偿还计划）→ 可接受；Reckless-Inadvertent（因不知更好方案而引入 God Object / Speculative Generality / Primitive Obsession 等坏味道）→ 必须拦截，因为持有者不知债的存在，不会被偿还
-   - **架构质量属性适配**（ISO/IEC 25010 质量模型 + Clean Architecture，按路径缩放——精简路径可跳过，完整路径必查）：方案是否满足该变更涉及的架构级质量属性？
-     - 可测试性：业务逻辑能否脱离 UI/DB/外部服务独立测试？（Clean Architecture: "business rules can be tested without the UI, Database, Web Server, or any other external element"）
-     - 可修改性/模块性：一处改动是否最小化对其他组件的影响？（ISO 25010 Maintainability — Modularity）
-     - 稳定性/韧性：方案是否考虑了故障场景（降级、重试、熔断）？（ISO 25010 Reliability — Fault tolerance, Recoverability）
-     - 可扩展性：方案能否承受预期的数据量/并发增长，还是埋了瓶颈？（ISO 25010 Performance Efficiency — Capacity）
+5. **架构与设计质量**（若解决方案涉及代码修改）：从耦合/内聚/复杂度/技术债/架构质量属性评估方案的设计质量。详细审查子项与理论依据见 [reference.md](reference.md)「阶段 3 审查维度 5：架构与设计质量」
 
 ### 审查结论（二级制）
 
