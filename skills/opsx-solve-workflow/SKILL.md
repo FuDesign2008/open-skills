@@ -154,8 +154,10 @@ description: 当用户说"opsx解决"、"OpenSpec解决"、"规范化解决"、"
    | 🔍 调试分析 | debug, root-cause, investigate, systematic-debugging | 阶段 1（技术分析） | 辅助根因定位、假设驱动调查 |
    | 🌐 Web 调研 | research, web, look up, investigate, web-research, effective-web-research | 阶段 1.2（步骤 2.5/3.5/5.5） | 外部 web 调研纪律：Step 0 分流 + 4 口诀 + 严格模式（见 `effective-web-research` skill） |
    | 💡 方案设计 | brainstorm, design, architect | 阶段 2（探索方案） | 辅助多方案生成与对比 |
-   | 📋 代码审查 | code-review, review, requesting-review | 阶段 3（审查方案） | 辅助方案深度审查 |
-   | 📝 计划制定 | plan, writing-plan | 阶段 4（制定计划） | 辅助生成结构化执行计划 |
+    | 📋 代码审查 | code-review, review, requesting-review | 阶段 3（审查方案） | 辅助方案深度审查 |
+    | 🔎 方案审查 | solution, proposal, decision, design-review, 审查方案, 方案审查, 方案评估, 设计评审, 决策评审 | 阶段 3（审查方案） | 通用方案深度审查框架：4 核心维度 + 5 战略维度（可逆性/失效模式/可运维性/成本价值/团队适配）（见 `solution-review` skill） |
+    | 🏗️ 代码设计审查 | code-design, code-architecture, coupling, cohesion, complexity, 代码设计审查, 代码架构审查, 耦合, 内聚, 设计质量 | 阶段 3（审查方案） | 代码方案的设计质量审查：Layer A 代码级指标 + Layer B 架构级属性 + Layer C 安全审查（见 `code-design-review` skill） |
+    | 📝 计划制定 | plan, writing-plan | 阶段 4（制定计划） | 辅助生成结构化执行计划 |
    | ⚡ 代码执行 | execute, executing-plan, subagent, parallel | 阶段 5（执行计划） | 多文件修改的批量编排 |
    | 🧪 测试驱动 | test, tdd, test-driven | 阶段 5（执行计划） | 先写测试再实现 |
    | 🔧 构建修复 | build-fix, build, linter, type-check | 阶段 5（执行计划） | 构建/编译/类型错误修复 |
@@ -407,6 +409,7 @@ Delta spec 规范（由 `openspec-continue-change` skill 负责落实）：
 2. **副作用与风险**：是否影响其他模块、性能、安全、兼容性。
 3. **实现可行性**：涉及文件、依赖、迁移是否明确。
 4. **规范符合度**：是否符合现有代码模式和 OpenSpec spec 约定。
+5. **架构与设计质量**（若方案涉及代码修改）：从耦合/内聚/复杂度/技术债/架构质量属性评估方案的设计质量。若环境中存在 `code-design-review` skill，其提供了完整的代码设计审查框架（Layer A 代码级指标 + Layer B 架构级属性 + Layer C 安全审查）；否则按耦合/内聚/复杂度简要审查。
 
 若检测到 `requesting-code-review`，在通过前额外做一次“spec 合规审查”：proposal 是否解释 why，delta specs 是否覆盖行为变化，design 是否处理风险，tasks 是否覆盖 requirements。
 
@@ -421,7 +424,7 @@ Delta spec 规范（由 `openspec-continue-change` skill 负责落实）：
 
 | 结论 | 判定标准 | 后续动作 |
 |------|---------|---------|
-| ✅ **通过** | 四项审查维度均无阻断问题，仅存在可接受的低风险 | 进入阶段 4 |
+| ✅ **通过** | 各项审查维度均无阻断问题，仅存在可接受的低风险 | 进入阶段 4 |
 | ❌ **不通过** | 任一维度存在需解决的问题或不可接受的风险 | 进入优化→重新审查循环 |
 
 **阻断问题判定指引**（满足任一即为 ❌ 不通过）：

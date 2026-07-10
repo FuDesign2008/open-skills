@@ -135,6 +135,8 @@ description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审
 | 🌐 Web 调研 | research, web, look up, investigate, web-research, effective-web-research | 阶段1.2（步骤 2.5/3.5/5.5） | 外部 web 调研纪律：Step 0 分流 + 4 口诀 + 严格模式（见 `effective-web-research` skill） |
 | 💡 方案设计 | brainstorm, design, architect | 阶段2（探索方案） | 辅助多方案生成与对比 |
 | 📋 代码审查 | code-review, review, requesting-review | 阶段3（审查方案） | 辅助方案深度审查 |
+| 🔎 方案审查 | solution, proposal, decision, design-review, 审查方案, 方案审查, 方案评估, 设计评审, 决策评审 | 阶段3（审查方案） | 通用方案深度审查框架：4 核心维度 + 5 战略维度（可逆性/失效模式/可运维性/成本价值/团队适配）（见 `solution-review` skill） |
+| 🏗️ 代码设计审查 | code-design, code-architecture, coupling, cohesion, complexity, 代码设计审查, 代码架构审查, 耦合, 内聚, 设计质量 | 阶段3（审查方案） | 代码方案的设计质量审查：Layer A 代码级指标 + Layer B 架构级属性 + Layer C 安全审查（见 `code-design-review` skill） |
 | 📝 计划制定 | plan, writing-plan | 阶段4（制定计划） | 辅助生成结构化执行计划 |
 | ⚡ 代码执行 | execute, executing-plan, subagent, parallel | 阶段5（执行计划） | 多文件修改的批量编排 |
 | 🧪 测试驱动 | test, tdd, test-driven | 阶段5（执行计划） | 先写测试再实现 |
@@ -373,7 +375,7 @@ description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审
 2. **副作用与风险**：改动是否在其他模块引发新问题（功能副作用）、是否带来性能/安全/可维护性问题（非功能副作用）、已识别问题有无缓解措施
 3. **实现可行性**：改动范围、依赖关系、涉及文件/模块是否明确可执行
 4. **代码规范符合度**：是否符合项目现有模式和最佳实践
-5. **架构与设计质量**（若解决方案涉及代码修改）：从耦合/内聚/复杂度/技术债/架构质量属性评估方案的设计质量。详细审查子项与理论依据见 [reference.md](reference.md)「阶段 3 审查维度 5：架构与设计质量」
+5. **架构与设计质量**（若解决方案涉及代码修改）：从耦合/内聚/复杂度/技术债/架构质量属性评估方案的设计质量。若环境中存在 `code-design-review` skill，其提供了完整的代码设计审查框架（Layer A 代码级指标 + Layer B 架构级属性 + Layer C 安全审查 + 理论依据与阈值）；本工作流自带的简要要点见 [reference.md](reference.md)「阶段 3 审查维度 5」
 
 ### 审查结论（二级制）
 
