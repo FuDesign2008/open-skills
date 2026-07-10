@@ -1,0 +1,23 @@
+{
+  "skill_name": "runtime-evidence-debug",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a React component that sometimes renders stale data after a state update. I've read through the useState and useEffect logic and everything looks correct — the state setter is called, the effect depends on the right values. But in production builds, about 1 in 5 times the UI shows old data for a split second before updating. I can't figure out why from reading the code. What should I do?",
+      "expected_output": "Should recognize low root-cause confidence after static analysis and guide toward hypothesis-driven runtime instrumentation (not shotgun logging). Should mention the intermittent nature (Heisenbug signal). Should design 2-5 targeted instrumentation points mapped to specific hypotheses about the stale render. Should NOT immediately propose a code fix.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "My Node.js app leaks memory — the RSS grows by about 50MB per hour under load. I've read through the code and I'm pretty sure it's the event listener in the WebSocket handler that's not being cleaned up when clients disconnect. I think I should just add a removeEventListener in the cleanup function. Should I go ahead and fix it?",
+      "expected_output": "Should recognize this is a Tier 3 (code inference) root cause, NOT confirmed. Should prevent acting on low confidence. Should recommend runtime evidence gathering (heap snapshot comparison, event listener count monitoring) before fixing. Should NOT just agree and say 'yes, go ahead'.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I had a bug where my API endpoint was returning 500 errors intermittently. I found the issue — a race condition in the database connection pool where two threads could grab the same connection. I added a mutex lock around the connection acquisition. The code looks correct now. Am I done?",
+      "expected_output": "Should recognize that 'the code looks correct' is NOT fix verification. Should require before/after comparison (reproduce the 500 errors, apply fix, confirm they stop). Should mention regression check (mutex might cause deadlock or performance issues). Should mention Heisenbug risk (adding a mutex changes timing).",
+      "files": []
+    }
+  ]
+}
