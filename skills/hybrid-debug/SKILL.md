@@ -70,7 +70,7 @@ Example shape: iOS calls `setTheme('dark')` → switches H5 class → WKWebView 
 6. **Assess cross-layer side effects** before choosing a fix. Ask: does this fix change the existing behavior of another layer? (An H5-only patch may alter iOS's existing visuals; a native-only patch may break a web-only code path.) The fix must cover the root cause across all affected layers without introducing new inconsistency.
 7. **Gate on root-cause confidence.** If confidence is *fuzzy* or *unknown* after step 2, do not jump to a fix — keep tracing, or escalate to runtime instrumentation. Entering execution on a low-confidence root cause is how the first attempt becomes a discarded surface patch.
 
-> The general discipline behind steps 4–7 (runtime evidence, same-root scan, side-effect assessment, confidence gating) is provided in full by `solve-workflow`. This skill focuses on how to apply them *within the four-layer model* — when used standalone, follow the spirit of those disciplines even without the full workflow.
+> The general discipline behind steps 4–7 (runtime evidence, same-root scan, side-effect assessment, confidence gating) is provided by the `runtime-evidence-debug` skill (which solve-workflow discovers through its environment capability exploration). This skill focuses on how to apply them *within the four-layer model* — when used standalone, follow the spirit of those disciplines even without the full workflow.
 
 ## Anti-patterns (forbidden moves)
 

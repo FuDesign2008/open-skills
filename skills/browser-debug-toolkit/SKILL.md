@@ -117,7 +117,7 @@ After install/enable, verify the MCP is loaded:
 
 ## Workflow Integration
 
-This skill is discovered by the environment capability exploration mechanism of `solve-workflow`, `debug-workflow`, and similar workflow skills. It is also delegated to by `hybrid-debug` for runtime evidence in hybrid app (WebView/WKWebView/Electron + H5) debugging scenarios:
+This skill is discovered by the environment capability exploration mechanism of `solve-workflow`, `debug-workflow`, and similar workflow skills. It is also delegated to by `hybrid-debug` for runtime evidence in hybrid app (WebView/WKWebView/Electron + H5) debugging scenarios, and by `runtime-evidence-debug` for UI/CSS/DOM instrumentation in general debugging scenarios:
 
 1. **Stage 1.2 (Technical Analysis)**: UI/CSS/DOM issues → prioritize browser tools for runtime state inspection
 2. **Before console.log debugging**: For UI issues, inspect with browser DevTools first (more efficient than console.log), then fall back to logging if still unresolved
