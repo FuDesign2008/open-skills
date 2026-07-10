@@ -3,6 +3,12 @@ name: solve-workflow
 version: "1.9.0"
 user-invocable: true
 description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审查方案"、"制定计划"、"执行计划"、"检查验证"、"回顾总结"，或"继续分析"、"深入分析"、"修改方案"、"完善方案"、"优化方案"、"更新计划"、"修订计划"、"修改计划"，或"自动模式"、"自动分析"、"自动解决"时触发。适用于 bug 修复、代码重构、功能开发等需系统性分析的复杂任务。
+dependencies:
+  - solution-review
+  - code-design-review
+  - hybrid-debug
+  - runtime-evidence-debug
+  - browser-debug-toolkit
 ---
 
 # 七阶段问题解决工作流
@@ -30,7 +36,29 @@ description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审
 - **匹配规则**：`xxx` 中包含触发词即视为命中，无需精确匹配
 - **不适用场景**：单步修改（如改一个变量名）、用户仅需快速建议而非完整执行流程时，可跳过本工作流直接处理。
 
-**相关 skill**：`perf-workflow`（性能专项分析）、`jira-fix-workflow`（Jira 端到端修复，内置本工作流）
+**强依赖 skill**（frontmatter `dependencies`）：
+- `solution-review`（阶段 3 决策级审查）
+- `code-design-review`（阶段 3 代码设计审查）
+- `hybrid-debug`（阶段 1.2 Hybrid 全栈调试）
+- `runtime-evidence-debug`（阶段 1.2 运行时证据调试）
+- `browser-debug-toolkit`（阶段 1.2 + 阶段 6 浏览器 DevTools 调试）
+
+启动时须先通过「前置 skill 检查」，缺失即中止流程。
+
+**相关 skill**（信息性引用，非强依赖）：`perf-workflow`（性能专项分析）、`jira-fix-workflow`（Jira 端到端修复，内置本工作流）
+
+## 前置 skill 检查
+
+> solve-workflow 通过 frontmatter `dependencies` 声明对 `solution-review` 与 `code-design-review` 的强依赖。启动时（进入阶段 1 之前）必须执行本检查。
+
+1. 扫描可用 skill（复用「环境能力探索」的扫描方法——查 `<available_items>` 或用 `skill` 工具）
+2. 核对 `solution-review` 和 `code-design-review` 是否都在可用列表中
+3. 全部存在 → 继续后续流程
+4. 任一缺失 → 按缺失提示格式（见 [reference.md](reference.md)「前置 skill 检查 — 缺失提示」）输出并**立即中止流程**
+
+> **不降级原则**：强依赖缺失即中止，不得用简化审查降级运行，保证 solve-workflow 在任何环境下的审查深度一致。
+
+---
 
 ## 触发词与模式
 
@@ -134,17 +162,12 @@ description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审
 | 🔍 调试分析 | debug, root-cause, investigate, systematic-debugging | 阶段1（技术分析） | 辅助根因定位、假设驱动调查 |
 | 🌐 Web 调研 | research, web, look up, investigate, web-research, effective-web-research | 阶段1.2（步骤 2.5/3.5/5.5） | 外部 web 调研纪律：Step 0 分流 + 4 口诀 + 严格模式（见 `effective-web-research` skill） |
 | 💡 方案设计 | brainstorm, design, architect | 阶段2（探索方案） | 辅助多方案生成与对比 |
-| 📋 代码审查 | code-review, review, requesting-review | 阶段3（审查方案） | 辅助方案深度审查 |
-| 🔎 方案审查 | solution, proposal, decision, design-review, 审查方案, 方案审查, 方案评估, 设计评审, 决策评审 | 阶段3（审查方案） | 通用方案深度审查框架：4 核心维度 + 5 战略维度（可逆性/失效模式/可运维性/成本价值/团队适配）（见 `solution-review` skill） |
-| 🏗️ 代码设计审查 | code-design, code-architecture, coupling, cohesion, complexity, 代码设计审查, 代码架构审查, 耦合, 内聚, 设计质量 | 阶段3（审查方案） | 代码方案的设计质量审查：Layer A 代码级指标 + Layer B 架构级属性 + Layer C 安全审查（见 `code-design-review` skill） |
+| 📋 代码审查 | code-review, review, requesting-review | 阶段3（审查方案） | 辅助方案深度审查（注：`solution-review`、`code-design-review`、`hybrid-debug`、`runtime-evidence-debug`、`browser-debug-toolkit` 均已通过 frontmatter `dependencies` 强绑定，不走环境探索） |
 | 📝 计划制定 | plan, writing-plan | 阶段4（制定计划） | 辅助生成结构化执行计划 |
 | ⚡ 代码执行 | execute, executing-plan, subagent, parallel | 阶段5（执行计划） | 多文件修改的批量编排 |
 | 🧪 测试驱动 | test, tdd, test-driven | 阶段5（执行计划） | 先写测试再实现 |
 | 🔧 构建修复 | build-fix, build, linter, type-check | 阶段5（执行计划） | 构建/编译/类型错误修复 |
 | ✅ 完成验证 | verify, verification, complete | 阶段6（检查验证） | 执行后独立验证 |
-| 🎭 浏览器/UI 调试 | browser, devtools, cdp, playwright, screenshot, dom, css, visual-qa | 阶段1.2（技术分析）+ 阶段6（检查验证） | UI/CSS/DOM 问题时优先连接浏览器实时调试（见 `browser-debug-toolkit` skill） |
-| 🔄 Hybrid 全栈调试 | hybrid, webview, wkwebview, electron, react-native, native-web, cross-platform, 跨端, 平台差异, 跨端调试 | 阶段1.2（技术分析） | hybrid 应用（native + WebView/WKWebView/Electron + H5）问题的四层全链条分析方法论（见 `hybrid-debug` skill） |
-| 🔬 运行时证据调试 | runtime-evidence, instrumentation, logging, reproduce, 打点调试, 打日志, 运行时调试, 复现验证, 根因置信度 | 阶段1.2（技术分析） | 静态分析受阻时的运行时证据采集方法论：升级决策→打点→复现→证据分析→置信度门控→修复验证（见 `runtime-evidence-debug` skill） |
 
 ### 探索结果处理
 
@@ -158,6 +181,7 @@ description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审
 - **只读阶段不因增强能力获得写权限**：阶段工具约束不变（阶段 1～4 禁止 Edit/Write）
 - **增强能力失败不阻断流程**：调用增强 skill/agent 报错时，记录警告，按原有流程继续
 - **调用前先读最新说明**：调用增强 skill/agent 前，先读取其当前说明文件（SKILL.md 或等价文档），不得凭记忆调用，避免使用过期规则
+- **dependencies 强依赖不走环境探索**：frontmatter `dependencies` 声明的 skill 由「前置 skill 检查」保证可用，无需在环境能力探索中重复扫描
 
 ---
 
@@ -272,7 +296,13 @@ description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审
 - 根因置信度为「模糊」或「未知」——能定位到大概模块，但无法确定具体逻辑或触发路径
 - 当前是重试场景——已基于静态分析修复过一次，但问题仍然存在
 
-若环境中存在 `runtime-evidence-debug` skill，读取其 SKILL.md 并应用其运行时证据采集方法论（升级决策→打点→复现→证据分析→置信度门控→逃生出口→修复验证）。🔌 UI/CSS/DOM 问题优先使用浏览器 DevTools（见 `browser-debug-toolkit` skill），比代码层打点更高效。根因仍模糊时用 WebSearch 搜已知案例（若 `effective-web-research` 可用则应用其调研纪律），仍未找到则**暂停等用户决定**（继续打点 / 外部支持 / 带假设进入阶段 2）。
+**加载以下强依赖 skill 按其方法论执行**（前置检查已保证可用）：
+
+- `runtime-evidence-debug`：运行时证据采集全流程（升级决策→打点→复现→证据分析→置信度门控→逃生出口→修复验证）。根因仍模糊时的逃生出口（WebSearch 升级搜索等）也由该 skill 提供。
+- `browser-debug-toolkit`：UI/CSS/DOM 问题优先用浏览器 DevTools 实时检查（DOM 树、计算样式、盒模型），比代码层打点更高效。
+- `hybrid-debug`：Hybrid 应用（native + WebView/WKWebView/Electron + H5）问题的四层全链条分析，避免单层 whack-a-mole。
+
+具体执行步骤、置信度门控阈值、逃生出口判定见各 skill 的 SKILL.md。
 
 **工具限制**：✅ Read/Grep 辅助确定打点位置；❌ Edit/Write（打点代码由用户手动添加，或经用户明确确认后 AI 添加）；❌ 未经用户确认不得自行运行复现步骤
 
@@ -347,15 +377,19 @@ description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审
 
 > 原则：对选定方案进行深度审查，明确其具体内容和风险，再决定是否进入制定计划
 
-🔌 若环境探索发现「📋 代码审查」类能力，在方案审查环节调用（辅助深度审查）。
+> **审查框架来源**：前置 skill 检查已保证 `solution-review`（决策级审查，4 核心维度 + 5 战略维度）和 `code-design-review`（代码设计审查，Layer A/B/C）可用。审查时按以下方式调用：
+> - **决策级审查**（必跑）：加载 `solution-review` skill，按其 9 维度框架执行
+> - **代码设计审查**（方案涉及代码时）：同时加载 `code-design-review` skill，按 Layer A/B/C 执行
+>
+> 审查维度与判定标准由两个 review skill 提供，本工作流不再内联重复。
 
-### 审查维度（每轮必须覆盖）
+### 审查维度
 
-1. **解决有效性**：是否完整覆盖根因、能否高效高质量解决问题、核心逻辑与关键实现点
-2. **副作用与风险**：改动是否在其他模块引发新问题（功能副作用）、是否带来性能/安全/可维护性问题（非功能副作用）、已识别问题有无缓解措施
-3. **实现可行性**：改动范围、依赖关系、涉及文件/模块是否明确可执行
-4. **代码规范符合度**：是否符合项目现有模式和最佳实践
-5. **架构与设计质量**（若解决方案涉及代码修改）：从耦合/内聚/复杂度/技术债/架构质量属性评估方案的设计质量。若环境中存在 `code-design-review` skill，其提供了完整的代码设计审查框架（Layer A 代码级指标 + Layer B 架构级属性 + Layer C 安全审查 + 理论依据与阈值）；本工作流自带的简要要点见 [reference.md](reference.md)「阶段 3 审查维度 5」
+**由 `solution-review` skill 提供 9 维度框架**（4 核心维度：解决有效性 / 副作用与风险 / 实现可行性 / 规范符合度；5 战略维度：可逆性校准 / 失效模式分析 / 可运维性 / 成本 vs 价值 / 团队认知适配）。
+
+**方案涉及代码时，额外由 `code-design-review` skill 提供 3 层审查**（Layer A 代码级指标 7 项 / Layer B 架构级属性 5 项 / Layer C 安全审查）。
+
+具体维度的含义、判定标准、blocking/non-blocking 阈值见两个 review skill 的 SKILL.md。本工作流在审查时加载它们并按其框架输出审查报告。
 
 ### 审查结论（二级制）
 
@@ -364,27 +398,7 @@ description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审
 | ✅ **通过** | 各项审查维度均无阻断问题，仅存在可接受的低风险 | 进入阶段4 |
 | ❌ **不通过** | 任一维度存在需解决的问题或不可接受的风险 | 进入优化→重新审查循环 |
 
-**阻断问题判定指引**（满足任一即为 ❌ 不通过）：
-
-- 方案无法完整覆盖根因，或解决质量明显低效低质（解决有效性不足）
-- 存在已识别但未提出缓解措施的中/高风险
-- 涉及的修改文件或依赖关系不明确，无法据此制定可执行计划
-- 与项目现有设计模式或编码规范明显冲突
-- 可能引入新 bug 或破坏现有功能的副作用未被处理
-- 引入内容耦合（直接操作他模块内部）或公共耦合（共享可变状态）且无替代方案
-- 鲁莽且无意的技术债——引入 God Object / Speculative Generality / Primitive Obsession 等坏味道，且方案缺乏对更优方案的认知
-- 一次业务变更需级联修改 3+ 个无直接业务关系的模块（Shotgun Surgery），且方案未提出收敛策略
-- 依赖方向倒置——稳定模块依赖了不稳定模块（违反 Stable Dependencies Principle）
-- 完整路径下，方案使业务逻辑无法脱离外部依赖独立测试（违反 Clean Architecture 可测试性特征），且没有补偿措施
-
-**非阻断问题**（可标注为建议，但不阻止通过）：
-
-- 已有缓解措施的低风险项
-- 代码风格偏好（不影响正确性）
-- 可在后续迭代中优化的性能改进
-- 存在更优雅的实现方式，但当前方案不影响正确性和可维护性
-- 审慎且有意的技术债（有明确偿还计划）
-- 存在更优的架构方案，但当前方案不影响正确性和近期可维护性（可在后续迭代中优化）
+**阻断/非阻断判定**：完整的 blocking/non-blocking 标准由 `solution-review`（决策级）和 `code-design-review`（代码设计级）skill 提供。审查时加载对应 skill，按其标准判定每个维度的通过/不通过。本工作流只负责汇总各维度结论，按二级制给出整体审查结论。
 
 ### 循环流程
 

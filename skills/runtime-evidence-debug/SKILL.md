@@ -7,7 +7,7 @@ description: "Methodology for escalating from static code analysis to runtime ev
 
 # Runtime Evidence-Driven Debugging
 
-> **Role**: The methodology layer for runtime debugging — answers *when* to escalate from static analysis to runtime observation, and *how* to gather, analyze, and act on runtime evidence. It is designed to be discovered by workflow skills (solve-workflow, jira-fix-workflow, etc.) through environment capability exploration, and it delegates tool selection to `browser-debug-toolkit` and domain analysis to `hybrid-debug`.
+> **Role**: The methodology layer for runtime debugging — answers *when* to escalate from static analysis to runtime observation, and *how* to gather, analyze, and act on runtime evidence. It is strongly depended on by `solve-workflow` via frontmatter `dependencies` (invoked after a prerequisite check). It delegates tool selection to `browser-debug-toolkit` and domain analysis to `hybrid-debug`.
 >
 > **Detailed framework entries** (author, year, method, source) and instrumentation templates live in [reference.md](reference.md).
 
@@ -39,6 +39,7 @@ Strong signals (any one):
 
 | Skill | Responsibility | Relationship to this skill |
 |-------|---------------|----------------------------|
+| `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, `opsx-jira-fix-workflow` | PDCA workflows | **Strongly depended on by all four workflows via frontmatter `dependencies`.** Each runs a prerequisite check at startup; if this skill is missing, the workflow aborts. This skill is the runtime-evidence deep-dive of their technical-analysis instrumentation step. |
 | `browser-debug-toolkit` | Browser DevTools tool-selection decision table | This skill's **instrumentation** step delegates to it for UI/CSS/DOM issues — DevTools inspection is more efficient than `console.log` for rendering problems. |
 | `hybrid-debug` | Hybrid app four-layer debugging model | This skill is the **general** runtime evidence methodology; `hybrid-debug` applies it within the four-layer model for native+web apps. For hybrid problems, use `hybrid-debug` first (it tells you where to look); this skill tells you how to gather evidence at whichever layer. |
 | `debug-workflow` (if available) | Systematic debugging protocol (root-cause identification) | Complementary — `debug-workflow` drives the overall debugging process; this skill is the runtime-evidence-gathering phase within it. |

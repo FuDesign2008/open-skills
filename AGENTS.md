@@ -5,8 +5,7 @@
 1. **人与 AI 要实事求是、相互信任、精诚合作** — 人如实描述问题与约束，AI 如实报告发现与局限；双方基于事实共同决策，不猜测、不迎合、不隐瞒。
 2. **数据脱敏** — Skill 中不得包含任何内部平台名称、内部域名、内部项目标识等非公开信息。示例和模板必须使用通用占位（如 `example.com`、`my-project`），不使用真实内部信息。提交前自查：URL、平台名、项目名、路径段、Jira ID、commit SHA 是否暴露内部信息。
 3. **Skill 正文用英文书写，触发词必须包含中文** — Skill body（正文、reference.md、description 中的说明文字）是给 LLM 读的指令，英文书写可获得更高的理解精度与执行准确度（主流 LLM 的训练语料以英文为主）；同时英文 skill 面向全球用户，传播面更广。**触发词必须包含中文**——用户以自然语言唤起 skill，中文用户说中文（如「提交代码」「分析问题」），因此即使 skill 正文全英文，description 和 Triggers 区段也必须列出中文触发词，可同时附带英文等价词（如 `「提交代码」 / "commit code"`）。中文专属 skill（如 `chinese-format`、`article-writer`）为整体例外，正文也用中文。新增 skill 适用此规则；存量中文 skill 在重构时逐步迁移，不做一次性批量翻译。
-4. **每个 Skill 必须可独立安装和执行** — 通用安装（`npx skills`）仅打包单个 `SKILL.md`，不包含其他 skill、`_shared/`、`reference.md` 或 `AGENTS.md`。因此每个 `SKILL.md` 必须完全自包含：跨 skill 引用只能是信息性的（"配对 skill 是 X"），不得是指令性的（"见 X 的 Y 章节"）。多 skill 共享的规则（如 Git 约定俗成规则）须内联到各自 skill 中，不依赖外部文件。
-5. **创建 Skill 必须走 `/skill-creator` 工作流** — 新建 skill 或大幅重写已有 skill 时，先 `/skill-creator` 唤起 skill-creator（捕获意图 → 写草稿 → 测试用例 → 评估迭代 → 描述优化），而非凭经验直接手写 `SKILL.md`。skill-creator 提供渐进式披露（SKILL.md <500 行 + reference 详表）、frontmatter 规范、触发词 eval 优化等工程化约束，能显著提升触发准确率与执行质量。仅在以下情况可跳过完整流程直接编辑：① skill 内容极简（纯指令、无测试需求）；② 维护已有 skill 的小修小补（改触发词、修正文）。
+4. **创建 Skill 必须走 `/skill-creator` 工作流** — 新建 skill 或大幅重写已有 skill 时，先 `/skill-creator` 唤起 skill-creator（捕获意图 → 写草稿 → 测试用例 → 评估迭代 → 描述优化），而非凭经验直接手写 `SKILL.md`。skill-creator 提供渐进式披露（SKILL.md <500 行 + reference 详表）、frontmatter 规范、触发词 eval 优化等工程化约束，能显著提升触发准确率与执行质量。仅在以下情况可跳过完整流程直接编辑：① skill 内容极简（纯指令、无测试需求）；② 维护已有 skill 的小修小补（改触发词、修正文）。
 
 ---
 
@@ -14,7 +13,7 @@
 
 ## 概述
 
-AI 编码助手的开放 Skills 库。Markdown + JSON + 少量 JS 构成的多平台插件项目。支持 Claude Code、Cursor、OpenCode 三个平台。安装对外统一为 **通用安装**（`npx`，仅 SKILL.md）与 **全能力安装**（Hooks、Commands、平台集成）；见根目录 `README.md` § 安装。
+AI 编码助手的开放 Skills 库。Markdown + JSON + 少量 JS 构成的多平台插件项目。支持 Claude Code、Cursor、OpenCode 三个平台。安装对外统一为 **通用安装**（`npx`，SKILL.md，可多选）与 **全能力安装**（Hooks、Commands、平台集成）；见根目录 `README.md` § 安装。
 
 ## 结构
 
@@ -51,13 +50,15 @@ open-skills/
 
 | Skill | 类别 | 依赖 |
 |-------|------|------|
-| solve-workflow | 工作流 | 无 |
+| solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit |
+| opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit |
 | perf-workflow | 工作流 | 无 |
 | frontend-perf | 知识库 | perf-workflow |
 | chinese-format | 格式规范 | 无 |
 | android-webview-debug | 工具 | 无 |
 | git-commit | Git | 无 |
-| jira-fix-workflow | Jira 工作流 | git-commit、jira-read |
+| jira-fix-workflow | Jira 工作流 | git-commit、jira-read、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit |
+| opsx-jira-fix-workflow | Jira 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、openspec 原生 skills（阶段 0 检查） |
 | jira-read | Jira 工具 | 无 |
 | typescript-check | 工具 | 无 |
 | article-writer | 内容创作 | 无 |
@@ -67,6 +68,8 @@ open-skills/
 | solution-review | 审查 | 无 |
 | code-design-review | 审查 | 无 |
 | runtime-evidence-debug | 调试方法论 | 无 |
+| hybrid-debug | 调试方法论 | 无 |
+| browser-debug-toolkit | 调试方法论 | 无 |
 
 > 💕 AI 编码陪伴（coding-fangirl）已迁移至独立工程 [oh-my-fangirl](https://github.com/FuDesign2008/oh-my-fangirl)。
 
@@ -88,12 +91,16 @@ name: skill-name
 version: "1.0.0"
 user-invocable: true
 description: 触发条件和用途说明（必须包含触发词）
+dependencies:  # 可选，数组形式，声明强依赖的其他 skill
+  - other-skill
 ---
 
 # Skill 标题
 
 Skill 内容...
 ```
+
+**`dependencies` 字段（可选）**：数组形式，声明本 skill 强依赖的其他 skill。声明后，skill 必须在启动时做前置检查（扫描可用 skill 列表），缺失任一依赖立即中止流程并提示安装命令，**不得静默降级**。被依赖的 skill 不需要反向声明。
 
 **触发词设计**：支持两种形式——单独触发词（如「分析问题」）或带冒号形式（如「分析问题： xxx」）；冒号和空格不限制中英文。在 `description` 中列出所有触发词，**必须包含中文触发词**，可同时列英文等价词（如 `「提交代码」 / "commit code"`）；工作流 skill 的阶段名即为触发词（如「分析问题」触发 solve-workflow 的阶段 1）。
 
@@ -106,7 +113,7 @@ Skill 内容...
 ### 新增 Skill 检查清单
 
 1. 目录名 kebab-case
-2. `SKILL.md` frontmatter 完整（name、version、description 含触发词）
+2. `SKILL.md` frontmatter 完整（name、version、description 含触发词；如声明了 dependencies，需实现前置检查）
 3. 如需命令入口 → 在 `commands/` 添加对应 `.md`
 4. 如需 Hook 触发 → 在 `hooks/hooks.json` 添加配置
 5. 如需 OpenCode 支持 → 在 `.opencode/plugins/` 或 `.opencode/plugin/` 添加 JS/TS 代码
@@ -183,7 +190,7 @@ Invoke the <skill-name> skill and follow it exactly
 
 ## 多平台差异
 
-对外安装口径统一为两类：**通用安装**（仅 `SKILL.md`，`npx skills`）与 **全能力安装**（Hooks、Commands、平台集成）。详见根目录 `README.md` § 安装与 `docs/INSTALL.md`。
+对外安装口径统一为两类：**通用安装**（`SKILL.md`，`npx skills`，可多选）与 **全能力安装**（Hooks、Commands、平台集成）。详见根目录 `README.md` § 安装与 `docs/INSTALL.md`。
 
 | 平台 | 全能力安装（推荐） | 配置目录 | 钩子实现 |
 |------|-------------------|---------|---------|
@@ -207,8 +214,7 @@ Invoke the <skill-name> skill and follow it exactly
 - ❌ `description` 裸值含英文 `: ` 未加引号，破坏 YAML 解析导致 `npx skills` 安装失败（见 frontmatter YAML 陷阱）
 - ❌ `description` 用 `|` 块标量或多行字符串，被 `gen-skill-docs.mjs` 简易解析器解析成 `"|"`，导致 skills-index 描述列变 `|`（见 frontmatter YAML 陷阱）
 - ❌ 新建 skill 不走 `/skill-creator` 直接手写（见 AI 铁律 5）
-- ❌ SKILL.md 中包含跨 skill 的指令性引用（如"见 X skill 的 Y 章节"），导致独立安装时引用断裂；关键规则必须在每个 skill 中自包含
-- ❌ 多个 skill 共享同一规则时只改一处（如模式生命周期规则，需同步更新所有相关 skill）
+- ❌ 声明了 frontmatter `dependencies` 却不做前置检查，或缺失依赖时静默降级而不提示安装（强依赖必须中止流程并给出安装命令）
 - ❌ Hook 脚本阻塞主流程（必须静默失败）
 - ❌ OpenCode 插件用 CommonJS（必须 ES Module）
 - ❌ 中文内容混用英文标点
