@@ -144,6 +144,7 @@ description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审
 | ✅ 完成验证 | verify, verification, complete | 阶段6（检查验证） | 执行后独立验证 |
 | 🎭 浏览器/UI 调试 | browser, devtools, cdp, playwright, screenshot, dom, css, visual-qa | 阶段1.2（技术分析）+ 阶段6（检查验证） | UI/CSS/DOM 问题时优先连接浏览器实时调试（见 `browser-debug-toolkit` skill） |
 | 🔄 Hybrid 全栈调试 | hybrid, webview, wkwebview, electron, react-native, native-web, cross-platform, 跨端, 平台差异, 跨端调试 | 阶段1.2（技术分析） | hybrid 应用（native + WebView/WKWebView/Electron + H5）问题的四层全链条分析方法论（见 `hybrid-debug` skill） |
+| 🔬 运行时证据调试 | runtime-evidence, instrumentation, logging, reproduce, 打点调试, 打日志, 运行时调试, 复现验证, 根因置信度 | 阶段1.2（技术分析） | 静态分析受阻时的运行时证据采集方法论：升级决策→打点→复现→证据分析→置信度门控→修复验证（见 `runtime-evidence-debug` skill） |
 
 ### 探索结果处理
 
@@ -271,28 +272,11 @@ description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审
 - 根因置信度为「模糊」或「未知」——能定位到大概模块，但无法确定具体逻辑或触发路径
 - 当前是重试场景——已基于静态分析修复过一次，但问题仍然存在
 
-> 静态分析有边界：运行时数据流、调用顺序、变量取值只能在真实执行中观测。置信度不足时，主动升级为打点调试，用运行时事实锚定根因。
+若环境中存在 `runtime-evidence-debug` skill，其提供了完整的运行时证据采集方法论（升级决策 / 打点设计 / 复现指引 / 证据分析 / 置信度门控 / 逃生出口 / 修复验证，含 Zeller 科学调试、可观测性三支柱、MRE、证据层级、git bisect 等框架依据）；以下为本工作流自带的简要流程。
 
-> 🔌 **UI/CSS/DOM 问题优先使用浏览器 DevTools**：若问题涉及样式、布局、渲染、DOM 结构，且有浏览器调试能力可用（chrome-devtools-connect MCP / playwright / webapp-testing），优先连接浏览器实时检查（DOM 树、计算样式、盒模型），比 console.log 打点更高效。详见 `browser-debug-toolkit` skill。
+> 🔌 **UI/CSS/DOM 问题优先使用浏览器 DevTools**（见 `browser-debug-toolkit` skill），比 console.log 打点更高效。
 
-**执行步骤**：
-
-| 步骤 | 内容 |
-|------|------|
-| 1. 打点设计 | 识别 2-5 个关键节点（函数入口/出口、状态变更点、数据流转点） |
-| 2. 生成打点代码 | `console.log('[DEBUG-<位置标识>]', { key: value, timestamp: Date.now() })`（按项目语言调整；含位置标识、关键变量、时间戳） |
-| 3. 操作指引 | 告知用户：添加位置、复现步骤、日志查看位置（浏览器控制台/终端/日志文件） |
-| 4. 等待日志 | ⛔ 停止，等用户执行并提供日志输出 |
-| 5. 日志分析 | 分析实际调用链和数据流，给出根因结论，更新阶段 1.2 输出 |
-| 6. 清理建议 | （可选）根因确认后，说明哪些打点可删除，哪些值得保留为正式监控 |
-
-**逃生出口 5.5**（步骤 5 后根因仍为「模糊/未知」时触发）：
-
-> 打点只能观测「代码层执行路径」，无法穿透平台层/宿主环境的静默拦截。
-
-1. **升级搜索**：用 WebSearch 以「症状关键词 + 平台/框架版本 + 年份」搜索已知案例
-   - 🔌 若 `effective-web-research` skill 可用，本步骤的 WebSearch 应用其调研纪律——先 Step 0 分流，再按 4 口诀执行（官方优先 / 查时效 / 非平凡双源印证 / 避内容农场）。skill 不可用时按原 WebSearch 流程执行。
-2. **结果处理**：找到 → 更新根因假设，回到步骤 5；未找到 → 输出「已排除假设清单」，**暂停等用户决定**（继续打点 / 外部支持 / 带假设进入阶段 2）
+**简要流程**：识别 2-5 个关键节点（函数入口/出口、状态变更点、数据流转点）→ 生成打点代码 `console.log('[DEBUG-<位置标识>]', { key: value, timestamp: Date.now() })` → 告知用户添加位置+复现步骤+日志查看位置 → ⛔ 等待用户提供日志 → 分析日志更新根因 → 根因仍模糊时用 WebSearch 搜已知案例（若 `effective-web-research` 可用则应用其调研纪律），仍未找到则**暂停等用户决定**（继续打点 / 外部支持 / 带假设进入阶段 2）
 
 **工具限制**：✅ Read/Grep 辅助确定打点位置；❌ Edit/Write（打点代码由用户手动添加，或经用户明确确认后 AI 添加）；❌ 未经用户确认不得自行运行复现步骤
 
