@@ -42,7 +42,6 @@ This skill reviews **proposed** solutions (pre-implementation). It is distinct f
 |-------|---------------|----------------------------|
 | `code-design-review` | Code-level design quality (coupling, cohesion, complexity, security) | When the solution involves code, use **both**: this skill checks the decision; `code-design-review` checks the code craft. This skill is the superset. |
 | `solve-workflow` | Full PDCA workflow (analyze → solve → execute → verify) | This skill is the deep-dive of its "review solution" phase. The workflow discovers this skill through environment capability exploration. |
-| `review` (matt-pocock) | Post-implementation diff review (standards + spec) | Different lifecycle stage — reviews completed code, not proposed solutions. Use that after implementation; use this before. |
 
 ## The review framework
 
@@ -109,10 +108,10 @@ A review report with this structure:
   4. 规范符合度：✅/❌ [reasoning]
 - 战略维度评估（按可逆性深度）：
   5. 可逆性校准：[classification + rationale]
-  6. 失效模式分析：✅/❌/N-A [top failure modes + RPN]
-  7. 可运维性：✅/❌/N-A [monitoring/rollback/on-call assessment]
-  8. 成本 vs 价值：✅/❌/N-A [cost-value assessment]
-  9. 团队认知适配：✅/❌/N-A [team fit assessment]
+  6. 失效模式分析：✅/❌/N/A [top failure modes + RPN]
+  7. 可运维性：✅/❌/N/A [monitoring/rollback/on-call assessment]
+  8. 成本 vs 价值：✅/❌/N/A [cost-value assessment]
+  9. 团队认知适配：✅/❌/N/A [team fit assessment]
 - 问题清单：[#] [description] [severity: blocking/non-blocking]
 - 审查结论：✅ 通过 / ❌ 不通过
 - [❌ 不通过时] 优化建议：[per-issue improvement direction]
@@ -120,9 +119,5 @@ A review report with this structure:
 
 ## Anti-patterns (forbidden moves)
 
-1. **Treating a one-way door as a two-way door** — under-reviewing an irreversible decision because it "seems fine." This is the most expensive review mistake.
-2. **Skipping strategic dimensions for non-code solutions** — config/process/tooling changes can be one-way doors too (a migration run is irreversible; a process change is hard to undo). Reversibility, not solution type, determines depth.
-3. **Reviewing only for "does it work"** — operability, cost-value, and team fit are decision-level concerns that "it works" does not address.
-4. **Vague risk assessment** — "there might be some risk" without enumerating failure modes, severity, and likelihood. Use FMEA structure.
-5. **Blocking on non-blocking issues** — a more elegant alternative or a deferrable improvement is not grounds to reject a correct, maintainable solution.
-6. **Approving without a rollback plan for one-way doors** — if you cannot undo it, you must be able to mitigate forward.
+1. **Skipping strategic dimensions for non-code solutions** — config/process/tooling changes can be one-way doors too (a migration run is irreversible; a process change is hard to undo). Reversibility, not solution type, determines depth.
+2. **Vague risk assessment** — "there might be some risk" without enumerating failure modes, severity, and likelihood. Use the FMEA structure in dimension 6 instead of a gut-feel statement.

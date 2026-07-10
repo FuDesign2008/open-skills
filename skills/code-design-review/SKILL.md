@@ -36,7 +36,6 @@ This skill is for **code** solutions only. For non-code solutions (config, proce
 |-------|---------------|----------------------------|
 | `solution-review` | Decision-level review (effectiveness, risks, reversibility, operability, cost) | The superset. For code solutions, `solution-review` checks the decision; this skill checks the code design. Use both. |
 | `solve-workflow` | Full PDCA workflow | This skill is the deep-dive of its "review solution" phase dimension "architecture & design quality." The workflow discovers this skill through environment capability exploration. |
-| `review` (matt-pocock) | Post-implementation diff review (standards + spec) | Different lifecycle stage — reviews completed diffs. Use that after implementation; use this before. |
 
 ## The code design quality model
 
@@ -114,13 +113,13 @@ A code design review report with this structure:
   6. 复杂度度量：✅/❌ [cyclomatic / cognitive estimate]
   7. Law of Demeter：✅/❌ [train-wreck check]
 - Layer B 架构级质量属性（full path）：
-  8. 可测试性：✅/❌/N-A
-  9. 模块性：✅/❌/N-A
-  10. 可靠性/韧性：✅/❌/N-A
-  11. 可扩展性：✅/❌/N-A
-  12. 依赖方向：✅/❌/N-A
+  8. 可测试性：✅/❌/N/A
+  9. 模块性：✅/❌/N/A
+  10. 可靠性/韧性：✅/❌/N/A
+  11. 可扩展性：✅/❌/N/A
+  12. 依赖方向：✅/❌/N/A
 - Layer C 安全审查（trust boundary）：
-  13. OWASP 轻量审查：✅/❌/N-A
+  13. OWASP 轻量审查：✅/❌/N/A
 - 问题清单：[#] [description] [severity: blocking/non-blocking]
 - 审查结论：✅ 通过 / ❌ 不通过
 - [❌ 不通过时] 优化建议：[per-issue improvement direction]
@@ -128,9 +127,5 @@ A code design review report with this structure:
 
 ## Anti-patterns (forbidden moves)
 
-1. **Approving code that "works" without design review** — correctness is necessary but not sufficient; design quality determines long-term maintainability.
-2. **Introducing abstraction without a current need** — "might need it later" is accidental complexity (Brooks). Every abstraction must earn its place with a reason that exists today.
-3. **Accepting Reckless-Inadvertent tech debt silently** — if the team does not know a better design exists, the debt will never be repaid. Surface it at review.
-4. **Treating coupling as binary** — coupling has a spectrum (data → content). Classify the type; only Content and Common coupling are blocking without alternatives.
-5. **Skipping the dependency-direction check** — an inverted dependency (stable depends on unstable) is a latent fragility that breaks unpredictably.
-6. **Running Layer C (security) on everything** — the OWASP pass is for trust-boundary-touching changes only. Over-applying it wastes review effort; under-applying it on trust boundaries is dangerous.
+1. **Approving code that "works" without a design pass** — correctness is necessary but not sufficient; skipping Layer A/B/C entirely because tests are green is how design debt accumulates invisibly.
+2. **Running Layer C (security) on everything** — the OWASP pass is for trust-boundary-touching changes only. Over-applying it wastes review effort; under-applying it on trust boundaries is dangerous.
