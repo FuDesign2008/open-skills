@@ -11,7 +11,7 @@ description: "Browser runtime debugging toolkit — guides AI to prioritize brow
 
 UI/CSS/DOM layout issues often have root causes that only manifest at runtime — dynamically generated DOM structures, CSS specificity conflicts, layout calculation anomalies. Static code analysis (Read/Grep) and console-based debugging (console.log) have a fundamental limitation: they cannot observe the rendered DOM tree, computed CSS properties, or box model geometry.
 
-This skill provides a scene-to-tool decision table and usage guides for each tool. It serves as an enhancement capability for workflow skills like `solve-workflow` and `debug-workflow` — invoked automatically through their environment capability discovery mechanism when UI debugging scenarios are detected.
+This skill provides a scene-to-tool decision table and usage guides for each tool. It is strongly depended on by `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, and `opsx-jira-fix-workflow` via frontmatter `dependencies` (invoked after a prerequisite check when UI debugging scenarios are detected).
 
 ## Prerequisites
 
@@ -117,13 +117,13 @@ After install/enable, verify the MCP is loaded:
 
 ## Workflow Integration
 
-This skill is discovered by the environment capability exploration mechanism of `solve-workflow`, `debug-workflow`, and similar workflow skills. It is also delegated to by `hybrid-debug` for runtime evidence in hybrid app (WebView/WKWebView/Electron + H5) debugging scenarios, and by `runtime-evidence-debug` for UI/CSS/DOM instrumentation in general debugging scenarios:
+This skill is strongly depended on by `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, and `opsx-jira-fix-workflow` via frontmatter `dependencies` (each runs a prerequisite check at startup; if missing, it aborts). It is also discovered by `debug-workflow` and similar workflow skills through their environment capability exploration. It is delegated to by `hybrid-debug` for runtime evidence in hybrid app (WebView/WKWebView/Electron + H5) debugging scenarios, and by `runtime-evidence-debug` for UI/CSS/DOM instrumentation in general debugging scenarios:
 
 1. **Stage 1.2 (Technical Analysis)**: UI/CSS/DOM issues → prioritize browser tools for runtime state inspection
 2. **Before console.log debugging**: For UI issues, inspect with browser DevTools first (more efficient than console.log), then fall back to logging if still unresolved
 3. **Stage 6 (Verification)**: After fix, use browser tools to verify render results
 
-> Progressive enhancement: This skill does not replace the workflow's core process. When browser tools are available, it guides their use; when unavailable, the original process executes unchanged.
+> Progressive enhancement: This skill does not replace the workflow's core process. In `solve-workflow` it is guaranteed available by the prerequisite check; in other workflows (e.g., `debug-workflow`), when browser tools are unavailable, the original process executes unchanged.
 
 ## Quick Reference
 

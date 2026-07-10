@@ -7,7 +7,7 @@ description: "Hybrid app (native shell + WebView/WKWebView/Electron + H5) full-s
 
 # Hybrid Fullstack Debugging
 
-> **Role**: Provides a four-layer analysis model and a domain knowledge base for debugging hybrid applications (native shell + embedded web). It is a methodology + knowledge enhancement, not a standalone end-to-end workflow — it is designed to be discovered by `solve-workflow`'s environment capability exploration, and it delegates runtime inspection to `browser-debug-toolkit`.
+> **Role**: Provides a four-layer analysis model and a domain knowledge base for debugging hybrid applications (native shell + embedded web). It is a methodology + knowledge enhancement, not a standalone end-to-end workflow — it is strongly depended on by `solve-workflow` via frontmatter `dependencies` (invoked after a prerequisite check), and it delegates runtime inspection to `browser-debug-toolkit`.
 >
 > **Domain knowledge** (technical pitfalls, native↔H5 contract templates, anchored case) is in [reference.md](reference.md).
 
@@ -32,7 +32,7 @@ Strong signals (any one is enough):
 
 | Skill | Responsibility | Relationship to this skill |
 |-------|---------------|----------------------------|
-| `solve-workflow` | Full PDCA workflow (analyze → solve → execute → verify) | This skill is the hybrid-specific deep-dive of its phase 1.2 (technical analysis). `solve-workflow` discovers and invokes this skill through its environment capability exploration when a hybrid scenario is detected. |
+| `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, `opsx-jira-fix-workflow` | PDCA workflows | **Strongly depended on by all four workflows via frontmatter `dependencies`.** Each runs a prerequisite check at startup; if this skill is missing, the workflow aborts with an install prompt. This skill is the hybrid-specific deep-dive of their technical-analysis phase. |
 | `browser-debug-toolkit` | Browser DevTools tool-selection decision table | This skill's **runtime evidence** step delegates to it — four-layer analysis tells you *what* to verify; `browser-debug-toolkit` tells you *which tool* to verify it with. |
 | `essence-diagnosis` | General essence diagnosis (SOAP + multi-hypothesis + adversarial debate) | For hybrid problems that are still foggy after four-layer analysis, escalate to `essence-diagnosis` for heavyweight multi-hypothesis verification. |
 | `android-webview-debug` | Toggle Android WebView remote debugging on/off | Often a prerequisite step — enables chrome-devtools inspection of an Android WebView before this skill's runtime-evidence step can run. |
@@ -70,7 +70,7 @@ Example shape: iOS calls `setTheme('dark')` → switches H5 class → WKWebView 
 6. **Assess cross-layer side effects** before choosing a fix. Ask: does this fix change the existing behavior of another layer? (An H5-only patch may alter iOS's existing visuals; a native-only patch may break a web-only code path.) The fix must cover the root cause across all affected layers without introducing new inconsistency.
 7. **Gate on root-cause confidence.** If confidence is *fuzzy* or *unknown* after step 2, do not jump to a fix — keep tracing, or escalate to runtime instrumentation. Entering execution on a low-confidence root cause is how the first attempt becomes a discarded surface patch.
 
-> The general discipline behind steps 4–7 (runtime evidence, same-root scan, side-effect assessment, confidence gating) is provided by the `runtime-evidence-debug` skill (which solve-workflow discovers through its environment capability exploration). This skill focuses on how to apply them *within the four-layer model* — when used standalone, follow the spirit of those disciplines even without the full workflow.
+> The general discipline behind steps 4–7 (runtime evidence, same-root scan, side-effect assessment, confidence gating) is provided by the `runtime-evidence-debug` skill (also a solve-workflow `dependencies` entry). This skill focuses on how to apply them *within the four-layer model* — when used standalone, follow the spirit of those disciplines even without the full workflow.
 
 ## Anti-patterns (forbidden moves)
 

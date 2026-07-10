@@ -7,7 +7,7 @@ description: "Authoritative framework for reviewing any proposed solution (code,
 
 # Solution Review
 
-> **Role**: A pre-implementation review framework for any proposed solution — code or non-code. It exists to catch decision-level failures (wrong problem, uncalibrated risk, ignored operability, poor cost-value tradeoff) before effort is spent building. It is a methodology enhancement: workflows like `solve-workflow` discover and invoke it through environment capability exploration, and it complements `code-design-review` (which handles code-level design quality when the solution involves code).
+> **Role**: A pre-implementation review framework for any proposed solution — code or non-code. It exists to catch decision-level failures (wrong problem, uncalibrated risk, ignored operability, poor cost-value tradeoff) before effort is spent building. It is a methodology enhancement: `solve-workflow` declares this skill as a frontmatter `dependencies` entry and invokes it after a prerequisite check (the workflow aborts at startup if this skill is missing). It complements `code-design-review` (which handles code-level design quality when the solution involves code).
 >
 > **Detailed framework entries** (author, year, method, source) and the full blocking/non-blocking criteria live in [reference.md](reference.md).
 
@@ -41,7 +41,7 @@ This skill reviews **proposed** solutions (pre-implementation). It is distinct f
 | Skill | Responsibility | Relationship to this skill |
 |-------|---------------|----------------------------|
 | `code-design-review` | Code-level design quality (coupling, cohesion, complexity, security) | When the solution involves code, use **both**: this skill checks the decision; `code-design-review` checks the code craft. This skill is the superset. |
-| `solve-workflow` | Full PDCA workflow (analyze → solve → execute → verify) | This skill is the deep-dive of its "review solution" phase. The workflow discovers this skill through environment capability exploration. |
+| `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, `opsx-jira-fix-workflow` | PDCA workflows | **Strongly depended on by all four workflows via frontmatter `dependencies`.** Each runs a prerequisite check at startup; if this skill is missing, the workflow aborts with an install prompt. This skill is the deep-dive of their "review solution" phase. |
 
 ## The review framework
 

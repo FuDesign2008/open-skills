@@ -31,16 +31,31 @@
 
 ---
 
-## 阶段 3 审查维度 5：架构与设计质量
+## 前置 skill 检查 — 缺失提示
 
-> 触发条件：解决方案涉及代码修改时必查；纯配置/文档变更可跳过。
+当 frontmatter `dependencies` 中声明的 skill 缺失时，按以下格式输出并立即中止流程：
 
-维度 5 的详细审查框架（Layer A 代码级指标 + Layer B 架构级属性 + Layer C 安全审查 + 理论依据与阈值）已迁移至独立的 `code-design-review` skill。若环境中存在该 skill，调用其完整框架进行深度审查；以下为本工作流自带的最小可用要点：
+```
+⚠️ solve-workflow 缺少强依赖 skill，无法完整运行
 
-- **代码级**：偶然复杂度（Brooks）、耦合类型（Myers：数据→内容）、内聚梯度（Yourdon）、变更传播（Shotgun Surgery）、技术债分类（Fowler 象限）
-- **架构级（完整路径）**：可测试性（Clean Architecture）、模块性/可靠性/可扩展性（ISO 25010）、依赖方向（SDP）
+【缺失的 skill】
+- [skill-name]：[该 skill 的用途说明]
 
-阻断/非阻断速查见 SKILL.md 阶段 3 的「阻断问题判定指引」与「非阻断问题」列表（维度 5 相关项已内联其中）。
+【为什么需要它】
+solve-workflow 的阶段 3「审查方案」和阶段 1.2「技术分析」通过 dependencies 强依赖上述 skill：
+- `solution-review` / `code-design-review`：阶段 3 审查框架（4 核心维度 + 5 战略维度 / Layer A-B-C 代码设计审查）
+- `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`：阶段 1.2 调试方法论（Hybrid 全栈 / 运行时证据 / 浏览器 DevTools）
+
+缺失时阶段 3 无法执行深度审查、阶段 1.2 无法升级到运行时调试，强行运行会产生未经审查或根因不明的方案，违背 PDCA 工作流初衷。
+
+【安装方式】
+- 通用安装（推荐，全量装所有 skill）：
+  npx skills add FuDesign2008/open-skills -g
+- 全能力安装（含 Hooks/Commands/平台集成）：
+  见 docs/INSTALL.md
+
+安装完成后重新触发本工作流。
+```
 
 ---
 

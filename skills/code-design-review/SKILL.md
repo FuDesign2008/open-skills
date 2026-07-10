@@ -7,7 +7,7 @@ description: "Authoritative framework for reviewing the design quality of propos
 
 # Code Design Review
 
-> **Role**: A pre-implementation design-quality review for solutions that involve code changes. It evaluates whether the proposed code is well-crafted — maintainable, testable, properly decoupled — not just whether it solves the problem. It is the code-specialized companion to `solution-review` (which handles decision-level review for any solution type). Workflows like `solve-workflow` discover and invoke it through environment capability exploration.
+> **Role**: A pre-implementation design-quality review for solutions that involve code changes. It evaluates whether the proposed code is well-crafted — maintainable, testable, properly decoupled — not just whether it solves the problem. It is the code-specialized companion to `solution-review` (which handles decision-level review for any solution type). `solve-workflow` declares this skill as a frontmatter `dependencies` entry and invokes it after a prerequisite check (the workflow aborts at startup if this skill is missing).
 >
 > **Detailed framework entries** (author, year, thresholds, source) and the full blocking/non-blocking criteria live in [reference.md](reference.md).
 
@@ -35,7 +35,7 @@ This skill is for **code** solutions only. For non-code solutions (config, proce
 | Skill | Responsibility | Relationship to this skill |
 |-------|---------------|----------------------------|
 | `solution-review` | Decision-level review (effectiveness, risks, reversibility, operability, cost) | The superset. For code solutions, `solution-review` checks the decision; this skill checks the code design. Use both. |
-| `solve-workflow` | Full PDCA workflow | This skill is the deep-dive of its "review solution" phase dimension "architecture & design quality." The workflow discovers this skill through environment capability exploration. |
+| `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, `opsx-jira-fix-workflow` | PDCA workflows | **Strongly depended on by all four workflows via frontmatter `dependencies`.** Each runs a prerequisite check at startup; if this skill is missing, the workflow aborts with an install prompt. This skill is the deep-dive of their "review solution" phase for code-affecting solutions. |
 
 ## The code design quality model
 
