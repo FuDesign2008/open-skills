@@ -272,11 +272,7 @@ description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审
 - 根因置信度为「模糊」或「未知」——能定位到大概模块，但无法确定具体逻辑或触发路径
 - 当前是重试场景——已基于静态分析修复过一次，但问题仍然存在
 
-若环境中存在 `runtime-evidence-debug` skill，其提供了完整的运行时证据采集方法论（升级决策 / 打点设计 / 复现指引 / 证据分析 / 置信度门控 / 逃生出口 / 修复验证，含 Zeller 科学调试、可观测性三支柱、MRE、证据层级、git bisect 等框架依据）；以下为本工作流自带的简要流程。
-
-> 🔌 **UI/CSS/DOM 问题优先使用浏览器 DevTools**（见 `browser-debug-toolkit` skill），比 console.log 打点更高效。
-
-**简要流程**：识别 2-5 个关键节点（函数入口/出口、状态变更点、数据流转点）→ 生成打点代码 `console.log('[DEBUG-<位置标识>]', { key: value, timestamp: Date.now() })` → 告知用户添加位置+复现步骤+日志查看位置 → ⛔ 等待用户提供日志 → 分析日志更新根因 → 根因仍模糊时用 WebSearch 搜已知案例（若 `effective-web-research` 可用则应用其调研纪律），仍未找到则**暂停等用户决定**（继续打点 / 外部支持 / 带假设进入阶段 2）
+若环境中存在 `runtime-evidence-debug` skill，读取其 SKILL.md 并应用其运行时证据采集方法论（升级决策→打点→复现→证据分析→置信度门控→逃生出口→修复验证）。🔌 UI/CSS/DOM 问题优先使用浏览器 DevTools（见 `browser-debug-toolkit` skill），比 console.log 打点更高效。根因仍模糊时用 WebSearch 搜已知案例（若 `effective-web-research` 可用则应用其调研纪律），仍未找到则**暂停等用户决定**（继续打点 / 外部支持 / 带假设进入阶段 2）。
 
 **工具限制**：✅ Read/Grep 辅助确定打点位置；❌ Edit/Write（打点代码由用户手动添加，或经用户明确确认后 AI 添加）；❌ 未经用户确认不得自行运行复现步骤
 
