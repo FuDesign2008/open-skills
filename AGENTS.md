@@ -64,6 +64,8 @@ open-skills/
 | xquik-social-data | 数据采集 | 无 |
 | essence-diagnosis | 工作流 | multi-agent-debate |
 | multi-agent-debate | 工具 | 无 |
+| solution-review | 审查 | 无 |
+| code-design-review | 审查 | 无 |
 
 > 💕 AI 编码陪伴（coding-fangirl）已迁移至独立工程 [oh-my-fangirl](https://github.com/FuDesign2008/oh-my-fangirl)。
 
