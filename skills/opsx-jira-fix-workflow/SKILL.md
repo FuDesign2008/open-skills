@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.4.0"
+version: "1.5.0"
 user-invocable: true
 description: 当用户说"opsx-jira-fix"、"OpenSpec Jira 修复"、"规范化修复 Jira"、"opsx修复Jira"、"Jira OpenSpec 修复"、"opsx自动修复Jira"、"用OpenSpec修复Jira"或"opsx-jira-fix-workflow"时触发。适用于从 Jira issue 出发，并需要将根因、行为变更、修复计划、验证和归档沉淀到 OpenSpec artifacts 的端到端 Bug 修复。
 dependencies:
@@ -209,6 +209,7 @@ dependencies:
 2. **现象对齐**：复现条件、期望 vs 实际。
 3. **代码定位**：文件路径、关键函数、调用链、状态流。
 4. **根因分析**：区分直接原因和根本原因；必要时追问“为什么”至少 3 次。
+4.5 **上游依赖修复评估**（可选）：若根因疑似上游依赖 bug（具名第三方库/框架、症状与库特定行为强相关、workaround越堆越复杂），加载 `upstream-dependency-debug` skill——查 Changelog 找修复版本，优先升级依赖而非堆 workaround（4步决策顺序+升级工程纪律，见该 skill）。
 5. **影响范围**：模块、平台、调用方、兼容性、风险面。
 6. **难度分级**：容易 / 中等 / 困难 / 极难。
 

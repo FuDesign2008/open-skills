@@ -31,6 +31,23 @@
 
 ---
 
+## 阶段 1.2 上游依赖修复评估
+
+当步骤 3.6 触发（根因明确为上游依赖 bug，或步骤 2.5 找到上游已修复版本）时，按以下格式输出：
+
+```
+【上游依赖修复评估】
+- 根因归属：上游依赖 bug（<依赖名@当前版本> 的 <具体问题>）
+- 上游修复确认：Changelog/Release Notes/Issues 显示 <修复版本> 已修复（<引用链接+日期>）
+- 升级风险评估：[patch/minor 低风险 | major 有 breaking change <列出>]
+- 包管理器：项目实际用 <npm/yarn/pnpm>（依据 <lockfile>），系统级 packageManager=<...>
+- 验证链：typecheck + build + 全量单测 + <真机/目标环境验证>
+- dedup 检查：<npm ls <pkg> 结果，单版本/多版本>
+- 建议：升级 <依赖> <旧版本>→<新版本> 作为首选方案 / 与 workaround 并列对比
+```
+
+---
+
 ## 前置 skill 检查 — 缺失提示
 
 当 frontmatter `dependencies` 中声明的 skill 缺失时，按以下格式输出并立即中止流程：
