@@ -1,0 +1,44 @@
+{
+  "skill_name": "upstream-dependency-debug",
+  "evals": [
+    {
+      "id": 1,
+      "name": "upstream-editor-ime-bug",
+      "prompt": "我们项目用了一个 WYSIWYG 富文本编辑器库（基于 contentEditable 的那种，类似 ProseMirror/CodeMirror 的 ViewPlugin 装饰机制）。在 iOS 上，任务列表项输入中文（拼音 IME composition 进行中）时，正在输入的文字会呈现选中态蓝底高亮，但普通段落输入中文就只有正常的 composition 下划线。Android 和桌面 Chrome 都不复现。我已经试了三层本地方案：CSS `::selection { background: transparent !important }`、compositionstart 时加 class 延迟移除、甚至 composition 期间把 widget 降级成源码标记，真机验证都不完全管用——CSS 那层在 iOS composition 期间根本不生效。这到底怎么修？",
+      "expected_output": "应识别为上游编辑器库的 bug（症状平台特定、CSS !important 静默失效、workaround 越堆越复杂）。应走查上游 Changelog/Release Notes 找 composition/selection/widget 相关修复版本，优先评估升级该库而非继续堆 workaround。不应继续建议新的 CSS/magic-number workaround。应提及包管理器一致性、升级后 typecheck+build+单测+真机验证、dedup 检查。",
+      "files": [],
+      "assertions": [
+        {"text": "识别为上游依赖 bug 而非本仓库代码 bug（归因到编辑器库/上游）"},
+        {"text": "建议查上游 Changelog / Release Notes / Issues 找修复版本"},
+        {"text": "推荐升级依赖作为首选修复方案（而非继续堆 workaround）"},
+        {"text": "不新增 CSS !important / magic-number 时序 / UX 降级 类 workaround 作为主方案"},
+        {"text": "提及升级工程纪律之一：包管理器一致性 / 验证链 / semver 风险 / dedup 检查"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "framework-version-specific-bug",
+      "prompt": "React 项目，最近把 react 从 18.2 升到 18.3 后，有个用 useEffect 做的轮询组件在 StrictMode 下行为异常——cleanup 跑了但定时器好像没真正清掉，导致重复请求。同事说可能是 React 18.3 改了 StrictMode 的挂载/卸载时序。我正准备在 useEffect 里加一堆 ref 守卫和 setTimeout 延迟来规避。这思路对吗？",
+      "expected_output": "应识别为可能与 React 版本升级相关的问题（症状与特定框架版本+特定 API 行为强相关）。应建议先查 React 18.3 的 Changelog/Release Notes 确认 StrictMode 时序是否是已知变更/已知 bug，评估是否有更新的小版本修复。不应直接认可加 ref 守卫+setTimeout 的 workaround 思路（那是 magic-number 时序 workaround，属反模式）。可建议同时检查代码是否符合 React 18.3 的新契约。",
+      "files": [],
+      "assertions": [
+        {"text": "建议先查 React 18.3 Changelog / Release Notes 确认 StrictMode 时序变更是否已知"},
+        {"text": "不直接认可加 ref 守卫 + setTimeout 延迟的 workaround 思路（指出其属 magic-number 反模式）"},
+        {"text": "评估是否有更新的 React 小版本修复该问题"},
+        {"text": "提及检查代码是否符合 React 18.3 新契约（升级后 API 行为变更的可能）"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "near-miss-own-code-bug",
+      "prompt": "我们项目里有个自己写的 utils 工具函数 `formatDuration(seconds)`，最近发现传 3600 进去返回的是 '1h 0m 0s' 但预期是 '1h'，多余的零应该去掉。看了下是 `if (minutes > 0)` 写成了 `if (minutes >= 0)`。这种怎么修？",
+      "expected_output": "应判断为本仓库自己的代码 bug（根因明确：`>= 0` 应为 `> 0`，与第三方库无关）。不应走升级依赖路径，不应查 Changelog。应直接建议修复该 utils 函数的判断条件。这是 near-miss：虽然涉及'修 bug'，但不触发升级依赖思路。",
+      "files": [],
+      "assertions": [
+        {"text": "判断为本仓库代码 bug，不触发升级依赖路径"},
+        {"text": "不建议查 Changelog / 升级依赖"},
+        {"text": "直接建议修复 `>= 0` → `> 0` 的判断条件"}
+      ]
+    }
+  ]
+}
