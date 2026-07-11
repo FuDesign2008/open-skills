@@ -518,6 +518,10 @@ Superpowers 增强规则：
    - 若不存在 → 直接运行 `openspec validate <change-name>` 或 `openspec validate --changes`（CLI 工具调用，非降级）。
 2. **工程验证**：运行项目相关测试、类型检查、lint 或构建。
 3. **行为对照**：逐条对照 delta spec 的 requirements 和 scenarios，确认实现覆盖。
+4. **调试-验证闭环**：若阶段 1.2 用了调试 skill 定位根因，本阶段须用**同一 skill** 验证修复（而非只跑测试）：
+   - UI/CSS/DOM 问题（用了 `browser-debug-toolkit`）→ 用同一 skill 验证修复后渲染结果（DOM 树/计算样式/盒模型），确认异常消失
+   - 运行时证据问题（用了 `runtime-evidence-debug` 打点）→ 用同一 skill 复验原打点位置，before/after 证据对比确认异常行为消失
+   - Hybrid 跨端问题（用了 `hybrid-debug` 四层分析）→ 验证受影响各层（L1-L4）行为均正确，无新跨层副作用
 
 若检测到 `verification-before-completion`，必须按其原则执行：只有刚运行过并亲自阅读过输出的命令，才能作为“通过”的证据。
 
