@@ -3,6 +3,8 @@ name: essence-diagnosis
 version: "1.0.0"
 user-invocable: true
 description: "Diagnose the essence of a complex, seemingly unsolvable problem — diagnosis only, not fixing. Use for massive logs with no root cause, complex crashes, architectural essence analysis, requirement verification, systemic chronic issues. Triggers — 本质诊断、根因诊断、深度诊断、诊断问题本质、梳理问题逻辑、证据链分析、逻辑链分析 / essence-diagnosis."
+dependencies:
+  - multi-agent-debate
 ---
 
 # Essence Diagnosis
@@ -10,6 +12,17 @@ description: "Diagnose the essence of a complex, seemingly unsolvable problem �
 > **Role**: Performs essence analysis and diagnosis of complex problems only. Produces a complete evidence chain + logic chain + hypothesis list. **Does NOT solve the problem** (no solutions, no execution, no fixes). Must orchestrate `multi-agent-debate` for adversarial verification.
 >
 > **Output templates and formats** are in [reference.md](reference.md).
+
+## Prerequisite skill check
+
+> This skill declares a frontmatter `dependencies` on `multi-agent-debate` — adversarial verification is a **hard constraint** of this skill, not an optional enhancement (see "Orchestrate multi-agent-debate" in the core flow). Before starting S/O/A analysis, verify the dependency is available.
+
+1. Scan available skills (check `<available_items>` or use the `skill` tool).
+2. Confirm `multi-agent-debate` is in the available list.
+3. **Present** → continue to S/O/A.
+4. **Missing** → output a structured install prompt and **abort immediately**. **No degradation** — without adversarial debate the single-analyst diagnosis keeps its blind spots unbroken, which defeats the sole purpose of this skill.
+
+> Use the same missing-dependency prompt format as `solve-workflow` (see `solve-workflow/reference.md`).
 
 ## Why this skill exists
 

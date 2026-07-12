@@ -71,7 +71,7 @@ open-skills/
 | browser-debug-toolkit | 调试方法论 | 无 |
 | git-conflict-resolve | Git | 无 |
 | git-release-start | Git | 无 |
-| git-release-finish | Git | 无 |
+| git-release-finish | Git | git-conflict-resolve |
 | jira-fix-batch | Jira 工作流 | 无 |
 | opsx-jira-fix-batch | Jira 工作流 | 无 |
 | effective-web-research | 工具 | 无 |
