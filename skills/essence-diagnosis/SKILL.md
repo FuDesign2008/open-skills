@@ -2,7 +2,7 @@
 name: essence-diagnosis
 version: "1.0.0"
 user-invocable: true
-description: Use when a complex problem seems unsolvable and needs digging to the essence — diagnosis only, not fixing. Symptoms include massive logs with no root cause surfaced, complex crashes, architectural essence analysis, requirement authenticity verification, systemic chronic issues, information overload, disconnect between symptoms and essence, multiple intertwined factors, or premature-convergence tendencies — even when the user never explicitly says "diagnose". Also triggers on 本质诊断, 根因诊断, 深度诊断, 诊断问题本质, 梳理问题逻辑, 证据链分析, 逻辑链分析, essence-diagnosis.
+description: "Diagnose the essence of a complex, seemingly unsolvable problem — diagnosis only, not fixing. Use for massive logs with no root cause, complex crashes, architectural essence analysis, requirement verification, systemic chronic issues. Triggers — 本质诊断、根因诊断、深度诊断、诊断问题本质、梳理问题逻辑、证据链分析、逻辑链分析 / essence-diagnosis."
 ---
 
 # Essence Diagnosis

@@ -2,7 +2,7 @@
 name: upstream-dependency-debug
 version: "1.1.0"
 user-invocable: true
-description: "When a bug involves a named third-party library/framework, or symptoms correlate strongly with a platform/library-specific behavior, evaluate 'upgrade the dependency' BEFORE piling on local workarounds. Walks through a 4-step decision (is it upstream? → check Changelog/Release Notes → upgrade at low semver risk → only workaround if upgrade is infeasible), the upgrade engineering discipline (package-manager consistency, post-upgrade verification chain, semver risk, dedup check), and a result table. Use this skill whenever a bug smells like an upstream library issue — symptoms tied to a specific framework version, silent failures where code looks correct, workarounds that keep growing, or platform-specific rendering bugs that CSS cannot fix. Triggers — 「升级依赖」「依赖升级修复」「这个 bug 升级依赖能解决吗」「查 changelog 修复」「优先升级依赖」「升级依赖还是堆 workaround」 / dependency upgrade, upgrade to fix bug, changelog fix, avoid workaround, upgrade library to fix."
+description: "When a bug involves a named third-party library/framework, evaluate upgrading the dependency BEFORE piling on workarounds — 4-step decision, upgrade discipline, result table. Use when a bug smells upstream (version-tied symptoms, silent failures). Triggers — 「升级依赖」「依赖升级修复」「这个 bug 升级依赖能解决吗」「查 changelog 修复」「优先升级依赖」 / upgrade to fix bug."
 ---
 
 # Dependency Upgrade as Bug Fix

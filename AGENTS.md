@@ -69,6 +69,18 @@ open-skills/
 | runtime-evidence-debug | 调试方法论 | 无 |
 | hybrid-debug | 调试方法论 | 无 |
 | browser-debug-toolkit | 调试方法论 | 无 |
+| git-conflict-resolve | Git | 无 |
+| git-release-start | Git | 无 |
+| git-release-finish | Git | 无 |
+| jira-fix-batch | Jira 工作流 | 无 |
+| opsx-jira-fix-batch | Jira 工作流 | 无 |
+| effective-web-research | 工具 | 无 |
+| ensure-tests | 工具 | 无 |
+| go-deploy | 工具 | 无 |
+| test-guide-from-code | 工具 | 无 |
+| think-big | 工具 | 无 |
+| unbox-anything | 工具 | 无 |
+| upstream-dependency-debug | 调试方法论 | 无 |
 
 > 💕 AI 编码陪伴（coding-fangirl）已迁移至独立工程 [oh-my-fangirl](https://github.com/FuDesign2008/oh-my-fangirl)。
 

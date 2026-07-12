@@ -2,7 +2,7 @@
 name: multi-agent-debate
 version: "1.0.0"
 user-invocable: true
-description: "Stress-test a crash analysis, hypothesis, or technical conclusion by launching three adversarial agents in parallel — one defends, one attacks, one hunts new evidence — and resolving disputes with physical proof instead of argument. Always use this skill when the analysis has 2+ competing explanations that both seem plausible, when a conclusion relies on a single log sample or inferred chain longer than 3 steps, or when someone says \"are you sure?\", \"that doesn't sound right\", or challenges an assumption. Triggers: 辩论、求真、挑战假设、质疑分析、multi-agent-debate, \"debate this\", \"challenge my analysis\", \"find holes in\", \"I'm not sure this is right\", \"verify this\"."
+description: "Stress-test an analysis or hypothesis with three adversarial agents — defend, attack, hunt new evidence — resolving disputes with physical proof. Use when 2+ competing explanations both seem plausible, or a conclusion rests on a single log or inferred chain. Triggers — 辩论、求真、挑战假设、质疑分析、multi-agent-debate, debate this, challenge my analysis, are you sure?"
 ---
 
 # Multi-Agent Debate

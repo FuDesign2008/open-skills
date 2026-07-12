@@ -2,7 +2,7 @@
 name: hybrid-debug
 version: "1.0.0"
 user-invocable: true
-description: "Hybrid app (native shell + WebView/WKWebView/Electron + H5) full-stack debugging methodology — forces analysis across four layers (web runtime, native-web bridge, native config, platform runtime) instead of stopping at a single layer, preventing whack-a-mole surface fixes. Use when debugging hybrid app UI/theme/behavior issues, especially platform discrepancies (one platform reproduces, the other does not), repeated single-end fix failures, or silent failures involving native-H5 communication, theme switching, or platform runtime behavior. Triggers — 「hybrid 调试」「跨端调试」「全链路调试」「平台差异调试」「WebView 问题」「WKWebView 问题」「native 和 H5 交互问题」「单端修复失败」「跨端主题问题」「跨端样式不一致」 / hybrid debug, cross-platform debug, webview issue, native-web bridge, full-stack debugging, RN/Electron debugging."
+description: "Hybrid app (native + WebView/Electron + H5) full-stack debugging across four layers — prevents whack-a-mole surface fixes. Use for hybrid UI/theme/behavior issues, platform discrepancies, silent native-H5 failures. Triggers — 「hybrid 调试」「跨端调试」「全链路调试」「平台差异调试」「WebView 问题」「WKWebView 问题」「native 和 H5 交互问题」「单端修复失败」 / hybrid debug."
 ---
 
 # Hybrid Fullstack Debugging
