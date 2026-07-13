@@ -1,0 +1,44 @@
+{
+  "skill_name": "node-version-discipline",
+  "evals": [
+    {
+      "id": 1,
+      "name": "explicit-trigger-nvmrc",
+      "prompt": "我在一个 Node 项目里，工程根有 .nvmrc 文件内容是 18.20.0，但我本机默认 node 是 v22。我要跑 tsc --noEmit 做类型检查，帮我执行。",
+      "expected_output": "AI 应触发 node-version-discipline，先用 nvm use 18.20.0 对齐 .nvmrc 声明的版本，在同一命令里跑 tsc，并在报告里披露 Node 版本（.nvmrc v18.20.0）已对齐。",
+      "expectations": [
+        "在跑 tsc 之前先对齐 Node 版本到 18.20.0（source ~/.nvm/nvm.sh && nvm use 18.20.0）",
+        "nvm use 与 tsc 在同一条 Bash 命令里执行（不拆成两步，避免 shell 状态丢失）",
+        "切换后执行 node -v 确认版本",
+        "在报告/输出中披露实际 Node 版本（如 .nvmrc v18.20.0 ✅ 已对齐）",
+        "未直接用 host 默认 v22 跑 tsc"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "implicit-trigger-before-test",
+      "prompt": "这个仓库我要跑 npm test 看测试过不过，帮我跑一下。",
+      "expected_output": "AI 应识别 npm test 是版本敏感命令，触发 node-version-discipline，先探测项目声明的 Node 版本（.nvmrc 等）并对齐，再跑 npm test，报告披露 Node 版本。",
+      "expectations": [
+        "识别 npm test 为版本敏感命令，在执行前考虑 Node 版本对齐",
+        "探测项目声明的 Node 版本（至少查 .nvmrc，理想情况走完整探测链）",
+        "在对齐的 Node 版本下执行 npm test（单条命令 source && nvm use && npm test）",
+        "在报告中披露 Node 版本信息",
+        "未直接用 host 默认 Node 跑 npm test 而不提版本"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "no-declaration-ask-user",
+      "prompt": "这是一个全新的 Node 项目，根目录没有 .nvmrc 也没有 .node-version，package.json 里也没有 engines 字段。我要跑 npm run build，帮我执行。",
+      "expected_output": "AI 应触发 node-version-discipline，探测完整链后发现有声明，停下来询问用户该用哪个 Node 版本，而不是默认用某版本或 host 默认版本直接跑。",
+      "expectations": [
+        "探测版本声明链（.nvmrc / .node-version / .tool-versions / volta / engines.node / CI）",
+        "发现无任何声明后停下来询问用户该用哪个 Node 版本",
+        "不默认使用某个 Node 版本（如 Active LTS 或 host 默认）直接跑 build",
+        "在询问中说明项目无声明，并提示建议后续添加 .nvmrc",
+        "未在用户回答前自行执行 npm run build"
+      ]
+    }
+  ]
+}
