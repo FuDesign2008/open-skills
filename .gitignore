@@ -165,3 +165,6 @@ skills/*-workspace/
 .omo/
 .opencode/
 .sisyphus/
+
+# Review skill artifacts (临时 review 产物，/review 等 skill 生成)
+.review-*.md
