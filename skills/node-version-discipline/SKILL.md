@@ -5,9 +5,9 @@ user-invocable: true
 description: "Node version discipline — before running tsc / eslint / build / test / install in any Node project, align the Node version to the project's declared version (.nvmrc / .node-version / .tool-versions / volta / engines.node) and disclose it in the verification report, preventing false-pass / false-fail when the host default Node mismatches the project-pinned version. Use this skill whenever the user is about to run a version-sensitive Node command, or mentions Node version mismatch / wrong Node / version conflict / 切换 node 版本. 中文触发词「node 版本对齐」「版本对齐」「nvm 对齐」「.nvmrc」「Node 版本纪律」「对齐 Node 版本」「切换 node 版本」「切到指定 node 版本」「node 版本不对」「node 版本不一致」「版本不匹配」, English aliases node version discipline, nvm use, align node version, switch node version."
 ---
 
-# Node Version Discipline (.nvmrc)
+# Node Version Discipline
 
-> Before running any build / lint / type-check / test / install command in a Node project, align the Node version to `.nvmrc` (fallback `engines.node`). Otherwise verification results are untrustworthy.
+> Before running any build / lint / type-check / test / install command in a Node project, align the Node version to the project's declared version (probe the full chain: `.nvmrc` → `.node-version` → `.tool-versions` → `volta.node` → `engines.node` → CI config). Otherwise verification results are untrustworthy.
 
 ## 1. Why alignment is mandatory
 
@@ -154,9 +154,9 @@ No `dependencies` declared, no precondition check — relies on the AI invoking 
 ```bash
 # Probe the full version-declaration chain (cross-tool), then switch via nvm.
 # First hit in priority order wins. See §2 for why we probe beyond .nvmrc.
-probe_file() {  # $1 = filename; prints a semver walking up the tree
+probe_file() {  # $1 = filename; prints a version walking up the tree
   for d in . .. ../.. ../../..; do
-    [ -f "$d/$1" ] && { cat "$d/$1" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | head -1; return; }
+    [ -f "$d/$1" ] && { cat "$d/$1" | grep -Eo 'v?[0-9]+(\.[0-9]+){0,2}' | head -1 | sed 's/^v//'; return; }
   done
 }
 NODE_VER="$(probe_file .nvmrc)"
