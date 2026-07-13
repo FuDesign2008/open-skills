@@ -1,8 +1,8 @@
 ---
 name: node-version-discipline
-version: "1.0.0"
+version: "1.1.0"
 user-invocable: true
-description: "Node version discipline — before running tsc / eslint / build / test / install in any Node project, align the Node version to the project's declared version (.nvmrc / .node-version / .tool-versions / volta / engines.node) and disclose it in the verification report, preventing false-pass / false-fail when the host default Node mismatches the project-pinned version. Use this skill whenever the user is about to run a version-sensitive Node command, or mentions Node version mismatch / wrong Node / version conflict / 切换 node 版本. 中文触发词「node 版本对齐」「版本对齐」「nvm 对齐」「.nvmrc」「Node 版本纪律」「对齐 Node 版本」「切换 node 版本」「切到指定 node 版本」「node 版本不对」「node 版本不一致」「版本不匹配」, English aliases node version discipline, nvm use, align node version, switch node version."
+description: "Node version discipline — before running tsc / eslint / build / test / install in any Node project, align the Node version to the project's declared version (.nvmrc / .node-version / .tool-versions / volta / engines.node) and disclose it in the verification report, preventing false-pass / false-fail when the host default Node mismatches the project-pinned version; when the project declares no Node version at all, ask the user for the version and offer to persist a declaration file (.nvmrc etc.) so future sessions/CI/collaborators auto-align. Use this skill whenever the user is about to run a version-sensitive Node command, or mentions Node version mismatch / wrong Node / version conflict / 切换 node 版本. 中文触发词「node 版本对齐」「版本对齐」「nvm 对齐」「.nvmrc」「Node 版本纪律」「对齐 Node 版本」「切换 node 版本」「切到指定 node 版本」「node 版本不对」「node 版本不一致」「版本不匹配」「初始化 node 版本管理」「为工程增加 node 版本声明」「给工程加 .nvmrc」「没有 .nvmrc 怎么办」「无 .nvmrc 时补一个」「工程没有 node 版本管理」, English aliases node version discipline, nvm use, align node version, switch node version, add nvmrc, initialize node version."
 ---
 
 # Node Version Discipline
@@ -52,13 +52,52 @@ Walk up the directory tree for files (rows 1-3); read `package.json` and CI conf
 
 ### When no declaration exists
 
-If the chain finds nothing, **do not silently fall back to the default Node or pick a version on the user's behalf** — that is exactly the false-pass/false-fail trap this skill prevents, and guessing a version risks running the whole verification on the wrong Node:
+If the chain finds nothing, **do not silently fall back to the default Node or pick a version on the user's behalf** — that is exactly the false-pass/false-fail trap this skill prevents, and guessing a version risks running the whole verification on the wrong Node. Turn the user's answer into a persistent project asset so this round-trip never has to repeat:
 
 1. **Stop and ask the user** which Node version to use. Prompt with: *"This project declares no Node version (no `.nvmrc` / `.node-version` / `.tool-versions` / `volta` / `engines.node` / CI pin found). Which Node version should I align to before running [tsc / build / test / ...]?"* Wait for the user's answer; do not proceed with a guessed version.
-2. After the user answers, align to the stated version (SOP §3) and disclose it in the report: *"Project declares no Node version — user-specified Node vX (no project declaration). Recommend adding `.nvmrc` or `engines.node` to make it explicit."*
-3. Pure file I/O / git / grep (no Node runtime) needs no alignment.
+2. **Probe the toolchain** with the read-only `detect_manager` snippet (§2.2) to recommend *which* declaration file fits this project/env. The snippet prints signals only — it does not write anything.
+3. **Confirm with the user before persisting.** Offer to write the recommended declaration file containing the exact version the user just gave (§2.1 picks the file type; the version is the user's, in full `X.Y.Z` form — e.g. `22.5.0`, not a bare major). Persist only after the user agrees; if they decline, skip writing and continue with alignment-only for this session. Either way, align to the stated version (SOP §3) before running the real command.
+4. Pure file I/O / git / grep (no Node runtime) needs no alignment and no declaration file.
 
 > Why ask rather than default to Active LTS: the "correct" Node for a project depends on context the AI doesn't have — production runtime, CI matrix, teammate environments, legacy constraints. A wrong guess silently invalidates every downstream result. Asking is one cheap round-trip; a false pass/fail can misdirect an entire investigation.
+>
+> Why persist the answer (not just align once): the user's version choice is high-value engineering information. If it lives only in the conversation, every future session, CI run, and collaborator hits the same "no declaration" wall and may converge on a *different* version. Writing one small declaration file closes the loop — the next session reads it on the first probe and never asks again.
+
+### 2.1 Which declaration file to write
+
+Pick the file type from the signals `detect_manager` (§2.2) reported. First matching row wins; `.nvmrc` is the catch-all default because nvm/fnm (and asdf with `legacy_version_file`) all read it, giving the broadest cross-tool coverage.
+
+| Signal (from §2.2) | File to write | Content shape | Why this file |
+|---|---|---|---|
+| `package.json` already has a `volta` block, **or** `volta` is installed on the host | `package.json` → `volta.node` field | `"volta": { "node": "22.5.0" }` (merge into existing `volta` object) | Volta reads only this source; a `.nvmrc` would be invisible to Volta users |
+| `asdf` installed on host, **or** project already has a `.tool-versions` for other languages | `.tool-versions` (append a line) | `nodejs 22.5.0` | asdf's native source; keeps all language pins in one file |
+| `fnm` **or** `nodenv` installed (and neither of the above) | `.node-version` | `22.5.0` | fnm/nodenv native source; nvm ignores this file, so don't pick it when nvm is the only manager |
+| None of the above / unsure | `.nvmrc` | `22.5.0` | Broadest coverage: nvm + fnm native, asdf with `legacy_version_file`; the safe default |
+
+**Version format — write the exact patch.** Use the full `X.Y.Z` the user specified (or the exact installed version if the user said "use what's installed" — capture it via `node -v` and strip the leading `v`). Do **not** write a bare major (`22`) or a range (`>=20`): a declaration file's job is to pin one reproducible version so every environment converges identically. `.nvmrc`/`.node-version` take the bare `22.5.0` (no `v` prefix, nvm convention); `.tool-versions` takes `nodejs 22.5.0`; `engines.node`/`volta.node` take the quoted string `"22.5.0"`. (If the user later wants a range for `engines.node`, that's a separate conscious choice — the persist step here pins exact.)
+
+**Persist-then-install order.** Write the declaration file first, then handle installation. The file is a statement of intent for CI and collaborators — it does not depend on the local machine having that version. After writing, if `ls ~/.nvm/versions/node/` shows the version is missing locally, prompt `nvm install <version>` (or the manager equivalent) per SOP §3 Step 2, then proceed. This way the project asset exists even if the user defers installation.
+
+**Where to write.** Project root (same level as `package.json`). For `.nvmrc`/`.node-version`/`.tool-versions` create a new file; for `volta.node`/`engines.node` merge into the existing `package.json` — never overwrite the file, always edit the JSON in place.
+
+### 2.2 detect_manager — read-only toolchain probe
+
+Paste-ready, **read-only**. It prints signals so the AI can pick the right file per §2.1; it must not write any file. Writing is a separate, user-confirmed step (§2 step 3).
+
+```bash
+# Read-only: detect which Node version manager this project/env uses.
+# Prints one signal per line. AI maps them to a declaration file via §2.1.
+# Does NOT write anything — persistence is a separate, user-confirmed step.
+[ -f package.json ] && node -e "require('./package.json').volta && console.log('volta-struct')" 2>/dev/null
+command -v volta  >/dev/null && echo "volta-installed"
+command -v asdf   >/dev/null && echo "asdf-installed"
+[ -f .tool-versions ] && echo "tool-versions-exists"
+command -v fnm    >/dev/null && echo "fnm-installed"
+command -v nodenv >/dev/null && echo "nodenv-installed"
+# No output above → default to .nvmrc (broadest cross-tool coverage).
+```
+
+> The probe detects the *manager*, not the version. The version always comes from the user (§2 step 1) — never from the host default.
 
 ## 3. Standard Operating Procedure (SOP)
 
@@ -117,10 +156,16 @@ When reporting verification results, disclose the Node version — not just pass
 - eslint: ✅ no errors/warnings
 ```
 
-When the project declared no version and the user supplied one, disclose that fact explicitly so the source is auditable:
+When the project declared no version and the user supplied one, disclose that fact explicitly so the source is auditable. Distinguish whether the declaration was persisted (so the next session auto-aligns) or only applied this once:
 
 ```
-- Node version (user-specified v20.11.0, no project declaration): ✅ aligned; recommend adding .nvmrc
+- Node version (user-specified v20.11.0, no prior project declaration): ✅ aligned; persisted to .nvmrc (22.5.0) — future sessions will auto-align
+```
+
+If the user declined to persist, make that explicit so the gap is visible:
+
+```
+- Node version (user-specified v20.11.0, no project declaration): ✅ aligned for this run; user declined to persist — declaration still missing, recommend adding .nvmrc
 ```
 
 If a command ran without switching, mark ⚠️ and re-run.
@@ -171,6 +216,7 @@ if [ -n "$NODE_VER" ]; then
   echo "✅ Node: $(node -v) (aligned to $NODE_VER)"
 else
   echo "ℹ️ No declaration found — STOP and ask the user which Node version to use (do not guess). Current host default: $(node -v)"
+  echo "   Then run detect_manager (§2.2) to pick a declaration file, confirm with the user, and persist it (§2.1) so future sessions auto-align."
 fi
 ```
 
@@ -189,5 +235,6 @@ The SOP assumes nvm (Unix / macOS). Other environments:
 ## 9. Related
 
 - Origin: a real-world fix where a mobile project pinned `.nvmrc` = v14.21.3 while the host defaulted to v22, producing tsc/eslint false-passes under the higher version.
+- No-declaration path: when a project declares no Node version at all, §2 turns the user's answer into a persistent declaration file (§2.1 picks the type via §2.2's toolchain probe), closing the loop so the next session reads it on the first probe instead of asking again.
 - Hard-dependents: `typescript-check`, `jira-fix-workflow`, `opsx-jira-fix-workflow`, `opsx-solve-workflow`.
 - Soft-referencers: `ensure-tests`, `solve-workflow`.
