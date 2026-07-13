@@ -3,6 +3,8 @@ name: typescript-check
 version: "1.0.0"
 user-invocable: true
 description: TypeScript type-checking workflow. Use this skill whenever the user works with TypeScript and mentions type errors, type checking, or says "类型检查" (type check), "type-check", "tsc", "检查类型" — even if they don't explicitly ask for a "type check" but are encountering compilation or type issues in a TypeScript project.
+dependencies:
+  - node-version-discipline
 ---
 
 # TypeScript Type-Check Workflow
@@ -15,6 +17,12 @@ description: TypeScript type-checking workflow. Use this skill whenever the user
 - "检查类型"
 
 ## Workflow
+
+### Step 0: Node version alignment (precondition)
+
+> This skill hard-depends on `node-version-discipline` via `dependencies`. Before running any tsc / type-check command, align the Node version to `.nvmrc` (fallback `engines.node`) per its SOP — otherwise the result is untrustworthy (false pass / false fail).
+
+Prefix every command below with `source ~/.nvm/nvm.sh && nvm use <version> >/dev/null 2>&1 && node -v && ` (single call — shell state is not persistent). If `node-version-discipline` is unavailable, install it first; **do not degrade**.
 
 ### Step 1: Detect the Right Command
 
@@ -38,6 +46,7 @@ fi
 **If the check passes:**
 ```
 ✅ TypeScript type check passed
+- Node version (.nvmrc vX): ✅ aligned (note "default Node" if no .nvmrc found)
 ```
 
 **If the check fails:**
