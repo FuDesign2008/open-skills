@@ -56,7 +56,7 @@ dependencies:
 - `runtime-evidence-debug`（阶段 2 运行时证据调试）
 - `browser-debug-toolkit`（阶段 2 + 阶段 6 浏览器 DevTools 调试）
 
-> 启动时（阶段 0 前置检查通过后、阶段 1 之前）必须执行 skill 依赖检查：扫描可用 skill（查 `<available_items>` 或用 `skill` 工具），核对 5 个 dependencies 是否都在。任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`）。**不降级**。
+> 启动时（阶段 0 前置检查通过后、阶段 1 之前）必须执行 skill 依赖检查：扫描可用 skill（查 `<available_items>` 或用 `skill` 工具），核对 6 个 dependencies 是否都在。任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`）。**不降级**。
 
 ## 模式生命周期
 

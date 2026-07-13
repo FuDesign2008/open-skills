@@ -52,11 +52,13 @@ Walk up the directory tree for files (rows 1-3); read `package.json` and CI conf
 
 ### When no declaration exists
 
-If the chain finds nothing, **do not silently fall back to the default Node** — that is exactly the false-pass/false-fail trap this skill prevents:
+If the chain finds nothing, **do not silently fall back to the default Node or pick a version on the user's behalf** — that is exactly the false-pass/false-fail trap this skill prevents, and guessing a version risks running the whole verification on the wrong Node:
 
-1. Use the current **Active LTS** as the fallback (check [nodejs.org/previous-releases](https://nodejs.org/en/about/previous-releases); as of 2026-07 that is Node 24).
-2. State in the report: *"Project declares no Node version — used Active LTS (Node 24) as fallback. Recommend adding `.nvmrc` or `engines.node` to make it explicit."*
+1. **Stop and ask the user** which Node version to use. Prompt with: *"This project declares no Node version (no `.nvmrc` / `.node-version` / `.tool-versions` / `volta` / `engines.node` / CI pin found). Which Node version should I align to before running [tsc / build / test / ...]?"* Wait for the user's answer; do not proceed with a guessed version.
+2. After the user answers, align to the stated version (SOP §3) and disclose it in the report: *"Project declares no Node version — user-specified Node vX (no project declaration). Recommend adding `.nvmrc` or `engines.node` to make it explicit."*
 3. Pure file I/O / git / grep (no Node runtime) needs no alignment.
+
+> Why ask rather than default to Active LTS: the "correct" Node for a project depends on context the AI doesn't have — production runtime, CI matrix, teammate environments, legacy constraints. A wrong guess silently invalidates every downstream result. Asking is one cheap round-trip; a false pass/fail can misdirect an entire investigation.
 
 ## 3. Standard Operating Procedure (SOP)
 
@@ -68,6 +70,8 @@ cat .nvmrc 2>/dev/null
 # Fallback to package.json engines
 node -e "console.log(require('./package.json').engines?.node || 'no engines constraint')" 2>/dev/null
 ```
+
+> The snippet above shows the two most common sources for clarity. The full cross-tool priority chain (`.nvmrc` → `.node-version` → `.tool-versions` → `volta.node` → `engines.node` → CI config) is implemented as a paste-ready script in §7 — use that in practice.
 
 ### Step 2 — Confirm the target version is installed
 
@@ -111,6 +115,12 @@ When reporting verification results, disclose the Node version — not just pass
 - Node version (.nvmrc v14.21.3): ✅ switched via nvm use
 - tsc --noEmit: ✅ 0 errors
 - eslint: ✅ no errors/warnings
+```
+
+When the project declared no version and the user supplied one, disclose that fact explicitly so the source is auditable:
+
+```
+- Node version (user-specified v20.11.0, no project declaration): ✅ aligned; recommend adding .nvmrc
 ```
 
 If a command ran without switching, mark ⚠️ and re-run.
@@ -160,7 +170,7 @@ if [ -n "$NODE_VER" ]; then
   source ~/.nvm/nvm.sh 2>/dev/null && nvm use "$NODE_VER" >/dev/null 2>&1
   echo "✅ Node: $(node -v) (aligned to $NODE_VER)"
 else
-  echo "ℹ️ No declaration found — use Active LTS (Node 24) as fallback and state it in the report. Current: $(node -v)"
+  echo "ℹ️ No declaration found — STOP and ask the user which Node version to use (do not guess). Current host default: $(node -v)"
 fi
 ```
 

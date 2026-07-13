@@ -52,10 +52,10 @@ dependencies:
 
 ## 前置 skill 检查
 
-> 本 skill 通过 frontmatter `dependencies` 声明对 5 个 skill 的强依赖。启动时（阶段 0 前置检查之前）必须执行本检查。
+> 本 skill 通过 frontmatter `dependencies` 声明对 6 个 skill 的强依赖。启动时（阶段 0 前置检查之前）必须执行本检查。
 
 1. 扫描可用 skill（查 `<available_items>` 或用 `skill` 工具）
-2. 核对 5 个 dependencies 是否都在可用列表中
+2. 核对 6 个 dependencies 是否都在可用列表中
 3. 全部存在 → 继续阶段 0 前置检查
 4. 任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`）
 
