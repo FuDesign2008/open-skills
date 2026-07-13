@@ -9,6 +9,7 @@ dependencies:
   - hybrid-debug
   - runtime-evidence-debug
   - browser-debug-toolkit
+  - node-version-discipline
 ---
 
 # OPSX 七阶段问题解决工作流
@@ -50,10 +51,10 @@ dependencies:
 
 ## 前置 skill 检查
 
-> 本 skill 通过 frontmatter `dependencies` 声明对 5 个 skill 的强依赖。启动时（阶段 0 前置检查通过后、阶段 1 之前）必须执行本检查。
+> 本 skill 通过 frontmatter `dependencies` 声明对 6 个 skill 的强依赖。启动时（阶段 0 前置检查通过后、阶段 1 之前）必须执行本检查。
 
 1. 扫描可用 skill（查 `<available_items>` 或用 `skill` 工具）
-2. 核对 5 个 dependencies 是否都在可用列表中
+2. 核对 6 个 dependencies 是否都在可用列表中
 3. 全部存在 → 继续后续流程
 4. 任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`「前置 skill 检查 — 缺失提示」）
 
@@ -516,7 +517,9 @@ Superpowers 增强规则：
 1. **OpenSpec 校验**：
    - 若检测到 `openspec-verify-change` skill → 读取其 SKILL.md，委托执行验证。
    - 若不存在 → 直接运行 `openspec validate <change-name>` 或 `openspec validate --changes`（CLI 工具调用，非降级）。
-2. **工程验证**：运行项目相关测试、类型检查、lint 或构建。
+**Node 版本对齐（前置，须在工程验证前完成）**：调用 `node-version-discipline` skill 对齐项目声明的 Node 版本（该 skill 按完整探测链 `.nvmrc` → `.node-version` → `.tool-versions` → `volta` → `engines.node` → CI 配置 定位；无声明时停下来询问用户，不猜测；单条命令内 `source ~/.nvm/nvm.sh && nvm use <版本> && <命令>`，`node -v` 确认）。下方所有测试/类型检查/lint/构建命令在对齐版本下执行，验证报告披露 `Node(声明版本 vX) ✅/⚠️`。
+
+2. **工程验证**：运行项目相关测试、类型检查、lint 或构建（对齐版本下执行）。
 3. **行为对照**：逐条对照 delta spec 的 requirements 和 scenarios，确认实现覆盖。
 4. **调试-验证闭环**：若阶段 1.2 用了调试 skill 定位根因，本阶段须用**同一 skill** 验证修复（而非只跑测试）：
    - UI/CSS/DOM 问题（用了 `browser-debug-toolkit`）→ 用同一 skill 验证修复后渲染结果（DOM 树/计算样式/盒模型），确认异常消失

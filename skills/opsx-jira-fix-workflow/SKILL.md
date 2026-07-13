@@ -9,6 +9,7 @@ dependencies:
   - hybrid-debug
   - runtime-evidence-debug
   - browser-debug-toolkit
+  - node-version-discipline
 ---
 
 # OPSX Jira Bug 修复工作流
@@ -51,10 +52,10 @@ dependencies:
 
 ## 前置 skill 检查
 
-> 本 skill 通过 frontmatter `dependencies` 声明对 5 个 skill 的强依赖。启动时（阶段 0 前置检查之前）必须执行本检查。
+> 本 skill 通过 frontmatter `dependencies` 声明对 6 个 skill 的强依赖。启动时（阶段 0 前置检查之前）必须执行本检查。
 
 1. 扫描可用 skill（查 `<available_items>` 或用 `skill` 工具）
-2. 核对 5 个 dependencies 是否都在可用列表中
+2. 核对 6 个 dependencies 是否都在可用列表中
 3. 全部存在 → 继续阶段 0 前置检查
 4. 任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`）
 
@@ -154,7 +155,7 @@ dependencies:
 | 3 创建 Change | OPSX 原生 skills、Write（artifacts） | Edit 业务代码 |
 | 4 探索方案 | Read、Grep | Edit、Write 业务代码 |
 | 5 制定计划 | Read、Write（仅 tasks.md） | Edit 业务代码 |
-| 6 执行验证 | 全部（Edit、Write、Bash、Git、测试） | 跳过验证、跳过 checkbox 更新 |
+| 6 执行验证 | 全部（Edit、Write、Bash、Git、测试）；运行构建/lint/tsc/test 前须按 `node-version-discipline` 对齐项目声明的 Node 版本（探测链见该 skill SOP） | 跳过验证、跳过 checkbox 更新 |
 | 7 提交收尾 | Git、Jira API、OPSX skills | 跳过 Jira 评论、跳过 archive |
 
 ### 模式差异速查表
@@ -458,10 +459,12 @@ fix/jira-fix-<JIRA-ID>
 1. OpenSpec 校验：
    - 若检测到 `openspec-verify-change` skill → 读取其 SKILL.md，委托执行验证。
    - 若不存在 → 直接运行 `openspec validate <change-name>` 或 `openspec validate --changes`（CLI 工具调用，非降级）。
-2. 工程验证：测试、lint、类型检查、构建
+**Node 版本对齐（前置，须在工程验证前完成）**：调用 `node-version-discipline` skill 对齐项目声明的 Node 版本（该 skill 按完整探测链 `.nvmrc` → `.node-version` → `.tool-versions` → `volta` → `engines.node` → CI 配置 定位；无声明时停下来询问用户，不猜测；单条命令内 `source ~/.nvm/nvm.sh && nvm use <版本> && <命令>`，`node -v` 确认）。下方测试/lint/类型检查/构建命令均在对齐版本下执行。
+
+2. 工程验证：测试、lint、类型检查、构建（对齐版本下执行）
 3. 行为对照：逐条核对 delta spec requirements 和 scenarios
 4. Jira 对照：复现步骤、期望/实际是否已闭环
-5. 副作用检查：相关模块和平台是否受影响
+5. 副作用检查：相关模块和平台是否受影响；验证报告须披露 `Node(声明版本 vX) ✅/⚠️ 未对齐`
 6. 调试-验证闭环：若阶段 2 用了调试 skill 定位根因，本阶段须用**同一 skill** 验证修复（而非只跑测试）：
    - UI/CSS/DOM 问题（用了 `browser-debug-toolkit`）→ 用同一 skill 验证修复后渲染结果（DOM 树/计算样式/盒模型），确认异常消失
    - 运行时证据问题（用了 `runtime-evidence-debug` 打点）→ 用同一 skill 复验原打点位置，before/after 证据对比确认异常行为消失

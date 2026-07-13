@@ -143,6 +143,8 @@ The following directories and file types are **out of scope**:
 
 ### Running
 
+> For Node / JavaScript / TypeScript projects, align the Node version to the project-declared version before running — invoke the `node-version-discipline` skill (it probes the full chain `.nvmrc` / `.node-version` / `.tool-versions` / `volta` / `engines.node` / CI config, and asks the user if none declared). Tests on the wrong Node version produce false passes / false fails. Other stacks (Python / Go / Rust / Java) are unaffected.
+
 ```bash
 # JavaScript / TypeScript (Jest)
 npm test -- --passWithNoTests
