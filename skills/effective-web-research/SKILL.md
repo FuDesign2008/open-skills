@@ -2,7 +2,7 @@
 name: effective-web-research
 version: "1.0.0"
 user-invocable: true
-description: "Effective web research discipline for AI agents — route first, then research with rigor. Step 0 triages whether a question needs external web lookup vs is answerable from the internal codebase/docs; when external, default mode auto-applies 4 maxims (official sources first, check recency, cross-validate non-trivial claims, skip content farms) so every web search is effective and credible; on explicit 'strict/deep research' requests it runs a full 7-dimension source-credibility evaluation (CRAAP + E-E-A-T merged) and emits an auditable report. Triggers: 「web 调研」「外部调研」「查资料」「有效调研」「严格调研」「深度调研」「严格查证」「这个库/框架怎么用」「有没有漏洞」「best practice 是什么」 / web research, look up, investigate, strict research, deep research, fact-check. Do NOT use for: searching the local codebase, reading repo files, grepping code — those are internal search tasks."
+description: "Web research discipline for AI agents — route first (external vs internal), then 4 maxims by default (official first, recency, cross-validate, skip content farms); full source-credibility evaluation on strict requests. Triggers — 「web 调研」「外部调研」「查资料」「有效调研」「严格调研」「深度调研」「严格查证」「有没有漏洞」 / web research, fact-check. Not for local search."
 ---
 
 # effective-web-research

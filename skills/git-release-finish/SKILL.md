@@ -3,6 +3,8 @@ name: git-release-finish
 version: "1.4.0"
 user-invocable: true
 description: "Use when releasing a Git repository version — tagging, merging release branches into main, resolving conflicts, or syncing changes between release branches. Handles ambiguous tag naming (v-prefix vs plain), unknown main branch (master/main/develop), cross-release hash-sensitive rebase, and MR/PR extra file cleanup. GitLab, GitHub, Gitea; single or multi-repo. Triggers: 发版, 打tag, 发布版本, 版本发布, release流程, git-release, multi-repo release."
+dependencies:
+  - git-conflict-resolve
 ---
 
 # Git 仓库版本发布工作流（git-release-finish）
@@ -13,7 +15,7 @@ description: "Use when releasing a Git repository version — tagging, merging r
 
 **配对 skill：** `git-release-start`（迭代开始，创建 release 分支）↔ `git-release-finish`（迭代结束，本 skill）
 
-**依赖 skill：** 阶段6 冲突解决由 `git-conflict-resolve` skill 执行（语义分析驱动，支持 merge / rebase 多轮聚合）。
+**强依赖 skill（条件性）：** 阶段6 冲突解决由 `git-conflict-resolve` skill 执行（frontmatter `dependencies` 声明；语义分析驱动，支持 merge / rebase 多轮聚合）。本依赖为**条件性强依赖**——启动时不检查（发版可能全程无冲突），仅在阶段6 检测到冲突时核对可用性，缺失即中止流程并提示安装，**不得用手工 merge 降级**（语义分析驱动的冲突解决不可被手工操作替代）。
 
 **远程优先原则：** **先确认远端状态，再决定本地操作**。打 tag 前必须 `git fetch` + 验证远端 commit SHA，禁止在未验证的本地 HEAD 上直接打 tag。GitLab 优先使用 `glab api` 远程创建 tag，GitHub/Gitea 用本地 `git tag` 但锚定到远端 SHA。
 
@@ -387,6 +389,8 @@ gh pr view <PR_ID> --json mergeable,mergeStateStatus 2>&1
 ---
 
 ## 阶段6：冲突解决
+
+> **强依赖检查（进入本阶段时执行）**：扫描可用 skill（查 `<available_items>` 或用 `skill` 工具）确认 `git-conflict-resolve` 存在；缺失 → 输出结构化安装提示并**立即中止流程**（格式同 `solve-workflow` 前置检查缺失提示，见 `solve-workflow/reference.md`）。无冲突的发版流程不触发本检查。
 
 检测到冲突后，**调用 `git-conflict-resolve` skill** 处理全部冲突解决、逻辑验证与复查清单：
 

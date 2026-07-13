@@ -2,7 +2,7 @@
 name: solution-review
 version: "1.0.0"
 user-invocable: true
-description: "Authoritative framework for reviewing any proposed solution (code, config, process, tooling, or architecture decision) before implementation. Covers four core dimensions (effectiveness, side-effects/risks, feasibility, spec compliance) plus five strategic dimensions that catch decision-level failures the core four miss: reversibility calibration (Bezos one-way/two-way doors), failure-mode analysis (FMEA), operability (SRE Production Readiness Review), cost-vs-value (CBAM/WSJF), and team cognitive fit (Team Topologies). Use this skill whenever you need to review, validate, stress-test, or approve a proposed solution, plan, design doc, or approach — before any code is written or change is applied. Triggers — 「审查方案」「方案审查」「评估方案」「方案评估」「review proposal」「方案可行吗」「这个方案靠谱吗」「方案有没有风险」「方案评审」「设计评审」「决策评审」 / solution review, proposal review, design review, decision review, stress-test a plan, validate an approach."
+description: "Stress-test any proposed solution (code, config, architecture) before implementation — effectiveness, risks, feasibility, plus strategic dimensions (reversibility, failure modes, operability). Triggers — 「方案评审」「评估方案」「方案可行吗」「这个方案靠谱吗」「方案有没有风险」「设计评审」「决策评审」 / solution review, proposal review."
 ---
 
 # Solution Review

@@ -2,7 +2,7 @@
 name: unbox-anything
 version: "1.0.0"
 user-invocable: true
-description: "Universal file/container unpacker for AI agents. Use whenever the user has a specific named file that is secretly a container of other files (an .exe installer, .docx document, .apk app, .asar Electron bundle, .dmg disk image, .deb/.rpm package, .jar/.war, .iso, .pkg, .whl, or any archive) and wants to extract or inspect its inner contents — even when they don't say 'unbox' explicitly. Cracks ~30 'box-like' formats into clean directories with a structured manifest: standard archives (zip/tar/7z/rar/zst/lz4), ZIP containers (docx/xlsx/pptx/jar/war/apk/ipa/whl), system packages (deb/rpm/msi/cab), installers & disk images (NSIS exe/Inno Setup/dmg/iso/pkg), and chained nested containers (exe→7z→asar, pkg→xar→cpio). Cross-platform (mac/linux/windows) via 7z as primary tool with graceful fallbacks. Triggers: 「拆箱」「开箱」「解压文件」「拆包」「解压任意文件」「提取容器内容」「拆开[文件]」「看[文件]里面」 / unbox, unpack any file, extract container, what's inside this file. Do NOT use for: writing extraction code/scripts, creating or editing Office documents, installing software, comparing archive formats, or merging files — those are different tasks."
+description: "Universal file/container unpacker — crack ~30 'box-like' formats (.exe/.docx/.apk/.asar/.dmg/.deb/.jar/.iso + archives) into clean directories with a manifest, cross-platform via 7z. Triggers — 「拆箱」「开箱」「解压文件」「拆包」「解压任意文件」「提取容器内容」「拆开[文件]」「看[文件]里面」 / unbox, unpack any file. Not for writing extraction code."
 ---
 
 # unbox-anything

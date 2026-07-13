@@ -2,7 +2,7 @@
 name: code-design-review
 version: "1.0.0"
 user-invocable: true
-description: "Authoritative framework for reviewing the design quality of proposed code changes — before implementation. Evaluates code-level metrics (accidental complexity, coupling via Myers/Connascence, cohesion, change amplification, tech debt, cyclomatic/cognitive complexity, Law of Demeter) and architecture-level quality attributes (testability, modularity, reliability, scalability, dependency direction via ISO 25010 + Clean Architecture + SDP) plus a security pass (OWASP Top 10). Use this skill whenever a proposed solution involves code changes and you need to assess whether the code is well-designed — not just whether it works, but whether it is maintainable, testable, and does not introduce design debt. Triggers — 「代码审查」「代码设计审查」「代码设计质量」「审查代码设计」「代码架构审查」「设计质量评估」「代码质量评审」「这个代码设计合理吗」「耦合度审查」「代码可维护性」 / code design review, code architecture review, design quality assessment, coupling analysis, maintainability review."
+description: "Review design quality of proposed code changes before implementation — code metrics (complexity, coupling, cohesion), architecture attributes (testability, modularity), and a security pass. Triggers — 「代码设计审查」「代码设计质量」「审查代码设计」「代码架构审查」「代码质量评审」「这个代码设计合理吗」「耦合度审查」「代码可维护性」 / code design review."
 ---
 
 # Code Design Review

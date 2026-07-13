@@ -2,7 +2,7 @@
 name: android-webview-debug
 version: "1.0.0"
 user-invocable: true
-description: "Unified WebView remote debugging toggle for Android projects. `android-webview-debug-enable` sets all `setWebContentsDebuggingEnabled` calls to `true` and records modified locations with their original content; `android-webview-debug-revert` restores from the record, listing any mismatched entries at the end for manual confirmation. Triggers: 「开启 WebView 调试」「恢复 WebView 调试」 / android-webview-debug-enable, android-webview-debug-revert. Suitable for Android projects that need to uniformly enable or restore WebView debugging."
+description: "Toggle WebView remote debugging for Android projects — enable sets all setWebContentsDebuggingEnabled to true and records locations; revert restores from the record. Triggers — 「开启 WebView 调试」「恢复 WebView 调试」 / android-webview-debug-enable, android-webview-debug-revert."
 ---
 
 # Android WebView Debug Toggle
