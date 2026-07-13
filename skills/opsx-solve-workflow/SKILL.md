@@ -517,7 +517,7 @@ Superpowers 增强规则：
 1. **OpenSpec 校验**：
    - 若检测到 `openspec-verify-change` skill → 读取其 SKILL.md，委托执行验证。
    - 若不存在 → 直接运行 `openspec validate <change-name>` 或 `openspec validate --changes`（CLI 工具调用，非降级）。
-**Node 版本对齐（前置，须在工程验证前完成）**：调用 `node-version-discipline` skill 按 `.nvmrc`（兜底 `engines.node`）对齐 Node 版本（单条命令内 `source ~/.nvm/nvm.sh && nvm use <版本> && <命令>`，`node -v` 确认）。下方所有测试/类型检查/lint/构建命令在对齐版本下执行，验证报告披露 `Node(.nvmrc vX) ✅/⚠️`。
+**Node 版本对齐（前置，须在工程验证前完成）**：调用 `node-version-discipline` skill 对齐项目声明的 Node 版本（该 skill 按完整探测链 `.nvmrc` → `.node-version` → `.tool-versions` → `volta` → `engines.node` → CI 配置 定位；无声明时停下来询问用户，不猜测；单条命令内 `source ~/.nvm/nvm.sh && nvm use <版本> && <命令>`，`node -v` 确认）。下方所有测试/类型检查/lint/构建命令在对齐版本下执行，验证报告披露 `Node(声明版本 vX) ✅/⚠️`。
 
 2. **工程验证**：运行项目相关测试、类型检查、lint 或构建（对齐版本下执行）。
 3. **行为对照**：逐条对照 delta spec 的 requirements 和 scenarios，确认实现覆盖。

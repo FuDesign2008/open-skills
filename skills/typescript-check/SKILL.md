@@ -20,7 +20,7 @@ dependencies:
 
 ### Step 0: Node version alignment (precondition)
 
-> This skill hard-depends on `node-version-discipline` via `dependencies`. Before running any tsc / type-check command, align the Node version to `.nvmrc` (fallback `engines.node`) per its SOP — otherwise the result is untrustworthy (false pass / false fail).
+> This skill hard-depends on `node-version-discipline` via `dependencies`. Before running any tsc / type-check command, align the Node version to the project-declared version (the dependency probes the full chain `.nvmrc` → `.node-version` → `.tool-versions` → `volta` → `engines.node` → CI config; if none declared, it asks the user rather than guessing) per its SOP — otherwise the result is untrustworthy (false pass / false fail).
 
 Prefix every command below with `source ~/.nvm/nvm.sh && nvm use <version> >/dev/null 2>&1 && node -v && ` (single call — shell state is not persistent). If `node-version-discipline` is unavailable, install it first; **do not degrade**.
 
@@ -46,7 +46,7 @@ fi
 **If the check passes:**
 ```
 ✅ TypeScript type check passed
-- Node version (.nvmrc vX): ✅ aligned (note "default Node" if no .nvmrc found)
+- Node version (declared vX): ✅ aligned (note "user-specified" if no project declaration found)
 ```
 
 **If the check fails:**
