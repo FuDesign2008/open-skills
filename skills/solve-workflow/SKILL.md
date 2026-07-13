@@ -557,6 +557,8 @@ dependencies:
 
 若阶段 4 计划或阶段 5 执行报告涉及测试（如单元测试、集成测试、手动验证步骤）：
 
+> Node / JavaScript / TypeScript 工程运行测试前，先调用 `node-version-discipline` skill 对齐 `.nvmrc` 版本——错误 Node 版本下的测试结果不可信（假通过 / 假失败）。其他技术栈（Python / Go / Rust 等）不受影响。
+
 - **AI 可执行**：使用 Bash 运行测试命令（如 `npm test`、`pytest`、`go test`），将结果纳入检查结论
 - **AI 无法执行**（无 Bash、环境限制、测试需人工操作）：**明确提醒用户**：「本次修改涉及测试，请自行执行 [具体测试命令/步骤] 验证，确认通过后再收尾」
 

@@ -2,7 +2,7 @@
 name: node-version-discipline
 version: "1.0.0"
 user-invocable: true
-description: "Node version discipline — before running tsc / eslint / build / test / install in any Node project, force-align the Node version to the project's declared version (.nvmrc / .node-version / .tool-versions / volta / engines.node) and disclose it in the verification report, preventing false-pass / false-fail when the host default Node mismatches the project-pinned version. Hard-depended on by typescript-check, jira-fix-workflow, opsx-jira-fix-workflow, opsx-solve-workflow; soft-referenced by ensure-tests and solve-workflow. 中文触发词「node 版本对齐」「版本对齐」「nvm 对齐」「.nvmrc」「Node 版本纪律」「对齐 Node 版本」, English aliases node version discipline, nvm use, align node version."
+description: "Node version discipline — before running tsc / eslint / build / test / install in any Node project, align the Node version to the project's declared version (.nvmrc / .node-version / .tool-versions / volta / engines.node) and disclose it in the verification report, preventing false-pass / false-fail when the host default Node mismatches the project-pinned version. Use this skill whenever the user is about to run a version-sensitive Node command, or mentions Node version mismatch / wrong Node / version conflict / 切换 node 版本. 中文触发词「node 版本对齐」「版本对齐」「nvm 对齐」「.nvmrc」「Node 版本纪律」「对齐 Node 版本」「切换 node 版本」「切到指定 node 版本」「node 版本不对」「node 版本不一致」「版本不匹配」, English aliases node version discipline, nvm use, align node version, switch node version."
 ---
 
 # Node Version Discipline (.nvmrc)
