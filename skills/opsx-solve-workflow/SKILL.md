@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.5.0"
+version: "1.6.0"
 user-invocable: true
 description: 当用户说"opsx解决"、"OpenSpec解决"、"规范化解决"、"创建OpenSpec变更"、"创建opsx变更"、"用OpenSpec分析"、"用OpenSpec修复"、"opsx自动解决"、"OpenSpec自动解决"、"opsx-solve"或"opsx-solve-workflow"时触发。适用于需要将分析、方案、计划、实现、验证和归档沉淀到OpenSpec artifacts的功能开发、Bug修复、重构和复杂工程任务。
 dependencies:
@@ -561,6 +561,17 @@ Superpowers 增强规则：
 
 归档后必须检查 diff，确认主 specs 更新和 archive 目录迁移都进入工程根的 git 工作区变更。若检测到 `finishing-a-development-branch`，在归档和 diff 检查完成后，再借鉴其流程做分支收尾决策：保留当前分支、创建 PR、合并或继续开发。不得在测试未通过、归档未完成或 diff 未审查时宣布完成。
 
+> **顺序约束**：归档 + diff 检查 → 分支收尾决策 → **仅当决策为「合并」时**触发合并前覆盖率门控（见下）→ 执行合并。选择「保留当前分支」「继续开发」**不触发**门控。
+
+#### 合并前覆盖率门控（强制，仅当分支收尾决策为「合并」时触发）
+
+> 触发条件：用户在分支收尾决策中已选定「合并」。本门控在合并执行前运行，是合并的强制前置。
+> **执行门控前必须先读** [reference.md](reference.md)「合并前覆盖率门控（强制）规范」获取完整步骤，**不得仅凭下方摘要执行**。
+
+**判定矩阵概要**（安全网，完整矩阵见 reference.md）：报告生成+达标→继续合并；不达标→暂停；脚本崩溃/无报告/退出码1→**视为门控未通过**（不得误判为通过）；无测试代码/0%通过→暂停。
+**本步骤独立 Bash 权限**：运行 test-coverage-analyzer 脚本，不改变阶段 7「仅限归档/文档」的工具约束本质（门控是合并子步骤而非归档动作）。
+**留痕位置**（显式跳过时）：PR 描述和 `design.md` 的 Verification Notes。
+
 ### AI 工程沉淀载体选择
 
 | 载体 | 适用内容 |
@@ -598,6 +609,12 @@ Superpowers 增强规则：
 | `MODIFIED` 只写片段 | archive 时可能丢失原 requirement | 复制完整 requirement block 再修改 |
 | 未验证就 archive | 主 specs 记录了未实现或错误行为 | 阶段 6 未通过不得归档 |
 | 分支收尾早于 archive | 归档产生的 specs 或 archive 目录可能遗漏出最终 diff | 先 archive 并检查 diff，再做 PR/合并/保留决策 |
+| 分支收尾决策为「保留/继续开发」却触发覆盖率门控 | 门控误触发，干扰非合并场景 | 门控仅「合并」决策触发；保留/继续开发不触发 |
+| 覆盖率门控脚本崩溃却继续合并 | 崩溃被误判为「覆盖率通过」，未验证代码进入主分支 | 崩溃/无报告/退出码1 一律视为门控未通过，暂停等用户 |
+| 覆盖率不达标自动模式强行合并 | 绕过用户决策强制合并不达标代码 | 不达标必须暂停等用户决策（强制合并/补测试/放弃） |
+| 显式跳过门控未留痕 | 事后无法追溯门控被跳过、责任不清 | 跳过必须在 PR 描述和 design.md 写入留痕（时间+决策人） |
+| `--base` 获取失败未输出降级警告 | MR 场景误判为 0 变更，门控形同虚设 | 降级时必须显式警告「未指定 base，MR 可能误判为 0 变更」 |
+| archive 未完成或 diff 未审查就触发覆盖率门控 | 顺序错乱，门控基于不完整状态 | 顺序：archive+diff → 收尾决策 → 门控 → 合并 |
 | 实现中发现设计错误却继续硬做 | artifacts 与代码分叉 | 回写 proposal/specs/design/tasks 后再继续 |
 | `openspec/` 不存在却强行推进 | 无 schema/context，artifacts 结构混乱 | 阶段 0 门禁 1 未通过时必须停止，要求用户运行 `openspec init` |
 | workspace 多工程下未先定位工程根 | 门禁检查在 workspace 根执行而非工程目录，artifact 写入错误位置 | 阶段 0 必须先执行门禁 0 工程定位，确定工程根后再执行门禁 1/2 |
