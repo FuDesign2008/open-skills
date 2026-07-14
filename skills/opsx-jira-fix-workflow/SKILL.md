@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.5.0"
+version: "1.6.0"
 user-invocable: true
 description: 当用户说"opsx-jira-fix"、"OpenSpec Jira 修复"、"规范化修复 Jira"、"opsx修复Jira"、"Jira OpenSpec 修复"、"opsx自动修复Jira"、"用OpenSpec修复Jira"或"opsx-jira-fix-workflow"时触发。适用于从 Jira issue 出发，并需要将根因、行为变更、修复计划、验证和归档沉淀到 OpenSpec artifacts 的端到端 Bug 修复。
 dependencies:
@@ -156,7 +156,7 @@ dependencies:
 | 4 探索方案 | Read、Grep | Edit、Write 业务代码 |
 | 5 制定计划 | Read、Write（仅 tasks.md） | Edit 业务代码 |
 | 6 执行验证 | 全部（Edit、Write、Bash、Git、测试）；运行构建/lint/tsc/test 前须按 `node-version-discipline` 对齐项目声明的 Node 版本（探测链见该 skill SOP） | 跳过验证、跳过 checkbox 更新 |
-| 7 提交收尾 | Git、Jira API、OPSX skills | 跳过 Jira 评论、跳过 archive |
+| 7 提交收尾 | Git、Jira API、OPSX skills、Bash（合并前覆盖率门控步骤额外允许 test-coverage-analyzer 脚本） | 跳过 Jira 评论、跳过 archive |
 
 ### 模式差异速查表
 
@@ -554,6 +554,39 @@ Jira 评论必须包含：
 - 清理本地和远程分支
 - 同步主分支
 
+> **顺序约束**：archive 门控（7.3）→ 分支收尾决策（7.4）→ **仅当决策为「合并」时**触发合并前覆盖率门控（7.4.1）→ 执行合并。选择「保留分支」「继续开发」**不触发**门控。
+
+#### 7.4.1 合并前覆盖率门控（强制，仅当 7.4 决策为「合并」时触发）
+
+> 触发条件：用户在分支收尾决策中已选定「合并」。本门控在合并执行前运行，是合并的强制前置。
+> 门控规范版本：v1
+
+**前置检测**：环境探索是否发现 `test-coverage-analyzer` skill？
+- ❌ 未发现 → 静默跳过本门控，直接执行合并（不报错、不阻断、不留痕）
+- ✅ 发现 → 执行下方门控步骤
+
+**门控步骤**（本步骤拥有独立 Bash 权限，运行 test-coverage-analyzer 脚本）：
+
+1. 构造 `--base`（按序尝试，命中即停）：
+   - MR/PR 场景：`gh pr view --json baseRefName -q .baseRefName` / `glab mr view <iid> -F json | jq .target_branch` → `--base <目标分支>`（裸分支名，脚本 `validate_ref` 自动加 `origin/`）
+   - 获取失败 / detached HEAD / 无远端 → 不传 `--base`，依赖脚本 5 级回退链；**门控输出显式警告**「未显式指定 base，MR 场景可能误判为 0 变更」
+   - 多仓库 MR → 逐仓库执行门控，各自获取 `--base`，任一仓库未通过则整体暂停
+2. 调用脚本（先读 test-coverage-analyzer SKILL.md 确认调用方式与参数契约，不得凭记忆）：
+   `python3 "<SKILL_DIR>/scripts/analyze_coverage.py" "<工程根>" [--base <目标分支>]`
+3. 按判定矩阵处理：
+
+   | 执行结果 | 🤖 自动模式 | 👤 手动模式 |
+   |---|---|---|
+   | ✅ 报告生成 + 覆盖率达标 | 继续执行合并 | 提示通过，等用户再次确认合并 |
+   | ⚠️ 报告生成 + 覆盖率不达标 | **暂停**，输出报告，等用户决策（强制合并/补测试/放弃） | 同左 |
+   | 💥 脚本崩溃 / 无报告 / 退出码 1（全上传失败） | **视为门控未通过**（不得误判为通过继续合并），暂停等用户 | 同左 |
+   | 📭 项目无测试代码 / 0% 通过 | 如实呈现报告，**不自动放行**，暂停等用户判断 | 同左 |
+
+4. 显式跳过（仅手动模式，用户主动选择跳过门控）：必须在 PR 描述和 `design.md` 的 Verification Notes 写入留痕：
+   `【覆盖率门控跳过】用户显式跳过，未运行 test-coverage-analyzer。时间：<ISO 时间戳>。决策人：用户。`
+
+**模式生命周期**：门控自动运行 test-coverage-analyzer **不触发**「自动恢复手动」（它是合并流程的子步骤）；门控暂停（不达标/崩溃）= 合并流程中断，按既有规则恢复手动。
+
 收尾记录以 PR/MR、Jira 评论和 OpenSpec archive 结果为准。
 
 ### 7.5 AI 工程沉淀
@@ -582,6 +615,11 @@ Jira 评论必须包含：
 > - ❌ Jira 状态越权流转到「关闭」「验证通过」等
 > - ❌ archive 失败后手动操作 `openspec/` 目录
 > - ❌ PR 描述缺少 OpenSpec change 路径或验证证据
+> - ❌ 分支收尾决策为「保留分支/继续开发」却触发了覆盖率门控（门控仅「合并」决策触发）
+> - ❌ 覆盖率门控脚本崩溃/无报告/退出码1 却继续合并（崩溃视为未通过，须暂停）
+> - ❌ 覆盖率不达标自动模式强行合并（须暂停等用户决策）
+> - ❌ 用户显式跳过门控但未在 PR 描述和 design.md 留痕
+> - ❌ archive 门控（7.3）未完成就触发覆盖率门控（顺序：7.3 → 7.4 决策 → 7.4.1 门控）
 
 ## 批量 OPSX Jira 修复
 
@@ -609,6 +647,10 @@ Jira 评论必须包含：
 
 | 快速修复走了 OPSX 路径 | 流程过重，浪费时间 | 只需快速修复无需规范沉淀时，使用 `jira-fix-workflow` |
 | workspace 多工程下未先定位工程根 | 门禁检查在 workspace 根执行而非工程目录，artifact 写入错误位置 | 阶段 0 第 4 步必须先做工程定位，确定工程根后再检查 openspec/ 和 OPSX skills |
+| 覆盖率门控脚本崩溃却继续合并 | 崩溃被误判为「覆盖率通过」，未验证的修复进入主分支 | 崩溃/无报告/退出码1 一律视为门控未通过，暂停等用户 |
+| 覆盖率不达标自动模式强行合并 | 绕过用户决策强制合并不达标代码 | 不达标必须暂停等用户决策（强制合并/补测试/放弃） |
+| 显式跳过门控未留痕 | 事后无法追溯门控被跳过、责任不清 | 跳过必须在 PR 描述和 design.md 写入留痕（时间+决策人） |
+| `--base` 获取失败未输出降级警告 | MR 场景误判为 0 变更，门控形同虚设 | 降级时必须显式警告「未指定 base，MR 可能误判为 0 变更」 |
 
 ## 最小成功标准
 
