@@ -1,6 +1,6 @@
 ---
 name: git-conflict-resolve
-version: "1.1.0"
+version: "1.2.0"
 user-invocable: true
 description: 当 Git merge 或 rebase 过程中出现代码冲突时使用，尤其适用于 AI 自动解冲突容易出错（取错侧、丢失重构、还原旧版代码）、需要语义分析和逻辑验证的场景。也适用于 rebase 多轮停止需跨轮聚合冲突文件的情况。触发词：解冲突、处理冲突、git-conflict-resolve、解决 merge 冲突、解决 rebase 冲突、conflict resolve、冲突解决。
 ---
@@ -100,7 +100,33 @@ git diff --name-only --diff-filter=U
 | merge 模式 | git 已自动合并所有内容冲突（但语义层可能有问题） | **跳过 Y.2～Y.4，直接进入 Y.5**；重点验证版本字段和构建产物路径 |
 | rebase 模式 | 当前提交无冲突 | 执行 `git rebase --continue`；若出现新冲突回到 Y.1；若 rebase 完成则进入 Y.5 |
 
-→ 若清单不为空，进入 Y.2，对**当前轮冲突文件**逐一分析。
+→ 若清单不为空，进入 Y.1.5 判定是否构建产物，再决定是否进入 Y.2 语义分析。
+
+---
+
+## 子阶段 Y.1.5 — 构建产物短路（编译后/打包后文件）
+
+> ⚠️ **本阶段在 Y.2 语义分析之前执行**，是省 token 与避免解错的关键前置闸门。
+
+构建产物（编译/打包后的派生文件）是机器生成的：内容巨大（minified 单行可达数十万字符），读取浪费大量 token；压缩代码无「两侧意图」可分析；强行合并极易残留冲突标记或保留旧版本。其权威始终是发版分支（release）——正确做法是**不读、不分析，直接取 release 侧覆盖**。
+
+对累积清单中每个文件，按 [reference.md](reference.md)「构建产物识别清单」判定（构建输出目录前缀 ∪ 文件特征 ∪ 项目专属补充）：
+
+- **命中构建产物** → 不读取三方内容、不进入 Y.2 语义分析，直接按下表短路解决：
+
+  | 冲突类型 | 解决方式 |
+  |---------|---------|
+  | 内容冲突（UU）/ Add-Add | `git checkout --theirs <FILE> && git add <FILE>`（取 release 侧） |
+  | 整目录构建产物 | `git rm -rfq <DIR> && git checkout origin/<SOURCE> -- <DIR> && git add <DIR>` |
+  | rename + hash 冲突 | 用 git rename 元数据取文件名（**不读文件内容**），删旧 hash + 从 release 取新；详见 reference.md |
+
+  解决后**仍执行 Y.4.5 即时验证**（冲突标记残留扫描），确保无残留。
+
+- **未命中（源码/配置）** → 进入 Y.2 正常语义分析。
+
+> ⚠️ **保守默认**：边界模糊的文件（既不在已知构建目录、又无明确产物特征）**一律不短路**，走 Y.2。误把源码当构建产物会丢失 main 侧改动，代价远大于多读一个文件——**宁可读也不误判**。
+
+> 📖 识别清单、各冲突类型的详细命令、rename+hash 的 fallback 与原理，见 [reference.md](reference.md)。
 
 ---
 
@@ -182,6 +208,8 @@ git diff --name-status --diff-filter=U        # rename 信息
 
 **步骤 2 — 文件特征细化**：
 
+> 构建产物的主识别与短路已在 **Y.1.5** 完成（命中即取 release 侧，不进入 Y.3）。此处特征检测保留为**兜底**：若 Y.1.5 未识别、但 Y.3 发现产物特征，按构建产物处理（取 release 侧）。
+
 ```bash
 # 构建产物 hash 文件（webpack/vite/rollup chunk）
 echo "$FILE" | grep -qE '[0-9a-f]{8,}\.(js|css|map)$'
@@ -249,19 +277,25 @@ git checkout origin/<SOURCE> -- <DIR>
 git add <DIR>
 ```
 
-#### Rename + 构建产物 hash 专用策略
+#### Rename + 构建产物 hash 专用策略（不读文件内容）
 
-当 Y.3 判定为 rename + 构建产物 hash 冲突时，**不能**用上面的通用命令——因为 rename 后文件名变了，`git checkout --theirs` 可能指向不存在的路径。必须显式处理旧/新两个文件名：
+> 此场景通常已在 **Y.1.5** 前置短路处理（构建产物命中即取 release 侧）。若 Y.1.5 未识别（兜底），按本策略处理，且**优先用 git rename 元数据取文件名，不读取文件内容**。
+
+rename 后文件名变了，`git checkout --theirs` 可能指向不存在的路径，必须显式处理旧/新两个文件名：
 
 ```bash
-# 1. 从 diff3 冲突标记提取两侧文件名
-OLD_FILE=$(grep "^<<<<<<<" "$FILE" | sed 's/^.*HEAD://')
-NEW_FILE=$(grep "^>>>>>>>" "$FILE" | sed 's/^.*://' | tail -1)
+# 1. 优先：从 git rename 元数据取两侧文件名（不读文件内容）
+git diff --name-status --diff-filter=U
+# 输出形如 R100 old-abc.js new-def.js → 得到 OLD_FILE / NEW_FILE
 
-# 2. 删除 HEAD 侧旧 hash 文件（否则仓库残留两个功能相同的 chunk）
+# 1b. Fallback：rename 元数据缺失时，只读冲突标记行取文件名（不读全文）
+OLD_FILE=$(git show :2:<FILE> | grep "^<<<<<<<" | sed 's/^.*HEAD://')
+NEW_FILE=$(git show :3:<FILE> | grep "^>>>>>>>" | sed 's/^.*://' | tail -1)
+
+# 2. 删除旧 hash 文件（否则仓库残留两个功能相同的 chunk）
 git rm -f "$OLD_FILE" 2>/dev/null
 
-# 3. 从 release 分支取新 hash 文件（用完整路径）
+# 3. 从 release 分支取新 hash 文件
 git checkout origin/<SOURCE> -- "$NEW_FILE"
 git add "$NEW_FILE"
 ```
@@ -477,6 +511,8 @@ git rebase --continue   # 若最后一轮有残余提交待完成
 | 对 rename + 构建产物 hash 冲突用 `git checkout --theirs`（不删旧文件） | 必须用 Y.4 rename+hash 专用策略：删旧 + 取新 |
 | 对复杂双侧改动文件套用高置信度规则，跳过中/低置信度的人工确认 | 置信度必须依据 Y.3 判定标准推导，不得主观拔高 |
 | 逻辑验证出现 ⚠️/❌ 后以"影响不大"为由继续提交 | ⚠️/❌ 文件禁止继续提交，必须重新处理 |
+| 构建产物（编译/打包后文件）走了 Y.2 语义分析、或读取了其三方内容 | Y.1.5 前置短路：命中即取 release 侧，不读不分析（详见 reference.md） |
+| rename + 构建产物 hash 冲突用 `grep` 读文件内容提取文件名 | 优先用 `git diff --name-status --diff-filter=U` 的 rename 元数据取文件名；fallback 只读冲突标记行，不读全文 |
 
 ---
 
@@ -529,11 +565,13 @@ git diff --name-status --diff-filter=U        # rename 信息
 git checkout --theirs <file> && git add <file>   # 取 release 侧
 git checkout --ours <file> && git add <file>     # 取 main 侧
 
-# rename + 构建产物 hash 专用（删旧 + 取新）
-OLD=$(grep "^<<<<<<<" "$f" | sed 's/^.*HEAD://')
-NEW=$(grep "^>>>>>>>" "$f" | sed 's/^.*://' | tail -1)
-git rm -f "$OLD" 2>/dev/null
-git checkout origin/<SOURCE> -- "$NEW" && git add "$NEW"
+# Y.1.5 构建产物短路（命中即取 release 侧，不读内容）
+git checkout --theirs <file> && git add <file>                                       # 内容冲突/Add-Add
+git rm -rfq <dir> && git checkout origin/<SOURCE> -- <dir> && git add <dir>           # 整目录产物
+
+# rename + 构建产物 hash（优先 rename 元数据，不读文件内容）
+git diff --name-status --diff-filter=U                                               # 取 OLD/NEW 文件名
+git rm -f "$OLD" 2>/dev/null && git checkout origin/<SOURCE> -- "$NEW" && git add "$NEW"
 
 # rebase 继续
 git rebase --continue
