@@ -1,7 +1,7 @@
 # clarifying-question-discipline Specification
 
 ## Purpose
-TBD - created by archiving change one-question-discipline. Update Purpose after archive.
+定义本工程工作流 skill 向用户提问时的纪律：信息不足时每次只问一个最关键的问题（无条件硬纪律，不依赖外部 skill 是否存在），提问方式平台无关（描述意图，让 Agent 自选原生能力），且纪律多处高频强化。覆盖 opsx-solve-workflow、solve-workflow、jira-fix-workflow、opsx-jira-fix-workflow、think-big 等所有声明向用户提问的工作流 skill。
 ## Requirements
 ### Requirement: 信息不足时 SHALL 每次只问一个最关键的问题，且为无条件硬纪律
 
@@ -26,19 +26,19 @@ TBD - created by archiving change one-question-discipline. Update Purpose after 
 - **WHEN** 流程定义「疑问点列出」步骤
 - **THEN** 该步骤措辞包含「若向用户提问，一次只问 1 个最关键的」约束，指向一次一问硬纪律
 
-### Requirement: 提问方式 SHALL 平台无关，MUST NOT 硬依赖某一 Agent 专属工具
+### Requirement: 提问方式 SHALL 平台无关——描述意图，让 Agent 自选原生能力
 
-skill 跨平台运行（Claude Code / Cursor / OpenCode 等），提问方式 MUST 以平台无关的 prose「单问题 + 多选项」格式为主；某平台专属工具（如 Claude Code 的 `AskUserQuestion`）MUST 仅作该平台上的**可选工具化**，且 MUST 显式标注「无此工具的平台用 prose 兜底」。MUST NOT 把专属工具作为必需或首选。
+skill 跨平台运行（Claude Code / Cursor / OpenCode 等），提问方式 MUST 平台无关：**描述「要达成什么」（意图，如「结构化单选：单问题 + 多选项」），由运行该 skill 的 Agent 用其原生能力实现**；无对应能力时退回通用格式（如 prose）。MUST NOT 把某一 Agent 专属工具（如 Claude Code 的 `AskUserQuestion`）作为必需或首选，MUST NOT 枚举「X 平台用 A 工具、Y 平台用 B」（枚举仍是硬编码，且武断假设其他平台能力）。
 
-#### Scenario: 平台无关格式为主
+#### Scenario: 描述意图，Agent 自选工具
 
 - **WHEN** skill 指导 AI 如何提问
-- **THEN** 以「单问题 + 多选项」prose 格式为默认推荐，平台专属工具仅作可选增强
+- **THEN** 以意图描述（如「结构化单选：单问题 + 多选项」）为主，由 Agent 用其原生结构化提问能力实现，无则退回 prose
 
-#### Scenario: 显式标注兜底
+#### Scenario: 不枚举平台/工具
 
-- **WHEN** skill 提及某 Agent 专属提问工具（如 AskUserQuestion）
-- **THEN** 同时说明「Cursor/OpenCode 等无此工具时直接用 prose 格式」，不造成对其他平台的硬依赖
+- **WHEN** skill 提及提问方式
+- **THEN** 不写「Claude Code 用 AskUserQuestion，Cursor/OpenCode 用 prose」式枚举；让各 Agent 自选原生能力
 
 ### Requirement: 一次一问纪律 SHALL 多处高频强化，不靠单次声明
 
@@ -56,7 +56,7 @@ skill 跨平台运行（Claude Code / Cursor / OpenCode 等），提问方式 MU
 
 ### Requirement: 所有声明向用户提问的工作流 skill SHALL 落地一次一问硬纪律
 
-本工程所有声明向用户提问的工作流 skill（含 `jira-fix-workflow`、`opsx-jira-fix-workflow`、`think-big`，以及未来的同类 skill）MUST 落地 `clarifying-question-discipline` 纪律的完整形态：**醒目硬纪律声明**（标签/加粗/独立小节，不埋在普通段落）+ **阶段提问入口的数量约束**（提问处显式「一次只问 1 个最关键的」）+ **Red Flags 违规条**（「一次抛多个疑问点/歧义点」列为禁止）+ **平台无关提问方式**（prose 为主，Agent 专属工具仅可选）。不得仅以单句声明了事。
+本工程所有声明向用户提问的工作流 skill（含 `jira-fix-workflow`、`opsx-jira-fix-workflow`、`think-big`，以及未来的同类 skill）MUST 落地 `clarifying-question-discipline` 纪律的完整形态：**醒目硬纪律声明**（标签/加粗/独立小节，不埋在普通段落）+ **阶段提问入口的数量约束**（提问处显式「一次只问 1 个最关键的」）+ **Red Flags 违规条**（「一次抛多个疑问点/歧义点」列为禁止）+ **平台无关提问方式**（描述意图，让 Agent 自选原生能力）。不得仅以单句声明了事。
 
 #### Scenario: jira-fix 类工作流 skill 强化
 
