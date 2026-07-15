@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "prepare": "husky || true",
-    "gen:skills-index": "node scripts/gen-skill-docs.mjs"
+    "gen:skills-index": "node scripts/gen-skill-docs.mjs",
+    "mark:openspec-internal": "node scripts/mark-openspec-internal.mjs"
   },
   "devDependencies": {
     "husky": "^9.1.7"
