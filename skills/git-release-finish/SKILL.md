@@ -1,6 +1,6 @@
 ---
 name: git-release-finish
-version: "1.4.0"
+version: "1.5.0"
 user-invocable: true
 description: "Use when releasing a Git repository version — tagging, merging release branches into main, resolving conflicts, or syncing changes between release branches. Handles ambiguous tag naming (v-prefix vs plain), unknown main branch (master/main/develop), cross-release hash-sensitive rebase, and MR/PR extra file cleanup. GitLab, GitHub, Gitea; single or multi-repo. Triggers: 发版, 打tag, 发布版本, 版本发布, release流程, git-release, multi-repo release."
 ---
@@ -390,6 +390,8 @@ gh pr view <PR_ID> --json mergeable,mergeStateStatus 2>&1
 
 检测到冲突后，**调用 `git-conflict-resolve` skill** 处理全部冲突解决、逻辑验证与复查清单：
 
+> ℹ️ **构建产物自动短路**：若冲突含编译后/打包后文件（`dist/`、`resources/<bundle>/`、hash chunk 等），`git-conflict-resolve` 的 **Y.1.5** 会自动短路——不读内容、直接取 release 侧。本阶段无需为此额外传参。
+
 > 执行 `git-conflict-resolve` skill，传入以下参数：
 > - `source`：`<RELEASE_BRANCH>`
 > - `target`：`<MAIN_BRANCH>`
@@ -537,6 +539,8 @@ comm -23 \
 扫描合并分支相对 target 的所有变更文件，检测残留冲突标记。
 
 > **为什么扫描范围是 `git diff --name-only` 而非全仓**：全仓扫描会被构建产物的 CSS 注释 `=========` 等假阳性淹没。只扫合并涉及的文件——这是唯一可能残留标记的位置。
+>
+> **与 Y.1.5 的关系**：构建产物的冲突通常由 `git-conflict-resolve` Y.1.5 短路解决（取 release 侧，不残留）。阶段 8 是短路失效时的**最后防线**——若短路意外在产物中残留标记，此处检出并阻断合并。
 
 ```bash
 # 精确正则：匹配 git 冲突标记格式（行首 7+ 字符 + 空格/行尾）

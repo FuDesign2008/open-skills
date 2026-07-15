@@ -6,6 +6,7 @@
 2. **数据脱敏** — Skill 中不得包含任何内部平台名称、内部域名、内部项目标识等非公开信息。示例和模板必须使用通用占位（如 `example.com`、`my-project`），不使用真实内部信息。提交前自查：URL、平台名、项目名、路径段、Jira ID、commit SHA 是否暴露内部信息。
  3. **Skill 正文用英文书写，触发词必须包含中文** — Skill body（正文、reference.md、description 中的说明文字）是给 LLM 读的指令，英文书写可获得更高的理解精度与执行准确度（主流 LLM 的训练语料以英文为主）；同时英文 skill 面向全球用户，传播面更广。**触发词必须包含中文**——用户以自然语言唤起 skill，中文用户说中文（如「提交代码」「分析问题」），因此即使 skill 正文全英文，description 和 Triggers 区段也必须列出中文触发词，可同时附带英文等价词（如 `「提交代码」 / "commit code"`）。中文专属 skill（如 `article-writer`）为整体例外，正文也用中文。新增 skill 适用此规则；存量中文 skill 在重构时逐步迁移，不做一次性批量翻译。
 4. **创建 Skill 必须走 `/skill-creator` 工作流** — 新建 skill 或大幅重写已有 skill 时，先 `/skill-creator` 唤起 skill-creator（捕获意图 → 写草稿 → 测试用例 → 评估迭代 → 描述优化），而非凭经验直接手写 `SKILL.md`。skill-creator 提供渐进式披露（SKILL.md <500 行 + reference 详表）、frontmatter 规范、触发词 eval 优化等工程化约束，能显著提升触发准确率与执行质量。仅在以下情况可跳过完整流程直接编辑：① skill 内容极简（纯指令、无测试需求）；② 维护已有 skill 的小修小补（改触发词、修正文）。
+5. **Skill 变更走 `/opsx-solve-workflow` 沉淀** — 新增、改进或修复 skill 时，用 `/opsx-solve-workflow` 将需求、根因、行为变化、方案、计划、验证与归档沉淀到 `openspec/` artifacts（proposal/specs/design/tasks，归档后并入主 `specs/`），形成可追溯的行为契约。临时小修（改触发词、修正文）可直接编辑；涉及行为契约、多人评审或需长期追溯的变更走 opsx 规范化沉淀。skill 的写作质量仍遵循铁律 4（skill-creator）；opsx 管「做什么、为什么、归档」，skill-creator 管「怎么写得准」，两者互补。
 
 ---
 
@@ -28,6 +29,8 @@ open-skills/
 ├── .opencode/              # OpenCode 平台（ES Module 插件 + 安装脚本）→ 见 .opencode/AGENTS.md
 ├── docs/                   # 安装指南、实现文档（含 generated/ 自动生成索引）
 ├── scripts/                # gen-skill-docs.mjs：由 skills 生成 docs/generated/skills-index.md
+├── openspec/               # OpenSpec 规范治理（changes/ 变更提案、specs/ 主行为契约；opsx 沉淀落点，见铁律 5）
+├── .claude/                # OpenSpec OPSX 原生 skills（openspec-*）+ opsx/* 快捷命令
 └── .github/workflows/      # CI：版本递增（release.yml）、skills 索引校验（docs-skills-verify.yml）
 ```
 
@@ -43,6 +46,7 @@ open-skills/
 | CI/版本管理 | `.github/workflows/release.yml` | **禁止手动改版本号** |
 | 安装文档 | `docs/INSTALL.md`、`.opencode/INSTALL.md` | **通用安装**（npx）与 **全能力安装**（插件 / OpenCode 符号链接）口径见 `README.md` § 安装；总览见 `docs/README.md`；OpenCode 架构见 `.opencode/AGENTS.md` |
 | Skill 完整列表 | `docs/generated/skills-index.md` | **自动生成**，勿手改；改 skill 后由 pre-commit hook 自动更新（需先 `npm install`），或手动 `node scripts/gen-skill-docs.mjs` |
+| OpenSpec 规范治理 | `openspec/` | `changes/` 变更提案（归档于 `changes/archive/`）、`specs/` 主行为契约；用 `/opsx-solve-workflow` 沉淀 skill 变更（铁律 5） |
 
 ## Skill 清单
 
