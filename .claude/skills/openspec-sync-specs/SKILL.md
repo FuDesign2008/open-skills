@@ -7,6 +7,7 @@ metadata:
   author: openspec
   version: "1.0"
   generatedBy: "1.3.1"
+  internal: true
 ---
 
 Sync delta specs from a change to main specs.

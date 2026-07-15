@@ -16,6 +16,7 @@
 - **[README.md](../README.md)**：给访客看项目是什么、怎么选安装方式。
 - **[INSTALL.md](INSTALL.md)**：**通用安装**（npx）与速览、常见问题；OpenCode **全能力安装** 长篇在 [.opencode/INSTALL.md](../.opencode/INSTALL.md)。
 - **[AGENTS.md](../AGENTS.md)**：仓库结构、协作约定、验证命令，偏「在仓库里干活」时查。
+- **[SKILL_DISTRIBUTION.md](SKILL_DISTRIBUTION.md)**：skill 分发约定——`openspec-*` 为工程级配置（已标 `metadata.internal`），`openspec update` 后需跑 `npm run mark:openspec-internal` 重标记。
 
 改了任意 **`skills/`** 下的 `SKILL.md` 之后，请在仓库根目录执行：
 
