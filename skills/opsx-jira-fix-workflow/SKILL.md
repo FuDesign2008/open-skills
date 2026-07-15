@@ -188,7 +188,7 @@ dependencies:
 
 工具限制：允许 Jira API / jira-read；禁止 Edit/Write 业务代码；禁止执行会改变实现的 Bash 命令。
 
-完成后自动进入阶段 2。若 Jira 描述信息不足，**每次只问 1 个最关键的问题（硬纪律）**，得到回答后再问下一个——不得一次抛多个（一次列出多个歧义点为 Red Flag 违规）。提问用「单问题 + 多选项」prose 格式（平台无关；Claude Code 可用 AskUserQuestion，Cursor/OpenCode 用 prose）。
+完成后自动进入阶段 2。若 Jira 描述信息不足，**每次只问 1 个最关键的问题（硬纪律）**，得到回答后再问下一个——不得一次抛多个（一次列出多个歧义点为 Red Flag 违规）。提问用「单问题 + 多选项」格式——优先用你所在 Agent 的原生结构化提问能力，无则用 prose。
 
 ### Scope 拆解（可选，多子系统时触发）
 
