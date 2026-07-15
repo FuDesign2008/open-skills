@@ -218,7 +218,7 @@ Invoke the <skill-name> skill and follow it exactly
 - ❌ PDCA 对应表等元认知框架（对 AI 无执行指导价值；人类可读内容放 reference.md）
 - ❌ `description` 裸值含英文 `: ` 未加引号，破坏 YAML 解析导致 `npx skills` 安装失败（见 frontmatter YAML 陷阱）
 - ❌ `description` 用 `|` 块标量或多行字符串，被 `gen-skill-docs.mjs` 简易解析器解析成 `"|"`，导致 skills-index 描述列变 `|`（见 frontmatter YAML 陷阱）
-- ❌ 新建 skill 不走 `/skill-creator` 直接手写（见 AI 铁律 5）
+- ❌ 新建 skill 不走 `/skill-creator` 直接手写（见 AI 铁律 4）
 - ❌ 声明了 frontmatter `dependencies` 却不做前置检查，或缺失依赖时静默降级而不提示安装（强依赖必须中止流程并给出安装命令）
 - ❌ Hook 脚本阻塞主流程（必须静默失败）
 - ❌ OpenCode 插件用 CommonJS（必须 ES Module）
