@@ -55,14 +55,14 @@ open-skills/
 
 | Skill | 类别 | 依赖 |
 |-------|------|------|
-| solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit |
-| opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit |
-| perf-workflow | 工作流 | 无 |
+| solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research |
+| opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research |
+| perf-workflow | 工作流 | clarifying-question-discipline |
 | frontend-perf | 知识库 | perf-workflow |
 | android-webview-debug | 工具 | 无 |
 | git-commit | Git | 无 |
-| jira-fix-workflow | Jira 工作流 | git-commit、jira-read、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit |
-| opsx-jira-fix-workflow | Jira 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、openspec 原生 skills（阶段 0 检查） |
+| jira-fix-workflow | Jira 工作流 | git-commit、jira-read、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research |
+| opsx-jira-fix-workflow | Jira 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、openspec 原生 skills（阶段 0 检查） |
 | jira-read | Jira 工具 | 无 |
 | typescript-check | 工具 | 无 |
 | article-writer | 内容创作 | 无 |
@@ -74,6 +74,10 @@ open-skills/
 | runtime-evidence-debug | 调试方法论 | 无 |
 | hybrid-debug | 调试方法论 | 无 |
 | browser-debug-toolkit | 调试方法论 | 无 |
+| workflow-mode-lifecycle | 工作流纪律 | 无 |
+| clarifying-question-discipline | 工作流纪律 | 无 |
+| env-capability-discovery | 工作流增强 | 无（弱引用，不声明 dependencies） |
+| known-issue-research | 调研方法论 | effective-web-research |
 
 > 💕 AI 编码陪伴（coding-fangirl）已迁移至独立工程 [oh-my-fangirl](https://github.com/FuDesign2008/oh-my-fangirl)。
 
@@ -128,6 +132,7 @@ Skill 内容...
 - **规则只写一次**：参考表/速览表不应重复阶段详情中已有的规则
 - **Pitfall 只记非直觉陷阱**：不看规则就容易犯的错误才值得记，规则本身的重复罗列是 token 浪费
 - **输出模板超过 5 行抽 reference.md**：SKILL.md 用 `输出格式见 reference.md` 一句引用
+- **共享 skill 的契约标识两侧一致**：共享 skill 的参数化占位符（如 `{root-cause step}`）是共享方与引用方之间的契约标识，必须两侧逐字一致；提交前 grep 两侧核对（含中英文差异）
 
 ### 命令文件格式（`commands/*.md`）
 

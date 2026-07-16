@@ -10,6 +10,9 @@ dependencies:
   - runtime-evidence-debug
   - browser-debug-toolkit
   - node-version-discipline
+  - workflow-mode-lifecycle
+  - clarifying-question-discipline
+  - known-issue-research
 ---
 
 # OPSX Jira Bug 修复工作流
@@ -41,21 +44,18 @@ dependencies:
 - **强制模式**：触发词含“强制”或 `--force` 时可跳过难度终止，但仍不得跳过验证和归档检查。
 - **继续修复**：触发词含“继续修复”“再次修复”“从上次继续”或 `--retry` 时，先定位现有 OpenSpec change，再从 `design.md`、`tasks.md` checkbox、当前 Git 分支和 PR/MR 状态恢复上下文。
 
-**强依赖 skill**（frontmatter `dependencies`）：
-- `solution-review`（阶段 4 决策级审查）
-- `code-design-review`（阶段 4 代码设计审查）
-- `hybrid-debug`（阶段 2 Hybrid 全栈调试）
-- `runtime-evidence-debug`（阶段 2 运行时证据调试）
-- `browser-debug-toolkit`（阶段 2 + 阶段 6 浏览器 DevTools 调试）
-
-启动时须先通过「前置 skill 检查」，缺失即中止流程。
+**强依赖 skill**（frontmatter `dependencies`，共 9 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
+- `solution-review`（阶段 4 决策级审查）、`code-design-review`（阶段 4 代码设计审查）
+- `hybrid-debug`（阶段 2 Hybrid 全栈调试）、`runtime-evidence-debug`（阶段 2 运行时证据调试）、`browser-debug-toolkit`（阶段 2 + 阶段 6 浏览器 DevTools 调试）
+- `node-version-discipline`（阶段 6 执行验证前 Node 版本对齐）
+- `workflow-mode-lifecycle`（自动/手动模式生命周期）、`clarifying-question-discipline`（主动提问硬纪律与调查优先）、`known-issue-research`（阶段 2 调研路由 / 已知问题快搜 / 行业通病评估）
 
 ## 前置 skill 检查
 
-> 本 skill 通过 frontmatter `dependencies` 声明对 6 个 skill 的强依赖。启动时（阶段 0 前置检查之前）必须执行本检查。
+> 本 skill 通过 frontmatter `dependencies` 声明对 9 个 skill 的强依赖。启动时（阶段 0 前置检查之前）必须执行本检查。
 
 1. 扫描可用 skill（查 `<available_items>` 或用 `skill` 工具）
-2. 核对 6 个 dependencies 是否都在可用列表中
+2. 核对 9 个 dependencies 是否都在可用列表中
 3. 全部存在 → 继续阶段 0 前置检查
 4. 任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`）
 
@@ -63,20 +63,7 @@ dependencies:
 
 ## 模式生命周期
 
-> 自动模式的进入、持续与退出规则，避免模式粘滞导致用户未察觉的自动决策。
-
-### 核心规则：自动恢复手动
-
-自动模式在以下情况**自动恢复为手动模式**：
-
-| 恢复场景 | 说明 |
-|---------|------|
-| 正常完成阶段 0-7 全流程 | 无论收尾（归档完成）还是中间任一阶段的最终终止 |
-| 流程被任意中断 | 失败终止、用户主动停止、审查超限暂停后终止 |
-
-### 重新进入自动模式
-
-恢复手动后，用户必须**显式触发**才能再次进入自动模式（如说「opsx 自动修复 Jira」「切换自动模式」）。隐式延续（如「继续修复」「再改一下」）**不会**重新激活自动模式。
+> 自动模式的进入、持续与退出规则，避免模式粘滞导致用户未察觉的自动决策。核心规则（自动恢复手动 / 显式重进 / 隐式延续不激活 / 批量场景）由强依赖 skill `workflow-mode-lifecycle` 承载（前置检查已保证可用），本节不再内联重复。本工作流的「全流程完成」= 正常完成阶段 0-7 全流程（以阶段 7 归档完成收尾）；失败终止、用户主动停止、审查超限暂停后终止均视为流程中断，恢复手动。
 
 ### 特有说明
 
@@ -84,6 +71,21 @@ dependencies:
 - `--retry`（继续修复）：重置为手动模式
 - `--resume`（断点恢复）：沿用断点时的模式
 - OpenSpec archive 失败视为流程中断，恢复手动
+
+## 环境能力探索（跨平台自适应）
+
+> 探索时机、扫描方法、能力类型关键词表与调用原则由 `env-capability-discovery` skill 承载（**弱引用**：不声明在 frontmatter `dependencies`，该 skill 不可用时静默跳过，按原有流程执行，不报错不阻断）。启动时执行一次扫描（阶段 0 步骤 8 的 Superpowers 类增强能力扫描即按该 skill 方法论执行），结果记录在会话上下文中，后续阶段直接引用，无需重复扫描；frontmatter `dependencies` 声明的强依赖 skill 不走环境探索（由「前置 skill 检查」保证可用）。
+
+### 能力 → 阶段映射（opsx-jira-fix-workflow）
+
+| 能力类型 | 对应阶段 | 用途 |
+|---------|---------|------|
+| 🔍 调试分析 | 阶段2（分析问题） | 辅助根因定位、假设驱动调查 |
+| 🌐 Web 调研 | 阶段2（1.5 调研路由 / 打点逃生出口） | 经 `known-issue-research` 统一委托 `effective-web-research` |
+| 💡 方案设计 | 阶段4（探索与审查方案） | 辅助多方案生成与对比 |
+| 📝 计划制定 | 阶段5（制定计划） | 辅助生成结构化 tasks.md |
+| ⚡ 代码执行 / 🧪 测试驱动 / 🔧 构建修复 | 阶段6（执行修复） | 批量编排 / 先写测试 / 构建错误修复 |
+| ✅ 完成验证 | 阶段6.4（验证） | 执行后独立验证 |
 
 ## 阶段 0：前置检查
 
@@ -129,7 +131,7 @@ dependencies:
 
 6. 检查 OpenSpec 命令（在工程根下执行）：优先使用 `openspec list`、`openspec status`、`openspec validate`；不可用时可直接读写 `openspec/`，但必须说明降级。
 7. 继续修复时，先定位 OpenSpec change：优先从当前分支名推断；其次搜索 `openspec/changes/*/{proposal.md,design.md,tasks.md}` 中的 Jira ID；再次查看 PR/MR 描述中的 OpenSpec change 路径；仍无法唯一确定时只问用户 1 个问题确认 change 名称。定位后使用 `openspec status --change <name>`、`openspec show <change-name>`、`design.md`、`tasks.md` checkbox 和当前 Git 分支恢复进度。
-8. 扫描 Superpowers 类增强能力；发现则记录，未发现则静默降级。
+8. 扫描 Superpowers 类增强能力（扫描方法论见上文「环境能力探索」）；发现则记录，未发现则静默降级。
 
    **Superpowers 增强能力调用原则**：调用增强 skill/agent 前，必须先读取其当前 SKILL.md 或说明文件，不得凭记忆调用。Skill 定义可能随版本更新变化，凭记忆调用容易使用过期规则。
 
@@ -151,7 +153,7 @@ dependencies:
 |------|---------|---------|
 | 0 前置检查 | Read、Grep、Glob、Bash（只读检查）、Jira API（只读） | Edit、Write、Git 写操作 |
 | 1 读取 Jira | Jira API、jira-read、Read、OPSX skills（创建 change） | Edit 业务代码、Write 业务代码、改变实现的 Bash |
-| 2 分析问题 | Read、Grep（打点调试：用户添加打点，AI 只读分析） | Edit、Write 业务代码 |
+| 2 分析问题 | Read、Grep、WebSearch（1.5 调研路由 / 4.5 上游评估专用；打点调试：用户添加打点，AI 只读分析） | Edit、Write 业务代码 |
 | 3 创建 Change | OPSX 原生 skills、Write（artifacts） | Edit 业务代码 |
 | 4 探索方案 | Read、Grep | Edit、Write 业务代码 |
 | 5 制定计划 | Read、Write（仅 tasks.md） | Edit 业务代码 |
@@ -190,9 +192,9 @@ dependencies:
 
 完成后自动进入阶段 2。
 
-> ⚠️ **提问硬纪律（阶段 1 理解对齐）**：若 Jira 描述信息不足需向用户追问，**每次只问 1 个最关键的问题**（优先级：目的 → 约束 → 成功标准），得到回答后再问下一个。提问用「单问题 + 多选项」格式——优先用你所在 Agent 的原生结构化提问能力，无则用 prose。
+> ⚠️ **提问硬纪律（阶段 1 理解对齐）**：完整纪律（一次一问、提问格式、简答约定、调查优先原则）由强依赖 skill `clarifying-question-discipline` 承载——前置检查已保证可用。若 Jira 描述信息不足需向用户追问，**每次只问 1 个最关键的问题**（优先级：目的 → 约束 → 成功标准），得到回答后再问下一个。提问用「单问题 + 多选项」结构化形式，优先 Agent 原生结构化提问能力，无则用 prose。
 >
-> 🚩 **Red Flag**：一次列出多个歧义点让用户回答（违反硬纪律）——每次只问 1 个最关键的。
+> 🚩 **Red Flag**：一次列出多个歧义点让用户回答（违反硬纪律，见 `clarifying-question-discipline`）——每次只问 1 个最关键的，得到回答后再问下一个。
 
 ### Scope 拆解（可选，多子系统时触发）
 
@@ -211,10 +213,11 @@ dependencies:
 必须执行：
 
 1. **存在性验证**：搜索相关代码，判断 Jira 描述的问题在当前代码库是否仍存在。
+1.5 **调研路由与外部调研**（存在性验证通过后立即执行，决定后续步骤侧重）：加载强依赖 skill `known-issue-research` 按其方法论执行——调研路由三态判断（🟢内部为主 / 🔵外部为主 / 🟣Hybrid 先外后内，判断不准默认内部为主）→ 按路由侧重执行**已知问题快搜**（🔵/🟣 路由下为**首要动作**，🟢 路由下为可选兜底）→ 根因明确指向平台/语言/协议/标准硬限制时执行**行业通病评估**（结论为「无可行解」时输出报告并**暂停等用户决定**）。本工作流步骤编号映射：`{root-cause step}` = 步骤 4；`{impact-assessment step}` = 步骤 5；`{upstream-eval step}` = 步骤 4.5（快搜发现「上游已修复」线索时进入，评估升级可行性）。报告模板见 `known-issue-research/reference.md`。
 2. **现象对齐**：复现条件、期望 vs 实际。
 3. **代码定位**：文件路径、关键函数、调用链、状态流。
 4. **根因分析**：区分直接原因和根本原因；必要时追问“为什么”至少 3 次。
-4.5 **上游依赖修复评估**（可选）：若根因疑似上游依赖 bug（具名第三方库/框架、症状与库特定行为强相关、workaround越堆越复杂），加载 `upstream-dependency-debug` skill——查 Changelog 找修复版本，优先升级依赖而非堆 workaround（4步决策顺序+升级工程纪律，见该 skill）。
+4.5 **上游依赖修复评估**（可选）：若根因疑似上游依赖 bug（具名第三方库/框架、症状与库特定行为强相关、workaround越堆越复杂），或 1.5 已知问题快搜找到上游已修复版本，加载 `upstream-dependency-debug` skill——查 Changelog 找修复版本，优先升级依赖而非堆 workaround（4步决策顺序+升级工程纪律，见该 skill）。
 5. **影响范围**：模块、平台、调用方、兼容性、风险面。
 6. **难度分级**：容易 / 中等 / 困难 / 极难。
 
@@ -247,6 +250,8 @@ dependencies:
 > - ❌ 分析结论只保留在对话中，未写入 design.md
 > - ❌ 根因置信度模糊却不触发打点调试
 > - ❌ Scope 扩大时未升级路径（精简→增量→完整）
+> - ❌ 1.5 路由判定为 🔵外部/🟣hybrid 却跳过已知问题快搜（此时快搜为首要动作，见 `known-issue-research`）；或 🟢内部路由下快搜触发条件命中，却以「先看代码」「先打点」为由跳过 WebSearch
+> - ❌ 根因涉及具名第三方库/框架，却未查上游 Changelog/Release Notes 就直接堆 workaround（应先走步骤 4.5 上游依赖修复评估）
 
 ### 🔬 打点调试（静态分析受阻时，主动升级为运行时调试）
 
@@ -618,7 +623,7 @@ Jira 评论必须包含：
 | 先 PR/合并再 archive | specs 或 archive 目录可能不在最终 diff | 默认先 archive 并检查 diff，再完成 PR |
 | Jira 状态越权 | 研发误关闭 issue | 只允许流转到“已修复” |
 | 通过 `jira_transition_issue` 的 `comment` 参数传评论 | 评论被静默丢弃 | 独立调用 `jira_add_comment`，transition 的 comment 参数不可靠 |
-| Superpowers 缺失就中断 | 降低跨平台可用性 | Superpowers 只做渐进增强 |
+| Superpowers 缺失就中断 | 降低跨平台可用性 | Superpowers 只做渐进增强，探索失败静默跳过（见 `env-capability-discovery`） |
 | 验证失败仍提交 PR | 把未闭环修复交给 QA | 阶段 6 未通过不得提交 |
 | OpenSpec artifacts 写得过薄 | 后续无法复盘根因和验证 | `design.md` 必须包含 Jira Context、Root Cause、Options、Risk 和 Verification Notes |
 | 批量修复只按列表机械执行 | 重复修复、依赖丢失或行为冲突 | 执行前后识别 issue 关系，并写入 Related Issues / Risk / Dependencies |
