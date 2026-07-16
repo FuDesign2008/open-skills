@@ -108,7 +108,7 @@ Socratic layered questioning that helps the user think it through themselves —
 
 ### Questioning Protocol
 
-- **⚠️ Ask ONE question at a time (hard rule)** — wait for the user's answer before following up; never batch multiple questions in one turn (it overloads the user and lowers answer quality). Ask via a single-question + multiple-choice format — prefer your Agent's native structured-prompting capability; if none, use plain prose.
+- **⚠️ Ask ONE question at a time (hard rule — one per turn, not one total; you may follow up across rounds)** — wait for the user's answer before following up; never batch multiple questions in one turn (it overloads the user and lowers answer quality). Ask via a single-question + multiple-choice format — prefer your Agent's native structured-prompting capability; if none, use plain prose.
 - **Maximum 5 rounds**; after round 5, force convergence and output a synthesis
 - **Before each follow-up**, acknowledge the user's previous answer in one sentence (confirm understanding + advance direction)
 - **Questioning path**: Symptom → Essence → Impact → Trade-off → Action
