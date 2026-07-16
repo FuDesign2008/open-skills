@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.6.0"
+version: "1.7.0"
 user-invocable: true
 description: 当用户说"opsx解决"、"OpenSpec解决"、"规范化解决"、"创建OpenSpec变更"、"创建opsx变更"、"用OpenSpec分析"、"用OpenSpec修复"、"opsx自动解决"、"OpenSpec自动解决"、"opsx-solve"或"opsx-solve-workflow"时触发。适用于需要将分析、方案、计划、实现、验证和归档沉淀到OpenSpec artifacts的功能开发、Bug修复、重构和复杂工程任务。
 dependencies:
@@ -10,6 +10,7 @@ dependencies:
   - runtime-evidence-debug
   - browser-debug-toolkit
   - node-version-discipline
+  - learn-and-improve
 ---
 
 # OPSX 七阶段问题解决工作流
@@ -46,15 +47,16 @@ dependencies:
 - `hybrid-debug`（阶段 1.2 Hybrid 全栈调试）
 - `runtime-evidence-debug`（阶段 1.2 运行时证据调试）
 - `browser-debug-toolkit`（阶段 1.2 + 阶段 6 浏览器 DevTools 调试）
+- `learn-and-improve`（阶段 7 回顾总结与经验沉淀）
 
 启动时须先通过「前置 skill 检查」，缺失即中止流程。
 
 ## 前置 skill 检查
 
-> 本 skill 通过 frontmatter `dependencies` 声明对 6 个 skill 的强依赖。启动时（阶段 0 前置检查通过后、阶段 1 之前）必须执行本检查。
+> 本 skill 通过 frontmatter `dependencies` 声明对 7 个 skill 的强依赖。启动时（阶段 0 前置检查通过后、阶段 1 之前）必须执行本检查。
 
 1. 扫描可用 skill（查 `<available_items>` 或用 `skill` 工具）
-2. 核对 6 个 dependencies 是否都在可用列表中
+2. 核对 7 个 dependencies 是否都在可用列表中
 3. 全部存在 → 继续后续流程
 4. 任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`「前置 skill 检查 — 缺失提示」）
 
@@ -573,25 +575,16 @@ Superpowers 增强规则：
 **本步骤独立 Bash 权限**：运行 test-coverage-analyzer 脚本，不改变阶段 7「仅限归档/文档」的工具约束本质（门控是合并子步骤而非归档动作）。
 **留痕位置**（显式跳过时）：PR 描述和 `design.md` 的 Verification Notes。
 
-### AI 工程沉淀载体选择
+### 回顾总结与经验沉淀（委托 learn-and-improve）
 
-| 载体 | 适用内容 |
-|------|----------|
-| `AGENTS.md` | 项目级、跨工具、团队共享的长期规则与工程约定 |
-| `CLAUDE.md` | Claude Code 专属的行为约束、工作流偏好或工具使用约定 |
-| `.cursor/rules/` | Cursor 专属规则、文件模式规则、编辑器内 AI 指导 |
-| 项目内 skill | 步骤稳定、可复用、未来可被明确触发的工作流或领域知识 |
-| 总结文档 | 一次性复盘、背景记录、暂不适合固化为规则的经验 |
+归档与分支收尾完成后，加载 `learn-and-improve` skill 执行回顾总结与经验沉淀：
+1. 结构化复盘（按场景选 SSC / KPT / AAR + 5Why 根因）
+2. 沉淀价值判断（三道门：会否复现 × 已验证 × 团队级）
+3. 沉淀载体选择（决策树：`AGENTS.md` / `CLAUDE.md` / `.cursor/rules/` / 项目内 skill / 总结文档）
+4. 有效性验证 + 改进闭环（检索复用机制 + single/double-loop）
 
-### 判断沉淀价值
-
-**OpenSpec artifacts**（`proposal.md`、`specs/`、`design.md`、`tasks.md`）是本 skill 的核心产出，正常归档流程落盘，不受以下门控限制。
-
-**AI 工程知识**（`AGENTS.md`、`CLAUDE.md`、`.cursor/rules/`、项目内 skill 等）须先过沉淀价值门控：
-
-- ✅ **建议固化**：高复用、已验证、对团队或工程有长期价值的经验
-- ❌ **不建议固化**：一次性经验、未验证判断、个人临时偏好、本次 change 专属配置
-- **写入前必须等用户明确要求**：除非用户明确说「写入规则」「创建 skill」「更新文档」，否则只输出建议，不落盘
+> **OpenSpec artifacts**（`proposal.md`、`specs/`、`design.md`、`tasks.md`）是本 skill 的核心产出，正常归档流程落盘，不受 `learn-and-improve` 的沉淀价值门控限制。
+> **AI 工程知识**（`AGENTS.md`、`CLAUDE.md`、`.cursor/rules/`、项目内 skill 等）的沉淀价值判断与载体选择，由 `learn-and-improve` 的决策树负责；写入前必须等用户明确要求。
 
 归档完成后输出格式见 [reference.md](reference.md)「阶段 7 回顾归档」。
 

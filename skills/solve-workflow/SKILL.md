@@ -1,6 +1,6 @@
 ---
 name: solve-workflow
-version: "1.12.0"
+version: "1.13.0"
 user-invocable: true
 description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审查方案"、"制定计划"、"执行计划"、"检查验证"、"回顾总结"，或"继续分析"、"深入分析"、"修改方案"、"完善方案"、"优化方案"、"更新计划"、"修订计划"、"修改计划"，或"自动模式"、"自动分析"、"自动解决"时触发。适用于 bug 修复、代码重构、功能开发等需系统性分析的复杂任务。
 dependencies:
@@ -9,6 +9,7 @@ dependencies:
   - hybrid-debug
   - runtime-evidence-debug
   - browser-debug-toolkit
+  - learn-and-improve
 ---
 
 # 七阶段问题解决工作流
@@ -42,6 +43,7 @@ dependencies:
 - `hybrid-debug`（阶段 1.2 Hybrid 全栈调试）
 - `runtime-evidence-debug`（阶段 1.2 运行时证据调试）
 - `browser-debug-toolkit`（阶段 1.2 + 阶段 6 浏览器 DevTools 调试）
+- `learn-and-improve`（阶段 7 回顾总结与经验沉淀）
 
 启动时须先通过「前置 skill 检查」，缺失即中止流程。
 
@@ -49,10 +51,10 @@ dependencies:
 
 ## 前置 skill 检查
 
-> solve-workflow 通过 frontmatter `dependencies` 声明对 `solution-review` 与 `code-design-review` 的强依赖。启动时（进入阶段 1 之前）必须执行本检查。
+> solve-workflow 通过 frontmatter `dependencies` 声明对 `solution-review`、`code-design-review`、`learn-and-improve` 的强依赖。启动时（进入阶段 1 之前）必须执行本检查。
 
 1. 扫描可用 skill（复用「环境能力探索」的扫描方法——查 `<available_items>` 或用 `skill` 工具）
-2. 核对 `solution-review` 和 `code-design-review` 是否都在可用列表中
+2. 核对 `solution-review`、`code-design-review`、`learn-and-improve` 是否都在可用列表中
 3. 全部存在 → 继续后续流程
 4. 任一缺失 → 按缺失提示格式（见 [reference.md](reference.md)「前置 skill 检查 — 缺失提示」）输出并**立即中止流程**
 
@@ -593,23 +595,22 @@ dependencies:
 
 ## 阶段7：回顾总结（Act）
 
-> 原则：只做总结、沉淀建议与下一步建议，不默认写入文件；若用户明确要求写入规则、创建 skill 或根据改进点再改，则进入新一轮「制定计划 → 执行计划」；亦可回到「审查方案」重新选定或调整方案。
+> 原则：本阶段调用 `learn-and-improve` skill 执行回顾总结与经验沉淀（复盘 + 沉淀价值判断 + 载体选择 + 有效性验证），**不内联重复其方法论**；本阶段仅保留 solve-workflow 特有的编排（循环决策、收尾/总结文档、覆盖率提示）。不默认写入文件；若用户明确要求写入规则、创建 skill 或根据改进点再改，则进入新一轮「制定计划 → 执行计划」；亦可回到「审查方案」重新选定或调整方案。
 
-1. **复盘有效做法与失败教训** - 哪些做法值得保留，哪些做法不应复用
-2. **判断沉淀价值** - 仅将高复用、已验证、对团队或工程有长期价值的经验建议固化；一次性经验、未验证判断、个人临时偏好不建议写入长期规则
-3. **推荐 AI 工程沉淀载体** - 说明建议写入哪类载体，以及为什么
-4. **未达标时的下一步** - 是否进入下一轮，回到哪个阶段
-5. **收尾与可选总结文档** - 记录遗留风险与后续改进点；输出【改进建议】后，主动询问「是否需要生成总结文档」；若用户需要，则生成总结文档（路径由用户指定或 AI 建议），内容包含：问题复述、方案选择、执行结果、遗留与改进点
+### 调用 learn-and-improve（委托回顾总结）
 
-### AI 工程沉淀载体选择
+加载 `learn-and-improve` skill，按其框架执行：
+1. 结构化复盘（按场景选 SSC / KPT / AAR + 5Why 根因）
+2. 沉淀价值判断（三道门：会否复现 × 已验证 × 团队级）
+3. 沉淀载体选择（决策树：`AGENTS.md` / `CLAUDE.md` / `.cursor/rules/` / 项目内 skill / 总结文档）
+4. 有效性验证 + 改进闭环（检索复用机制 + single/double-loop）
 
-| 载体 | 适用内容 |
-|------|----------|
-| `AGENTS.md` | 项目级、跨工具、团队共享的长期规则与工程约定 |
-| `CLAUDE.md` | Claude Code 专属的行为约束、工作流偏好或工具使用约定 |
-| `.cursor/rules/` | Cursor 专属规则、文件模式规则、编辑器内 AI 指导 |
-| 项目内 skill | 步骤稳定、可复用、未来可被明确触发的工作流或领域知识 |
-| 总结文档 | 一次性复盘、背景记录、暂不适合固化为规则的经验 |
+> 完整决策树与方法论见 `learn-and-improve`，本阶段不再内联沉淀载体表与沉淀价值标准。
+
+### solve-workflow 特有编排
+
+- **未达标时的下一步**：若 learn-and-improve 的改进闭环结论为目标未达成，决定回到「分析问题」「探索方案」或「审查方案」开启下一轮 PDCA 循环。
+- **收尾与可选总结文档**：输出【改进建议】后，主动询问「是否需要生成总结文档」；若用户需要，则生成总结文档（路径由用户指定或 AI 建议），内容包含：问题复述、方案选择、执行结果、遗留与改进点。
 
 ### 输出格式
 
