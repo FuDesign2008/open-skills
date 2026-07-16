@@ -1,10 +1,10 @@
 ## Tasks
 
-- [x] 1. **solve-workflow** `skills/solve-workflow/SKILL.md`：行 127 标题 → `（硬纪律：一次一问、多轮问清）`；行 129 首句 → `**单轮只问一个最关键的问题、多轮问清推进**`
-- [x] 2. **opsx-solve-workflow** `skills/opsx-solve-workflow/SKILL.md`：行 256 标题式 → `**⚠️ 一次一问、多轮问清（硬纪律，无条件适用）**`；行 364 Red Flags 引用名同步 → `（违反「一次一问、多轮问清」硬纪律）`
-- [x] 3. **jira-fix-workflow** `skills/jira-fix-workflow/SKILL.md`：行 130 标题 → `（硬纪律：一次一问、多轮问清）`
-- [x] 4. **think-big** `skills/think-big/SKILL.md`：行 111 英文补 `(hard rule — one per turn, not one total; you may follow up across rounds)`
-- [x] 5. **opsx-jira-fix-workflow** `skills/opsx-jira-fix-workflow/SKILL.md`：行 193 核对（已含「得到回答后再问下一个」，未改）
-- [x] 6. **复查**：`grep -rn "一次只问一个"` 确认纯歧义标题已清除（仅 snapshot 副本旧措辞，按 D4 设计不动）；snapshot 确认未动
-- [x] 7. **验证**：`openspec validate clarify-one-question-multi-turn --strict` → valid
-- [ ] 8. **归档时**：`openspec archive` → Requirement 1 的 MODIFIED delta sync 到 `openspec/specs/clarifying-question-discipline/spec.md`
+- [x] 1. **solve-workflow**：整体重写「主动提问」小节（标题+正文+两个约束+为什么），落地「一次一问、多轮问清 + 每轮基于上轮精化」
+- [x] 2. **opsx-solve-workflow**：整体重写 256 段落 + 364 Red Flags 引用名同步
+- [x] 3. **jira-fix-workflow**：整体重写 130 bullet
+- [x] 4. **think-big**：整体重写 111 英文段落（Ask ONE question at a time, then follow up across rounds until clear）
+- [x] 5. **opsx-jira-fix-workflow**：193 核对（已正确，未改）
+- [x] 6. **spec Requirement 1**：正文精简（删元注释）+ 删冗余防误读 Scenario；核心口号 sync 到 current spec 与 delta
+- [x] 7. **复查**：grep 确认旧口号清零、新口号落地、snapshot 未动、spec 结构达标（5 Req / 10 Scenario）
+- [x] 8. **归档**：`openspec archive` → Requirement 1 delta sync 到 `openspec/specs/clarifying-question-discipline/spec.md`（已执行）
