@@ -18,33 +18,9 @@
 
 ---
 
-## 阶段 1.2 行业通病评估报告
+## 阶段 1.2 调研输出模板
 
-```
-【行业通病评估】
-- 问题本质：...（根因一句话总结）
-- 行业现状：...（已知公开记录、主流框架态度、大厂处理方式）
-- 调研结论：该问题属于 [平台限制/协议约束/语言特性/标准规范]，业界目前无可行解
-- 建议：接受现状 / 评估替代方案（非修复）/ 与产品对齐预期
-如需继续探索绕过方案，请说「继续」；否则工作流到此暂停。
-```
-
----
-
-## 阶段 1.2 上游依赖修复评估
-
-当步骤 3.6 触发（根因明确为上游依赖 bug，或步骤 2.5 找到上游已修复版本）时，按以下格式输出：
-
-```
-【上游依赖修复评估】
-- 根因归属：上游依赖 bug（<依赖名@当前版本> 的 <具体问题>）
-- 上游修复确认：Changelog/Release Notes/Issues 显示 <修复版本> 已修复（<引用链接+日期>）
-- 升级风险评估：[patch/minor 低风险 | major 有 breaking change <列出>]
-- 包管理器：项目实际用 <npm/yarn/pnpm>（依据 <lockfile>），系统级 packageManager=<...>
-- 验证链：typecheck + build + 全量单测 + <真机/目标环境验证>
-- dedup 检查：<npm ls <pkg> 结果，单版本/多版本>
-- 建议：升级 <依赖> <旧版本>→<新版本> 作为首选方案 / 与 workaround 并列对比
-```
+「行业通病评估报告」与「上游依赖修复评估」模板已迁移至 `known-issue-research/reference.md`，由该 skill 统一承载，本文件不再重复。
 
 ---
 
@@ -59,11 +35,15 @@
 - [skill-name]：[该 skill 的用途说明]
 
 【为什么需要它】
-solve-workflow 的阶段 3「审查方案」和阶段 1.2「技术分析」通过 dependencies 强依赖上述 skill：
+solve-workflow 通过 dependencies 强依赖 9 个 skill：
 - `solution-review` / `code-design-review`：阶段 3 审查框架（4 核心维度 + 5 战略维度 / Layer A-B-C 代码设计审查）
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`：阶段 1.2 调试方法论（Hybrid 全栈 / 运行时证据 / 浏览器 DevTools）
+- `learn-and-improve`：阶段 7 回顾总结与经验沉淀
+- `workflow-mode-lifecycle`：自动/手动模式生命周期核心规则
+- `clarifying-question-discipline`：主动提问硬纪律与调查优先原则
+- `known-issue-research`：阶段 1.2 调研路由 / 已知问题快搜 / 行业通病评估
 
-缺失时阶段 3 无法执行深度审查、阶段 1.2 无法升级到运行时调试，强行运行会产生未经审查或根因不明的方案，违背 PDCA 工作流初衷。
+缺失时阶段 3 无法执行深度审查、阶段 1.2 无法升级到运行时调试与外部调研、模式与提问纪律失去单点契约，强行运行会产生未经审查或根因不明的方案，违背 PDCA 工作流初衷。
 
 【安装方式】
 - 通用安装（推荐，全量装所有 skill）：

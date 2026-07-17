@@ -55,14 +55,14 @@ open-skills/
 
 | Skill | 类别 | 依赖 |
 |-------|------|------|
-| solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit |
-| opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit |
-| perf-workflow | 工作流 | 无 |
+| solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research |
+| opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research |
+| perf-workflow | 工作流 | clarifying-question-discipline |
 | frontend-perf | 知识库 | perf-workflow |
 | android-webview-debug | 工具 | 无 |
 | git-commit | Git | 无 |
-| jira-fix-workflow | Jira 工作流 | git-commit、jira-read、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit |
-| opsx-jira-fix-workflow | Jira 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、openspec 原生 skills（阶段 0 检查） |
+| jira-fix-workflow | Jira 工作流 | git-commit、jira-read、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research |
+| opsx-jira-fix-workflow | Jira 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、openspec 原生 skills（阶段 0 检查） |
 | jira-read | Jira 工具 | 无 |
 | typescript-check | 工具 | 无 |
 | article-writer | 内容创作 | 无 |
@@ -74,6 +74,10 @@ open-skills/
 | runtime-evidence-debug | 调试方法论 | 无 |
 | hybrid-debug | 调试方法论 | 无 |
 | browser-debug-toolkit | 调试方法论 | 无 |
+| workflow-mode-lifecycle | 工作流纪律 | 无 |
+| clarifying-question-discipline | 工作流纪律 | 无 |
+| env-capability-discovery | 工作流增强 | 无（弱引用，不声明 dependencies） |
+| known-issue-research | 调研方法论 | effective-web-research |
 
 > 💕 AI 编码陪伴（coding-fangirl）已迁移至独立工程 [oh-my-fangirl](https://github.com/FuDesign2008/oh-my-fangirl)。
 
@@ -128,6 +132,7 @@ Skill 内容...
 - **规则只写一次**：参考表/速览表不应重复阶段详情中已有的规则
 - **Pitfall 只记非直觉陷阱**：不看规则就容易犯的错误才值得记，规则本身的重复罗列是 token 浪费
 - **输出模板超过 5 行抽 reference.md**：SKILL.md 用 `输出格式见 reference.md` 一句引用
+- **共享 skill 的契约标识两侧一致**：共享 skill 的参数化占位符（如 `{root-cause step}`）是共享方与引用方之间的契约标识，必须两侧逐字一致；提交前 grep 两侧核对（含中英文差异）
 
 ### 命令文件格式（`commands/*.md`）
 
@@ -171,6 +176,7 @@ Invoke the <skill-name> skill and follow it exactly
 - **合并 PR 时**：优先使用「Create a merge commit」，避免「Squash and merge」。Squash 会切断 main 与 feature 分支的提交图，后续在同一分支继续开发再合并 main 时易产生冲突。
 - **PR 合并后同步主分支**：合并 PR 后，主动执行 `git checkout main && git pull origin main` 同步当前仓库主分支（即「Merge PR 与发布流程」第 4 步）。
 - **PR 合并后继续开发**：若上游已用 Squash 合并过，在本地继续提交前必须先 `git merge origin/main` 或 `git pull origin main`，再开发。
+- **长周期变更双点同步检查**：跨天/跨阶段的变更，在动手前（制定计划时）和执行中期（如 opsx 阶段 5 执行前）各做一次 `git fetch origin main` 并查看 `git log HEAD..origin/main --oneline`，尽早感知并行合并的 PR；发现 main 已动到自己在改的区域时，提前小步同步（rebase/merge），把冲突消解在早期而非攒到最后一次 rebase 爆发
 - PR 前：`git fetch origin main && git rebase origin/main`
 - PR 仅含本次变更 commits
 - Commit 前缀：`feat:` 新功能、`fix:` 修复、`docs:` 文档、`chore:` 杂项
