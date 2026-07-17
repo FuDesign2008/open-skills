@@ -185,9 +185,11 @@ Invoke the <skill-name> skill and follow it exactly
 
 1. **合并 PR**：`gh pr merge <编号> --merge`
 2. **检查版本发布**：等待 CI 完成（约 15–20 秒），`gh release list -L 3` 确认新版本
-3. **更新本地安装**（均为 **全能力安装** 路径）：
-   - **OpenCode**：`cd ~/.config/opencode/open-skills && git pull`，然后 `for cmd in commands/*.md; do ln -sf "$(pwd)/$cmd" ~/.config/opencode/commands/; done`
-   - **Claude Code**：`claude plugin update open-skills@open-skills-marketplace`
+3. **更新本地安装**：
+   - **通用安装**（`~/.agents/skills`，每次发布后必做）：`npx skills add FuDesign2008/open-skills -g --skill '*' --yes`——裸命令 `npx skills add FuDesign2008/open-skills -g` 会进入交互式多选（AI/CI 无法应答），必须加 `-s '*' -y` 非交互全量；个别 PromptScript 类 skill（如 `xquik-social-data`、`openspec-*`）报「不支持全局安装」为已知无害报错（已有副本不受影响）
+   - **全能力安装** 路径：
+     - **OpenCode**：`cd ~/.config/opencode/open-skills && git pull`，然后 `for cmd in commands/*.md; do ln -sf "$(pwd)/$cmd" ~/.config/opencode/commands/; done`
+     - **Claude Code**：`claude plugin update open-skills@open-skills-marketplace`（该环境未安装插件时报「Plugin not found」，跳过即可）
 4. **工作区同步**：`git checkout main && git pull origin main`
 
 ## 版本管理
