@@ -15,6 +15,7 @@ dependencies:
   - known-issue-research
   - env-capability-discovery
   - ensure-tests
+  - node-version-discipline
 ---
 
 # 八阶段问题解决工作流
@@ -30,19 +31,20 @@ dependencies:
 - **匹配规则**：`xxx` 中包含触发词即视为命中，无需精确匹配
 - **不适用场景**：单步修改（如改一个变量名）、用户仅需快速建议而非完整执行流程时，可跳过本工作流直接处理。
 
-**强依赖 skill**（frontmatter `dependencies`，共 11 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
+**强依赖 skill**（frontmatter `dependencies`，共 12 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
 - `solution-review`（阶段 4 决策级审查）、`code-design-review`（阶段 4 代码设计审查）
 - `hybrid-debug`（阶段 2 Hybrid 全栈调试）、`runtime-evidence-debug`（阶段 2 运行时证据调试）、`browser-debug-toolkit`（阶段 2 + 阶段 7 浏览器 DevTools 调试）
 - `learn-and-improve`（阶段 8 复盘改进与经验沉淀）
 - `workflow-mode-lifecycle`（自动/手动模式生命周期）、`clarifying-question-discipline`（主动提问硬纪律与调查优先）、`known-issue-research`（阶段 2 调研路由 / 已知问题快搜 / 行业通病评估）
 - `env-capability-discovery`（环境能力探索：启动时一次扫描可用增强能力）
 - `ensure-tests`（阶段 6 测试补全：项目有测试基建时补全并运行；无基建经用户确认后搭建）
+- `node-version-discipline`（阶段 7 测试执行前 Node 版本对齐）
 
 **相关 skill**（信息性引用，非强依赖）：`perf-workflow`（性能专项分析）、`jira-fix-workflow`（Jira 端到端修复，内置本工作流）
 
 ## 前置 skill 检查
 
-> 启动时（进入阶段 1 之前）必须执行本检查，核对 frontmatter `dependencies` 声明的全部 11 个强依赖 skill。
+> 启动时（进入阶段 1 之前）必须执行本检查，核对 frontmatter `dependencies` 声明的全部 12 个强依赖 skill。
 
 1. 扫描可用 skill（查 `<available_items>` 或用 `skill` 工具）
 2. 全部存在 → 继续后续流程

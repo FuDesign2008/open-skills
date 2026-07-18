@@ -35,7 +35,7 @@
 - [skill-name]：[该 skill 的用途说明]
 
 【为什么需要它】
-solve-workflow 通过 dependencies 强依赖 11 个 skill：
+solve-workflow 通过 dependencies 强依赖 12 个 skill：
 - `solution-review` / `code-design-review`：阶段 4 审查框架（4 核心维度 + 5 战略维度 / Layer A-B-C 代码设计审查）
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`：阶段 2 调试方法论（Hybrid 全栈 / 运行时证据 / 浏览器 DevTools）
 - `learn-and-improve`：阶段 8 复盘改进与经验沉淀
@@ -44,8 +44,9 @@ solve-workflow 通过 dependencies 强依赖 11 个 skill：
 - `known-issue-research`：阶段 2 调研路由 / 已知问题快搜 / 行业通病评估
 - `env-capability-discovery`：环境能力探索（启动时一次扫描可用增强能力）
 - `ensure-tests`：阶段 6 测试补全（测试基建检测 / 补全生成 / 运行）
+- `node-version-discipline`：阶段 7 测试执行前 Node 版本对齐
 
-缺失时阶段 4 无法执行深度审查、阶段 2 无法升级到运行时调试与外部调研、环境能力探索失效、阶段 6 无法补全测试、模式与提问纪律失去单点契约，强行运行会产生未经审查或根因不明的方案，违背 PDCA 工作流初衷。
+缺失时阶段 4 无法执行深度审查、阶段 2 无法升级到运行时调试与外部调研、环境能力探索失效、阶段 6 无法补全测试、阶段 7 测试 Node 版本不可信、模式与提问纪律失去单点契约，强行运行会产生未经审查或根因不明的方案，违背 PDCA 工作流初衷。
 
 【安装方式】
 - 通用安装（推荐，全量装所有 skill）：

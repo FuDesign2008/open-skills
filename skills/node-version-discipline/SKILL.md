@@ -237,4 +237,4 @@ The SOP assumes nvm (Unix / macOS). Other environments:
 - Origin: a real-world fix where a mobile project pinned `.nvmrc` = v14.21.3 while the host defaulted to v22, producing tsc/eslint false-passes under the higher version.
 - No-declaration path: when a project declares no Node version at all, §2 turns the user's answer into a persistent declaration file (§2.1 picks the type via §2.2's toolchain probe), closing the loop so the next session reads it on the first probe instead of asking again.
 - Hard-dependents: `typescript-check`, `jira-fix-workflow`, `opsx-jira-fix-workflow`, `opsx-solve-workflow`.
-- Soft-referencers: `ensure-tests`, `solve-workflow`.
+- Soft-referencers: `ensure-tests`.
