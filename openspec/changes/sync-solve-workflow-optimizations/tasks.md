@@ -43,4 +43,4 @@
 
 - [x] 8.1 `openspec validate sync-solve-workflow-optimizations` 通过；`node scripts/gen-skill-docs.mjs` + `git diff --exit-code docs/generated/skills-index.md`（预期无 diff，若有 description 变更则纳入并复核）
 - [x] 8.2 grep 双侧核对：`UI/CSS/DOM 问题`、`弱引用`、`项目配置了`、`步骤 5.5`、`回顾总结`（opsx 侧）残留仅余刻意保留项；3 个工作流 frontmatter deps 计数与清单一致
-- [ ] 8.3 提交、推送、创建 PR（描述含批次划分说明与批 2 遗留清单）
+- [x] 8.3 提交、推送、创建 PR（描述含批次划分说明与批 2 遗留清单）
