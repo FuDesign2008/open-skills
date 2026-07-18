@@ -76,7 +76,7 @@ open-skills/
 | browser-debug-toolkit | 调试方法论 | 无 |
 | workflow-mode-lifecycle | 工作流纪律 | 无 |
 | clarifying-question-discipline | 工作流纪律 | 无 |
-| env-capability-discovery | 工作流增强 | 无（默认弱引用；solve-workflow 声明为强依赖） |
+| env-capability-discovery | 工作流增强 | 无（默认弱引用；solve-workflow、opsx-solve-workflow、jira-fix-workflow、opsx-jira-fix-workflow 声明为强依赖） |
 | known-issue-research | 调研方法论 | effective-web-research |
 
 > 💕 AI 编码陪伴（coding-fangirl）已迁移至独立工程 [oh-my-fangirl](https://github.com/FuDesign2008/oh-my-fangirl)。
