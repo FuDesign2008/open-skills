@@ -69,23 +69,23 @@ Phase 5 SHALL produce `tasks.md` with checkboxed tasks small enough to be comple
 - **WHEN** Phase 5 produces `tasks.md`
 - **THEN** each task has a checkbox and the order reflects implementation dependencies
 
-### Requirement: Phase 6 SHALL enforce node-version-discipline before verification commands
+### Requirement: Phase 7 SHALL enforce node-version-discipline before verification commands
 
-Phase 6 SHALL call `node-version-discipline` to align the Node version before running any project-level test, lint, type-check, or build commands, and SHALL disclose the aligned Node version in the verification report.
+Phase 7 SHALL call `node-version-discipline` to align the Node version before running any project-level test, lint, type-check, or build commands, and SHALL disclose the aligned Node version in the verification report.
 
 #### Scenario: Project declares a Node version
 
 - **WHEN** the project contains `.nvmrc` declaring Node 20
-- **THEN** Phase 6 runs `nvm use 20` or equivalent before `npm test`
+- **THEN** Phase 7 runs `nvm use 20` or equivalent before `npm test`
 - **AND** the report states `Node(声明版本 v20) ✅`
 
-### Requirement: Phase 7 SHALL archive OpenSpec artifacts before branch finish
+### Requirement: Phase 8 SHALL archive OpenSpec artifacts before branch finish
 
-Phase 7 SHALL ensure `tasks.md` is complete, delta specs represent the implementation, and main specs are updated. It SHALL call `openspec-archive-change` before any branch-finish decision, and SHALL inspect the resulting diff before concluding.
+Phase 8 SHALL ensure `tasks.md` is complete, delta specs represent the implementation, and main specs are updated. It SHALL call `openspec-archive-change` before any branch-finish decision, and SHALL inspect the resulting diff before concluding.
 
 #### Scenario: Archive succeeds
 
-- **WHEN** Phase 7 verification passes and the user confirms archive
+- **WHEN** Phase 8 verification passes and the user confirms archive
 - **THEN** `openspec-archive-change` moves the change to `openspec/changes/archive/`
 - **AND** the skill inspects the git diff before any merge/PR decision
 
