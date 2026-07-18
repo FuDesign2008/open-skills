@@ -13,6 +13,8 @@ dependencies:
   - workflow-mode-lifecycle
   - clarifying-question-discipline
   - known-issue-research
+  - env-capability-discovery
+  - ensure-tests
 ---
 
 # OPSX Jira Bug 修复工作流
@@ -44,18 +46,20 @@ dependencies:
 - **强制模式**：触发词含“强制”或 `--force` 时可跳过难度终止，但仍不得跳过验证和归档检查。
 - **继续修复**：触发词含“继续修复”“再次修复”“从上次继续”或 `--retry` 时，先定位现有 OpenSpec change，再从 `design.md`、`tasks.md` checkbox、当前 Git 分支和 PR/MR 状态恢复上下文。
 
-**强依赖 skill**（frontmatter `dependencies`，共 9 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
+**强依赖 skill**（frontmatter `dependencies`，共 11 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
 - `solution-review`（阶段 4 决策级审查）、`code-design-review`（阶段 4 代码设计审查）
 - `hybrid-debug`（阶段 2 Hybrid 全栈调试）、`runtime-evidence-debug`（阶段 2 运行时证据调试）、`browser-debug-toolkit`（阶段 2 + 阶段 6 浏览器 DevTools 调试）
 - `node-version-discipline`（阶段 6 执行验证前 Node 版本对齐）
 - `workflow-mode-lifecycle`（自动/手动模式生命周期）、`clarifying-question-discipline`（主动提问硬纪律与调查优先）、`known-issue-research`（阶段 2 调研路由 / 已知问题快搜 / 行业通病评估）
+- `env-capability-discovery`（环境能力探索：启动时一次扫描可用增强能力）
+- `ensure-tests`（阶段 6.2.5 测试确保：有测试基建时补全并运行；无基建经用户确认后搭建）
 
 ## 前置 skill 检查
 
-> 本 skill 通过 frontmatter `dependencies` 声明对 9 个 skill 的强依赖。启动时（阶段 0 前置检查之前）必须执行本检查。
+> 本 skill 通过 frontmatter `dependencies` 声明对 11 个 skill 的强依赖。启动时（阶段 0 前置检查之前）必须执行本检查。
 
 1. 扫描可用 skill（查 `<available_items>` 或用 `skill` 工具）
-2. 核对 9 个 dependencies 是否都在可用列表中
+2. 核对 11 个 dependencies 是否都在可用列表中
 3. 全部存在 → 继续阶段 0 前置检查
 4. 任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`）
 
@@ -74,7 +78,7 @@ dependencies:
 
 ## 环境能力探索（跨平台自适应）
 
-> 探索时机、扫描方法、能力类型关键词表与调用原则由 `env-capability-discovery` skill 承载（**弱引用**：不声明在 frontmatter `dependencies`，该 skill 不可用时静默跳过，按原有流程执行，不报错不阻断）。启动时执行一次扫描（阶段 0 步骤 8 的 Superpowers 类增强能力扫描即按该 skill 方法论执行），结果记录在会话上下文中，后续阶段直接引用，无需重复扫描；frontmatter `dependencies` 声明的强依赖 skill 不走环境探索（由「前置 skill 检查」保证可用）。
+> 探索时机、扫描方法、能力类型关键词表与调用原则由强依赖 skill `env-capability-discovery` 承载（前置检查已保证可用；其他工作流默认弱引用、不可用时静默跳过）。启动时执行一次扫描（阶段 0 步骤 8 的 Superpowers 类增强能力扫描即按该 skill 方法论执行），结果记录在会话上下文中，后续阶段直接引用，无需重复扫描；frontmatter `dependencies` 声明的强依赖 skill 不走环境探索（由「前置 skill 检查」保证可用）。
 
 ### 能力 → 阶段映射（opsx-jira-fix-workflow）
 
@@ -262,12 +266,12 @@ dependencies:
 **加载以下强依赖 skill 按其方法论执行**（前置检查已保证可用）：
 
 - `runtime-evidence-debug`：运行时证据采集全流程（升级决策→打点→复现→证据分析→置信度门控→逃生出口→修复验证）。根因仍模糊时的逃生出口（WebSearch 升级搜索等）也由该 skill 提供。
-- `browser-debug-toolkit`：UI/CSS/DOM 问题优先用浏览器 DevTools 实时检查（DOM 树、计算样式、盒模型），比代码层打点更高效。
+- `browser-debug-toolkit`：浏览器可复现问题优先用浏览器 DevTools 复现并实时检查运行时状态（DOM 树、计算样式、盒模型等），比代码层打点更高效。
 - `hybrid-debug`：Hybrid 应用（native + WebView/WKWebView/Electron + H5）问题的四层全链条分析，避免单层 whack-a-mole。
 
 具体执行步骤、置信度门控阈值、逃生出口判定见各 skill 的 SKILL.md。
 
-**工具限制**：✅ Read/Grep 辅助确定打点位置；❌ Edit/Write（打点代码由用户手动添加，或经用户明确确认后 AI 添加）；❌ 未经用户确认不得自行运行复现步骤
+**工具限制**：✅ Read/Grep 辅助确定打点位置；打点与验证性临时改动由 AI 直接添加并纳入登记（文件+位置+原内容+目的），进入下一阶段前按登记回滚并输出「临时改动清单 + 回滚验证」，未回滚不得进入；❌ 未经用户确认不得自行运行复现步骤
 
 ---
 
@@ -445,7 +449,7 @@ fix/jira-fix-<JIRA-ID>
 读取 `ensure-tests` skill 的 SKILL.md，按其指令执行：
 
 1. 检测项目技术栈与现有测试框架
-2. 若框架缺失，按技术栈选型安装并配置
+2. 若框架缺失，**先按「一次一问」纪律询问用户「是否增加测试基建」**：同意 → 按技术栈选型安装并配置；不同意 → 跳过测试生成，在执行报告中提醒「建议补充单元测试以防止回归」，不阻断流程
 3. 以本次修复涉及的逻辑文件为重点作用域，生成单元测试（必须，排除 UI 层）并运行
 4. 若检测到 E2E 框架，生成并运行 E2E 测试（可选）
 
@@ -475,7 +479,7 @@ fix/jira-fix-<JIRA-ID>
 4. Jira 对照：复现步骤、期望/实际是否已闭环
 5. 副作用检查：相关模块和平台是否受影响；验证报告须披露 `Node(声明版本 vX) ✅/⚠️ 未对齐`
 6. 调试-验证闭环：若阶段 2 用了调试 skill 定位根因，本阶段须用**同一 skill** 验证修复（而非只跑测试）：
-   - UI/CSS/DOM 问题（用了 `browser-debug-toolkit`）→ 用同一 skill 验证修复后渲染结果（DOM 树/计算样式/盒模型），确认异常消失
+   - 浏览器可复现问题（用了 `browser-debug-toolkit` 复现）→ 用同一 skill 验证解决方案是否生效：before/after 运行时状态对比（DOM 树/计算样式/盒模型/控制台/网络等），确认异常消失
    - 运行时证据问题（用了 `runtime-evidence-debug` 打点）→ 用同一 skill 复验原打点位置，before/after 证据对比确认异常行为消失
    - Hybrid 跨端问题（用了 `hybrid-debug` 四层分析）→ 验证受影响各层（L1-L4）行为均正确，无新跨层副作用
 

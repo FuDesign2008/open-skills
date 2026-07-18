@@ -40,7 +40,7 @@ Strong signals (any one):
 | Skill | Responsibility | Relationship to this skill |
 |-------|---------------|----------------------------|
 | `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, `opsx-jira-fix-workflow` | PDCA workflows | **Strongly depended on by all four workflows via frontmatter `dependencies`.** Each runs a prerequisite check at startup; if this skill is missing, the workflow aborts. This skill is the runtime-evidence deep-dive of their technical-analysis instrumentation step. |
-| `browser-debug-toolkit` | Browser DevTools tool-selection decision table | This skill's **instrumentation** step delegates to it for UI/CSS/DOM issues — DevTools inspection is more efficient than `console.log` for rendering problems. |
+| `browser-debug-toolkit` | Browser DevTools tool-selection decision table | This skill's **instrumentation** step delegates to it for browser-reproducible issues (UI/CSS/DOM as typical scenes) — DevTools live inspection is more efficient than `console.log` for runtime observation. |
 | `hybrid-debug` | Hybrid app four-layer debugging model | This skill is the **general** runtime evidence methodology; `hybrid-debug` applies it within the four-layer model for native+web apps. For hybrid problems, use `hybrid-debug` first (it tells you where to look); this skill tells you how to gather evidence at whichever layer. |
 | `debug-workflow` (if available) | Systematic debugging protocol (root-cause identification) | Complementary — `debug-workflow` drives the overall debugging process; this skill is the runtime-evidence-gathering phase within it. |
 | `essence-diagnosis` | Evidence-chain construction and adversarial debate | For problems where runtime evidence is still insufficient, escalate to `essence-diagnosis` for multi-hypothesis evidence-chain verification. |
@@ -71,7 +71,7 @@ Design 2–5 instrumentation points — not a scatter-shot of `console.log` ever
 
 **Anti-pattern**: adding logging everywhere "just in case." This produces noise that obscures the signal. Every logging point must map to a hypothesis.
 
-> For UI/CSS/DOM problems, delegate to `browser-debug-toolkit` — DevTools DOM inspection, computed styles, and box model are more efficient than `console.log`.
+> For browser-reproducible problems (UI/CSS/DOM as typical scenes), delegate to `browser-debug-toolkit` — DevTools live inspection (DOM, computed styles, box model, console, network) is more efficient than `console.log`.
 
 ### Phase 3 — Reproduction guidance
 
