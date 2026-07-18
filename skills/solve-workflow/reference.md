@@ -38,7 +38,7 @@
 solve-workflow 通过 dependencies 强依赖 10 个 skill：
 - `solution-review` / `code-design-review`：阶段 4 审查框架（4 核心维度 + 5 战略维度 / Layer A-B-C 代码设计审查）
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`：阶段 2 调试方法论（Hybrid 全栈 / 运行时证据 / 浏览器 DevTools）
-- `learn-and-improve`：阶段 8 回顾总结与经验沉淀
+- `learn-and-improve`：阶段 8 复盘改进与经验沉淀
 - `workflow-mode-lifecycle`：自动/手动模式生命周期核心规则
 - `clarifying-question-discipline`：主动提问硬纪律与调查优先原则
 - `known-issue-research`：阶段 2 调研路由 / 已知问题快搜 / 行业通病评估
