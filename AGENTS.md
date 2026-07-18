@@ -55,7 +55,7 @@ open-skills/
 
 | Skill | 类别 | 依赖 |
 |-------|------|------|
-| solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research |
+| solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、env-capability-discovery |
 | opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research |
 | perf-workflow | 工作流 | clarifying-question-discipline |
 | frontend-perf | 知识库 | perf-workflow |
@@ -76,7 +76,7 @@ open-skills/
 | browser-debug-toolkit | 调试方法论 | 无 |
 | workflow-mode-lifecycle | 工作流纪律 | 无 |
 | clarifying-question-discipline | 工作流纪律 | 无 |
-| env-capability-discovery | 工作流增强 | 无（弱引用，不声明 dependencies） |
+| env-capability-discovery | 工作流增强 | 无（默认弱引用；solve-workflow 声明为强依赖） |
 | known-issue-research | 调研方法论 | effective-web-research |
 
 > 💕 AI 编码陪伴（coding-fangirl）已迁移至独立工程 [oh-my-fangirl](https://github.com/FuDesign2008/oh-my-fangirl)。

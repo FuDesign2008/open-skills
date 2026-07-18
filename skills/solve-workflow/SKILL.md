@@ -13,6 +13,7 @@ dependencies:
   - workflow-mode-lifecycle
   - clarifying-question-discipline
   - known-issue-research
+  - env-capability-discovery
 ---
 
 # 八阶段问题解决工作流
@@ -28,17 +29,18 @@ dependencies:
 - **匹配规则**：`xxx` 中包含触发词即视为命中，无需精确匹配
 - **不适用场景**：单步修改（如改一个变量名）、用户仅需快速建议而非完整执行流程时，可跳过本工作流直接处理。
 
-**强依赖 skill**（frontmatter `dependencies`，共 9 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
+**强依赖 skill**（frontmatter `dependencies`，共 10 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
 - `solution-review`（阶段 4 决策级审查）、`code-design-review`（阶段 4 代码设计审查）
 - `hybrid-debug`（阶段 2 Hybrid 全栈调试）、`runtime-evidence-debug`（阶段 2 运行时证据调试）、`browser-debug-toolkit`（阶段 2 + 阶段 7 浏览器 DevTools 调试）
 - `learn-and-improve`（阶段 8 回顾总结与经验沉淀）
 - `workflow-mode-lifecycle`（自动/手动模式生命周期）、`clarifying-question-discipline`（主动提问硬纪律与调查优先）、`known-issue-research`（阶段 2 调研路由 / 已知问题快搜 / 行业通病评估）
+- `env-capability-discovery`（环境能力探索：启动时一次扫描可用增强能力）
 
-**相关 skill**（信息性引用，非强依赖）：`perf-workflow`（性能专项分析）、`jira-fix-workflow`（Jira 端到端修复，内置本工作流）、`env-capability-discovery`（环境能力探索，弱引用，见下文）
+**相关 skill**（信息性引用，非强依赖）：`perf-workflow`（性能专项分析）、`jira-fix-workflow`（Jira 端到端修复，内置本工作流）
 
 ## 前置 skill 检查
 
-> 启动时（进入阶段 1 之前）必须执行本检查，核对 frontmatter `dependencies` 声明的全部 9 个强依赖 skill。
+> 启动时（进入阶段 1 之前）必须执行本检查，核对 frontmatter `dependencies` 声明的全部 10 个强依赖 skill。
 
 1. 扫描可用 skill（查 `<available_items>` 或用 `skill` 工具）
 2. 全部存在 → 继续后续流程
@@ -90,7 +92,7 @@ dependencies:
 
 ## 环境能力探索（跨平台自适应）
 
-> 探索时机、扫描方法、能力类型关键词表与调用原则由 `env-capability-discovery` skill 承载（**弱引用**：该 skill 不可用时静默跳过，按原有流程执行，不报错不阻断）。启动时（进入阶段 1 之前）执行一次扫描，结果记在会话上下文中，后续阶段直接引用，无需重复扫描；frontmatter `dependencies` 声明的强依赖 skill 不走环境探索（由「前置 skill 检查」保证可用）。
+> 环境能力探索（探索时机、扫描方法、能力类型关键词表与调用原则）由强依赖 skill `env-capability-discovery` 承载：启动时（进入阶段 1 之前）按其方法论执行一次扫描并记录结果，后续阶段直接引用，无需重复扫描；能力 → 阶段映射见下表。
 
 ### 能力 → 阶段映射（solve-workflow）
 
@@ -527,7 +529,7 @@ dependencies:
 | 错误 | 后果 | 修正 |
 |------|------|------|
 | 存在性验证结论为「不存在/描述不符」但继续分析 | 方向全错 | 立即停止并报告，等待用户确认 |
-| 增强能力探索失败后阻断流程 | 不必要的中断 | 增强能力是可选的，探索失败必须静默跳过（见 `env-capability-discovery`） |
+| 增强能力调用失败或未命中时阻断流程 | 不必要的中断 | 增强能力必须静默跳过不阻断（可用性已由前置检查保证，见 `env-capability-discovery`） |
 | 增强能力突破阶段工具约束 | 只读阶段被写入 | 增强能力不改变阶段工具约束 |
 | 阶段8默认写入规则文件或创建 skill | 污染长期规则、破坏只总结不强制修改的边界 | 阶段8只输出沉淀建议；必须等用户明确要求后才进入「制定计划 → 执行计划」 |
 | 阶段8把覆盖率提示当作强制门控执行（运行脚本/阻断流程） | solve-workflow 无合并阶段，强行运行脚本越权且无合并决策可挂靠 | 提示仅建议性：只输出提示文本，不运行 test-coverage-analyzer 脚本、不阻断；强制门控由带合并阶段的技能执行 |
