@@ -2,14 +2,14 @@
 name: env-capability-discovery
 version: "1.0.0"
 user-invocable: false
-description: "Cross-platform environment capability discovery for workflow skills: scan once at startup for available enhancement skills/agents (debugging, web research, planning, TDD, build-fix, verification, branch management, etc.), match by keywords, and invoke them as progressive enhancements without changing stage gates or tool constraints. Weak reference — workflows must NOT declare it in dependencies; load it when a workflow references it, skip silently when unavailable."
+description: "Cross-platform environment capability discovery for workflow skills: scan once at startup for available enhancement skills/agents (debugging, web research, planning, TDD, build-fix, verification, branch management, etc.), match by keywords, and invoke them as progressive enhancements without changing stage gates or tool constraints. Weak reference by default — workflows normally reference it without declaring it in dependencies; workflows that do declare it (e.g. solve-workflow) get availability guaranteed by their prerequisite check. Load it when a workflow references it; when unavailable and not declared, skip silently."
 ---
 
 # Environment Capability Discovery
 
 > Internal shared skill. A workflow runs on heterogeneous platforms (Claude Code, OpenCode, Cursor, …) with different installed skills/agents. This skill defines **how to discover and invoke optional enhancements** instead of relying only on the workflow's own built-in flow.
 >
-> **Weak reference semantics**: this skill is an optional enhancement itself. Referencing workflows must NOT list it in frontmatter `dependencies`; when it is unavailable, they skip discovery silently and run their original flow — no error, no abort.
+> **Reference semantics**: weak reference by default — referencing workflows normally do NOT list this skill in frontmatter `dependencies`; when it is unavailable, they skip discovery silently and run their original flow — no error, no abort. A workflow MAY explicitly declare it as a strong dependency (as `solve-workflow` does); that workflow's prerequisite check then guarantees availability, and a missing skill aborts the workflow at startup.
 
 ## When to scan
 
@@ -39,7 +39,7 @@ Match against each candidate's `name` and `description`:
 | ✅ Completion verification | verify, verification, complete |
 | 🌿 Branch management | worktree, branch, git-worktree |
 
-This table contains **no stage numbers**: each referencing workflow keeps its own small capability→stage mapping table (stage numbering differs per workflow) alongside its weak-reference note.
+This table contains **no stage numbers**: each referencing workflow keeps its own small capability→stage mapping table (stage numbering differs per workflow) alongside its reference note.
 
 ## Handling scan results
 

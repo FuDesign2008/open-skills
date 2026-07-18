@@ -55,14 +55,14 @@ open-skills/
 
 | Skill | 类别 | 依赖 |
 |-------|------|------|
-| solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research |
-| opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research |
+| solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、env-capability-discovery、ensure-tests、node-version-discipline |
+| opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、env-capability-discovery、ensure-tests |
 | perf-workflow | 工作流 | clarifying-question-discipline |
 | frontend-perf | 知识库 | perf-workflow |
 | android-webview-debug | 工具 | 无 |
 | git-commit | Git | 无 |
-| jira-fix-workflow | Jira 工作流 | git-commit、jira-read、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research |
-| opsx-jira-fix-workflow | Jira 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、openspec 原生 skills（阶段 0 检查） |
+| jira-fix-workflow | Jira 工作流 | git-commit、jira-read、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、env-capability-discovery、ensure-tests |
+| opsx-jira-fix-workflow | Jira 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、env-capability-discovery、ensure-tests、openspec 原生 skills（阶段 0 检查） |
 | jira-read | Jira 工具 | 无 |
 | typescript-check | 工具 | 无 |
 | article-writer | 内容创作 | 无 |
@@ -76,7 +76,7 @@ open-skills/
 | browser-debug-toolkit | 调试方法论 | 无 |
 | workflow-mode-lifecycle | 工作流纪律 | 无 |
 | clarifying-question-discipline | 工作流纪律 | 无 |
-| env-capability-discovery | 工作流增强 | 无（弱引用，不声明 dependencies） |
+| env-capability-discovery | 工作流增强 | 无（默认弱引用；solve-workflow、opsx-solve-workflow、jira-fix-workflow、opsx-jira-fix-workflow 声明为强依赖） |
 | known-issue-research | 调研方法论 | effective-web-research |
 
 > 💕 AI 编码陪伴（coding-fangirl）已迁移至独立工程 [oh-my-fangirl](https://github.com/FuDesign2008/oh-my-fangirl)。
@@ -133,6 +133,7 @@ Skill 内容...
 - **Pitfall 只记非直觉陷阱**：不看规则就容易犯的错误才值得记，规则本身的重复罗列是 token 浪费
 - **输出模板超过 5 行抽 reference.md**：SKILL.md 用 `输出格式见 reference.md` 一句引用
 - **共享 skill 的契约标识两侧一致**：共享 skill 的参数化占位符（如 `{root-cause step}`）是共享方与引用方之间的契约标识，必须两侧逐字一致；提交前 grep 两侧核对（含中英文差异）
+- **跨 skill 引用用名称、不用对方编号**：引用其他 skill 的阶段/步骤时写名称（如「分析阶段」、`runtime-evidence-debug` 的逃生出口），不写对方编号（`stage 1.2`、步骤 3.6 等）——对方重编号时数字引用会 silently 悬空且难察觉（曾有「逃生出口 5.5」指向不存在步骤的实例）；编号仅允许出现在引用方自己声明的契约映射行，且须「号+名」
 
 ### 命令文件格式（`commands/*.md`）
 
@@ -251,6 +252,11 @@ node --check scripts/gen-skill-docs.mjs
 # Skills 索引与 CI 一致（等同 docs-skills-verify workflow）
 node scripts/gen-skill-docs.mjs
 git diff --exit-code docs/generated/skills-index.md
+
+# 重命名/重编号类变更收尾：全库双语残留清扫（模式按本次旧标识调整，含中英文），须零命中
+grep -rn -iE '阶段 ?1\.[12]|stage ?1\.[12]|0\.5|3\.6' skills/
+# 整文件重写后：删除侧 diff 逐行核对，确认删除行全部对应预期改动、无意外内容丢失
+git diff -U0 <改动文件> | grep '^-' | grep -v '^---'
 ```
 
 首次 clone 后执行 `npm install` 以启用 Husky pre-commit（修改 `skills/*/SKILL.md` 时自动 regenerate 并 stage `docs/generated/skills-index.md`）。
