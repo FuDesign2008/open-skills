@@ -1,7 +1,7 @@
 # env-capability-discovery Specification
 
 ## Purpose
-定义环境能力探索的共享契约：扫描方法、能力类型关键词、渐进增强调用原则由 `env-capability-discovery` skill 单点承载；引用方工作流弱引用（不声明 dependencies、静默降级），仅保留各自阶段映射与结果存储。
+定义环境能力探索的共享契约：扫描方法、能力类型关键词、渐进增强调用原则由 `env-capability-discovery` skill 单点承载；引用方工作流默认弱引用（不声明 dependencies、静默降级；显式声明强依赖的工作流由前置检查保证可用），仅保留各自阶段映射与结果存储。
 
 ## Requirements
 
@@ -16,12 +16,17 @@
 
 ### Requirement: 环境能力探索 SHALL 为弱引用并保持静默跳过语义
 
-`env-capability-discovery` MUST NOT 进入任何工作流的 frontmatter `dependencies`；引用方未匹配到增强能力、或该 skill 不可用时，MUST 静默跳过并按原有流程执行，不报错、不阻断。
+`env-capability-discovery` **默认**不进入工作流的 frontmatter `dependencies`；引用方未匹配到增强能力、或该 skill 不可用时，MUST 静默跳过并按原有流程执行，不报错、不阻断。**例外**：工作流可显式将其声明为强依赖（如 `solve-workflow`、`opsx-solve-workflow`、`jira-fix-workflow`、`opsx-jira-fix-workflow`），此时该工作流的前置 skill 检查 MUST 保证其可用，缺失时该工作流启动即中止，不做静默降级。
 
 #### Scenario: skill 不可用时静默降级
 
-- **WHEN** 运行环境未安装 `env-capability-discovery`
+- **WHEN** 运行环境未安装 `env-capability-discovery`，且引用方工作流**未**将其声明为强依赖
 - **THEN** 引用方工作流跳过增强能力探索，按原有流程执行，不输出错误、不中止
+
+#### Scenario: 声明强依赖的工作流缺失即中止
+
+- **WHEN** 运行环境未安装 `env-capability-discovery`，而引用方工作流已将其声明为 frontmatter `dependencies` 强依赖
+- **THEN** 该工作流前置检查不通过，启动即中止并提示安装
 
 ### Requirement: 引用方工作流 SHALL 仅保留自身阶段映射与结果存储
 
