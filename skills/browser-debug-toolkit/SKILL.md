@@ -11,7 +11,7 @@ description: "Browser runtime debugging toolkit — guides AI to prioritize brow
 
 UI/CSS/DOM layout issues often have root causes that only manifest at runtime — dynamically generated DOM structures, CSS specificity conflicts, layout calculation anomalies. Static code analysis (Read/Grep) and console-based debugging (console.log) have a fundamental limitation: they cannot observe the rendered DOM tree, computed CSS properties, or box model geometry.
 
-This skill provides a scene-to-tool decision table and usage guides for each tool. It is strongly depended on by `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, and `opsx-jira-fix-workflow` via frontmatter `dependencies` (invoked after a prerequisite check when UI debugging scenarios are detected).
+This skill provides a scene-to-tool decision table and usage guides for each tool. It is strongly depended on by `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, and `opsx-jira-fix-workflow` via frontmatter `dependencies` (invoked after a prerequisite check when browser-reproducible scenarios are detected).
 
 ## Prerequisites
 
@@ -87,7 +87,7 @@ After install/enable, verify the MCP is loaded:
 
 **Core capabilities**: DOM inspection (querySelector, computed styles, element attributes), CSS debugging (matched rules, override chain, box model), Console (execute JS, read output), Network (request/response inspection), Screenshot (page or element capture).
 
-**Usage pattern**: When MCP is available, connect to the browser in workflow stage 1.2 (technical analysis) → inspect target element's DOM structure and computed styles → compare expected vs actual to anchor root cause; in stage 6 (verification) validate the fix result.
+**Usage pattern**: When MCP is available, connect to the browser in the workflow's analysis stage → reproduce the problem and inspect runtime state (DOM structure, computed styles, console, network) → compare expected vs actual to anchor root cause; in the verification stage, validate that the fix works.
 
 > Note: If MCP is not installed, see the Prerequisites section above for adaptive setup options (auto-install / manual / skip).
 
@@ -119,18 +119,18 @@ After install/enable, verify the MCP is loaded:
 
 This skill is strongly depended on by `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, and `opsx-jira-fix-workflow` via frontmatter `dependencies` (each runs a prerequisite check at startup; if missing, it aborts). It is also discovered by `debug-workflow` and similar workflow skills through their environment capability exploration. It is delegated to by `hybrid-debug` for runtime evidence in hybrid app (WebView/WKWebView/Electron + H5) debugging scenarios, and by `runtime-evidence-debug` for UI/CSS/DOM instrumentation in general debugging scenarios:
 
-1. **Stage 1.2 (Technical Analysis)**: UI/CSS/DOM issues → prioritize browser tools for runtime state inspection
+1. **Analysis stage**: Browser-reproducible problems (UI/CSS/DOM as typical scenes) → prioritize browser tools to reproduce the problem and inspect runtime state
 2. **Before console.log debugging**: For UI issues, inspect with browser DevTools first (more efficient than console.log), then fall back to logging if still unresolved
-3. **Stage 6 (Verification)**: After fix, use browser tools to verify render results
+3. **Verification stage**: After fix, use browser tools to verify that the fix works (before/after runtime-state comparison)
 
 > Progressive enhancement: This skill does not replace the workflow's core process. In `solve-workflow` it is guaranteed available by the prerequisite check; in other workflows (e.g., `debug-workflow`), when browser tools are unavailable, the original process executes unchanged.
 
 ## Quick Reference
 
 ```
-Scene detection: Is this a UI/CSS/DOM issue?
+Scene detection: Can this problem be reproduced in a browser? (UI/CSS/DOM issues are the typical scenes)
 Signal keywords: style, layout, render, display, visibility, position, size, color, animation
-→ Yes → Prioritize browser tools (this skill's decision table guides selection)
+→ Yes → Prioritize browser tools to reproduce and inspect (this skill's decision table guides selection)
 → No → Follow original static analysis / console.log debugging process
 
 Tool selection priority:

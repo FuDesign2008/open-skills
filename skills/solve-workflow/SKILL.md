@@ -204,7 +204,7 @@ dependencies:
 
    加载强依赖 skill `known-issue-research` 按其方法论执行：调研路由三态判断（🟢内部为主 / 🔵外部为主 / 🟣Hybrid 先外后内，判断不准默认内部为主）→ 按路由侧重执行**已知问题快搜**（🔵/🟣 路由下为**首要动作**，🟢 路由下为可选兜底）→ 根因明确指向平台/语言/协议/标准硬限制时执行**行业通病评估**（结论为「无可行解」时输出报告并**暂停等用户决定**）。本工作流步骤编号映射：`{root-cause step}` = 步骤 3；`{impact-assessment step}` = 步骤 4；`{upstream-eval step}` = 步骤 3.6（快搜发现「上游已修复」线索时进入，评估升级可行性）。报告模板见 `known-issue-research/reference.md`。
 
-1. **问题现象描述** - 复现条件和步骤
+1. **问题现象描述** - 复现条件和步骤；**问题可在浏览器中复现时，优先用 `browser-debug-toolkit` 复现问题并观察运行时状态**（不限于 UI/CSS/DOM；无浏览器自动化能力时按该 skill 的既有降级路径处理）
 2. **相关代码定位** - 文件路径+行号、关键函数/类
 3. **问题根因分析** - 数据流和调用链分析
 3.6 **上游依赖修复评估**（可选，根因明确为上游依赖 bug 时触发）
@@ -222,7 +222,7 @@ dependencies:
 **加载以下强依赖 skill 按其方法论执行**（前置检查已保证可用）：
 
 - `runtime-evidence-debug`：运行时证据采集全流程（升级决策→打点→复现→证据分析→置信度门控→逃生出口→修复验证）。根因仍模糊时的逃生出口（WebSearch 升级搜索等）也由该 skill 提供。
-- `browser-debug-toolkit`：UI/CSS/DOM 问题优先用浏览器 DevTools 实时检查（DOM 树、计算样式、盒模型），比代码层打点更高效。
+- `browser-debug-toolkit`：浏览器可复现问题优先用浏览器 DevTools 复现并实时检查运行时状态（DOM 树、计算样式、盒模型等），比代码层打点更高效；步骤 1 已完成浏览器复现的，本小节仅在静态分析仍受阻时继续升级。
 - `hybrid-debug`：Hybrid 应用（native + WebView/WKWebView/Electron + H5）问题的四层全链条分析，避免单层 whack-a-mole。
 
 具体执行步骤、置信度门控阈值、逃生出口判定见各 skill 的 SKILL.md。
@@ -452,7 +452,7 @@ dependencies:
 4. **副作用验证** - 检查改动是否在其他模块引发了新问题或预期外的行为变化（功能副作用），以及是否带来性能/安全/可维护性方面的预期外影响（非功能副作用）
 5. **逻辑与流程审查** - 检查是否存在漏洞或遗漏
 6. **调试-验证闭环** - 若阶段 2 用了调试 skill 定位根因，阶段 7 须用**同一 skill** 验证修复（而非只跑测试）：
-   - UI/CSS/DOM 问题（用了 `browser-debug-toolkit`）→ 用同一 skill 验证修复后渲染结果（DOM 树/计算样式/盒模型），确认异常消失
+   - 浏览器可复现问题（用了 `browser-debug-toolkit` 复现）→ 用同一 skill 验证解决方案是否生效：before/after 运行时状态对比（DOM 树/计算样式/盒模型/控制台/网络等），确认异常消失
    - 运行时证据问题（用了 `runtime-evidence-debug` 打点）→ 用同一 skill 复验原打点位置，before/after 证据对比确认异常行为消失
    - Hybrid 跨端问题（用了 `hybrid-debug` 四层分析）→ 验证受影响各层（L1-L4）行为均正确，无新跨层副作用
 
