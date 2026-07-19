@@ -3,9 +3,7 @@
 ## Purpose
 
 solve 家族工作流（solve-workflow / opsx-solve-workflow / jira-fix-workflow / opsx-jira-fix-workflow）与调试方法论 skill（runtime-evidence-debug）的共享契约同步基线：browser 复现与验证口径、分析期打点权限门控、测试基建二分支、调用即声明强依赖、回顾阶段命名对齐。
-
 ## Requirements
-
 ### Requirement: 工作流引用 browser-debug-toolkit SHALL 以「浏览器可复现问题」为入口
 
 工作流 skill（opsx-solve-workflow / jira-fix-workflow / opsx-jira-fix-workflow / runtime-evidence-debug）引用 `browser-debug-toolkit` 时，MUST 以「问题可在浏览器中复现」为入口条件（UI/CSS/DOM 仅为典型场景子集），不得限定为「仅 UI/CSS/DOM 问题」；分析阶段 MUST 优先用其复现问题并观察运行时状态，检查验证阶段 MUST 用其验证解决方案是否生效（before/after 运行时状态对比）。
@@ -46,7 +44,13 @@ solve 家族工作流（solve-workflow / opsx-solve-workflow / jira-fix-workflow
 
 工作流中委托 `learn-and-improve` 的回顾阶段或小节 MUST 使用「复盘改进」命名（旧称「回顾总结」可保留为别名触发词），使阶段语义与承载 skill 对齐。
 
-#### Scenario: opsx 阶段 7 小节更名
+#### Scenario: opsx 阶段 8 小节更名
 
-- **WHEN** opsx-solve-workflow 执行归档后的经验沉淀小节
+- **WHEN** `opsx-solve-workflow` 执行归档后的经验沉淀小节
 - **THEN** 该小节以「复盘改进（委托 learn-and-improve）」命名，不再使用「回顾总结与经验沉淀」
+
+#### Scenario: solve-workflow 阶段 8 小节更名
+
+- **WHEN** `solve-workflow` 执行阶段 8 的复盘改进小节
+- **THEN** 该小节以「复盘改进（委托 learn-and-improve）」命名，不再使用「回顾总结与经验沉淀」
+
