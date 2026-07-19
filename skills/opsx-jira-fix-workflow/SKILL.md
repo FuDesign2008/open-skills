@@ -48,7 +48,7 @@ dependencies:
 
 **强依赖 skill**（frontmatter `dependencies`，共 11 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
 - `solution-review`（阶段 4 决策级审查）、`code-design-review`（阶段 4 代码设计审查）
-- `hybrid-debug`（阶段 2 Hybrid 全栈调试）、`runtime-evidence-debug`（阶段 2 运行时证据调试）、`browser-debug-toolkit`（阶段 2 + 阶段 6 浏览器 DevTools 调试）
+- `hybrid-debug`（阶段 2 Hybrid 全栈调试）、`runtime-evidence-debug`（阶段 2 运行时证据调试）、`browser-debug-toolkit`（阶段 2 + 阶段 7 浏览器 DevTools 调试）
 - `node-version-discipline`（阶段 6 执行验证前 Node 版本对齐）
 - `workflow-mode-lifecycle`（自动/手动模式生命周期）、`clarifying-question-discipline`（主动提问硬纪律与调查优先）、`known-issue-research`（阶段 2 调研路由 / 已知问题快搜 / 行业通病评估）
 - `env-capability-discovery`（环境能力探索：启动时一次扫描可用增强能力）
@@ -67,11 +67,11 @@ dependencies:
 
 ## 模式生命周期
 
-> 自动模式的进入、持续与退出规则，避免模式粘滞导致用户未察觉的自动决策。核心规则（自动恢复手动 / 显式重进 / 隐式延续不激活 / 批量场景）由强依赖 skill `workflow-mode-lifecycle` 承载（前置检查已保证可用），本节不再内联重复。本工作流的「全流程完成」= 正常完成阶段 0-7 全流程（以阶段 7 归档完成收尾）；失败终止、用户主动停止、审查超限暂停后终止均视为流程中断，恢复手动。
+> 自动模式的进入、持续与退出规则，避免模式粘滞导致用户未察觉的自动决策。核心规则（自动恢复手动 / 显式重进 / 隐式延续不激活 / 批量场景）由强依赖 skill `workflow-mode-lifecycle` 承载（前置检查已保证可用），本节不再内联重复。本工作流的「全流程完成」= 正常完成阶段 0-8 全流程（以阶段 8 归档完成收尾）；失败终止、用户主动停止、审查超限暂停后终止均视为流程中断，恢复手动。
 
 ### 特有说明
 
-- 阶段 7 归档完成后，模式自动恢复手动
+- 阶段 8 归档完成后，模式自动恢复手动
 - `--retry`（继续修复）：重置为手动模式
 - `--resume`（断点恢复）：沿用断点时的模式
 - OpenSpec archive 失败视为流程中断，恢复手动
@@ -89,7 +89,7 @@ dependencies:
 | 💡 方案设计 | 阶段4（探索与审查方案） | 辅助多方案生成与对比 |
 | 📝 计划制定 | 阶段5（制定计划） | 辅助生成结构化 tasks.md |
 | ⚡ 代码执行 / 🧪 测试驱动 / 🔧 构建修复 | 阶段6（执行修复） | 批量编排 / 先写测试 / 构建错误修复 |
-| ✅ 完成验证 | 阶段6.4（验证） | 执行后独立验证 |
+| ✅ 完成验证 | 阶段7（检查验证） | 执行后独立验证 |
 
 ## 阶段 0：前置检查
 
@@ -118,9 +118,9 @@ dependencies:
    | `openspec-new-change` | 阶段 3 | 创建 change 目录 |
    | `openspec-continue-change` | 阶段 3/4/5 | 逐步创建各 artifact |
    | `openspec-apply-change` | 阶段 6 | 按 tasks 执行实现 |
-   | `openspec-archive-change` | 阶段 7 | 归档 change |
+   | `openspec-archive-change` | 阶段 8 | 归档 change |
 
-   `openspec-verify-change` 为可选 skill，存在时在阶段 6.4 使用。
+   `openspec-verify-change` 为可选 skill，存在时在阶段 7 使用。
 
    > ⚠️ **判断规则（严格）**：必须按上表的**精确 skill 名称**逐一核查。找到其他名称的 openspec skill（如旧版的 `openspec-propose`）**不算通过**。
 
@@ -162,7 +162,7 @@ dependencies:
 | 4 探索方案 | Read、Grep | Edit、Write 业务代码 |
 | 5 制定计划 | Read、Write（仅 tasks.md） | Edit 业务代码 |
 | 6 执行验证 | 全部（Edit、Write、Bash、Git、测试）；运行构建/lint/tsc/test 前须按 `node-version-discipline` 对齐项目声明的 Node 版本（探测链见该 skill SOP） | 跳过验证、跳过 checkbox 更新 |
-| 7 提交收尾 | Git、Jira API、OPSX skills、Bash（合并前覆盖率门控步骤额外允许 test-coverage-analyzer 脚本） | 跳过 Jira 评论、跳过 archive |
+| 8 提交收尾 | Git、Jira API、OPSX skills、Bash（合并前覆盖率门控步骤额外允许 test-coverage-analyzer 脚本） | 跳过 Jira 评论、跳过 archive |
 
 ### 模式差异速查表
 
@@ -175,7 +175,7 @@ dependencies:
 | 4 探索方案 | 输出方案表后暂停，等用户选择 | 自动选择最优方案 |
 | 5 制定计划 | 输出计划后暂停确认 | 普通：自动进入阶段 6；困难/极难：暂停 |
 | 6 执行验证 | 同自动模式 | 同手动模式 |
-| 7 提交收尾 | 同自动模式 | 同手动模式 |
+| 8 提交收尾 | 同自动模式 | 同手动模式 |
 
 ## 阶段 1：读取 Jira
 
@@ -240,7 +240,7 @@ dependencies:
 |------|------|------|
 | 容易 | 精简路径 | proposal 和 delta specs 可保持精简，不跳过验证 |
 | 中等 | 增量路径 | proposal/specs/design/tasks 全部产出 |
-| 困难/极难 | 完整路径 | 阶段 1-7 全部执行，`brainstorming` 辅助分析 |
+| 困难/极难 | 完整路径 | 阶段 1-8 全部执行，`brainstorming` 辅助分析 |
 
 执行中发现范围扩大时必须升级路径：精简 → 增量，增量 → 完整。手动模式下升级需用户确认。
 
@@ -430,7 +430,7 @@ fix/jira-fix-<JIRA-ID>
 
 1. 每次只处理当前任务。
 2. 修改业务代码前确认 proposal、specs、design、tasks 已存在。
-3. **完成任务后必须立即更新 checkbox**：使用 StrReplace 将 `tasks.md` 中对应的 `[ ]` 改为 `[x]`，不得延后到一批任务结束后再批量更新。若跳过此步骤，阶段 6.4 验证器将报 CRITICAL 虚假未完成。
+3. **完成任务后必须立即更新 checkbox**：使用 StrReplace 将 `tasks.md` 中对应的 `[ ]` 改为 `[x]`，不得延后到一批任务结束后再批量更新。若跳过此步骤，阶段 7 验证器将报 CRITICAL 虚假未完成。
 4. 如发现 spec 或 design 错误，先回写 artifacts，再继续实现。
 5. 偏离计划时说明原因；若影响行为契约，回到阶段 3 或 4。
 
@@ -442,9 +442,9 @@ fix/jira-fix-<JIRA-ID>
 
 若项目规范不接受修复注释，不强制添加，但必须在执行报告中列出修复点。
 
-### 6.2.5 测试套件确保（必须，在进入 6.4 验证前）
+### 6.2.5 测试套件确保（必须，在进入阶段 7 验证前）
 
-所有 `tasks.md` checkbox 全部勾选后，在进入阶段 6.4 验证前，强制执行以下步骤：
+所有 `tasks.md` checkbox 全部勾选后，在进入阶段 7 验证前，强制执行以下步骤：
 
 读取 `ensure-tests` skill 的 SKILL.md，按其指令执行：
 
@@ -453,7 +453,7 @@ fix/jira-fix-<JIRA-ID>
 3. 以本次修复涉及的逻辑文件为重点作用域，生成单元测试（必须，排除 UI 层）并运行
 4. 若检测到 E2E 框架，生成并运行 E2E 测试（可选）
 
-**阻断条件**：单元测试运行失败时，不得进入阶段 6.4 验证；应先修复失败的测试或实现。
+**阻断条件**：单元测试运行失败时，不得进入阶段 7 验证；应先修复失败的测试或实现。
 
 ### 6.3 Superpowers 增强
 
@@ -465,7 +465,12 @@ fix/jira-fix-<JIRA-ID>
 - `requesting-code-review`：高风险任务完成后做代码质量和 spec 合规审查。
 - `verification-before-completion`：完成前必须有刚运行过的验证证据。
 
-### 6.4 验证
+> 🚩 **Red Flags（阶段 6）**：
+> - ❌ 单元测试失败仍进入阶段 7 验证
+> - ❌ 实现中发现设计错误却继续硬做，未回写 artifacts
+> - ❌ 偏离计划时未说明原因，或影响行为契约却未回到阶段 3/4
+
+## 阶段 7：检查验证
 
 必须覆盖：
 
@@ -487,18 +492,13 @@ fix/jira-fix-<JIRA-ID>
 
 验证输出格式：
 
-输出格式见 [reference.md](reference.md)「阶段 6.4 验证结果」。
+输出格式见 [reference.md](reference.md)「阶段 7 验证结果」。
 
 验证失败不得提交 PR。执行记录以 `tasks.md` checkbox、PR/MR 描述和 `design.md` 的 Verification Notes 为准。
 
-> 🚩 **Red Flags（阶段 6）**：
-> - ❌ 单元测试失败仍进入 6.4 验证
-> - ❌ 实现中发现设计错误却继续硬做，未回写 artifacts
-> - ❌ 偏离计划时未说明原因，或影响行为契约却未回到阶段 3/4
+## 阶段 8：提交 PR、Jira 回写、Archive 与收尾
 
-## 阶段 7：提交 PR、Jira 回写、Archive 与收尾
-
-### 7.1 提交与 PR
+### 8.1 提交与 PR
 
 提交前必须确认：
 
@@ -522,7 +522,7 @@ PR/MR 描述必须包含：
 - 验证证据
 - 风险与回滚
 
-### 7.2 Jira 回写
+### 8.2 Jira 回写
 
 ⚠️ **必须分两步独立调用**：① `jira_transition_issue` 流转状态（不传 `comment` 参数）；② `jira_add_comment(issue_key=..., body=...)` 写修复评论。禁止通过 `jira_transition_issue` 的 `comment` 参数传评论——该参数不可靠，评论可能被静默丢弃；`jira_add_comment` 的评论内容参数名为 `body`（非 `comment`）。
 
@@ -541,7 +541,7 @@ Jira 评论必须包含：
 - 验证场景
 - 风险或待 QA 关注点
 
-### 7.3 OpenSpec Archive
+### 8.3 OpenSpec Archive
 
 归档前同步步骤：
 
@@ -557,7 +557,7 @@ Jira 评论必须包含：
 
 默认推荐：验证通过后先 archive，确认 `openspec/specs/` 更新和 `openspec/changes/archive/` 迁移进入 diff，再完成 PR。
 
-### 7.4 分支收尾
+### 8.4 分支收尾
 
 若检测到 `finishing-a-development-branch`，在验证、Jira 回写和 archive 检查完成后，再借鉴其流程做：
 
@@ -567,9 +567,9 @@ Jira 评论必须包含：
 - 清理本地和远程分支
 - 同步主分支
 
-> **顺序约束**：archive 门控（7.3）→ 分支收尾决策（7.4）→ **仅当决策为「合并」时**触发合并前覆盖率门控（7.4.1）→ 执行合并。选择「保留分支」「继续开发」**不触发**门控。
+> **顺序约束**：archive 门控（8.3）→ 分支收尾决策（8.4）→ **仅当决策为「合并」时**触发合并前覆盖率门控（8.4.1）→ 执行合并。选择「保留分支」「继续开发」**不触发**门控。
 
-#### 7.4.1 合并前覆盖率门控（强制，仅当 7.4 决策为「合并」时触发）
+#### 8.4.1 合并前覆盖率门控（强制，仅当 8.4 决策为「合并」时触发）
 
 > 触发条件：用户在分支收尾决策中已选定「合并」。本门控在合并执行前运行，是合并的强制前置。
 > **执行门控前必须先读** [reference.md](reference.md)「合并前覆盖率门控（强制）规范」获取完整步骤，**不得仅凭下方摘要执行**。
@@ -580,7 +580,7 @@ Jira 评论必须包含：
 
 收尾记录以 PR/MR、Jira 评论和 OpenSpec archive 结果为准。
 
-### 7.5 AI 工程沉淀
+### 8.5 AI 工程沉淀
 
 **OpenSpec artifacts**（`proposal.md`、`specs/`、`design.md`、`tasks.md`）是本 skill 的核心产出，正常归档流程落盘，不受以下门控限制。
 
@@ -600,7 +600,7 @@ Jira 评论必须包含：
 | 项目内 skill | 步骤稳定、可复用的工作流 |
 | 总结文档 | 一次性复盘、背景记录 |
 
-> 🚩 **Red Flags（阶段 7）**：
+> 🚩 **Red Flags（阶段 8）**：
 > - ❌ 验证未通过就提交 PR
 > - ❌ Jira 评论通过 `jira_transition_issue` 的 `comment` 参数传递（会被丢弃）
 > - ❌ Jira 状态越权流转到「关闭」「验证通过」等
@@ -610,7 +610,7 @@ Jira 评论必须包含：
 > - ❌ 覆盖率门控脚本崩溃/无报告/退出码1 却继续合并（崩溃视为未通过，须暂停）
 > - ❌ 覆盖率不达标自动模式强行合并（须暂停等用户决策）
 > - ❌ 用户显式跳过门控但未在 PR 描述和 design.md 留痕
-> - ❌ archive 门控（7.3）未完成就触发覆盖率门控（顺序：7.3 → 7.4 决策 → 7.4.1 门控）
+> - ❌ archive 门控（8.3）未完成就触发覆盖率门控（顺序：8.3 → 8.4 决策 → 8.4.1 门控）
 
 ## 批量 OPSX Jira 修复
 
@@ -621,14 +621,14 @@ Jira 评论必须包含：
 | 错误 | 后果 | 修正 |
 |------|------|------|
 | 创建额外本地运行态目录 | 形成 OpenSpec 之外的第二套记录 | 统一记录到 OpenSpec artifacts、PR/MR 和 Jira 评论 |
-| 只写 OpenSpec，不回写 Jira | Jira 流程断裂，QA 无法跟进 | 阶段 7 必须写 Jira 评论并流转到“已修复” |
+| 只写 OpenSpec，不回写 Jira | Jira 流程断裂，QA 无法跟进 | 阶段 8 必须写 Jira 评论并流转到“已修复” |
 | 未做存在性验证 | 修复不存在或已变化的问题 | 阶段 2 第一项必须验证 |
 | `MODIFIED` 只写片段 | archive 时丢失 requirement 细节 | 复制完整 requirement block 再修改 |
 | 先 PR/合并再 archive | specs 或 archive 目录可能不在最终 diff | 默认先 archive 并检查 diff，再完成 PR |
 | Jira 状态越权 | 研发误关闭 issue | 只允许流转到“已修复” |
 | 通过 `jira_transition_issue` 的 `comment` 参数传评论 | 评论被静默丢弃 | 独立调用 `jira_add_comment`，transition 的 comment 参数不可靠 |
 | Superpowers 缺失就中断 | 降低跨平台可用性 | Superpowers 只做渐进增强，探索失败静默跳过（见 `env-capability-discovery`） |
-| 验证失败仍提交 PR | 把未闭环修复交给 QA | 阶段 6 未通过不得提交 |
+| 验证失败仍提交 PR | 把未闭环修复交给 QA | 阶段 7 未通过不得提交 |
 | OpenSpec artifacts 写得过薄 | 后续无法复盘根因和验证 | `design.md` 必须包含 Jira Context、Root Cause、Options、Risk 和 Verification Notes |
 | 批量修复只按列表机械执行 | 重复修复、依赖丢失或行为冲突 | 执行前后识别 issue 关系，并写入 Related Issues / Risk / Dependencies |
 | 检测到原生 OPSX skills 却直接调 CLI 或手写 artifacts | 绕过 schema 模板，artifacts 不符规范 | 委托原生 skill（先读 SKILL.md）；CLI 仅允许作为工具命令（`openspec validate`、`openspec status` 等） |

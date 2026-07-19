@@ -4,7 +4,7 @@
 
 ---
 
-## 阶段 6.4 验证结果
+## 阶段 7 验证结果
 
 ```text
 【验证结果】
@@ -18,7 +18,7 @@
 
 ---
 
-## 阶段 7.1 Commit Message
+## 阶段 8.1 Commit Message
 
 ```text
 fix(<scope>): <JIRA-ID> <subject>
@@ -28,7 +28,7 @@ fix(<scope>): <JIRA-ID> <subject>
 
 ---
 
-## 阶段 7.1 PR/MR 描述
+## 阶段 8.1 PR/MR 描述
 
 PR/MR 描述必须包含：
 
@@ -42,7 +42,7 @@ PR/MR 描述必须包含：
 
 ---
 
-## 阶段 7.2 Jira 评论
+## 阶段 8.2 Jira 评论
 
 Jira 评论必须包含：
 
