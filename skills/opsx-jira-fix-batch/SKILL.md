@@ -9,7 +9,7 @@ description: 当用户说「opsx 批量修复」「批量 opsx-jira-fix」「ops
 
 # OPSX Jira Bug 批量修复
 
-> 本 skill 负责多 issue 批量修复的编排规则（OpenSpec 版本）。单个 issue 的端到端修复流程（阶段 0～7）由 `opsx-jira-fix-workflow` skill 承担；本 skill 的职责是：将多个 issue 拆分为独立任务、识别 issue 间关系、依次调用 `opsx-jira-fix-workflow`、确保关系判断沉淀到 OpenSpec artifacts。
+> 本 skill 负责多 issue 批量修复的编排规则（OpenSpec 版本）。单个 issue 的端到端修复流程（阶段 0～8）由 `opsx-jira-fix-workflow` skill 承担；本 skill 的职责是：将多个 issue 拆分为独立任务、识别 issue 间关系、依次调用 `opsx-jira-fix-workflow`、确保关系判断沉淀到 OpenSpec artifacts。
 >
 > **本 skill 内容仅在用户明确请求批量修复时生效，不在 skill 加载时自动触发任何编排行为。**
 >
@@ -20,7 +20,7 @@ description: 当用户说「opsx 批量修复」「批量 opsx-jira-fix」「ops
 1. 将输入的 Jira ID / URL 拆分为独立 issue 任务。
 2. 执行前识别 issue 间的重复、依赖、重叠、冲突和派生关系。
 3. 为每个需要修复的 issue **先定位目标工程根**（workspace 多工程场景，定位逻辑见 `opsx-jira-fix-workflow` 阶段 0 第 4 步），再在对应工程中确认或创建独立 OpenSpec change；若多个 issue 明确属于同一根因且属于同一工程，可复用同一 change，但必须在 `design.md` 中说明覆盖范围。跨工程的 issue 各自建立独立 change，在各自 `design.md` 中互相引用。
-4. 对每个 issue 依次调用 `opsx-jira-fix-workflow`，不得绕过阶段 0～7 的 OpenSpec 记录、验证和归档要求。
+4. 对每个 issue 依次调用 `opsx-jira-fix-workflow`，不得绕过阶段 0～8 的 OpenSpec 记录、验证和归档要求。
 5. 每个 issue 完成后，基于最新代码状态、PR/MR diff 和 OpenSpec artifacts 重新评估剩余 issue。
 6. 单个 issue 失败不阻断后续 issue，但关系为「冲突待确认」的问题必须暂停，等待人工确认口径。
 7. 批量结束时输出汇总，并列出每个 issue 的 Jira 状态、OpenSpec change、PR/MR、验证结果和归档状态。
