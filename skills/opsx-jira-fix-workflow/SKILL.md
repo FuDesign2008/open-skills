@@ -162,6 +162,7 @@ dependencies:
 | 4 探索方案 | Read、Grep | Edit、Write 业务代码 |
 | 5 制定计划 | Read、Write（仅 tasks.md） | Edit 业务代码 |
 | 6 执行验证 | 全部（Edit、Write、Bash、Git、测试）；运行构建/lint/tsc/test 前须按 `node-version-discipline` 对齐项目声明的 Node 版本（探测链见该 skill SOP） | 跳过验证、跳过 checkbox 更新 |
+| 7 检查验证 | Read、Bash（仅测试命令）、OPSX skills（openspec-verify-change） | Edit、Write 业务代码 |
 | 8 提交收尾 | Git、Jira API、OPSX skills、Bash（合并前覆盖率门控步骤额外允许 test-coverage-analyzer 脚本） | 跳过 Jira 评论、跳过 archive |
 
 ### 模式差异速查表
@@ -175,6 +176,7 @@ dependencies:
 | 4 探索方案 | 输出方案表后暂停，等用户选择 | 自动选择最优方案 |
 | 5 制定计划 | 输出计划后暂停确认 | 普通：自动进入阶段 6；困难/极难：暂停 |
 | 6 执行验证 | 同自动模式 | 同手动模式 |
+| 7 检查验证 | 输出验证结果后暂停，等用户确认 | 自动判定通过/未达标；未达标自动回退（最多 2 次，超限暂停） |
 | 8 提交收尾 | 同自动模式 | 同手动模式 |
 
 ## 阶段 1：读取 Jira

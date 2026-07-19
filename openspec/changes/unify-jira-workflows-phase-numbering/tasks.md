@@ -23,3 +23,10 @@
 - [x] 4.1 残留清扫：`阶段 ?1\.5|阶段 ?2\.5|阶段 ?6\.4|阶段 ?7\.[12]|01\.5-alignment|02-grade` 在两 skill 零命中（历史文档除外）
 - [x] 4.2 阶段标题顺序核对（grep '^## 阶段' 两 SKILL.md 连续整数）；`openspec validate unify-jira-workflows-phase-numbering` 通过；`node scripts/gen-skill-docs.mjs` + `git diff --exit-code docs/generated/skills-index.md` 无 diff
 - [x] 4.3 提交、推送、创建 PR
+
+## 5. 执行期补抓（review 驱动追加）
+
+- [x] 5.1 编排层引用同步（初扫模式未覆盖区间记法）：opsx-jira-fix-batch「阶段 0～7」→「0～8」×2；jira-fix-batch「阶段 0～8」→「0～10」、「阶段0～7」→「0～9」、「阶段4/6/7」→「阶段6/8/9」
+- [x] 5.2 jira-fix-workflow「5.5 逃生出口」悬空引用 → 「`runtime-evidence-debug` 的逃生出口（Phase 6）」
+- [x] 5.3 opsx-jira-fix-workflow 速查表补「7 检查验证」行（工具约束表 + 模式差异速查表）
+- [x] 5.4 evolution/gt/dev.json 断言同步（阶段 6.4 → 阶段 7 共 10 处）
