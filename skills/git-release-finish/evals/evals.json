@@ -1,0 +1,45 @@
+{
+  "skill_name": "git-release-finish",
+  "evals": [
+    {
+      "id": 1,
+      "name": "ff-mode-multi-repo-release",
+      "prompt": "我有两个 GitLab 仓库需要发布版本 8.2.73：./ynote-desktop（路径 /repo-a）和 ./ydoc（路径 /repo-b），都已经在 release/8.2.73 分支上完成开发，需要走发版后续流程（打 tag、合入 master）。这两个 GitLab 项目的 merge_method 都设成了 ff（只允许 fast-forward 合并），release/8.2.73 不是 master 的直接后代。请说明你会按什么流程处理，每一步与我核对。注意：这是 dry-run 说明题，不需要真的执行 git 命令，只需要给出正确的流程决策和命令。",
+      "expected_output": "模型应识别出 ff 模式陷阱，在创建 MR 前先做环境指纹识别（阶段3.5），判定 ff+非快进关系后改用 cherry-pick 策略而非默认 merge，并对两个仓库都用 cd 前缀隔离工作目录，且在第一个仓库发现 ff 限制后立即对第二个仓库应用相同检查。",
+      "expectations": [
+        "在创建 MR/PR 之前明确提出检查项目 merge_method（环境指纹识别，阶段3.5）",
+        "识别出 merge_method=ff 且 release 非 target 后代时，选择 cherry-pick 策略而非 merge 或 rebase 策略",
+        "cherry-pick 流程包含：列出独有 commit、从 target 派生 sync 分支、逐个 cherry-pick、处理空 commit（--skip）",
+        "多仓库场景下对每个仓库的命令使用 cd <REPO_PATH> 前缀进行工作目录隔离",
+        "在第一个仓库发现 ff 限制后，明确表示会立即对第二个仓库执行相同的 merge_method 检查（跨仓库 failure pattern 传播）",
+        "仍然执行阶段0前置健康检查和阶段8残留扫描门控（无条件门控不被跳过）"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "multi-repo-context-isolation",
+      "prompt": "我要给 ./repo-a 和 ./repo-b 两个仓库同时打 8.2.73 的 tag 并创建到 master 的 MR，两个都是普通 merge 模式的 GitLab 项目。请在执行前说明你会如何组织命令，确保不会把 repo-a 的操作误执行到 repo-b 的目录里。这是 dry-run 说明题，给出命令组织方式即可。",
+      "expected_output": "模型应展示多仓库执行纪律：每个仓库命令块以 cd <REPO_PATH> && 开头，确认表标注仓库列，并行执行仓库无关操作但冲突解决串行。",
+      "expectations": [
+        "明确指出多仓库场景下每个命令块必须以 cd <REPO_PATH> && 开头，不依赖隐式目录状态",
+        "在确认表/输出中显式标注仓库列，区分 repo-a 和 repo-b",
+        "指出仓库无关操作（打 tag、建 MR、冲突检测）可并行，但冲突解决（阶段6）因涉及工作区状态必须串行",
+        "给出 cd 前缀的具体命令示例（如 cd /path/to/repo-a && git fetch ... && glab mr create ...）",
+        "说明环境指纹识别（阶段3.5）应对两个仓库并行执行"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "cross-release-sync-ff-project",
+      "prompt": "我的 release/8.2.73 已经合入 master 了（当时因为项目是 ff 模式，用的是 cherry-pick 策略同步的）。现在需要把 release/8.2.73 的变更同步到较新的 release/8.2.80 分支。release/8.2.80 这个项目也是 ff 模式。请说明正确的同步流程。这是 dry-run 说明题。",
+      "expected_output": "模型应识别出这是 ff 模式项目的跨 release 同步，因 release/A 是 cherry-pick 入主分支（hash 已变更），且 release/B 也是 ff 模式，应直接 cherry-pick release/A 的原始 commit 到 release/B，并说明 ff 模式下 hash 一致性约束比 merge/rebase 项目宽松。",
+      "expectations": [
+        "识别出 release/8.2.73 是通过 cherry-pick（非 merge）合入主分支，hash 已变更",
+        "正确决策：因 release/B（8.2.80）也是 ff 模式，应 cherry-pick release/A 的原始 commit 到 release/B",
+        "说明 ff 模式项目不产生 merge commit，hash 一致性约束比 merge/rebase 项目宽松",
+        "同步流程包含：dry-run 评估冲突、从 release/B 派生 sync 分支、cherry-pick、处理空 commit、残留扫描、创建 MR",
+        "不会错误地建议直接 git merge release/8.2.73 到 release/8.2.80（这在 ff 模式下会产生 merge commit 被拒）"
+      ]
+    }
+  ]
+}

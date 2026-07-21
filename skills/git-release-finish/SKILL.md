@@ -1,8 +1,8 @@
 ---
 name: git-release-finish
-version: "1.5.0"
+version: "1.6.1"
 user-invocable: true
-description: "Use when releasing a Git repository version — tagging, merging release branches into main, resolving conflicts, or syncing changes between release branches. Handles ambiguous tag naming (v-prefix vs plain), unknown main branch (master/main/develop), cross-release hash-sensitive rebase, and MR/PR extra file cleanup. GitLab, GitHub, Gitea; single or multi-repo. Triggers: 发版, 打tag, 发布版本, 版本发布, release流程, git-release, multi-repo release."
+description: "Use when releasing a Git repository version — tagging, merging release branches into main, resolving conflicts, or syncing changes between release branches. Handles ambiguous tag naming (v-prefix vs plain), unknown main branch (master/main/develop), cross-release hash-sensitive rebase, MR/PR extra file cleanup, GitLab ff-only merge method (forces cherry-pick strategy), protected branch rules, and multi-repo context isolation. GitLab, GitHub, Gitea; single or multi-repo. Triggers: 发版, 打tag, 发布版本, 版本发布, release流程, git-release, multi-repo release, release同步到另一个release."
 ---
 
 # Git 仓库版本发布工作流（git-release-finish）
@@ -16,6 +16,51 @@ description: "Use when releasing a Git repository version — tagging, merging r
 **依赖 skill：** 阶段6 冲突解决由 `git-conflict-resolve` skill 执行（语义分析驱动，支持 merge / rebase 多轮聚合）。
 
 **远程优先原则：** **先确认远端状态，再决定本地操作**。打 tag 前必须 `git fetch` + 验证远端 commit SHA，禁止在未验证的本地 HEAD 上直接打 tag。GitLab 优先使用 `glab api` 远程创建 tag，GitHub/Gitea 用本地 `git tag` 但锚定到远端 SHA。
+
+---
+
+## 多仓库执行纪律（执行前置，全程适用）
+
+> 📌 **单仓库用户**：本节可略过，直接跳到「平台 CLI 映射」。
+> **多仓库（≥2）用户**：本节是执行护栏，必须严格遵守。
+>
+> ⚠️ 这些规则源自实战中反复出现的真实故障，不是理论洁癖。
+
+### M.1 — 工作目录显式隔离
+
+工具调用层没有「仓库上下文」的持久状态：上一次 `cd` 到仓库 A 后，下一次 `Bash` 调用若不带 `cd`，仍停留在 A。多仓库并行发版时，这会导致在仓库 A 的目录里执行了仓库 B 的操作（创建错误 MR、merge-tree 分析错误仓库、合并错误 MR）。
+
+**规则**：多仓库场景下，**每个仓库的命令块必须以 `cd <REPO_PATH> &&` 开头**，即使你认为当前已经在正确目录。
+
+```bash
+# ✅ 正确：显式 cd，不依赖上一次调用残留的目录
+cd /path/to/repo-A && git fetch origin release/8.2.73 && glab mr create ...
+
+# ❌ 错误：依赖隐式目录状态，多仓库场景下必然串位
+git fetch origin release/8.2.73
+glab mr create ...
+```
+
+**每个确认表阶段**（阶段1/2/3/3.5 的输出表）必须显式标注「仓库」列，并在切换仓库时口头说明「现在切到仓库 B」。
+
+### M.2 — 跨仓库 failure pattern 即时传播
+
+> ℹ️ **适用场景**：本节主要适用于「主流程漏检」或「阶段 9 撞墙后回溯」。阶段 3.5 本身并行检查所有仓库的 merge_method；M.2 是当某仓库在后续阶段撞墙时，对其他仓库**补查**的保险，不是主流程的重复。
+
+多仓库场景下，任一仓库发现的环境限制（`ff` 合并模式、保护分支规则、CI pipeline 要求、CLI 认证问题），**立即对所有尚未进入阶段 9 的仓库执行相同检查**，不要等第二个仓库也撞墙。
+
+这条规则针对的是「同一面墙撞两次」的失败模式：仓库 A 在 `glab mr merge` 时被 `406 Branch cannot be merged` 拦截（根因是 `ff` 模式），但处理完 A 后没有立即对仓库 B 检查 merge method，导致 B 重复踩坑。
+
+| 仓库 A 发现 | 立即对仓库 B（及所有未处理仓库）执行 |
+|------------|--------------------------------------|
+| `merge_method = ff` | 阶段 3.5 环境指纹检查（提前知晓，直接走 cherry-pick 策略） |
+| release 分支是保护分支（push=No one） | 检查 B 的 release 分支保护规则，提前规划保护分支备选路径 |
+| CLI 认证失败 | `glab auth status` / `gh auth status` 验证 |
+| pipeline 失败阻断合并 | 检查 B 的 CI 配置与 pipeline 状态 |
+
+### M.3 — 并行执行边界
+
+所有**仓库无关**的操作应**并行执行**（并行打 tag、并行建 MR/PR、并行检查冲突）。但**冲突解决（阶段6）**涉及工作区状态修改，**必须串行**——同一时刻只能在一个仓库的工作区里解冲突。
 
 ---
 
@@ -70,6 +115,7 @@ description: "Use when releasing a Git repository version — tagging, merging r
 | 1 | 分析各仓库 tag 命名规范 | `git tag` |
 | 2 | 创建并推送 tag | `git tag` + `git push` |
 | 3 | 分析各仓库主开发分支 | `git remote show` + `git log` |
+| **3.5** | **环境指纹识别（merge_method / 保护分支规则）** | **`glab api` / `gh api`** |
 | 4 | 创建 MR/PR | `<GIT_CLI> mr/pr create` |
 | 5 | 检测冲突 | `git merge-tree` |
 | 5.5 | 验证 MR 可合并性（merge-tree=0 后强制执行） | `glab mr view` / `gh pr view` |
@@ -79,18 +125,21 @@ description: "Use when releasing a Git repository version — tagging, merging r
 | 9 | 合并 MR/PR | `<GIT_CLI> mr/pr merge` |
 | 10 | 输出报告 | — |
 
-所有**仓库无关**的操作均应**并行执行**（并行打 tag、并行建 MR/PR、并行检查冲突）。
+所有**仓库无关**的操作按 **M.3** 执行（并行打 tag、建 MR/PR、检查冲突；**阶段 6 冲突解决必须串行**）。
 
 ### 执行路径
 
-根据阶段 5 / 5.5 的结果，阶段 6–7 按以下路径选择执行。**阶段 0 和阶段 8 在所有路径中无条件执行**——阶段 0 是前置保险，阶段 8 是合并前最终门控，两者不依赖冲突检测结果。
+根据阶段 3.5（环境指纹）和阶段 5 / 5.5 的结果，阶段 6–7 按以下路径选择执行。**阶段 0、3.5、8 在所有路径中无条件执行**——阶段 0 是前置保险，3.5 是合并约束前置闸门，阶段 8 是合并前最终门控，三者不依赖冲突检测结果。
+
+> 阶段 3.5 是所有路径的强制经过点：其判定结果决定后续走默认 merge/rebase（路径 1-4）还是 cherry-pick（路径 5）。
 
 | 情况 | 执行路径 |
 |------|---------|
-| merge-tree=0 且 MR 可合并 | **0**→1→2→3→4→5→**5.5**→**8**→**9**→10（跳过 6/7） |
-| merge-tree=0 但 MR 不可合并 | **0**→1→2→3→4→5→**5.5**→**6(rebase)**→**8**→**9**→10（跳过 7） |
-| 冲突 > 0，source ≤ 3 commits 且冲突 ≤ 1 文件 | **0**→1→2→3→4→5→**6(rebase)**→**8**→**9**→10（跳过 7） |
-| 冲突 > 0，其余情况 | **0**→1→2→3→4→5→**6(merge)**→**7**→**8**→**9**→10 |
+| merge-tree=0 且 MR 可合并 | **0**→1→2→3→**3.5**→4→5→**5.5**→**8**→**9**→10（跳过 6/7） |
+| merge-tree=0 但 MR 不可合并 | **0**→1→2→3→**3.5**→4→5→**5.5**→**6(rebase)**→**8**→**9**→10（跳过 7） |
+| 冲突 > 0，source ≤ 3 commits 且冲突 ≤ 1 文件 | **0**→1→2→3→**3.5**→4→5→**6(rebase)**→**8**→**9**→10（跳过 7） |
+| 冲突 > 0，其余情况 | **0**→1→2→3→**3.5**→4→5→**6(merge)**→**7**→**8**→**9**→10 |
+| **阶段 3.5 判定 ff 模式 + 非快进** | **0**→1→2→3→**3.5(cherry-pick)**→**8**→**9**→10（跳过 4 默认 MR / 5 / 5.5 / 6 / 7，改走 ff 专用流程创建 sync-release MR） |
 
 > ⚠️ **阶段 8 不再是"AI 审查冲突文件"（仅阶段 6 后触发），而是独立的残留扫描门控**。无论阶段 5 是否检测到冲突、阶段 6 是否执行，合并 MR 前都必须通过阶段 8 的残留冲突标记扫描。这覆盖了"分支已有 merge commit 残留冲突标记但 merge-tree 未检测到新冲突"的场景。
 
@@ -309,6 +358,116 @@ git branch -r | grep "origin/HEAD"
 
 ---
 
+## 阶段3.5：环境指纹识别
+
+> ⚠️ **无条件执行**——在创建 MR/PR 之前一次性收集各仓库的合并约束。这是避免「merge-tree=0、can_be_merged 都通过，但 `mr merge` 返回 406」陷阱的前置闸门。
+
+### 为什么需要环境指纹
+
+阶段 5 的 `git merge-tree` 和阶段 5.5 的 `can_be_merged` 都只检测**代码层面**的合并可行性，对**项目设置层面的合并约束**无感知。最典型的陷阱是 GitLab 项目设置 `merge_method = ff`（仅允许 fast-forward 合并）：
+
+- `release/X.Y.Z` 不是 `master` 的直接后代（主分支在 release 分叉后有新提交）
+- `git merge-tree` 报告 0 冲突（代码可以干净合并）
+- MR 状态 `can_be_merged`（GitLab 判定代码层面无冲突、可产生合并结果——**但不校验 merge_method 约束**）
+- 但 `glab mr merge` 返回 **406 "Branch cannot be merged"**——因为 ff 模式拒绝产生 merge commit，而 release 分支无法 fast-forward 到 master
+
+这种陷阱无法在阶段 5/5.5 发现，只能在阶段 9 合并时撞墙。环境指纹识别把这道墙前移到阶段 3.5，提前决定走 cherry-pick 策略而非默认的 merge/rebase。
+
+### 检测命令
+
+对每个仓库**并行**执行（GitLab 为主，GitHub 类似）：
+
+```bash
+# 1. merge method（决定是否允许 merge commit）
+glab api "projects/:fullpath" 2>/dev/null \
+  | python3 -c "import sys,json; print('merge_method:', json.load(sys.stdin).get('merge_method'))"
+# 输出：merge / squash / rebase_merge / ff
+
+# 2. release 分支保护规则（决定 push 是否被拒、谁可合并）
+glab api "projects/:fullpath/protected_branches" 2>/dev/null \
+  | python3 -c "import sys,json; [print(f'{b[\"name\"]}: push={[l.get(\"access_level_description\") for l in b.get(\"push_access_levels\",[])]}, merge={[l.get(\"access_level_description\") for l in b.get(\"merge_access_levels\",[])]}') for b in json.load(sys.stdin) if 'release' in b['name'] or '*' in b['name']]"
+
+# 3. CI 门控（决定 pipeline 是否阻断合并）
+glab api "projects/:fullpath" 2>/dev/null \
+  | python3 -c "import sys,json; d=json.load(sys.stdin); print('only_allow_merge_if_pipeline_succeeds:', d.get('only_allow_merge_if_pipeline_succeeds'))"
+
+# GitHub 等价（:owner/:repo 由 gh 自动从当前仓库 remote 推导，与 glab :fullpath 同机制）
+gh api repos/:owner/:repo 2>/dev/null \
+  | python3 -c "import sys,json; d=json.load(sys.stdin); print('allow_squash_merge:', d.get('allow_squash_merge'), 'allow_merge_commit:', d.get('allow_merge_commit'), 'allow_rebase_merge:', d.get('allow_rebase_merge'))"
+
+# 4. release 是否为 target 的后代（ff 模式项目决定走哪条策略）
+#    target 是 release 的祖先 → release 可 ff 到 target（默认流程）
+#    否则非快进 → ff 模式项目必须走 cherry-pick
+git merge-base --is-ancestor origin/<TARGET_BRANCH> origin/<RELEASE_BRANCH> \
+  && echo "后代关系：是（可 ff，默认流程）" \
+  || echo "后代关系：否（非快进，ff 模式项目必须走 cherry-pick）"
+```
+
+### 结果分类与策略选择
+
+| merge_method | release 是否为 target 后代 | 策略 |
+|-------------|--------------------------|------|
+| `merge` / `rebase_merge` | 任意 | 默认 merge 策略（阶段6 merge 模式） |
+| `squash` | 任意 | 阶段 9 合并时去掉 `--squash=false` 参数（项目设置已强制 squash）；commit 历史会被压缩为单个提交，报告（阶段10）需记录"release 分支上的 N 个 commit 合并后在 main 上为 1 个 squash commit" |
+| `ff` | ✅ 是（可直接快进） | 默认流程，`glab mr merge` 直接成功 |
+| **`ff`** | ❌ **否（非快进关系）** | **改用 cherry-pick 策略**：从 release cherry-pick 有效 commit 到 target 派生的新分支，再提 MR（见下方 ff 模式专用流程） |
+
+> ⚠️ **ff 模式 + 非快进关系是最易踩的陷阱**。release 分支通常从 target 分叉后既有自己的提交，target 也有新提交，二者几乎不可能保持快进关系。遇到 `merge_method = ff` 的项目，默认就应准备 cherry-pick 策略，而非等到阶段 9 撞 406。
+
+> ℹ️ **GitHub 的等价陷阱**：GitHub 没有 `merge_method=ff` 的直接对应，只有三个布尔开关 `allow_merge_commit` / `allow_squash_merge` / `allow_rebase_merge`。当 `allow_merge_commit=false && allow_squash_merge=false && allow_rebase_merge=true`（仅允许 rebase 合并）时，PR 合并会**重写 commit 产生 hash 变更**，效果近似 ff-only。release → main 的 PR 合并后，原 release 上的 commit hash 在 main 上会不同——跨 release 同步时按「rebase/hash 已变更」场景处理（见「场景：release 分支变更同步到另一个 release 分支」）。
+
+### ff 模式专用流程（cherry-pick 策略）
+
+当阶段 3.5 判定为 `ff` 模式 + 非快进关系时，跳过阶段 6 的 merge/rebase 模式，改用：
+
+> ⚠️ **多仓库场景**：以下命令默认在单个 `<REPO_PATH>` 下连续执行；多仓库时**每条命令仍需以 `cd <REPO_PATH> &&` 开头**（见 M.1），工具调用层无持久 cwd 状态。
+
+```bash
+# 1. 列出 release 相对 target 的独有 commit
+cd <REPO_PATH> && git log origin/<TARGET_BRANCH>..origin/<RELEASE_BRANCH> --oneline
+
+# 2. 从 target 派生同步分支
+cd <REPO_PATH> && git checkout origin/<TARGET_BRANCH> -b sync-release/<VERSION>-to-<TARGET>
+
+# 3. 逐个 cherry-pick（按时间顺序）
+cd <REPO_PATH> && git cherry-pick <COMMIT_1> <COMMIT_2> ...
+# 遇冲突时调用 git-conflict-resolve skill（mode=rebase，cherry-pick 类似逐 commit 处理）
+#   传参：source=<RELEASE_BRANCH>、target=<TARGET_BRANCH>、version=<VERSION>
+#   启发式：版本号/依赖字段通常取 target 侧，构建产物取 release 侧
+# 解决后继续 cherry-pick 下一个 commit
+
+# 4. cherry-pick 可能产生空 commit（target 已有等价改动）→ --skip
+#    cd <REPO_PATH> && git cherry-pick --skip
+
+# 5a. 残留扫描（精确正则，与阶段 8 一致）
+cd <REPO_PATH> && git grep -lE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' 2>/dev/null
+
+# 5b. 推送同步分支
+cd <REPO_PATH> && git push origin sync-release/<VERSION>-to-<TARGET>
+
+# 5c. 创建 MR（源分支为 sync-release 分支，不是原 release 分支）
+cd <REPO_PATH> && glab mr create \
+  --source-branch sync-release/<VERSION>-to-<TARGET> \
+  --target-branch <TARGET_BRANCH> \
+  --title "Release <VERSION> (ff cherry-pick)" \
+  --remove-source-branch=false
+```
+
+> ℹ️ **cherry-pick 策略的特点**：commit hash 会变更（与原 release 分支不同），但 ff 模式项目不依赖 hash 一致性（它不产生 merge commit）。若后续有跨 release 同步需求，需注意 hash 已变更（见「跨 release 同步」场景的 hash 一致性约束）。
+
+### 输出：环境指纹表
+
+| 仓库 | merge_method | release 保护规则 | CI 门控 | 策略 |
+|------|:--:|------|:--:|------|
+| repo-A | `merge` | release/*: push=No one, merge=Dev+Maint | false | 默认 merge |
+| repo-B | `ff` | release/*: push=No one | false | **cherry-pick** |
+
+**ff 模式或保护分支异常时，与用户对齐策略后再执行阶段4。**
+
+> ⚠️ **保护分支 + 非 ff 的组合**：若 release 分支是保护分支（push=No one），无论 merge_method 为何，阶段 6 rebase 模式的 force push 都会失败，必须走「保护分支备选路径」（见阶段 6）。环境指纹表检出 release 分支 push=No one 时，策略列应标注"保护分支备选"。
+
+---
+
 ## 阶段4：创建 MR/PR
 
 对所有仓库**并行执行**：
@@ -379,10 +538,15 @@ glab mr view <MR_ID> 2>&1 | grep -iE "merge_status|can_be_merged|has_conflicts"
 gh pr view <PR_ID> --json mergeable,mergeStateStatus 2>&1
 ```
 
+> 按表格从上到下匹配，**第一条命中即执行**（三行条件互斥）。
+
 | 验证结果 | 处理 |
 |---------|------|
-| `can_be_merged` / `MERGEABLE` | ✅ 进入阶段 9 合并 |
-| 不可合并 | ❌ 改用 rebase 策略（阶段 6），不直接进入阶段 9 |
+| `can_be_merged` / `MERGEABLE` 且阶段 3.5 **未**判定 ff 陷阱 | ✅ 进入阶段 9 合并 |
+| 不可合并（`conflict` / `UNMERGEABLE`） | ❌ 改用 rebase 策略（阶段 6），不直接进入阶段 9 |
+| `can_be_merged` 且阶段 3.5 判定 `ff` 模式 + 非快进关系 | ⚠️ **阶段 9 的 `mr merge` 仍会返回 406**。必须改用阶段 3.5 的 cherry-pick 策略，不要直接进阶段 9 |
+
+> ⚠️ **`can_be_merged` 不等于 `mr merge` 会成功**：`can_be_merged` 只表示「代码层面无冲突、可产生合并结果」，不绕过 `merge_method=ff` 等项目级约束。ff 模式陷阱的完整机制与权威判断见阶段 3.5。
 
 ---
 
@@ -675,12 +839,21 @@ release/A 合入主分支的方式？
 │   → ✅ 可直接 merge release/A → release/B
 │       未来 release/B → 主分支干净
 │
-└── rebase（hash 已变更）
-    → ❌ 禁止 merge release/A → release/B
-    → ✅ 改为将 release/B rebase 到主分支
-        （或 merge 主分支到 release/B）
-        因为主分支已包含 release/A 的变更
+├── rebase（hash 已变更）
+│   → ❌ 禁止 merge release/A → release/B
+│   → ✅ 改为将 release/B rebase 到主分支
+│       （或 merge 主分支到 release/B）
+│       因为主分支已包含 release/A 的变更
+│
+└── cherry-pick（ff 模式项目，hash 已变更）
+    → ⚠️ release/A 的改动在主分支上是新 hash
+    → 同步到 release/B 时也应 cherry-pick 主分支上的对应 commit
+       或直接 cherry-pick release/A 的原始 commit（接受 hash 差异）
+    → 因 release/B → 主分支若同为 ff 模式，本就不产生 merge commit
+       hash 差异不引发冲突，但仍需在 release/B 上解决内容冲突
 ```
+
+> ℹ️ **ff 模式项目的跨 release 同步**：ff 项目不产生 merge commit，hash 一致性约束比 merge/rebase 项目宽松。但仍建议 cherry-pick release/A 的原始 commit 到 release/B，保持改动来源可追溯。若 release/B 同为 ff 模式，阶段 3.5 应已识别，直接走 cherry-pick 策略。
 
 ### 操作步骤
 
@@ -717,8 +890,12 @@ git rebase origin/<MAIN_BRANCH>
 | tag 打在了错误 commit 上 | 删除重打：`git push origin --delete <TAG>` + `git tag -d <TAG>` → 重新执行阶段 2（锚定到 `$REMOTE_SHA`）；GitLab 也可 `glab api DELETE "projects/:fullpath/repository/tags/<TAG>"` 远程删除 |
 | MR/PR 已存在（同源同目标） | 复用已有 MR/PR，不重新创建 |
 | merge-tree=0 但 MR 无法合并 | 改用 rebase 策略（阶段 6），创建 rebase-release 分支 |
+| `glab mr merge` 返回 406 "Branch cannot be merged"（merge-tree=0 且 can_be_merged） | 项目 `merge_method = ff` 且 release 非 target 后代。阶段 3.5 应已捕获；若漏检，立即查 `glab api "projects/:fullpath"` 的 `merge_method`，改用阶段 3.5 的 cherry-pick 策略 |
+| `glab api` 报 "Accepts 1 arg(s), received 2" | 多为参数被 shell 拆分。**先加引号**：`-f "key=value"`（`glab api "path" -f "tag_name=X" -f "ref=Y"`）；若该 glab 版本仍报错（实战遇到过 `-f` 不被接受），改用 `--raw-field "key=value"`。优先升级 glab 到最新稳定版 |
+| 多仓库命令在错误仓库执行（创建了错误 MR / 分析了错误分支） | 违反 M.1 工作目录隔离。关闭错误 MR（`glab mr close <WRONG_ID>`），回到正确仓库目录用 `cd <REPO_PATH> &&` 前缀重试 |
 | rebase 冲突过多 | 切换为 merge 策略（在 git-conflict-resolve 中重新执行 Y.0 merge 模式） |
 | rebase 自动跳过 commit | 对比被跳过 commit 与 target 对应 commit 的 diff（阶段 6 审查流程） |
+| cherry-pick 产生空 commit（"previous cherry-pick is now empty"） | target 已有等价改动，`git cherry-pick --skip` 跳过；若需保留记录用 `--allow-empty` |
 | force push 被保护分支拒绝（`remote rejected` / `pre-receive hook declined`） | release 分支是保护分支（push=No one），改用"保护分支备选路径"：推到新分支 `rebase-release/<VERSION>` → 关闭原 MR → 创建新 MR（见阶段6 rebase 模式） |
 | 冲突解决出现逻辑错误 | 交由 `git-conflict-resolve` Y.5 逻辑验证捕获，按 ⚠️/❌ 提示处理 |
 | `git rm --cached` 报 "pathspec not found" | 文件不在 index，用 `git add -A` 先同步 worktree 再重试 |
@@ -756,6 +933,18 @@ git ls-remote origin refs/tags/<TAG_NAME>  # 应返回 $REMOTE_SHA
 
 # 查看主分支合并历史
 git log --oneline --merges -20 | grep -E "into '(master|main|develop)'"
+
+# ── 阶段3.5 环境指纹识别 ──
+# merge method（ff 是关键陷阱）
+glab api "projects/:fullpath" | python3 -c "import sys,json; print('merge_method:', json.load(sys.stdin).get('merge_method'))"
+# release 分支保护规则
+glab api "projects/:fullpath/protected_branches" | python3 -c "import sys,json; [print(b['name'], b.get('push_access_levels'), b.get('merge_access_levels')) for b in json.load(sys.stdin)]"
+# ff 模式判定：release 是否为 target 后代（target 是 release 祖先 → 可 ff）
+git merge-base --is-ancestor origin/<TARGET> origin/<RELEASE> && echo "可ff" || echo "非快进→cherry-pick"
+# ff 模式专用：cherry-pick 同步（多仓库每条加 cd <REPO> && 前缀，见正文 ff 流程）
+git log origin/<TARGET>..origin/<RELEASE> --oneline                      # 列独有 commit
+cd <REPO> && git checkout origin/<TARGET> -b sync-release/<V>-to-<TARGET> # 派生分支
+git cherry-pick <C1> <C2> ...                                             # 逐个 pick（空 commit 用 --skip）
 
 # 冲突 dry-run（检测冲突文件数量）
 git merge-tree $(git merge-base origin/$SRC origin/$TGT) origin/$SRC origin/$TGT | grep -c "^changed in both"
