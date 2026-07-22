@@ -57,7 +57,6 @@ Jira 评论必须包含：
 
 ## 合并前覆盖率门控（强制）规范
 
-> 门控规范版本：v2
 > 本规范在 `jira-fix-workflow` / `opsx-jira-fix-workflow` / `opsx-solve-workflow` 三个工作流的 reference.md 同步维护。test-coverage-analyzer 参数契约变更时，同步更新三处。
 
 ### 触发时机
