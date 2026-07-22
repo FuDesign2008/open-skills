@@ -1,5 +1,26 @@
 # Release Notes
 
+## [1.16.0] - 2026-07-21
+
+### Added
+
+**browser-access skill（新增）**
+- 新增 `skills/browser-access/` 公共浏览器操控底座，移植自 [`eze-is/web-access`](https://github.com/eze-is/web-access) v2.5.3 (MIT)：CDP Proxy 直连用户日常浏览器（Chrome / Edge / Chromium 系，天然携带登录态），HTTP API（`/new` `/eval` `/click` `/clickAt` `/setFiles` `/scroll` `/screenshot` `/navigate` `/close`）操控动态页面 / 登录态 / 反爬 / 交互 / 媒体 / 视频截帧；站点经验积累；子 Agent 并行分治。`user-invocable: true`，被 `effective-web-research` 与 `browser-debug-toolkit` 强依赖。
+
+### Changed
+
+**effective-web-research**
+- frontmatter 强依赖 `browser-access`
+- 新增「CDP 升级」逃生出口：静态层（WebSearch / WebFetch / curl）失效（登录墙 / JS 动态渲染 / 反爬平台如小红书·公众号）→ 升级到真实浏览器获取内容；与可信度纪律（CRAAP + E-E-A-T）正交叠加
+- `reference.md` 追加 CDP 升级决策树 + curl HTTP API 速查
+
+**browser-debug-toolkit v1.2.0**
+- frontmatter 强依赖 `browser-access`
+- CDP Proxy 作为 `chrome-devtools-mcp` 的并列实时操控手段纳入 Scene→Tool 决策表（带登录态、curl 可批处理、`/clickAt` 真实手势，偏「操控 + 验证」）
+- 新增「CDP Proxy vs chrome-devtools-mcp」对比节；新建 `reference.md`（curl API 速查 + 调试 recipes）
+
+---
+
 ## [1.15.0] - 2026-03-08
 
 ### Changed

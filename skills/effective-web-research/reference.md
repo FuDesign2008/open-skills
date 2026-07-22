@@ -184,3 +184,58 @@ We use `jsonwebtoken@8.5.1`. Does any published CVE affect this version, given w
 ```
 
 Note how the report separates per-source scoring from claim-level synthesis, and explicitly flags what is still unknown rather than papering over it. That honesty is the point of strict mode.
+
+---
+
+## CDP upgrade
+
+The real-browser escape hatch lives in the strongly-depended **`browser-access`** skill (carries login state via CDP Proxy). This section is the **decision tree + API cheat sheet** so you can escalate without leaving this skill's context. Full reference: `browser-access/references/cdp-api.md`.
+
+### When to escalate (decision tree)
+
+```
+Need information from the external web?
+├─ Answer likely in repo → internal tools (grep/read/LSP), do NOT escalate
+└─ External → start with static layer:
+    1. WebSearch     → discover sources
+    2. WebFetch/curl → extract from a known URL (static HTML)
+    3. Jina          → Markdown-ify article-style pages (saves tokens)
+    └─ Static layer returns content LACKING the target info?
+        ├─ No, got it → apply 4 maxims / strict mode, done
+        └─ Yes (login wall / JS-rendered shell / anti-scrape block) → ESCALATE to CDP:
+            → load browser-access → /new the page → /eval read DOM → /screenshot if visual
+            → resume credibility evaluation on the retrieved content
+```
+
+Key signal: escalate only when the **page refuses the non-browser client**. "I haven't found the right URL yet" is a search problem (stay at step 1), not an escalation trigger.
+
+### curl HTTP API cheat sheet (CDP Proxy on http://localhost:3456)
+
+```bash
+# 0. preflight (Node 22+, browser remote-debug toggle, ensure proxy)
+node "${CLAUDE_SKILL_DIR_BROWSER_ACCESS}/scripts/check-deps.mjs"
+
+# open a background tab (auto-waits for load); URL in POST body
+curl -s -X POST --data-raw 'https://example.com' http://localhost:3456/new
+# → returns target id
+
+# read DOM / run JS  (the workhorse — read text, pull URLs, submit forms)
+curl -s -X POST "http://localhost:3456/eval?target=ID" -d 'document.title'
+curl -s -X POST "http://localhost:3456/eval?target=ID" -d 'document.querySelector("article")?.innerText'
+
+# capture rendered state (incl. video frame)
+curl -s "http://localhost:3456/screenshot?target=ID&file=/tmp/shot.png"
+
+# interact (trigger lazy-load, paginate, expand)
+curl -s -X POST "http://localhost:3456/click?target=ID" -d 'button.next'
+curl -s "http://localhost:3456/scroll?target=ID&direction=bottom"
+
+# close the tab you created (never the user's tabs)
+curl -s "http://localhost:3456/close?target=ID"
+```
+
+`ID` is the target id from `/new` or `/targets`. Always `/close` tabs you created.
+
+### Retrieval ≠ trust
+
+After CDP retrieval, the content re-enters this skill's normal pipeline: identify the source's authority/currency, cross-validate non-trivial claims, cite with link+date. A page reachable only behind login is often a **primary source** (official platform, original post) — good for credibility, but still verify claims against a second independent source before relaying as fact.

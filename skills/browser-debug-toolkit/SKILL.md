@@ -1,8 +1,10 @@
 ---
 name: browser-debug-toolkit
-version: "1.1.0"
+version: "1.2.0"
 user-invocable: true
-description: "Browser runtime debugging toolkit — guides AI to prioritize browser DevTools, CDP-based MCP tools (chrome-devtools-mcp), and Playwright for runtime inspection when debugging UI/CSS/DOM layout, frontend interaction, and rendering issues, rather than relying solely on static code analysis. Triggers: 「浏览器调试」「UI 调试」「DOM 检查」「CSS 调试」「页面布局问题」「前端运行时调试」「chrome devtools」「CDP 调试」 / browser debug, devtools, dom inspect, css debug, runtime debugging"
+dependencies:
+  - browser-access
+description: "Browser runtime debugging toolkit — guides AI to prioritize browser DevTools and CDP-based tools for runtime inspection and control when debugging UI/CSS/DOM layout, frontend interaction, and rendering issues. Two CDP channels: chrome-devtools-mcp (inspection, DevTools panels) and browser-access CDP Proxy (control + verify, carries login state, curl-scriptable). Also covers Playwright. Triggers: 「浏览器调试」「UI 调试」「DOM 检查」「CSS 调试」「页面布局问题」「前端运行时调试」「chrome devtools」「CDP 调试」「登录态调试」 / browser debug, devtools, dom inspect, css debug, runtime debugging, login-state debug. For *operating* the browser to reach/scrape content (not debugging rendering), use browser-access instead."
 ---
 
 # Browser Runtime Debugging Toolkit
@@ -91,6 +93,18 @@ After install/enable, verify the MCP is loaded:
 
 > Note: If MCP is not installed, see the Prerequisites section above for adaptive setup options (auto-install / manual / skip).
 
+### browser-access / CDP Proxy (Skill, strongly depended-on)
+
+> Type: Skill (CDP over HTTP) / Availability: guaranteed by frontmatter `dependencies` (open-skills internal skill, ships with the repo)
+
+**When to use**: debugging that needs **control + verify** rather than passive inspection — reproducing an issue by *operating* the page (click, type, scroll, navigate), capturing before/after runtime state, especially under **login state** or on **dynamic / anti-scraping** pages where a fresh chrome-devtools-mcp session has no cookies and gets blocked.
+
+**Core capabilities** (HTTP API on `http://localhost:3456`): `/new` `/eval` (read/write DOM, run JS) `/click` `/clickAt` (real mouse gesture) `/setFiles` `/scroll` `/screenshot` `/navigate` `/close`. Connects to the user's daily browser → login state carried natively.
+
+**Usage pattern**: `node ${CLAUDE_SKILL_DIR}/scripts/check-deps.mjs` (preflight) → `/new` open the page → `/eval` inspect DOM / `/screenshot` capture state → reproduce by `/click` `/scroll` → fix → re-capture for before/after diff → `/close`. Full API cheat sheet + debugging recipes in [reference.md](reference.md).
+
+**Difference from chrome-devtools-mcp**: see the comparison section below.
+
 ### playwright / webapp-testing (Skill)
 
 > Type: Skill (browser automation) / Availability: OpenCode built-in playwright; user skill webapp-testing
@@ -115,6 +129,32 @@ After install/enable, verify the MCP is loaded:
 
 > Framework DevTools are browser extensions that AI cannot operate directly. Guide the user to install and inspect manually.
 
+## CDP Proxy (browser-access) vs chrome-devtools-mcp
+
+Both speak CDP, but serve different debugging postures:
+
+| Aspect | chrome-devtools-mcp | browser-access CDP Proxy |
+|--------|---------------------|--------------------------|
+| Posture | **Inspect** (DevTools panels: Elements / Network / Performance) | **Control + verify** (operate the page, capture state) |
+| Login state | Fresh session — no user cookies by default | Connects to user's daily browser — **login state native** |
+| Operation API | MCP tools (panel-aligned) | curl HTTP API (scriptable, batch-friendly) |
+| Real user gesture | Limited | `/clickAt` (CDP Input.dispatchMouseEvent), `/setFiles` |
+| Best for | Computed styles / box model / network waterfall / perf flame chart | Login-gated / dynamic / anti-scrape repro, before/after screenshot diff, scripted batch repro |
+
+**Choose CDP Proxy when**:
+- The bug only reproduces under login state (auth pages, paywalls, SSO backends)
+- You need to *operate* the page to reproduce (multi-step interaction), then screenshot-compare before/after the fix
+- chrome-devtools-mcp is unavailable, or you need curl-scriptable batch operations
+- The page is dynamic / anti-scraping and a fresh session gets blocked
+
+**Choose chrome-devtools-mcp when**:
+- Pure inspection: computed styles, box model, network waterfall, performance timeline
+- No login state needed
+
+They are **complementary**, not replacements — pick by posture (inspect vs control) and login requirement.
+
+**Tie-breaker**: when a bug needs *both* inspection (computed style / box model) **and** login state, prefer the CDP Proxy — login state is the harder constraint, and chrome-devtools-mcp's fresh session simply cannot reach the content.
+
 ## Workflow Integration
 
 This skill is strongly depended on by `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, and `opsx-jira-fix-workflow` via frontmatter `dependencies` (each runs a prerequisite check at startup; if missing, it aborts). It is also discovered by `debug-workflow` and similar workflow skills through their environment capability exploration. It is delegated to by `hybrid-debug` for runtime evidence in hybrid app (WebView/WKWebView/Electron + H5) debugging scenarios, and by `runtime-evidence-debug` for UI/CSS/DOM instrumentation in general debugging scenarios:
@@ -135,9 +175,10 @@ Signal keywords: style, layout, render, display, visibility, position, size, col
 
 Tool selection priority:
 1. chrome-devtools-mcp (when MCP available) — real-time inspection, AI-operated
-2. playwright / webapp-testing — automated operations, screenshot verification
-3. visual-qa — visual comparison, design review
-4. Guide user to manually open DevTools — fallback when MCP unavailable
+2. browser-access CDP Proxy — control + verify, login state, curl-scriptable (login-gated / dynamic / anti-scrape repro)
+3. playwright / webapp-testing — automated operations, screenshot verification
+4. visual-qa — visual comparison, design review
+5. Guide user to manually open DevTools — fallback when MCP unavailable
 
 MCP prerequisite check:
 → MCP missing? Present adaptive choice: A=auto-install / B=manual / C=skip
