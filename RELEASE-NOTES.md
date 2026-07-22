@@ -1,5 +1,24 @@
 # Release Notes
 
+## [1.16.0] - 2026-07-22
+
+### Changed
+
+**effective-web-research**
+- 新增「CDP 升级」逃生出口：静态层（WebSearch/WebFetch/curl）失效（登录墙 / JS 动态渲染 / 反爬平台如小红书·公众号）→ 升级到真实浏览器，委托外部 `web-access` skill 的 CDP（带登录态）
+- 运行时局部强依赖 `web-access`（**不**声明 frontmatter `dependencies`，核心调研纪律不依赖它；仅 CDP 路径运行时检查、缺失中止 + 提示安装），不向 solve-workflow 上游传染外部 plugin
+- description 补中文触发词（登录态访问 / 动态页面 / 反爬）；`reference.md` 追加 CDP 升级决策树 + curl API 速查
+
+**browser-debug-toolkit v1.2.0**
+- Scene→Tool 决策表**表内**新增 CDP Proxy（web-access）列，把 `web-access` CDP Proxy 作为 `chrome-devtools-mcp` 的并列实时操控手段
+- 新增「CDP Proxy vs chrome-devtools-mcp」对比节（含 login tie-breaker + 运行时局部强依赖说明）；新建 `reference.md`（curl API 速查 + 调试 recipes）
+- description 补中文触发词（登录态调试）
+
+### Notes
+- 本次利用外部 plugin [`eze-is/web-access`](https://github.com/eze-is/web-access) 的浏览器操控能力（不移植脚本、不在 open-skills 内新建 skill）；用户需 CDP 操控时自行安装 web-access，缺失则该路径中止 + 提示安装，核心调研纪律 / 调试决策独立可用。
+
+---
+
 ## [1.15.0] - 2026-03-08
 
 ### Changed
