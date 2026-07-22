@@ -411,7 +411,7 @@ openspec/changes/<change-name>/design.md
 > 🚩 **Red Flags（阶段 5）**：
 > - ❌ 任务项包含 `TBD`、`TODO`、`适当处理`、`类似上面` 等不可执行描述
 > - ❌ 任务未覆盖所有 delta spec requirements 和 scenarios
-> - ❌ 缺少测试、验证、回滚、Jira 回写或 archive 步骤
+> - ❌ 缺少测试、验证、回滚、archive 或合并后 Jira 回写步骤
 > - ❌ 任务粒度过大，无法独立验证
 
 ## 阶段 6：执行修复与验证
@@ -634,7 +634,6 @@ Jira 评论必须包含：
 | 阶段 2 分析后就创建 proposal（根因未与方案结合） | proposal 的 Why 和 What 割裂，artifact 需重写 | proposal 在阶段 4 方案选定后才创建，一次性写完整 |
 | 使用不存在的 skill 名称（如 `openspec-apply`） | 读不到 SKILL.md，委托失败 | 正确名称：`openspec-apply-change`、`openspec-archive-change`、`openspec-verify-change` |
 | 实现中发现设计错误却继续硬做 | artifacts 与代码分叉 | 回写 proposal/specs/design/tasks 后再继续 |
-
 | 快速修复走了 OPSX 路径 | 流程过重，浪费时间 | 只需快速修复无需规范沉淀时，使用 `jira-fix-workflow` |
 | workspace 多工程下未先定位工程根 | 门禁检查在 workspace 根执行而非工程目录，artifact 写入错误位置 | 阶段 0 第 4 步必须先做工程定位，确定工程根后再检查 openspec/ 和 OPSX skills |
 | 覆盖率门控脚本崩溃却继续合并 | 崩溃被误判为「覆盖率通过」，未验证的修复进入主分支 | 崩溃/无报告/退出码1 一律视为门控未通过，暂停等用户 |
