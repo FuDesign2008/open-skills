@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.6.1"
+version: "1.6.2"
 user-invocable: true
 description: 当用户说"opsx-jira-fix"、"OpenSpec Jira 修复"、"规范化修复 Jira"、"opsx修复Jira"、"Jira OpenSpec 修复"、"opsx自动修复Jira"、"用OpenSpec修复Jira"或"opsx-jira-fix-workflow"时触发。适用于从 Jira issue 出发，并需要将根因、行为变更、修复计划、验证和归档沉淀到 OpenSpec artifacts 的端到端 Bug 修复。
 dependencies:
@@ -163,7 +163,7 @@ dependencies:
 | 5 制定计划 | Read、Write（仅 tasks.md） | Edit 业务代码 |
 | 6 执行验证 | 全部（Edit、Write、Bash、Git、测试）；运行构建/lint/tsc/test 前须按 `node-version-discipline` 对齐项目声明的 Node 版本（探测链见该 skill SOP） | 跳过验证、跳过 checkbox 更新 |
 | 7 检查验证 | Read、Bash（仅测试命令）、OPSX skills（openspec-verify-change） | Edit、Write 业务代码 |
-| 8 提交收尾 | Git、Jira API、OPSX skills、Bash（合并前覆盖率门控步骤额外允许 test-coverage-analyzer 脚本） | 跳过 Jira 评论、跳过 archive |
+| 8 提交收尾 | Git、Jira API、OPSX skills、Bash（合并前覆盖率门控步骤额外允许 test-coverage-analyzer 脚本） | 跳过 archive、跳过 Jira 回写 |
 
 ### 模式差异速查表
 
@@ -401,7 +401,7 @@ openspec/changes/<change-name>/design.md
 - 使用 checkbox：`- [ ] 1.1 ...`
 - 每项足够小，可独立验证。
 - 覆盖所有 delta spec requirements 和 scenarios。
-- 包含必要测试、验证、回滚、Jira 回写和 OpenSpec archive 步骤。
+- 包含必要测试、验证、回滚、OpenSpec archive 和合并后 Jira 回写步骤。
 - 禁止 `TBD`、`TODO`、`适当处理`、`类似上面` 这类不可执行描述。
 
 若检测到 `writing-plans`，借鉴其粒度：目标文件、测试命令、预期输出、失败时处理。
@@ -411,7 +411,7 @@ openspec/changes/<change-name>/design.md
 > 🚩 **Red Flags（阶段 5）**：
 > - ❌ 任务项包含 `TBD`、`TODO`、`适当处理`、`类似上面` 等不可执行描述
 > - ❌ 任务未覆盖所有 delta spec requirements 和 scenarios
-> - ❌ 缺少测试、验证、回滚、Jira 回写或 archive 步骤
+> - ❌ 缺少测试、验证、回滚、archive 或合并后 Jira 回写步骤
 > - ❌ 任务粒度过大，无法独立验证
 
 ## 阶段 6：执行修复与验证
@@ -498,7 +498,7 @@ fix/jira-fix-<JIRA-ID>
 
 验证失败不得提交 PR。执行记录以 `tasks.md` checkbox、PR/MR 描述和 `design.md` 的 Verification Notes 为准。
 
-## 阶段 8：提交 PR、Jira 回写、Archive 与收尾
+## 阶段 8：提交 PR、Archive、合并与收尾
 
 ### 8.1 提交与 PR
 
@@ -524,26 +524,7 @@ PR/MR 描述必须包含：
 - 验证证据
 - 风险与回滚
 
-### 8.2 Jira 回写
-
-⚠️ **必须分两步独立调用**：① `jira_transition_issue` 流转状态（不传 `comment` 参数）；② `jira_add_comment(issue_key=..., body=...)` 写修复评论。禁止通过 `jira_transition_issue` 的 `comment` 参数传评论——该参数不可靠，评论可能被静默丢弃；`jira_add_comment` 的评论内容参数名为 `body`（非 `comment`）。
-
-研发角色只能将 issue 流转到“已修复”。禁止流转到：
-
-- 关闭
-- 验证通过
-- 已验证
-
-Jira 评论必须包含：
-
-- 修复分支 / PR URL / Commit
-- 根因摘要
-- 修复方案
-- OpenSpec change 路径
-- 验证场景
-- 风险或待 QA 关注点
-
-### 8.3 OpenSpec Archive
+### 8.2 OpenSpec Archive
 
 归档前同步步骤：
 
@@ -559,9 +540,9 @@ Jira 评论必须包含：
 
 默认推荐：验证通过后先 archive，确认 `openspec/specs/` 更新和 `openspec/changes/archive/` 迁移进入 diff，再完成 PR。
 
-### 8.4 分支收尾
+### 8.3 分支收尾
 
-若检测到 `finishing-a-development-branch`，在验证、Jira 回写和 archive 检查完成后，再借鉴其流程做：
+若检测到 `finishing-a-development-branch`，在验证和 archive 检查完成后，再借鉴其流程做：
 
 - 保留分支
 - 创建 / 更新 PR
@@ -569,15 +550,32 @@ Jira 评论必须包含：
 - 清理本地和远程分支
 - 同步主分支
 
-> **顺序约束**：archive 门控（8.3）→ 分支收尾决策（8.4）→ 合并前覆盖率门控（8.4.1）→ 执行合并。选择「保留分支」「继续开发」不触发门控。
+> **顺序约束**：archive（8.2）→ 分支收尾决策（8.3）→ 合并前覆盖率门控（8.3.1）→ 执行合并 → Jira 回写（8.4）。选择「保留分支」「继续开发」不触发门控，也跳过 Jira 回写。
 
-#### 8.4.1 合并前覆盖率门控（强制）
+#### 8.3.1 合并前覆盖率门控（强制）
 
 > 门控在 AI 即将执行合并动作时启动，覆盖分支收尾决策选定「合并」、用户直接下达合并指令、AI 准备调用合并命令等所有合并场景。完整规范（触发时机 / 前置检测 / 门控步骤 / 判定矩阵 / 留痕模板 / 检查清单 / 模式生命周期）见 [reference.md](reference.md)「合并前覆盖率门控（强制）规范」。
 
 **判定矩阵概要**（安全网，完整矩阵见 reference.md）：达标→继续合并；不达标→暂停；崩溃/无报告→视为未通过暂停；无测试代码→暂停；门控未运行而合并已发生（隐式漏跑）→暂停补跑，已合并则留痕。
 **本步骤独立 Bash 权限**：运行 test-coverage-analyzer 脚本。
 **留痕位置**：PR 描述和 `design.md` 的 Verification Notes（显式跳过 / 环境缺漏 / 隐式漏跑三种模板见 reference.md）。
+
+### 8.4 Jira 回写（合并完成后）
+
+PR/MR 已成功合并，代码已进入主分支，此时回写 Jira 状态准确反映修复已合入。
+
+⚠️ **必须分两步独立调用**：① `jira_transition_issue` 流转状态（不传 `comment` 参数）；② `jira_add_comment(issue_key=..., body=...)` 写修复评论。禁止通过 `jira_transition_issue` 的 `comment` 参数传评论——该参数不可靠，评论可能被静默丢弃；`jira_add_comment` 的评论内容参数名为 `body`（非 `comment`）。
+
+研发角色只流转到"已修复"；关闭、验证通过、已验证等状态由 QA 角色流转。
+
+Jira 评论必须包含：
+
+- 修复分支 / PR URL / Commit
+- 根因摘要
+- 修复方案
+- OpenSpec change 路径
+- 验证场景
+- 风险或待 QA 关注点
 
 收尾记录以 PR/MR、Jira 评论和 OpenSpec archive 结果为准。
 
@@ -611,7 +609,7 @@ Jira 评论必须包含：
 > - ❌ 覆盖率门控脚本崩溃/无报告/退出码1 却继续合并（崩溃视为未通过，须暂停）
 > - ❌ 覆盖率不达标自动模式强行合并（须暂停等用户决策）
 > - ❌ 用户显式跳过门控但未在 PR 描述和 design.md 留痕
-> - ❌ archive 门控（8.3）未完成就触发覆盖率门控（顺序：8.3 → 8.4 决策 → 8.4.1 门控）
+> - ❌ archive（8.2）未完成就触发覆盖率门控（顺序：8.2 archive → 8.3 分支收尾决策 → 8.3.1 门控 → 合并 → 8.4 Jira 回写）
 
 ## 批量 OPSX Jira 修复
 
@@ -622,7 +620,7 @@ Jira 评论必须包含：
 | 错误 | 后果 | 修正 |
 |------|------|------|
 | 创建额外本地运行态目录 | 形成 OpenSpec 之外的第二套记录 | 统一记录到 OpenSpec artifacts、PR/MR 和 Jira 评论 |
-| 只写 OpenSpec，不回写 Jira | Jira 流程断裂，QA 无法跟进 | 阶段 8 必须写 Jira 评论并流转到“已修复” |
+| 只写 OpenSpec，不回写 Jira | Jira 流程断裂，QA 无法跟进 | 阶段 8.4 合并完成后必须写 Jira 评论并流转到“已修复” |
 | 未做存在性验证 | 修复不存在或已变化的问题 | 阶段 2 第一项必须验证 |
 | `MODIFIED` 只写片段 | archive 时丢失 requirement 细节 | 复制完整 requirement block 再修改 |
 | 先 PR/合并再 archive | specs 或 archive 目录可能不在最终 diff | 默认先 archive 并检查 diff，再完成 PR |
@@ -636,7 +634,6 @@ Jira 评论必须包含：
 | 阶段 2 分析后就创建 proposal（根因未与方案结合） | proposal 的 Why 和 What 割裂，artifact 需重写 | proposal 在阶段 4 方案选定后才创建，一次性写完整 |
 | 使用不存在的 skill 名称（如 `openspec-apply`） | 读不到 SKILL.md，委托失败 | 正确名称：`openspec-apply-change`、`openspec-archive-change`、`openspec-verify-change` |
 | 实现中发现设计错误却继续硬做 | artifacts 与代码分叉 | 回写 proposal/specs/design/tasks 后再继续 |
-
 | 快速修复走了 OPSX 路径 | 流程过重，浪费时间 | 只需快速修复无需规范沉淀时，使用 `jira-fix-workflow` |
 | workspace 多工程下未先定位工程根 | 门禁检查在 workspace 根执行而非工程目录，artifact 写入错误位置 | 阶段 0 第 4 步必须先做工程定位，确定工程根后再检查 openspec/ 和 OPSX skills |
 | 覆盖率门控脚本崩溃却继续合并 | 崩溃被误判为「覆盖率通过」，未验证的修复进入主分支 | 崩溃/无报告/退出码1 一律视为门控未通过，暂停等用户 |
