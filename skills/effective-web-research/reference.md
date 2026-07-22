@@ -184,3 +184,57 @@ We use `jsonwebtoken@8.5.1`. Does any published CVE affect this version, given w
 ```
 
 Note how the report separates per-source scoring from claim-level synthesis, and explicitly flags what is still unknown rather than papering over it. That honesty is the point of strict mode.
+
+---
+
+## CDP upgrade
+
+The real-browser escape hatch lives in the **`web-access`** skill (CDP Proxy — connects to the user's daily browser, carries login state natively). This section is the decision tree + API cheat sheet so you can escalate without leaving this skill's context.
+
+> `web-access` is an external skill (plugin). This skill does **not** declare it as a frontmatter dependency — the research discipline above works without it. You only need `web-access` when you escalate to CDP; if it is not installed, abort this path and tell the user how to install it (no silent fallback).
+
+### When to escalate (decision tree)
+
+```
+Need information from the external web?
+├─ Answer likely in repo → internal tools (grep/read/LSP), do NOT escalate
+└─ External → start with the static layer:
+    1. WebSearch     → discover sources
+    2. WebFetch/curl → extract from a known URL (static HTML)
+    3. Jina          → Markdown-ify article-style pages (saves tokens)
+    └─ Static layer returns content LACKING the target info?
+        ├─ No, got it → apply 4 maxims / strict mode, done
+        └─ Yes (login wall / JS-rendered shell / anti-scrape block) → ESCALATE to CDP:
+            → load web-access → /new the page → /eval read DOM → /screenshot if visual
+            → resume credibility evaluation on the retrieved content
+```
+
+Escalate only when the **page refuses the non-browser client**. "I haven't found the right URL yet" is a search problem (stay at step 1), not an escalation trigger.
+
+### curl HTTP API cheat sheet (web-access CDP Proxy on http://localhost:3456)
+
+Run `web-access`'s preflight first (`check-deps.mjs`), then:
+
+```bash
+# open a background tab (auto-waits for load); URL in POST body
+curl -s -X POST --data-raw 'https://example.com' http://localhost:3456/new   # → target id
+
+# read DOM / run JS (the workhorse — read text, pull URLs, submit forms)
+curl -s -X POST "http://localhost:3456/eval?target=ID" -d 'document.title'
+
+# capture rendered state (incl. video frame)
+curl -s "http://localhost:3456/screenshot?target=ID&file=/tmp/shot.png"
+
+# interact (trigger lazy-load, paginate, expand)
+curl -s -X POST "http://localhost:3456/click?target=ID" -d 'button.next'
+curl -s "http://localhost:3456/scroll?target=ID&direction=bottom"
+
+# close the tab you created (never the user's tabs)
+curl -s "http://localhost:3456/close?target=ID"
+```
+
+`ID` is the target id from `/new` or `/targets`. For the full endpoint reference, see the `web-access` skill's own docs.
+
+### Retrieval ≠ trust
+
+After CDP retrieval, the content re-enters this skill's normal pipeline: identify the source's authority/currency, cross-validate non-trivial claims, cite with link+date. A page reachable only behind login is often a **primary source** (official platform, original post) — good for credibility, but still verify claims against a second independent source before relaying as fact.

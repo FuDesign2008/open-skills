@@ -1,8 +1,8 @@
 ---
 name: browser-debug-toolkit
-version: "1.1.0"
+version: "1.2.0"
 user-invocable: true
-description: "Browser runtime debugging toolkit — guides AI to prioritize browser DevTools, CDP-based MCP tools (chrome-devtools-mcp), and Playwright for runtime inspection when debugging UI/CSS/DOM layout, frontend interaction, and rendering issues, rather than relying solely on static code analysis. Triggers: 「浏览器调试」「UI 调试」「DOM 检查」「CSS 调试」「页面布局问题」「前端运行时调试」「chrome devtools」「CDP 调试」 / browser debug, devtools, dom inspect, css debug, runtime debugging"
+description: "Browser runtime debugging toolkit — guides AI to prioritize browser DevTools and CDP-based tools for runtime inspection and control when debugging UI/CSS/DOM layout, frontend interaction, and rendering issues. Two CDP channels: chrome-devtools-mcp (inspection, DevTools panels) and the web-access skill's CDP Proxy (control + verify, carries login state, curl-scriptable; runtime-checked, aborts with an install hint if web-access is absent). Also covers Playwright. Triggers: 「浏览器调试」「UI 调试」「DOM 检查」「CSS 调试」「页面布局问题」「前端运行时调试」「chrome devtools」「CDP 调试」「登录态调试」 / browser debug, devtools, dom inspect, css debug, runtime debugging, login-state debug."
 ---
 
 # Browser Runtime Debugging Toolkit
@@ -66,16 +66,18 @@ After install/enable, verify the MCP is loaded:
 
 ## Scene → Tool Decision Table
 
-| Problem Scene | Primary Tool | Secondary Tool | Key Capability |
-|--------------|-------------|---------------|----------------|
-| DOM structure anomaly (missing/wrong elements) | chrome-devtools-mcp / DevTools Elements | playwright screenshot | Live DOM tree, element selection, attribute inspection |
-| CSS not applying / specificity conflict | DevTools Elements → Styles | — | Computed styles, override chain, box model |
-| Layout shift / box model anomaly | DevTools Elements → Computed/Layout | — | Box model visualization, flex/grid guides |
-| Interaction anomaly (click not responding) | DevTools Console + Event Listeners | playwright click + screenshot | Event listener inspection, JS runtime errors |
-| Render performance (jank/frame drops) | DevTools Performance panel | `frontend-perf` skill | Flame chart, Long Tasks, render stats |
-| Visual regression (style overwritten) | `visual-qa` skill | playwright screenshot | Screenshot diff, design review |
-| Async loading / network issues | DevTools Network panel | — | Request/response, waterfall, status codes |
-| State management anomaly (React/Vue) | React/Vue DevTools | — | Component tree, props/state, time travel |
+| Problem Scene | Primary Tool | Secondary Tool | CDP Proxy (web-access) | Key Capability |
+|--------------|-------------|---------------|------------------------|----------------|
+| DOM structure anomaly (missing/wrong elements) | chrome-devtools-mcp / DevTools Elements | playwright screenshot | login-state repro: `/eval` read DOM | Live DOM tree, element selection, attribute inspection |
+| CSS not applying / specificity conflict | DevTools Elements → Styles | — | login-state repro: `/eval` getComputedStyle | Computed styles, override chain, box model |
+| Layout shift / box model anomaly | DevTools Elements → Computed/Layout | — | login-state repro: `/eval` getBoundingClientRect | Box model visualization, flex/grid guides |
+| Interaction anomaly (click not responding) | DevTools Console + Event Listeners | playwright click + screenshot | login-state repro + real gesture: `/click` `/clickAt` | Event listener inspection, JS runtime errors |
+| Render performance (jank/frame drops) | DevTools Performance panel | `frontend-perf` skill | — | Flame chart, Long Tasks, render stats |
+| Visual regression (style overwritten) | `visual-qa` skill | playwright screenshot | before/after `/screenshot` diff | Screenshot diff, design review |
+| Async loading / network issues | DevTools Network panel | — | — | Request/response, waterfall, status codes |
+| State management anomaly (React/Vue) | React/Vue DevTools | — | — | Component tree, props/state, time travel |
+
+> The CDP Proxy column points to the **`web-access`** skill (external plugin). It is a runtime-checked channel: verify `web-access` is available when you take it; if missing, abort and tell the user how to install it (no silent fallback). See the comparison section below for when to pick it over chrome-devtools-mcp.
 
 ## Tool Usage Guides
 
@@ -115,6 +117,28 @@ After install/enable, verify the MCP is loaded:
 
 > Framework DevTools are browser extensions that AI cannot operate directly. Guide the user to install and inspect manually.
 
+## CDP Proxy (web-access) vs chrome-devtools-mcp
+
+Two CDP channels, different debugging postures:
+
+| Aspect | chrome-devtools-mcp | web-access CDP Proxy |
+|--------|---------------------|----------------------|
+| Posture | **Inspect** (DevTools panels: Elements / Network / Performance) | **Control + verify** (operate the page, capture state) |
+| Login state | Fresh session — no user cookies by default | Connects to user's daily browser — **login state native** |
+| Operation API | MCP tools (panel-aligned) | curl HTTP API (scriptable, batch-friendly) |
+| Real user gesture | Limited | `/clickAt` (CDP Input.dispatchMouseEvent), `/setFiles` |
+| Best for | Computed styles / box model / network waterfall / perf flame chart | Login-gated / dynamic / anti-scrape repro, before/after screenshot diff, scripted batch repro |
+
+**Choose the CDP Proxy when**:
+- The bug only reproduces under login state (auth pages, paywalls, SSO backends)
+- You need to *operate* the page to reproduce (multi-step interaction), then screenshot-compare before/after the fix
+- chrome-devtools-mcp is unavailable, or you need curl-scriptable batch operations
+- The page is dynamic / anti-scraping and a fresh session gets blocked
+
+**Tie-breaker**: when a bug needs *both* inspection (computed style / box model) **and** login state, prefer the CDP Proxy — login state is the harder constraint, and chrome-devtools-mcp's fresh session cannot reach the content.
+
+**Runtime check (local strong dependency)**: this skill does **not** declare `web-access` in frontmatter `dependencies` — the debugging decision table works without it, and upstream workflows (solve-workflow family) stay free of any external-plugin requirement. Only when you actually take the CDP Proxy channel, verify `web-access` is available; if missing, abort and tell the user how to install it (no silent fallback). For the curl API cheat sheet + debugging recipes, see [reference.md](reference.md).
+
 ## Workflow Integration
 
 This skill is strongly depended on by `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, and `opsx-jira-fix-workflow` via frontmatter `dependencies` (each runs a prerequisite check at startup; if missing, it aborts). It is also discovered by `debug-workflow` and similar workflow skills through their environment capability exploration. It is delegated to by `hybrid-debug` for runtime evidence in hybrid app (WebView/WKWebView/Electron + H5) debugging scenarios, and by `runtime-evidence-debug` for UI/CSS/DOM instrumentation in general debugging scenarios:
@@ -135,9 +159,10 @@ Signal keywords: style, layout, render, display, visibility, position, size, col
 
 Tool selection priority:
 1. chrome-devtools-mcp (when MCP available) — real-time inspection, AI-operated
-2. playwright / webapp-testing — automated operations, screenshot verification
-3. visual-qa — visual comparison, design review
-4. Guide user to manually open DevTools — fallback when MCP unavailable
+2. web-access CDP Proxy — control + verify, login state, curl-scriptable (login-gated / dynamic / anti-scrape repro)
+3. playwright / webapp-testing — automated operations, screenshot verification
+4. visual-qa — visual comparison, design review
+5. Guide user to manually open DevTools — fallback when MCP unavailable
 
 MCP prerequisite check:
 → MCP missing? Present adaptive choice: A=auto-install / B=manual / C=skip

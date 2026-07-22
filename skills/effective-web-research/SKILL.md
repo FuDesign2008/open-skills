@@ -2,7 +2,7 @@
 name: effective-web-research
 version: "1.0.0"
 user-invocable: true
-description: "Effective web research discipline for AI agents — route first, then research with rigor. Step 0 triages whether a question needs external web lookup vs is answerable from the internal codebase/docs; when external, default mode auto-applies 4 maxims (official sources first, check recency, cross-validate non-trivial claims, skip content farms) so every web search is effective and credible; on explicit 'strict/deep research' requests it runs a full 7-dimension source-credibility evaluation (CRAAP + E-E-A-T merged) and emits an auditable report. Triggers: 「web 调研」「外部调研」「查资料」「有效调研」「严格调研」「深度调研」「严格查证」「这个库/框架怎么用」「有没有漏洞」「best practice 是什么」 / web research, look up, investigate, strict research, deep research, fact-check. Do NOT use for: searching the local codebase, reading repo files, grepping code — those are internal search tasks."
+description: "Effective web research discipline for AI agents — route first, then research with rigor. Step 0 triages whether a question needs external web lookup vs is answerable from the internal codebase/docs; when external, default mode auto-applies 4 maxims (official sources first, check recency, cross-validate non-trivial claims, skip content farms) so every web search is effective and credible; on explicit 'strict/deep research' requests it runs a full 7-dimension source-credibility evaluation (CRAAP + E-E-A-T merged) and emits an auditable report. When the static layer (WebSearch/WebFetch/curl) cannot reach the content — login required, JS-rendered, anti-scraping platforms (小红书/公众号) — escalate to the real browser via the web-access skill (CDP, carries login state; runtime-checked, aborts with an install hint if web-access is absent). Triggers: 「web 调研」「外部调研」「查资料」「有效调研」「严格调研」「深度调研」「严格查证」「登录态访问」「动态页面」「反爬」「这个库/框架怎么用」「有没有漏洞」「best practice 是什么」 / web research, look up, investigate, strict research, deep research, fact-check, login-state access, dynamic page, anti-scraping. Do NOT use for: searching the local codebase, reading repo files, grepping code — those are internal search tasks."
 ---
 
 # effective-web-research
@@ -35,6 +35,7 @@ Before any web search, decide whether external research is even the right move. 
 | About a third-party library / framework / external API / tool behavior / version-specific quirk | **External** — web research | Default mode (4 maxims) applies |
 | Real-world information: news, market data, people, current events, papers | **External** | Default mode applies |
 | Hybrid — external concept + internal application ("is the X library we use vulnerable to Y", "apply pattern X to our code") | **External-then-internal** — research the concept externally, then verify/apply internally | External stage uses default/strict; internal stage uses internal tools |
+| Static layer can't reach the content (login required / JS-rendered / anti-scraping platform like 小红书·公众号) | **Escalate to CDP** via the `web-access` skill (runtime-checked; aborts with an install hint if web-access is absent) — real browser carries login state | web-access handles retrieval; this skill's credibility discipline still governs whatever is retrieved |
 
 **Triage signals**:
 - *Internal*: the question mentions "our / this project / this code / our convention", or the answer domain is clearly inside the repo.
@@ -42,6 +43,24 @@ Before any web search, decide whether external research is even the right move. 
 - *Hybrid*: an external concept object + "our / apply to / check our" + an internal object.
 
 > If unsure, prefer internal first — it's faster and authoritative for "our own" questions. Escalate to external only when internal search comes up empty.
+
+---
+
+## Escalation — when the static layer can't reach the content (CDP via web-access)
+
+WebSearch / WebFetch / curl / Jina are the **static layer**. They cannot reach content that requires:
+
+- **Login state** (authenticated pages, paywalls, SSO backends, internal systems)
+- **JS dynamic rendering** (SPA content built client-side; the static HTML is an empty shell)
+- **Anti-scraping platforms** (小红书、微信公众号, and similar where even public content is bot-restricted)
+
+**Escalation rule**: when the static layer returns content that **lacks the target information** — not "I didn't find it", but "the page won't give it to a non-browser client" (login wall, rendered shell, anti-scrape block) — escalate to the real browser by loading the **`web-access`** skill and following its CDP guidance. `web-access` connects to the user's daily browser (login state carried natively) and reaches the content via its curl HTTP API (`/new`, `/eval`, `/screenshot`, ...).
+
+**Runtime check (local strong dependency)**: this skill does **not** declare `web-access` in frontmatter `dependencies` — the core research discipline works without it, and upstream workflows (known-issue-research → solve-workflow family) stay free of any external-plugin requirement. Only when you actually escalate to CDP, verify `web-access` is available; if missing, abort this path and tell the user how to install `web-access` (no silent fallback). The static-layer discipline never requires `web-access`.
+
+This escalation is the **escape hatch for retrieval**, orthogonal to the credibility discipline: the 4 maxims / strict mode still govern how you evaluate whatever content you eventually retrieve. CDP does not exempt a source from cross-validation — a login-walled page is still judged by Authority / Currency / Accuracy.
+
+For the full CDP upgrade decision tree + curl HTTP API cheat sheet, see [reference.md · CDP upgrade](reference.md#cdp-upgrade).
 
 ---
 
