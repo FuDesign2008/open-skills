@@ -1,6 +1,6 @@
 ---
 name: git-release-finish
-version: "1.6.1"
+version: "1.7.0"
 user-invocable: true
 description: "Use when releasing a Git repository version — tagging, merging release branches into main, resolving conflicts, or syncing changes between release branches. Handles ambiguous tag naming (v-prefix vs plain), unknown main branch (master/main/develop), cross-release hash-sensitive rebase, MR/PR extra file cleanup, GitLab ff-only merge method (forces cherry-pick strategy), protected branch rules, and multi-repo context isolation. GitLab, GitHub, Gitea; single or multi-repo. Triggers: 发版, 打tag, 发布版本, 版本发布, release流程, git-release, multi-repo release, release同步到另一个release."
 ---
@@ -16,6 +16,22 @@ description: "Use when releasing a Git repository version — tagging, merging r
 **依赖 skill：** 阶段6 冲突解决由 `git-conflict-resolve` skill 执行（语义分析驱动，支持 merge / rebase 多轮聚合）。
 
 **远程优先原则：** **先确认远端状态，再决定本地操作**。打 tag 前必须 `git fetch` + 验证远端 commit SHA，禁止在未验证的本地 HEAD 上直接打 tag。GitLab 优先使用 `glab api` 远程创建 tag，GitHub/Gitea 用本地 `git tag` 但锚定到远端 SHA。
+
+---
+
+## 文档结构（按需深入）
+
+本 skill 采用**渐进式披露**：本文件是核心主干（每次发版必经的流程、决策表、护栏规则），**条件性场景内容**拆到 `references/` 按需读取，避免无关内容稀释注意力。
+
+| 当你遇到... | 读这个 reference |
+|------------|----------------|
+| 阶段 3.5 判定 `merge_method = ff` + 非快进 | `references/ff-cherry-pick.md`（ff 专用 cherry-pick 流程 + GitHub 等价陷阱 + hash 一致性） |
+| 需要把 release/A 变更同步到另一个 release/B | `references/cross-release-sync.md`（hash 一致性决策树） |
+| 阶段 6 走 rebase 模式 / 保护分支 force push 被拒 / rebase 跳过 commit | `references/conflict-branches.md`（rebase 模式 + 保护分支备选 + 跳过 commit 审查） |
+| 执行中报错（406 / tag 冲突 / CLI 报错 / 空 commit 等） | `references/error-handling.md`（错误处理表 + pre-commit hook） |
+| 想速查端到端命令（人类视角） | `references/quick-reference.md`（命令速查表） |
+
+> 主干已包含每个阶段的完整决策流程。**只有上表场景命中时才读对应 reference**——大多数 merge 模式、单仓库发版全程不需要任何 reference。
 
 ---
 
@@ -139,7 +155,7 @@ glab mr create ...
 | merge-tree=0 但 MR 不可合并 | **0**→1→2→3→**3.5**→4→5→**5.5**→**6(rebase)**→**8**→**9**→10（跳过 7） |
 | 冲突 > 0，source ≤ 3 commits 且冲突 ≤ 1 文件 | **0**→1→2→3→**3.5**→4→5→**6(rebase)**→**8**→**9**→10（跳过 7） |
 | 冲突 > 0，其余情况 | **0**→1→2→3→**3.5**→4→5→**6(merge)**→**7**→**8**→**9**→10 |
-| **阶段 3.5 判定 ff 模式 + 非快进** | **0**→1→2→3→**3.5(cherry-pick)**→**8**→**9**→10（跳过 4 默认 MR / 5 / 5.5 / 6 / 7，改走 ff 专用流程创建 sync-release MR） |
+| **阶段 3.5 判定 ff 模式 + 非快进** | **0**→1→2→3→**3.5(cherry-pick)**→**8**→**9**→10（跳过 4 默认 MR / 5 / 5.5 / 6 / 7，改走 ff 专用流程创建 sync-release MR，详见 `references/ff-cherry-pick.md`） |
 
 > ⚠️ **阶段 8 不再是"AI 审查冲突文件"（仅阶段 6 后触发），而是独立的残留扫描门控**。无论阶段 5 是否检测到冲突、阶段 6 是否执行，合并 MR 前都必须通过阶段 8 的残留冲突标记扫描。这覆盖了"分支已有 merge commit 残留冲突标记但 merge-tree 未检测到新冲突"的场景。
 
@@ -288,7 +304,7 @@ echo "expected        -> $REMOTE_SHA"
 # git ls-remote origin "refs/tags/<TAG_NAME>^{}"
 ```
 
-> ⚠️ 若 `TAG_SHA` ≠ `REMOTE_SHA`（排除 annotated tag 解引用差异），说明 tag 打在了错误 commit 上，必须删除重打（见错误处理）。
+> ⚠️ 若 `TAG_SHA` ≠ `REMOTE_SHA`（排除 annotated tag 解引用差异），说明 tag 打在了错误 commit 上，必须删除重打（见 `references/error-handling.md`）。
 
 ### 输出：确认表
 
@@ -410,50 +426,9 @@ git merge-base --is-ancestor origin/<TARGET_BRANCH> origin/<RELEASE_BRANCH> \
 | `merge` / `rebase_merge` | 任意 | 默认 merge 策略（阶段6 merge 模式） |
 | `squash` | 任意 | 阶段 9 合并时去掉 `--squash=false` 参数（项目设置已强制 squash）；commit 历史会被压缩为单个提交，报告（阶段10）需记录"release 分支上的 N 个 commit 合并后在 main 上为 1 个 squash commit" |
 | `ff` | ✅ 是（可直接快进） | 默认流程，`glab mr merge` 直接成功 |
-| **`ff`** | ❌ **否（非快进关系）** | **改用 cherry-pick 策略**：从 release cherry-pick 有效 commit 到 target 派生的新分支，再提 MR（见下方 ff 模式专用流程） |
+| **`ff`** | ❌ **否（非快进关系）** | **改用 cherry-pick 策略** → **读 `references/ff-cherry-pick.md`** 执行 ff 专用流程（含 GitHub 等价陷阱、hash 一致性约束） |
 
 > ⚠️ **ff 模式 + 非快进关系是最易踩的陷阱**。release 分支通常从 target 分叉后既有自己的提交，target 也有新提交，二者几乎不可能保持快进关系。遇到 `merge_method = ff` 的项目，默认就应准备 cherry-pick 策略，而非等到阶段 9 撞 406。
-
-> ℹ️ **GitHub 的等价陷阱**：GitHub 没有 `merge_method=ff` 的直接对应，只有三个布尔开关 `allow_merge_commit` / `allow_squash_merge` / `allow_rebase_merge`。当 `allow_merge_commit=false && allow_squash_merge=false && allow_rebase_merge=true`（仅允许 rebase 合并）时，PR 合并会**重写 commit 产生 hash 变更**，效果近似 ff-only。release → main 的 PR 合并后，原 release 上的 commit hash 在 main 上会不同——跨 release 同步时按「rebase/hash 已变更」场景处理（见「场景：release 分支变更同步到另一个 release 分支」）。
-
-### ff 模式专用流程（cherry-pick 策略）
-
-当阶段 3.5 判定为 `ff` 模式 + 非快进关系时，跳过阶段 6 的 merge/rebase 模式，改用：
-
-> ⚠️ **多仓库场景**：以下命令默认在单个 `<REPO_PATH>` 下连续执行；多仓库时**每条命令仍需以 `cd <REPO_PATH> &&` 开头**（见 M.1），工具调用层无持久 cwd 状态。
-
-```bash
-# 1. 列出 release 相对 target 的独有 commit
-cd <REPO_PATH> && git log origin/<TARGET_BRANCH>..origin/<RELEASE_BRANCH> --oneline
-
-# 2. 从 target 派生同步分支
-cd <REPO_PATH> && git checkout origin/<TARGET_BRANCH> -b sync-release/<VERSION>-to-<TARGET>
-
-# 3. 逐个 cherry-pick（按时间顺序）
-cd <REPO_PATH> && git cherry-pick <COMMIT_1> <COMMIT_2> ...
-# 遇冲突时调用 git-conflict-resolve skill（mode=rebase，cherry-pick 类似逐 commit 处理）
-#   传参：source=<RELEASE_BRANCH>、target=<TARGET_BRANCH>、version=<VERSION>
-#   启发式：版本号/依赖字段通常取 target 侧，构建产物取 release 侧
-# 解决后继续 cherry-pick 下一个 commit
-
-# 4. cherry-pick 可能产生空 commit（target 已有等价改动）→ --skip
-#    cd <REPO_PATH> && git cherry-pick --skip
-
-# 5a. 残留扫描（精确正则，与阶段 8 一致）
-cd <REPO_PATH> && git grep -lE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' 2>/dev/null
-
-# 5b. 推送同步分支
-cd <REPO_PATH> && git push origin sync-release/<VERSION>-to-<TARGET>
-
-# 5c. 创建 MR（源分支为 sync-release 分支，不是原 release 分支）
-cd <REPO_PATH> && glab mr create \
-  --source-branch sync-release/<VERSION>-to-<TARGET> \
-  --target-branch <TARGET_BRANCH> \
-  --title "Release <VERSION> (ff cherry-pick)" \
-  --remove-source-branch=false
-```
-
-> ℹ️ **cherry-pick 策略的特点**：commit hash 会变更（与原 release 分支不同），但 ff 模式项目不依赖 hash 一致性（它不产生 merge commit）。若后续有跨 release 同步需求，需注意 hash 已变更（见「跨 release 同步」场景的 hash 一致性约束）。
 
 ### 输出：环境指纹表
 
@@ -464,7 +439,7 @@ cd <REPO_PATH> && glab mr create \
 
 **ff 模式或保护分支异常时，与用户对齐策略后再执行阶段4。**
 
-> ⚠️ **保护分支 + 非 ff 的组合**：若 release 分支是保护分支（push=No one），无论 merge_method 为何，阶段 6 rebase 模式的 force push 都会失败，必须走「保护分支备选路径」（见阶段 6）。环境指纹表检出 release 分支 push=No one 时，策略列应标注"保护分支备选"。
+> ⚠️ **保护分支 + 非 ff 的组合**：若 release 分支是保护分支（push=No one），无论 merge_method 为何，阶段 6 rebase 模式的 force push 都会失败，必须走「保护分支备选路径」。环境指纹表检出 release 分支 push=No one 时，策略列应标注"保护分支备选"（详见 `references/conflict-branches.md`）。
 
 ---
 
@@ -490,6 +465,8 @@ gh pr create \
 ```
 
 记录每个 MR/PR 的编号和 URL，汇总输出。
+
+> ℹ️ ff 模式 + 非快进的仓库不走本阶段默认 MR，改在 `references/ff-cherry-pick.md` 的流程里创建 sync-release 分支的 MR。
 
 ---
 
@@ -544,7 +521,7 @@ gh pr view <PR_ID> --json mergeable,mergeStateStatus 2>&1
 |---------|------|
 | `can_be_merged` / `MERGEABLE` 且阶段 3.5 **未**判定 ff 陷阱 | ✅ 进入阶段 9 合并 |
 | 不可合并（`conflict` / `UNMERGEABLE`） | ❌ 改用 rebase 策略（阶段 6），不直接进入阶段 9 |
-| `can_be_merged` 且阶段 3.5 判定 `ff` 模式 + 非快进关系 | ⚠️ **阶段 9 的 `mr merge` 仍会返回 406**。必须改用阶段 3.5 的 cherry-pick 策略，不要直接进阶段 9 |
+| `can_be_merged` 且阶段 3.5 判定 `ff` 模式 + 非快进关系 | ⚠️ **阶段 9 的 `mr merge` 仍会返回 406**。必须改用阶段 3.5 的 cherry-pick 策略（`references/ff-cherry-pick.md`），不要直接进阶段 9 |
 
 > ⚠️ **`can_be_merged` 不等于 `mr merge` 会成功**：`can_be_merged` 只表示「代码层面无冲突、可产生合并结果」，不绕过 `merge_method=ff` 等项目级约束。ff 模式陷阱的完整机制与权威判断见阶段 3.5。
 
@@ -564,9 +541,9 @@ gh pr view <PR_ID> --json mergeable,mergeStateStatus 2>&1
 
 > ⚠️ 若 `git-conflict-resolve` 未能完成（用户主动中止、遇到无法解决的冲突或 rebase 中断），**不得继续执行以下操作**，保持当前工作区状态等待人工介入后重新启动。
 
-`git-conflict-resolve` 执行完毕并输出全局复查清单（Y.6）、用户确认后，按模式执行：
+`git-conflict-resolve` 执行完毕并输出全局复查清单（Y.6）、用户确认后，按模式执行收尾：
 
-**merge 模式**：
+**merge 模式**（默认）：
 
 ```bash
 # 推送 merge 分支
@@ -579,60 +556,8 @@ gh pr close <OLD_ID>     # GitHub
 
 然后重新创建指向 `merge-release/<VERSION>` 的 MR/PR（参考阶段4命令）。
 
-**rebase 模式**：
-
-```bash
-# 将 rebase 结果推回原 release 分支，触发原 MR/PR 自动更新
-git push origin rebase-release/<VERSION>:<RELEASE_BRANCH> --force-with-lease
-# 原 MR/PR（<RELEASE_BRANCH> → <MAIN_BRANCH>）自动更新，无需关闭重建
-```
-
-> ⚠️ `--force-with-lease` 比 `--force` 更安全：若远端在此期间有新提交，会拒绝推送，避免覆盖他人提交。
->
-> ⚠️ **Force push 前确认**：若 `<RELEASE_BRANCH>` 是共享分支（多人协作），force push 会破坏他人的工作基础。执行前询问用户：**"是否有他人基于此分支工作？确认 force push？"**
-
-#### 保护分支备选路径（force push 被拒时）
-
-> ⚠️ 若 `<RELEASE_BRANCH>` 是**保护分支**（GitLab `release/*` 保护规则常见 push=No one），force push 会被远端直接拒绝（`remote: rejected`），即使非 force 的普通 push 也可能被拒。
-
-**检测**：force push 返回 `! [remote rejected]` 或 `pre-receive hook declined`。
-
-**处理**：不修改 release 分支，改为推到新分支并创建新 MR：
-
-```bash
-# 1. 将 rebase 结果推到新分支（非 force push，普通 push）
-git push origin rebase-release/<VERSION>
-
-# 2. 关闭原来因冲突而搁置的 MR/PR
-glab mr close <OLD_ID>   # GitLab
-gh pr close <OLD_ID>     # GitHub
-
-# 3. 创建指向 rebase-release/<VERSION> 的新 MR/PR（参考阶段4命令）
-#    源分支: rebase-release/<VERSION>
-#    目标分支: <MAIN_BRANCH>
-```
-
-> **注意**：此路径下原 release 分支保持不变（仍指向 rebase 前的 commit）。后续若有 release → main 的同步需求，需注意 hash 一致性问题（见"跨 release 同步"场景）。
-
-### rebase 后检查：跳过 commit 审查
-
-若 rebase 过程中出现 `warning: skipped previously applied commit <SHA>`：
-
-```bash
-# 1. 查看被跳过的 commit
-git show <SKIPPED_SHA> --stat --oneline
-
-# 2. 查找 target 上的对应 commit（同 message 或同文件改动）
-git log origin/<MAIN_BRANCH> --oneline --grep="<关键字>" | head -5
-
-# 3. 对比 diff 是否完全一致
-diff <(git show <SKIPPED_SHA> --format=) <(git show <TARGET_SHA> --format=)
-```
-
-| 对比结果 | 处理 |
-|---------|------|
-| diff 完全一致 | ✅ 安全跳过，无需处理 |
-| diff 不一致 | ❌ 该 commit 未被完整包含，需手动 cherry-pick `<SKIPPED_SHA>` |
+**rebase 模式 / 保护分支 force push 被拒 / rebase 跳过 commit**：
+这些条件分支的完整命令与审查流程见 **`references/conflict-branches.md`**（含 rebase force push、保护分支备选路径、跳过 commit 等价性验证）。
 
 ---
 
@@ -741,38 +666,14 @@ git diff origin/<MAIN_BRANCH>..HEAD -- <conflict_file>
 | 无注释掉的代码 | diff 中不应出现 `//` 或 `/* */` 包裹的整段逻辑 | 有 → ⚠️ 标注 |
 | 无意外删除 | 除冲突标记外，不应有不在 source/target 任一分支中的删除 | 有 → ❌ |
 
-### 8.3 rebase 跳过 commit 等价性验证（若适用）
-
-若阶段 6 rebase 过程中有 commit 被跳过，验证等价性：
-
-```bash
-# 对比跳过 commit 与 target 对应 commit 的 diff
-diff <(git show <SKIPPED_SHA> --format=) <(git show <TARGET_SHA> --format=)
-# 输出应为空（完全一致）
-```
-
-不一致 → ❌ 被跳过的 commit 未完整包含在 target 中，需手动 cherry-pick。
+> 8.3 rebase 跳过 commit 等价性验证（若阶段 6 rebase 有 commit 被跳过）→ 详见 `references/conflict-branches.md`。
 
 ### 8.4 审查结论
 
 | 结论 | 判定 | 后续 |
 |------|------|------|
-| ✅ 通过 | 8.1 无残留标记 + 8.2/8.3（若执行）全部检查项无 ❌ | 进入阶段 9 合并 |
-| ❌ 不通过 | 8.1 检测到残留标记，或 8.2/8.3 任一项为 ❌ | **禁止合并**，回到阶段 6 修复后重新审查 |
-
-### 审查报告输出
-
-```
-【残留扫描报告】
-- 8.1 残留标记扫描：✅ 合并涉及 42 个文件，无残留冲突标记
-- 8.2 冲突文件 diff 审查（若执行）：
-  - .gitignore: ✅ 8.2.70 的 .omc/.sisyphus 改动叠加在 master 之上
-  - src/bridge/api/MainProcessAPI.ts: ✅ 两侧新函数均完整保留
-- 8.3 rebase 跳过 commit（若执行）：
-  - skipped commit 7437368df: ✅ 与 master 7421ca91b diff 一致
-
-结论：✅ 通过，可进入阶段 9 合并
-```
+| ✅ 通过 | 8.1 无残留标记 + 8.2（若执行）全部检查项无 ❌ | 进入阶段 9 合并 |
+| ❌ 不通过 | 8.1 检测到残留标记，或 8.2 任一项为 ❌ | **禁止合并**，回到阶段 6 修复后重新审查 |
 
 > ⛔ **门控**：8.1 检测到残留冲突标记时，**不得继续执行阶段 9**。修复后必须重新通过阶段 8 扫描。
 
@@ -805,6 +706,8 @@ git log origin/<MAIN_BRANCH> --oneline -5
 # 确认最新 commit 中包含 release/<VERSION> 合并信息
 ```
 
+> ⚠️ 若 `glab mr merge` 返回 406 或其他错误，查 `references/error-handling.md`。
+
 ---
 
 ## 阶段10：输出报告
@@ -819,200 +722,16 @@ git log origin/<MAIN_BRANCH> --oneline -5
    - 冲突文件清单及解决方式：**直接引用 `git-conflict-resolve` Y.6 全局复查清单**，不重新生成
    - 清理的多余文件列表
 4. **需人工关注事项**（如残留风险、待补充 cherry-pick 等）
-5. **跨 release 同步**（如有）：源 release / 目标 release / 处理方式 / 冲突详情
+5. **跨 release 同步**（如有）：源 release / 目标 release / 处理方式 / 冲突详情（详见 `references/cross-release-sync.md`）
 
 ---
 
-## 场景：release 分支变更同步到另一个 release 分支
+## 进阶场景与参考（按需阅读）
 
-当 `release/A` 已合入主分支，但需将其变更同步到 `release/B`（较新 release）时：
+本主干覆盖标准发版全流程。以下场景命中时再读对应 reference：
 
-> ⚠️ **核心约束 — hash 一致性问题**：
-> 若 `release/A` 是通过 **rebase**（非 merge）合入主分支的，则同一批改动在 `release/A` 和主分支上有**不同的 commit hash**。
-> 此时直接 merge `release/A` → `release/B`，会导致后续 `release/B` → 主分支时出现同一改动两套 hash，必然冲突。
-
-### 决策流程
-
-```
-release/A 合入主分支的方式？
-├── merge（保留原始 hash）
-│   → ✅ 可直接 merge release/A → release/B
-│       未来 release/B → 主分支干净
-│
-├── rebase（hash 已变更）
-│   → ❌ 禁止 merge release/A → release/B
-│   → ✅ 改为将 release/B rebase 到主分支
-│       （或 merge 主分支到 release/B）
-│       因为主分支已包含 release/A 的变更
-│
-└── cherry-pick（ff 模式项目，hash 已变更）
-    → ⚠️ release/A 的改动在主分支上是新 hash
-    → 同步到 release/B 时也应 cherry-pick 主分支上的对应 commit
-       或直接 cherry-pick release/A 的原始 commit（接受 hash 差异）
-    → 因 release/B → 主分支若同为 ff 模式，本就不产生 merge commit
-       hash 差异不引发冲突，但仍需在 release/B 上解决内容冲突
-```
-
-> ℹ️ **ff 模式项目的跨 release 同步**：ff 项目不产生 merge commit，hash 一致性约束比 merge/rebase 项目宽松。但仍建议 cherry-pick release/A 的原始 commit 到 release/B，保持改动来源可追溯。若 release/B 同为 ff 模式，阶段 3.5 应已识别，直接走 cherry-pick 策略。
-
-### 操作步骤
-
-```bash
-# 1. dry-run 评估冲突
-BASE=$(git merge-base origin/release/A origin/release/B)
-git merge-tree $BASE origin/release/A origin/release/B | grep -c "^changed in both"
-
-# 2. 检查 release/A 在主分支上的合入方式
-git log origin/<MAIN_BRANCH> --oneline --merges | grep "release/A"
-# 若找不到 merge commit → 很可能是 rebase 入的
-
-# 3. 若为 rebase 入 → 将 release/B rebase 到主分支
-git checkout -B release/B origin/release/B
-git rebase origin/<MAIN_BRANCH>
-# 解决冲突后 force push（参见阶段6 rebase 模式）
-```
-
-### 示例
-
-> `release/8.2.61` 以 rebase 方式合入 `master`。
-> 需要将其变更同步到 `release/8.2.70`。
-> ❌ 错误：`git merge release/8.2.61` → 后续 8.2.70 → master 必然冲突。
-> ✅ 正确：`release/8.2.70` rebase 到 `master`（master 已有 8.2.61 变更）
-
----
-
-## 错误处理
-
-| 场景 | 处理方式 |
-|------|---------|
-| tag 已存在 | ⚠️ 已发布 tag 不可移动（下游 CI/CD 可能已基于该 tag 部署）。建议新建版本号；确需覆盖须用户明确确认 |
-| 打 tag 前发现本地落后远端 | 阶段 2 前置检查已捕获；tag 锚定到 `$REMOTE_SHA`（`git rev-parse origin/<RELEASE_BRANCH>`），不使用本地 HEAD |
-| tag 打在了错误 commit 上 | 删除重打：`git push origin --delete <TAG>` + `git tag -d <TAG>` → 重新执行阶段 2（锚定到 `$REMOTE_SHA`）；GitLab 也可 `glab api DELETE "projects/:fullpath/repository/tags/<TAG>"` 远程删除 |
-| MR/PR 已存在（同源同目标） | 复用已有 MR/PR，不重新创建 |
-| merge-tree=0 但 MR 无法合并 | 改用 rebase 策略（阶段 6），创建 rebase-release 分支 |
-| `glab mr merge` 返回 406 "Branch cannot be merged"（merge-tree=0 且 can_be_merged） | 项目 `merge_method = ff` 且 release 非 target 后代。阶段 3.5 应已捕获；若漏检，立即查 `glab api "projects/:fullpath"` 的 `merge_method`，改用阶段 3.5 的 cherry-pick 策略 |
-| `glab api` 报 "Accepts 1 arg(s), received 2" | 多为参数被 shell 拆分。**先加引号**：`-f "key=value"`（`glab api "path" -f "tag_name=X" -f "ref=Y"`）；若该 glab 版本仍报错（实战遇到过 `-f` 不被接受），改用 `--raw-field "key=value"`。优先升级 glab 到最新稳定版 |
-| 多仓库命令在错误仓库执行（创建了错误 MR / 分析了错误分支） | 违反 M.1 工作目录隔离。关闭错误 MR（`glab mr close <WRONG_ID>`），回到正确仓库目录用 `cd <REPO_PATH> &&` 前缀重试 |
-| rebase 冲突过多 | 切换为 merge 策略（在 git-conflict-resolve 中重新执行 Y.0 merge 模式） |
-| rebase 自动跳过 commit | 对比被跳过 commit 与 target 对应 commit 的 diff（阶段 6 审查流程） |
-| cherry-pick 产生空 commit（"previous cherry-pick is now empty"） | target 已有等价改动，`git cherry-pick --skip` 跳过；若需保留记录用 `--allow-empty` |
-| force push 被保护分支拒绝（`remote rejected` / `pre-receive hook declined`） | release 分支是保护分支（push=No one），改用"保护分支备选路径"：推到新分支 `rebase-release/<VERSION>` → 关闭原 MR → 创建新 MR（见阶段6 rebase 模式） |
-| 冲突解决出现逻辑错误 | 交由 `git-conflict-resolve` Y.5 逻辑验证捕获，按 ⚠️/❌ 提示处理 |
-| `git rm --cached` 报 "pathspec not found" | 文件不在 index，用 `git add -A` 先同步 worktree 再重试 |
-| pipeline 未运行/失败 | ⚠️ 检查 pipeline 状态。若 pipeline 失败（红色），禁止合并；若仓库无 CI 配置则可忽略 |
-| CLI 认证失败 | 检查 `<GIT_CLI> auth status`，重新执行 `<GIT_CLI> auth login` |
-
----
-
-## 快速参考命令
-
-```bash
-# 查看 tag 历史
-git tag --sort=-version:refname | head -30
-
-# ── 阶段2：远程优先打 tag（前置检查 + 平台分流）──
-# 前置检查（所有平台）
-git fetch origin <RELEASE_BRANCH>
-REMOTE_SHA=$(git rev-parse origin/<RELEASE_BRANCH>)
-echo "remote HEAD: $REMOTE_SHA"
-# 分叉检测
-git rev-list --count HEAD..origin/<RELEASE_BRANCH>  # >0 说明本地落后
-# tag 远端已存在检查
-git ls-remote --tags origin | grep "refs/tags/<TAG_NAME>$"
-
-# GitLab：远程创建 tag（glab api，纯 tag 无 Release 对象）
-glab api POST "projects/:fullpath/repository/tags" \
-  -f tag_name=<TAG_NAME> -f ref=$REMOTE_SHA -f message="Release <VERSION>"
-
-# GitHub / Gitea：本地锚定到远端 SHA
-git tag <TAG_NAME> $REMOTE_SHA && git push origin <TAG_NAME>
-
-# 验证 tag 指向正确 commit
-git ls-remote origin refs/tags/<TAG_NAME>  # 应返回 $REMOTE_SHA
-# ── 阶段2 结束 ──
-
-# 查看主分支合并历史
-git log --oneline --merges -20 | grep -E "into '(master|main|develop)'"
-
-# ── 阶段3.5 环境指纹识别 ──
-# merge method（ff 是关键陷阱）
-glab api "projects/:fullpath" | python3 -c "import sys,json; print('merge_method:', json.load(sys.stdin).get('merge_method'))"
-# release 分支保护规则
-glab api "projects/:fullpath/protected_branches" | python3 -c "import sys,json; [print(b['name'], b.get('push_access_levels'), b.get('merge_access_levels')) for b in json.load(sys.stdin)]"
-# ff 模式判定：release 是否为 target 后代（target 是 release 祖先 → 可 ff）
-git merge-base --is-ancestor origin/<TARGET> origin/<RELEASE> && echo "可ff" || echo "非快进→cherry-pick"
-# ff 模式专用：cherry-pick 同步（多仓库每条加 cd <REPO> && 前缀，见正文 ff 流程）
-git log origin/<TARGET>..origin/<RELEASE> --oneline                      # 列独有 commit
-cd <REPO> && git checkout origin/<TARGET> -b sync-release/<V>-to-<TARGET> # 派生分支
-git cherry-pick <C1> <C2> ...                                             # 逐个 pick（空 commit 用 --skip）
-
-# 冲突 dry-run（检测冲突文件数量）
-git merge-tree $(git merge-base origin/$SRC origin/$TGT) origin/$SRC origin/$TGT | grep -c "^changed in both"
-
-# 验证 MR 可合并性（阶段 5.5 — merge-tree=0 后强制执行）
-glab mr view <MR_ID> | grep -iE "merge_status|can_be_merged"   # GitLab
-gh pr view <PR_ID> --json mergeable,mergeStateStatus            # GitHub
-
-# 检查多余文件（阶段7）
-comm -23 <(git ls-tree -r HEAD --name-only | sort) <(git ls-tree -r origin/$SRC --name-only | sort)
-
-# 合并 MR/PR（按平台选择）
-glab mr merge $MR_ID --squash=false --remove-source-branch=false --yes   # GitLab
-gh pr merge $PR_ID --merge --delete-branch=false                          # GitHub
-
-# 冲突解决相关命令 → 见 git-conflict-resolve skill 快速参考
-
-# rebase 跳过 commit 审查（阶段6）
-git show <SKIPPED_SHA> --stat --oneline
-diff <(git show <SKIPPED_SHA> --format=) <(git show <TARGET_SHA> --format=)
-
-# 跨 release 同步：检查 release/A 合入主分支方式
-git log origin/<MAIN_BRANCH> --oneline --merges | grep "release/A"
-
-# ── 阶段0 前置健康检查 ──
-# 工作区残留扫描（精确正则 + git grep）
-git grep -lE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' 2>/dev/null
-# 历史 merge commit 残留扫描（pickaxe）
-git log --all --merges --since="30 days ago" \
-  -S'^<<<<<<< ' --pickaxe-regex --format="%h %s" 2>/dev/null
-
-# ── 阶段8 独立残留扫描门控（无条件执行） ──
-BASE=$(git merge-base origin/<MAIN_BRANCH> HEAD)
-git diff --name-only $BASE..HEAD | while read f; do
-  git grep -nE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' -- "$f" 2>/dev/null && echo "❌ $f"
-done
-git diff origin/<MAIN_BRANCH>..HEAD -- <conflict_file>  # diff 审查（若阶段6执行了）
-```
-
----
-
-## 附录：pre-commit hook 脚本（L5 可选增强）
-
-> **持续防护**：将此脚本安装到 `.git/hooks/pre-commit`，每次 `git commit` 都自动检测 staged 内容的冲突标记。不依赖任何 skill 执行——这是 git 原生 hook，安装后永久生效。
->
-> **与 skill 的关系**：skill 的 L1-L4 防御在 skill 执行时触发；pre-commit hook 在**任何 commit 操作**时触发（包括手动 commit、其他 skill 的 commit）。两者互补，不冲突。
-
-### 安装
-
-```bash
-# 保存到项目的 .git/hooks/pre-commit
-cat > .git/hooks/pre-commit << 'HOOK'
-#!/bin/bash
-# 检测 staged 内容中的 git 冲突标记
-# 精确正则匹配：行首 7+ 字符 + 空格/行尾
-git diff --cached | grep -qE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' \
-  && {
-    echo "❌ pre-commit: staged 内容含冲突标记，禁止提交"
-    echo "请先解决冲突标记后再 commit"
-    exit 1
-  } || exit 0
-HOOK
-chmod +x .git/hooks/pre-commit
-```
-
-### 注意事项
-
-- hook 可被 `git commit --no-verify` 绕过——L5 是可选增强，L1-L4 不依赖它
-- 若项目已有 pre-commit hook（如 lint），将冲突标记检测追加到现有 hook 末尾
-- hook 内容与 `git-conflict-resolve` Y.6 门控、`git-release-finish` 阶段 8 扫描使用相同的精确正则，保持一致性
-
+- **`references/ff-cherry-pick.md`** — ff 模式专用 cherry-pick 流程、GitHub 等价陷阱、跨 release hash 一致性
+- **`references/cross-release-sync.md`** — release/A 变更同步到 release/B 的 hash 一致性决策树
+- **`references/conflict-branches.md`** — 阶段 6 rebase 模式、保护分支备选路径、rebase 跳过 commit 等价性验证
+- **`references/error-handling.md`** — 错误处理表（406 / tag 冲突 / CLI 报错 / 空 commit 等）+ pre-commit hook 安装
+- **`references/quick-reference.md`** — 端到端命令速查（人类视角）
