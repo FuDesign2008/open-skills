@@ -126,6 +126,9 @@ Skill 内容...
 4. 如需 Hook 触发 → 在 `hooks/hooks.json` 添加配置
 5. 如需 OpenCode 支持 → 在 `.opencode/plugins/` 或 `.opencode/plugin/` 添加 JS/TS 代码
 6. 确认 `docs/generated/skills-index.md` 已更新并纳入提交（commit 时 pre-commit hook 自动处理；未安装 hook 则手动运行 `node scripts/gen-skill-docs.mjs` 后再提交）
+7. 确认正文正向描述流程（检查是否有「不得 XXX」/「❌ 反例」堆砌——正向流程讲清楚后反例即冗余）
+8. 确认正文无版本标记等历史包袱（无「v1→v2」「（v2 新增）」等变更日志——变更历史由 git/archive 承载）
+9. 确认 SKILL.md 摘要不重复 reference.md 完整规范（SKILL.md 是摘要 + 指向 reference.md，不是复制）
 
 ### Skill 精简原则
 
@@ -136,6 +139,7 @@ Skill 内容...
 - **跨 skill 引用用名称、不用对方编号**：引用其他 skill 的阶段/步骤时写名称（如「分析阶段」、`runtime-evidence-debug` 的逃生出口），不写对方编号（`stage 1.2`、步骤 3.6 等）——对方重编号时数字引用会 silently 悬空且难察觉（曾有「逃生出口 5.5」指向不存在步骤的实例）；编号仅允许出现在引用方自己声明的契约映射行，且须「号+名」
 - **正文正向描述流程，不堆砌反例**：Skill 正文（SKILL.md + reference.md）正向描述「什么时候做什么、怎么做」；AI 理解正向流程后自然不会犯错，反例堆砌（「不得 XXX」/「❌ 反例」）降低信噪比且暗示 AI 不够聪明。反模式只需在事件复盘文档和 git history 留存，不侵入 Skill 正文
 - **正文不携带历史包袱**：Skill 正文只描述「当前怎么做」，不写「v1→v2 变更」「（v2 新增）」等版本标记或变更日志。变更历史由 git commit history 和 OpenSpec archive 承载；Skill 运行时应轻盈、活在当下
+- **同一规则用不同措辞重复表述是冗余，不是加强**：若「触发时机」已说清「即将执行 X 时启动」，再独立写一段「X 前置检查（强制）：调用 X 前自问是否已做 Y」就是同一件事的重复——换个说法再强调一遍不增加信息量，只降低信噪比
 
 ### 命令文件格式（`commands/*.md`）
 
