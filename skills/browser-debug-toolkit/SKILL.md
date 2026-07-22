@@ -77,7 +77,7 @@ After install/enable, verify the MCP is loaded:
 | Async loading / network issues | DevTools Network panel | — | — | Request/response, waterfall, status codes |
 | State management anomaly (React/Vue) | React/Vue DevTools | — | — | Component tree, props/state, time travel |
 
-> The CDP Proxy column points to the **`web-access`** skill (external plugin). It is a runtime-checked channel: verify `web-access` is available when you take it; if missing, abort and tell the user how to install it (no silent fallback). See the comparison section below for when to pick it over chrome-devtools-mcp.
+> The CDP Proxy column points to the external **`web-access`** skill — a runtime-local dependency (this skill does **not** declare it in frontmatter `dependencies`, so upstream workflows like solve-workflow stay free of any external-plugin requirement): verify `web-access` is available when you take this channel; if missing, abort and tell the user how to install it (no silent fallback). See the comparison below for when to pick it over chrome-devtools-mcp.
 
 ## Tool Usage Guides
 
@@ -129,15 +129,9 @@ Two CDP channels, different debugging postures:
 | Real user gesture | Limited | `/clickAt` (CDP Input.dispatchMouseEvent), `/setFiles` |
 | Best for | Computed styles / box model / network waterfall / perf flame chart | Login-gated / dynamic / anti-scrape repro, before/after screenshot diff, scripted batch repro |
 
-**Choose the CDP Proxy when**:
-- The bug only reproduces under login state (auth pages, paywalls, SSO backends)
-- You need to *operate* the page to reproduce (multi-step interaction), then screenshot-compare before/after the fix
-- chrome-devtools-mcp is unavailable, or you need curl-scriptable batch operations
-- The page is dynamic / anti-scraping and a fresh session gets blocked
+Prefer the CDP Proxy for login-state repro, operate-to-reproduce flows, or when chrome-devtools-mcp is unavailable. **Tie-breaker**: when a bug needs *both* inspection (computed style / box model) **and** login state, the CDP Proxy wins — login state is the harder constraint (a fresh session simply cannot reach the content).
 
-**Tie-breaker**: when a bug needs *both* inspection (computed style / box model) **and** login state, prefer the CDP Proxy — login state is the harder constraint, and chrome-devtools-mcp's fresh session cannot reach the content.
-
-**Runtime check (local strong dependency)**: this skill does **not** declare `web-access` in frontmatter `dependencies` — the debugging decision table works without it, and upstream workflows (solve-workflow family) stay free of any external-plugin requirement. Only when you actually take the CDP Proxy channel, verify `web-access` is available; if missing, abort and tell the user how to install it (no silent fallback). For the curl API cheat sheet + debugging recipes, see [reference.md](reference.md).
+For the curl API cheat sheet + debugging recipes, see [reference.md](reference.md).
 
 ## Workflow Integration
 
