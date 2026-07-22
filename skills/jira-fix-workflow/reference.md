@@ -349,18 +349,19 @@ AI 自动优化方案中...
 
 ## 阶段 9：提交完成
 
-**修复评论（Jira 评论内容）**：
+**Jira 回写评论模板（阶段 10 合并完成后使用）**：
 ```
 **AI 自动修复报告**
 
 - **修复分支**: fix/jira-fix-{JIRA-ID}
 - **Commit**: {commit_hash}
+- **PR/MR URL**: {pr_mr_url}
 - **根因**: {root_cause_summary}
 - **修复方案**: {solution_summary}
 - **修改文件**: {file_list}
 - **分析报告**: reports/{JIRA-ID}-analysis.md
 
-请进行 Code Review。
+代码已合并到主分支，请进行 QA 验证。
 ```
 
 手动模式额外包含「验证场景」章节：
@@ -380,7 +381,7 @@ AI 自动优化方案中...
 **修复分支**: fix/jira-fix-[JIRA-ID]
 **Commit**: [commit hash]
 **推送状态**: ✅ 成功
-**Jira 回写**: ✅ 状态已更新为 Code Review / ⚠️ 回写跳过（原因）
+**PR/MR URL**: [URL]
 **分析报告**: reports/[JIRA-ID]-analysis.md
 - [模式状态] 自动模式已完成本轮，已恢复为手动模式。阶段 10 合并仍需您确认。
 ```
@@ -394,7 +395,6 @@ AI 自动优化方案中...
 | backend | a1b2c3d | ✅ 成功 | +45/-12 (3 files) |
 | frontend | e4f5g6h | ✅ 成功 | +23/-8 (2 files) |
 
-**Jira 回写**: ✅ 状态已更新为 Code Review
 **分析报告**: reports/[JIRA-ID]-analysis.md
 ```
 
