@@ -134,6 +134,8 @@ Skill 内容...
 - **输出模板超过 5 行抽 reference.md**：SKILL.md 用 `输出格式见 reference.md` 一句引用
 - **共享 skill 的契约标识两侧一致**：共享 skill 的参数化占位符（如 `{root-cause step}`）是共享方与引用方之间的契约标识，必须两侧逐字一致；提交前 grep 两侧核对（含中英文差异）
 - **跨 skill 引用用名称、不用对方编号**：引用其他 skill 的阶段/步骤时写名称（如「分析阶段」、`runtime-evidence-debug` 的逃生出口），不写对方编号（`stage 1.2`、步骤 3.6 等）——对方重编号时数字引用会 silently 悬空且难察觉（曾有「逃生出口 5.5」指向不存在步骤的实例）；编号仅允许出现在引用方自己声明的契约映射行，且须「号+名」
+- **正文正向描述流程，不堆砌反例**：Skill 正文（SKILL.md + reference.md）正向描述「什么时候做什么、怎么做」；AI 理解正向流程后自然不会犯错，反例堆砌（「不得 XXX」/「❌ 反例」）降低信噪比且暗示 AI 不够聪明。反模式只需在事件复盘文档和 git history 留存，不侵入 Skill 正文
+- **正文不携带历史包袱**：Skill 正文只描述「当前怎么做」，不写「v1→v2 变更」「（v2 新增）」等版本标记或变更日志。变更历史由 git commit history 和 OpenSpec archive 承载；Skill 运行时应轻盈、活在当下
 
 ### 命令文件格式（`commands/*.md`）
 
@@ -232,6 +234,8 @@ Invoke the <skill-name> skill and follow it exactly
 - ❌ Hook 脚本阻塞主流程（必须静默失败）
 - ❌ OpenCode 插件用 CommonJS（必须 ES Module）
 - ❌ 中文内容混用英文标点
+- ❌ Skill 正文堆砌「不得 XXX」/「❌ 反例」等否定式（应正向描述流程——AI 理解正向流程后自然不会犯错，反例堆砌降低信噪比）
+- ❌ Skill 正文写「v1→v2」「（v2 新增）」等版本标记或变更日志（变更历史由 git/archive 承载，Skill 正文活在当下）
 
 ## 验证命令
 
