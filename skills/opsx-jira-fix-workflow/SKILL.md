@@ -15,6 +15,7 @@ dependencies:
   - known-issue-research
   - env-capability-discovery
   - ensure-tests
+  - merge-discipline
 ---
 
 # OPSX Jira Bug 修复工作流
@@ -46,20 +47,21 @@ dependencies:
 - **强制模式**：触发词含“强制”或 `--force` 时可跳过难度终止，但仍不得跳过验证和归档检查。
 - **继续修复**：触发词含“继续修复”“再次修复”“从上次继续”或 `--retry` 时，先定位现有 OpenSpec change，再从 `design.md`、`tasks.md` checkbox、当前 Git 分支和 PR/MR 状态恢复上下文。
 
-**强依赖 skill**（frontmatter `dependencies`，共 11 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
+**强依赖 skill**（frontmatter `dependencies`，共 12 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
 - `solution-review`（阶段 4 决策级审查）、`code-design-review`（阶段 4 代码设计审查）
 - `hybrid-debug`（阶段 2 Hybrid 全栈调试）、`runtime-evidence-debug`（阶段 2 运行时证据调试）、`browser-debug-toolkit`（阶段 2 + 阶段 7 浏览器 DevTools 调试）
 - `node-version-discipline`（阶段 6 执行验证前 Node 版本对齐）
 - `workflow-mode-lifecycle`（自动/手动模式生命周期）、`clarifying-question-discipline`（主动提问硬纪律与调查优先）、`known-issue-research`（阶段 2 调研路由 / 已知问题快搜 / 行业通病评估）
 - `env-capability-discovery`（环境能力探索：启动时一次扫描可用增强能力）
 - `ensure-tests`（阶段 6.2.5 测试确保：有测试基建时补全并运行；无基建经用户确认后搭建）
+- `merge-discipline`（阶段 8 合并纪律：覆盖率门控 + tip 钉死，合并前加载）
 
 ## 前置 skill 检查
 
-> 本 skill 通过 frontmatter `dependencies` 声明对 11 个 skill 的强依赖。启动时（阶段 0 前置检查之前）必须执行本检查。
+> 本 skill 通过 frontmatter `dependencies` 声明对 12 个 skill 的强依赖。启动时（阶段 0 前置检查之前）必须执行本检查。
 
 1. 扫描可用 skill（查 `<available_items>` 或用 `skill` 工具）
-2. 核对 11 个 dependencies 是否都在可用列表中
+2. 核对 12 个 dependencies 是否都在可用列表中
 3. 全部存在 → 继续阶段 0 前置检查
 4. 任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`）
 
@@ -219,11 +221,11 @@ dependencies:
 必须执行：
 
 1. **存在性验证**：搜索相关代码，判断 Jira 描述的问题在当前代码库是否仍存在。
-1.5 **调研路由与外部调研**（存在性验证通过后立即执行，决定后续步骤侧重）：加载强依赖 skill `known-issue-research` 按其方法论执行——调研路由三态判断（🟢内部为主 / 🔵外部为主 / 🟣Hybrid 先外后内，判断不准默认内部为主）→ 按路由侧重执行**已知问题快搜**（🔵/🟣 路由下为**首要动作**，🟢 路由下为可选兜底）→ 根因明确指向平台/语言/协议/标准硬限制时执行**行业通病评估**（结论为「无可行解」时输出报告并**暂停等用户决定**）。本工作流步骤编号映射：`{root-cause step}` = 步骤 4；`{impact-assessment step}` = 步骤 5；`{upstream-eval step}` = 步骤 4.5（快搜发现「上游已修复」线索时进入，评估升级可行性）。报告模板见 `known-issue-research/reference.md`。
+1.5 **调研路由**：加载 `known-issue-research` skill 执行（三态判断 + 已知问题快搜 + 行业通病评估，方法论见该 skill）。步骤映射：root-cause=步骤 4, impact=步骤 5, upstream-eval=步骤 4.5。
 2. **现象对齐**：复现条件、期望 vs 实际。
 3. **代码定位**：文件路径、关键函数、调用链、状态流。
 4. **根因分析**：区分直接原因和根本原因；必要时追问“为什么”至少 3 次。
-4.5 **上游依赖修复评估**（可选）：若根因疑似上游依赖 bug（具名第三方库/框架、症状与库特定行为强相关、workaround越堆越复杂），或 1.5 已知问题快搜找到上游已修复版本，加载 `upstream-dependency-debug` skill——查 Changelog 找修复版本，优先升级依赖而非堆 workaround（4步决策顺序+升级工程纪律，见该 skill）。
+4.5 **上游依赖修复评估**（可选）：根因疑似上游依赖 bug 或快搜找到上游已修复版本时，加载 `upstream-dependency-debug` skill 执行（方法论见该 skill）。
 5. **影响范围**：模块、平台、调用方、兼容性、风险面。
 6. **难度分级**：容易 / 中等 / 困难 / 极难。
 
@@ -265,13 +267,7 @@ dependencies:
 - 根因置信度为「模糊」或「未知」——能定位到大概模块，但无法确定具体逻辑或触发路径
 - 当前是重试场景（含「继续修复」`--retry`）——已基于静态分析修复过一次，但问题仍然存在
 
-**加载以下强依赖 skill 按其方法论执行**（前置检查已保证可用）：
-
-- `runtime-evidence-debug`：运行时证据采集全流程（升级决策→打点→复现→证据分析→置信度门控→逃生出口→修复验证）。根因仍模糊时的逃生出口（WebSearch 升级搜索等）也由该 skill 提供。
-- `browser-debug-toolkit`：浏览器可复现问题优先用浏览器 DevTools 复现并实时检查运行时状态（DOM 树、计算样式、盒模型等），比代码层打点更高效。
-- `hybrid-debug`：Hybrid 应用（native + WebView/WKWebView/Electron + H5）问题的四层全链条分析，避免单层 whack-a-mole。
-
-具体执行步骤、置信度门控阈值、逃生出口判定见各 skill 的 SKILL.md。
+**加载强依赖 skill**（前置检查已保证可用，各自方法论见其 SKILL.md）：`runtime-evidence-debug`（运行时证据采集 + 逃生出口）、`browser-debug-toolkit`（浏览器 DevTools）、`hybrid-debug`（Hybrid 四层分析）。
 
 **工具限制**：✅ Read/Grep 辅助确定打点位置；打点代码、临时日志、复现脚本及验证性临时改动由 AI 直接添加并纳入登记（文件+位置+原内容+目的），进入下一阶段前按登记回滚并输出「临时改动清单 + 回滚验证」，未回滚不得进入；修复实现的正式改动仍归执行阶段；❌ 未经用户确认不得自行运行复现步骤
 
@@ -550,15 +546,15 @@ PR/MR 描述必须包含：
 - 清理本地和远程分支
 - 同步主分支
 
-> **顺序约束**：archive（8.2）→ 分支收尾决策（8.3）→ 合并前覆盖率门控（8.3.1）→ 执行合并 → Jira 回写（8.4）。选择「保留分支」「继续开发」不触发门控，也跳过 Jira 回写。
+> **顺序约束**：archive（8.2）→ 分支收尾决策（8.3）→ 合并纪律 `merge-discipline`（8.3.1）→ 执行合并 → Jira 回写（8.4）。选择「保留分支」「继续开发」不触发合并纪律，也跳过 Jira 回写。
 
-#### 8.3.1 合并前覆盖率门控（强制）
+#### 8.3.1 合并纪律（merge-discipline skill）
 
-> 门控在 AI 即将执行合并动作时启动，覆盖分支收尾决策选定「合并」、用户直接下达合并指令、AI 准备调用合并命令等所有合并场景。完整规范（触发时机 / 前置检测 / 门控步骤 / 判定矩阵 / 留痕模板 / 检查清单 / 模式生命周期）见 [reference.md](reference.md)「合并前覆盖率门控（强制）规范」。
-
-**判定矩阵概要**（安全网，完整矩阵见 reference.md）：达标→继续合并；不达标→暂停；崩溃/无报告→视为未通过暂停；无测试代码→暂停；门控未运行而合并已发生（隐式漏跑）→暂停补跑，已合并则留痕。
-**本步骤独立 Bash 权限**：运行 test-coverage-analyzer 脚本。
-**留痕位置**：PR 描述和 `design.md` 的 Verification Notes（显式跳过 / 环境缺漏 / 隐式漏跑三种模板见 reference.md）。
+> 合并动作执行前加载强依赖 skill `merge-discipline`（前置检查已保证可用），执行两部分：
+> - **Part A 覆盖率门控**：test-coverage-analyzer 触发判定 + 判定矩阵 + 留痕（完整规范见 skill Part A；合并前快查表见 [reference.md](reference.md)「合并前检查清单」）
+> - **Part B tip 钉死**：archive/docs push 后钉死 revision（`--sha`）+ Pipeline succeeded 语义核对 + 合入后祖先校验 + 双策略降级（完整规范见 skill Part B）
+>
+> 判定矩阵概要：门控达标→继续 Part B tip 钉死与合并；不达标/崩溃/无报告/无测试→暂停；隐式漏跑→补跑或留痕。
 
 ### 8.4 Jira 回写（合并完成后）
 
