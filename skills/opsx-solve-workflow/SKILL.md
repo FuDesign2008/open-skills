@@ -16,6 +16,7 @@ dependencies:
   - known-issue-research
   - env-capability-discovery
   - ensure-tests
+  - merge-discipline
 ---
 
 # OPSX 八阶段问题解决工作流
@@ -46,7 +47,7 @@ dependencies:
 - **手动模式**：阶段 1、2、3、4、5、7、8 的关键出口必须等待用户确认。
 - **自动模式**：自动推进到验证；阶段 4 审查最多循环 3 轮，超限暂停。
 
-**强依赖 skill**（frontmatter `dependencies`，共 12 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
+**强依赖 skill**（frontmatter `dependencies`，共 13 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
 - `solution-review`（阶段 4 决策级审查）
 - `code-design-review`（阶段 4 代码设计审查）
 - `hybrid-debug`（阶段 2 Hybrid 全栈调试）
@@ -59,13 +60,14 @@ dependencies:
 - `known-issue-research`（阶段 2 调研路由 / 已知问题快搜 / 行业通病评估）
 - `env-capability-discovery`（环境能力探索：启动时一次扫描可用增强能力）
 - `ensure-tests`（阶段 6 测试确保：有测试基建时补全并运行；无基建经用户确认后搭建）
+- `merge-discipline`（阶段 8 合并纪律：覆盖率门控 + tip 钉死，合并前加载）
 
 ## 前置 skill 检查
 
-> 本 skill 通过 frontmatter `dependencies` 声明对 12 个 skill 的强依赖。启动时（阶段 0 前置检查通过后、阶段 1 之前）必须执行本检查。
+> 本 skill 通过 frontmatter `dependencies` 声明对 13 个 skill 的强依赖。启动时（阶段 0 前置检查通过后、阶段 1 之前）必须执行本检查。
 
 1. 扫描可用 skill（查 `<available_items>` 或用 `skill` 工具）
-2. 核对 12 个 dependencies 是否都在可用列表中
+2. 核对 13 个 dependencies 是否都在可用列表中
 3. 全部存在 → 继续后续流程
 4. 任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`「前置 skill 检查 — 缺失提示」）
 
@@ -521,15 +523,15 @@ Superpowers 增强规则：
 
 归档后必须检查 diff，确认主 specs 更新和 archive 目录迁移都进入工程根的 git 工作区变更。若检测到 `finishing-a-development-branch`，在归档和 diff 检查完成后，再借鉴其流程做分支收尾决策：保留当前分支、创建 PR、合并或继续开发。不得在测试未通过、归档未完成或 diff 未审查时宣布完成。
 
-> **顺序约束**：归档 + diff 检查 → 分支收尾决策 → 合并前覆盖率门控 → 执行合并。选择「保留当前分支」「继续开发」不触发门控。
+> **顺序约束**：归档 + diff 检查 → 分支收尾决策 → 合并纪律 `merge-discipline` → 执行合并。选择「保留当前分支」「继续开发」不触发合并纪律。
 
-#### 合并前覆盖率门控（强制）
+#### 合并纪律（merge-discipline skill）
 
-> 门控在 AI 即将执行合并动作时启动，覆盖分支收尾决策选定「合并」、用户直接下达合并指令、AI 准备调用合并命令等所有合并场景。完整规范（触发时机 / 前置检测 / 门控步骤 / 判定矩阵 / 留痕模板 / 检查清单 / 模式生命周期）见 [reference.md](reference.md)「合并前覆盖率门控（强制）规范」。
-
-**判定矩阵概要**（安全网，完整矩阵见 reference.md）：达标→继续合并；不达标→暂停；崩溃/无报告→视为未通过暂停；无测试代码→暂停；门控未运行而合并已发生（隐式漏跑）→暂停补跑，已合并则留痕。
-**本步骤独立 Bash 权限**：运行 test-coverage-analyzer 脚本，不改变阶段 8「仅限归档/文档」的工具约束本质（门控是合并子步骤而非归档动作）。
-**留痕位置**：PR 描述和 `design.md` 的 Verification Notes（显式跳过 / 环境缺漏 / 隐式漏跑三种模板见 reference.md）。
+> 合并动作执行前加载强依赖 skill `merge-discipline`（前置检查已保证可用），执行两部分：
+> - **Part A 覆盖率门控**：test-coverage-analyzer 触发判定 + 判定矩阵 + 留痕（完整规范见 skill Part A；合并前快查表见 [reference.md](reference.md)「合并前检查清单」）
+> - **Part B tip 钉死**：钉死 revision（`--sha`）+ Pipeline succeeded 语义 + 合入后祖先校验 + 双策略降级（完整规范见 skill Part B）
+>
+> 判定矩阵概要：门控达标→继续 Part B tip 钉死与合并；不达标/崩溃/无报告/无测试→暂停；隐式漏跑→补跑或留痕。
 
 ### 复盘改进（委托 learn-and-improve）
 
