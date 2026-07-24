@@ -550,15 +550,42 @@ PR/MR 描述必须包含：
 - 清理本地和远程分支
 - 同步主分支
 
-> **顺序约束**：archive（8.2）→ 分支收尾决策（8.3）→ 合并前覆盖率门控（8.3.1）→ 执行合并 → Jira 回写（8.4）。选择「保留分支」「继续开发」不触发门控，也跳过 Jira 回写。
+> **顺序约束**：archive（8.2）→ 分支收尾决策（8.3）→ 合并前覆盖率门控（8.3.1）→ 合并 tip 钉死纪律（8.3.2）→ 执行合并 → Jira 回写（8.4）。选择「保留分支」「继续开发」不触发门控与 tip 钉死纪律，也跳过 Jira 回写。
 
 #### 8.3.1 合并前覆盖率门控（强制）
 
 > 门控在 AI 即将执行合并动作时启动，覆盖分支收尾决策选定「合并」、用户直接下达合并指令、AI 准备调用合并命令等所有合并场景。完整规范（触发时机 / 前置检测 / 门控步骤 / 判定矩阵 / 留痕模板 / 检查清单 / 模式生命周期）见 [reference.md](reference.md)「合并前覆盖率门控（强制）规范」。
 
-**判定矩阵概要**（安全网，完整矩阵见 reference.md）：达标→继续合并；不达标→暂停；崩溃/无报告→视为未通过暂停；无测试代码→暂停；门控未运行而合并已发生（隐式漏跑）→暂停补跑，已合并则留痕。
+**判定矩阵概要**（安全网，完整矩阵见 reference.md）：达标→继续 tip 钉死（8.3.2）与合并；不达标→暂停；崩溃/无报告→视为未通过暂停；无测试代码→暂停；门控未运行而合并已发生（隐式漏跑）→暂停补跑，已合并则留痕。
 **本步骤独立 Bash 权限**：运行 test-coverage-analyzer 脚本。
 **留痕位置**：PR 描述和 `design.md` 的 Verification Notes（显式跳过 / 环境缺漏 / 隐式漏跑三种模板见 reference.md）。
+
+#### 8.3.2 合并 tip 钉死纪律（archive/docs push 后强制）
+
+> 防护「archive 已 push 但 merge 合的是 push 前 tip」竞态：archive commit push 后立即 merge，合并输出里的 Pipeline succeeded 多半是旧 tip 的结果，merge 实际合入旧 tip，archive 未进入目标分支（真实事件复盘见 `docs/mr-merge-stale-tip-archive-miss-incident.md`）。
+
+覆盖率门控通过后、执行 merge 命令前，必须完成：
+
+1. **钉死合入 revision**：
+   ```bash
+   MERGE_SHA=$(git rev-parse origin/<source-branch>)   # 或取 push 返回的 SHA
+   ```
+   merge 命令必须用 `glab mr merge <id> --sha "$MERGE_SHA" -y`（GitLab）或 `gh pr merge <id> --sha "$MERGE_SHA"`（GitHub 等价参数），让平台拒绝 tip 不匹配的合并。无 `--sha` 的裸 merge 禁止。
+   若平台 CLI 不支持 `--sha`：push 后显式等待该 tip 的 pipeline 通过再 merge，且 merge 后必须执行第 3 步祖先校验作为兜底。
+
+2. **核对 Pipeline succeeded 语义**：
+   若 merge 前刚 push 过新 commit，合并输出里立即出现的「Pipeline succeeded」不得直接采信（除非能证明其 sha == 刚 push 的 tip）。必须查询该 tip 的 pipeline 状态，或依赖第 1 步的 `--sha` 让平台校验。
+
+3. **合入后祖先校验**（强制）：
+   ```bash
+   git fetch origin <target>
+   git merge-base --is-ancestor "$MERGE_SHA" origin/<target> && echo OK || echo MISSING
+   ```
+   MISSING → archive / specs sync 未进入目标分支，不得宣称收尾完成、不得进入 8.4 Jira 回写；自动开补齐 MR（cherry-pick archive 提交）或暂停请用户决策。
+
+4. **双策略与降级**：
+   - 策略 A（默认）：MR 已 open 且主修复可合时，同 MR 钉 tip 合入（archive + 主修复同一 MR），必须执行上述 1-3 步。
+   - 策略 B（降级）：MR 已合并或 tip 竞态风险高时，archive 单独开 docs MR 补齐；明确列出「archive 待 !N」，不得假装 archive 已在目标分支。
 
 ### 8.4 Jira 回写（合并完成后）
 
@@ -609,7 +636,10 @@ Jira 评论必须包含：
 > - ❌ 覆盖率门控脚本崩溃/无报告/退出码1 却继续合并（崩溃视为未通过，须暂停）
 > - ❌ 覆盖率不达标自动模式强行合并（须暂停等用户决策）
 > - ❌ 用户显式跳过门控但未在 PR 描述和 design.md 留痕
-> - ❌ archive（8.2）未完成就触发覆盖率门控（顺序：8.2 archive → 8.3 分支收尾决策 → 8.3.1 门控 → 合并 → 8.4 Jira 回写）
+> - ❌ archive（8.2）未完成就触发覆盖率门控（顺序：8.2 archive → 8.3 分支收尾决策 → 8.3.1 门控 → 8.3.2 tip 钉死 → 合并 → 8.4 Jira 回写）
+> - ❌ archive push 后立即裸 merge（无 `--sha`、无祖先校验），合入旧 tip 导致 archive 未进目标分支（见 8.3.2）
+> - ❌ 把刚 push 后立即出现的「Pipeline succeeded」当作「当前 tip 已绿」（多半是旧 tip 的结果）
+> - ❌ 合入后祖先校验 MISSING 却宣称收尾完成、进入 Jira 回写
 
 ## 批量 OPSX Jira 修复
 

@@ -8,6 +8,13 @@
 | [opencode-coding-fangirl-implementation.md](opencode-coding-fangirl-implementation.md) | 贡献者 | coding-fangirl 在 OpenCode 的实现说明 |
 | [generated/skills-index.md](generated/skills-index.md) | 所有人 | 全部 skill 的版本、可唤起性、描述（触发条件）；由脚本生成，页首有维护提示 |
 
+### Skill 作者：事件复盘（优化工作流用）
+
+| 文档 | 内容 |
+|------|------|
+| [merge-coverage-gate-bypass-incident.md](merge-coverage-gate-bypass-incident.md) | 合并前覆盖率门控被绕过：触发锚点过窄 |
+| [mr-merge-stale-tip-archive-miss-incident.md](mr-merge-stale-tip-archive-miss-incident.md) | 刚 push 的 archive tip 未随 MR 合入：push→立刻 merge 竞态；需 tip 钉死与合入后祖先校验 |
+
 ### 给维护者与贡献者
 
 如果你要改仓库、提 PR，除了上表里的安装文档，通常还会翻到这些位置：

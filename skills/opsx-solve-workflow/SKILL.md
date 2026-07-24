@@ -521,15 +521,42 @@ Superpowers 增强规则：
 
 归档后必须检查 diff，确认主 specs 更新和 archive 目录迁移都进入工程根的 git 工作区变更。若检测到 `finishing-a-development-branch`，在归档和 diff 检查完成后，再借鉴其流程做分支收尾决策：保留当前分支、创建 PR、合并或继续开发。不得在测试未通过、归档未完成或 diff 未审查时宣布完成。
 
-> **顺序约束**：归档 + diff 检查 → 分支收尾决策 → 合并前覆盖率门控 → 执行合并。选择「保留当前分支」「继续开发」不触发门控。
+> **顺序约束**：归档 + diff 检查 → 分支收尾决策 → 合并前覆盖率门控 → 合并 tip 钉死纪律 → 执行合并。选择「保留当前分支」「继续开发」不触发门控与 tip 钉死纪律。
 
 #### 合并前覆盖率门控（强制）
 
 > 门控在 AI 即将执行合并动作时启动，覆盖分支收尾决策选定「合并」、用户直接下达合并指令、AI 准备调用合并命令等所有合并场景。完整规范（触发时机 / 前置检测 / 门控步骤 / 判定矩阵 / 留痕模板 / 检查清单 / 模式生命周期）见 [reference.md](reference.md)「合并前覆盖率门控（强制）规范」。
 
-**判定矩阵概要**（安全网，完整矩阵见 reference.md）：达标→继续合并；不达标→暂停；崩溃/无报告→视为未通过暂停；无测试代码→暂停；门控未运行而合并已发生（隐式漏跑）→暂停补跑，已合并则留痕。
+**判定矩阵概要**（安全网，完整矩阵见 reference.md）：达标→继续 tip 钉死与合并；不达标→暂停；崩溃/无报告→视为未通过暂停；无测试代码→暂停；门控未运行而合并已发生（隐式漏跑）→暂停补跑，已合并则留痕。
 **本步骤独立 Bash 权限**：运行 test-coverage-analyzer 脚本，不改变阶段 8「仅限归档/文档」的工具约束本质（门控是合并子步骤而非归档动作）。
 **留痕位置**：PR 描述和 `design.md` 的 Verification Notes（显式跳过 / 环境缺漏 / 隐式漏跑三种模板见 reference.md）。
+
+#### 合并 tip 钉死纪律（archive/docs push 后强制）
+
+> 防护「archive 已 push 但 merge 合的是 push 前 tip」竞态：archive commit push 后立即 merge，合并输出里的 Pipeline succeeded 多半是旧 tip 的结果，merge 实际合入旧 tip，archive 未进入目标分支（真实事件复盘见 `docs/mr-merge-stale-tip-archive-miss-incident.md`）。
+
+覆盖率门控通过后、执行 merge 命令前，必须完成：
+
+1. **钉死合入 revision**：
+   ```bash
+   MERGE_SHA=$(git rev-parse origin/<source-branch>)   # 或取 push 返回的 SHA
+   ```
+   merge 命令必须用 `glab mr merge <id> --sha "$MERGE_SHA" -y`（GitLab）或 `gh pr merge <id> --sha "$MERGE_SHA"`（GitHub 等价参数），让平台拒绝 tip 不匹配的合并。无 `--sha` 的裸 merge 禁止。
+   若平台 CLI 不支持 `--sha`：push 后显式等待该 tip 的 pipeline 通过再 merge，且 merge 后必须执行第 3 步祖先校验作为兜底。
+
+2. **核对 Pipeline succeeded 语义**：
+   若 merge 前刚 push 过新 commit，合并输出里立即出现的「Pipeline succeeded」不得直接采信（除非能证明其 sha == 刚 push 的 tip）。必须查询该 tip 的 pipeline 状态，或依赖第 1 步的 `--sha` 让平台校验。
+
+3. **合入后祖先校验**（强制）：
+   ```bash
+   git fetch origin <target>
+   git merge-base --is-ancestor "$MERGE_SHA" origin/<target> && echo OK || echo MISSING
+   ```
+   MISSING → archive / specs sync 未进入目标分支，不得宣称收尾完成；自动开补齐 MR（cherry-pick archive 提交）或暂停请用户决策。
+
+4. **双策略与降级**：
+   - 策略 A（默认）：MR 已 open 且主修复可合时，同 MR 钉 tip 合入（archive + 主修复同一 MR），必须执行上述 1-3 步。
+   - 策略 B（降级）：MR 已合并或 tip 竞态风险高时，archive 单独开 docs MR 补齐；明确列出「archive 待 !N」，不得假装 archive 已在目标分支。
 
 ### 复盘改进（委托 learn-and-improve）
 
@@ -564,7 +591,9 @@ Superpowers 增强规则：
 | 覆盖率不达标自动模式强行合并 | 绕过用户决策强制合并不达标代码 | 不达标必须暂停等用户决策（强制合并/补测试/放弃） |
 | 显式跳过门控未留痕 | 事后无法追溯门控被跳过、责任不清 | 跳过必须在 PR 描述和 design.md 写入留痕（时间+决策人） |
 | `--base` 获取失败未输出降级警告 | MR 场景误判为 0 变更，门控形同虚设 | 降级时必须显式警告「未指定 base，MR 可能误判为 0 变更」 |
-| archive 未完成或 diff 未审查就触发覆盖率门控 | 顺序错乱，门控基于不完整状态 | 顺序：archive+diff → 收尾决策 → 门控 → 合并 |
+| archive 未完成或 diff 未审查就触发覆盖率门控 | 顺序错乱，门控基于不完整状态 | 顺序：archive+diff → 收尾决策 → 门控 → tip 钉死 → 合并 |
+| archive push 后立即裸 merge（无 `--sha`、无祖先校验） | 合入旧 tip，archive 未进目标分支（见 `docs/mr-merge-stale-tip-archive-miss-incident.md`） | merge 必须用 `--sha <刚 push 的 tip>` 钉死，合入后祖先校验 MISSING 则开补齐 MR |
+| 把刚 push 后立即出现的「Pipeline succeeded」当「当前 tip 已绿」 | 误信旧 tip 的绿结果，merge 合入旧 tip | 必须核对该结果对应的 sha == 刚 push 的 tip，或用 `--sha` 让平台校验 |
 | 实现中发现设计错误却继续硬做 | artifacts 与代码分叉 | 回写 proposal/specs/design/tasks 后再继续 |
 | `openspec/` 不存在却强行推进 | 无 schema/context，artifacts 结构混乱 | 阶段 0 门禁 1 未通过时必须停止，要求用户运行 `openspec init` |
 | workspace 多工程下未先定位工程根 | 门禁检查在 workspace 根执行而非工程目录，artifact 写入错误位置 | 阶段 0 必须先执行门禁 0 工程定位，确定工程根后再执行门禁 1/2 |

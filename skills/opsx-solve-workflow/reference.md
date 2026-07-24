@@ -105,6 +105,12 @@ AI 执行合并前逐项确认：
 - [ ] 门控结果如何？→ 达标继续；不达标/崩溃/无报告/无测试 → 暂停等用户；漏跑 → 按漏跑规则处理
 - [ ] 留痕是否写入？（显式跳过 / 环境缺漏 / 隐式漏跑）
 
+**合并 tip 钉死（archive/docs push 后，见 SKILL.md 阶段 8）**：
+
+- [ ] merge 命令是否钉死了合入 revision？（`--sha <刚 push 的 tip>` 或等价校验；无 `--sha` 的裸 merge 禁止）
+- [ ] 合并输出的「Pipeline succeeded」是否对应刚 push 的 tip？（刚 push 后立即 merge 时必须核对 sha，旧 tip 的绿结果不可采信）
+- [ ] 合入后 `git merge-base --is-ancestor <expected_sha> origin/<target>` 是否通过？（含 archive / specs sync 的 SHA 必须是 target 祖先；MISSING 则开补齐 MR，不得宣称收尾完成）
+
 ### 模式生命周期
 
 门控自动运行 test-coverage-analyzer 不触发「自动恢复手动」（合并流程的子步骤）；门控暂停（不达标/崩溃/隐式漏跑）即合并流程中断，按既有规则恢复手动。
