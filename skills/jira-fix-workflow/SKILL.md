@@ -15,6 +15,7 @@ dependencies:
   - known-issue-research
   - env-capability-discovery
   - ensure-tests
+  - merge-discipline
 ---
 
 # Jira Bug 修复工作流
@@ -54,7 +55,7 @@ dependencies:
 
 ## 强依赖与前置检查
 
-**强依赖 skill**（frontmatter `dependencies`，共 11 个）：
+**强依赖 skill**（frontmatter `dependencies`，共 12 个）：
 - `solution-review`（阶段 5 决策级审查）
 - `code-design-review`（阶段 5 代码设计审查）
 - `hybrid-debug`（阶段 3 Hybrid 全栈调试）
@@ -66,8 +67,9 @@ dependencies:
 - `known-issue-research`（阶段 3 调研路由 / 已知问题快搜 / 行业通病评估）
 - `env-capability-discovery`（环境能力探索：启动时一次扫描可用增强能力）
 - `ensure-tests`（阶段 7 测试补全：有测试基建时补全并运行；无基建经用户确认后搭建）
+- `merge-discipline`（阶段 10 合并纪律：覆盖率门控 + tip 钉死，合并前加载）
 
-> 启动时（阶段 0 前置检查通过后、阶段 1 之前）必须执行 skill 依赖检查：扫描可用 skill（查 `<available_items>` 或用 `skill` 工具），核对 11 个 dependencies 是否都在。任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`）。**不降级**。
+> 启动时（阶段 0 前置检查通过后、阶段 1 之前）必须执行 skill 依赖检查：扫描可用 skill（查 `<available_items>` 或用 `skill` 工具），核对 12 个 dependencies 是否都在。任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`）。**不降级**。
 
 ## 模式生命周期
 
@@ -332,7 +334,7 @@ Jira ID、标题、优先级、状态、数据来源、问题描述、复现步�
 
 **存在性验证通过后立即执行：调研路由与外部调研**（决定后续步骤侧重）
 
-加载强依赖 skill `known-issue-research` 按其方法论执行（前置检查已保证可用）：**调研路由**三态判断（🟢内部为主 / 🔵外部为主 / 🟣Hybrid 先外后内，判断不准默认 🟢 内部为主——本工作流本质是改代码）→ 按路由侧重执行**已知问题快搜**（🔵/🟣 路由下为**首要动作**，代码定位后、根因分析前先 WebSearch；🟢 路由下为可选兜底）→ 根因分析后立即执行**行业通病评估**。本工作流步骤编号映射：`{root-cause step}` = 下方「根因分析」；`{impact-assessment step}` = 下方「影响范围」；`{upstream-eval step}` = 下方「上游依赖修复评估」（快搜发现「上游已修复」线索时进入）。
+加载 `known-issue-research` skill 执行（三态判断 + 已知问题快搜 + 行业通病评估，方法论见该 skill；本工作流默认 🟢 内部为主）。步骤映射：root-cause=下方「根因分析」, impact=下方「影响范围」, upstream-eval=下方「上游依赖修复评估」。
 
 **本工作流与 `known-issue-research` 的差异（必须遵守）**：
 
@@ -350,7 +352,7 @@ Jira ID、标题、优先级、状态、数据来源、问题描述、复现步�
 
 **触发条件**（满足任一即执行）：根因明确为上游依赖 bug；或已知问题快搜找到上游已修复版本。
 
-**执行**：加载 `upstream-dependency-debug` skill，按其方法论执行——4 步决策顺序（归因上游→查 Changelog→优先升级→不可行才 workaround）+ 通用升级工程纪律（包管理器一致性/验证链/semver/dedup）+ 结果处理表，见该 skill。结果：升级低风险→进阶段 5 推荐升级为首选；有风险→升级与 workaround 并列；未修复→workaround 注明临时性及追踪的上游 issue。
+**执行**：加载 `upstream-dependency-debug` skill 执行（方法论见该 skill）。结果：升级低风险→进阶段 5 推荐升级为首选；有风险→升级与 workaround 并列；未修复→workaround 注明临时性及追踪的上游 issue。
 
 > 注：`upstream-dependency-debug` 为可选增强 skill，未在 frontmatter `dependencies` 中声明。若环境中不可用，静默跳过本步骤，继续后续分析。
 
@@ -365,13 +367,7 @@ Jira ID、标题、优先级、状态、数据来源、问题描述、复现步�
 - 根因置信度为「模糊」或「未知」——能定位到大概模块，但无法确定具体逻辑或触发路径
 - 当前是 `--retry` 重试场景——已基于静态分析修复过一次，但问题仍然存在
 
-**加载以下强依赖 skill 按其方法论执行**（前置检查已保证可用）：
-
-- `runtime-evidence-debug`：运行时证据采集全流程（升级决策→打点→复现→证据分析→置信度门控→逃生出口→修复验证）。根因仍模糊时的逃生出口（WebSearch 升级搜索等）也由该 skill 提供。
-- `browser-debug-toolkit`：浏览器可复现问题优先用浏览器 DevTools 复现并实时检查运行时状态（DOM 树、计算样式、盒模型等），比代码层打点更高效。
-- `hybrid-debug`：Hybrid 应用（native + WebView/WKWebView/Electron + H5）问题的四层全链条分析，避免单层 whack-a-mole。
-
-具体执行步骤、置信度门控阈值、逃生出口判定见各 skill 的 SKILL.md。
+**加载强依赖 skill**（前置检查已保证可用，各自方法论见其 SKILL.md）：`runtime-evidence-debug`（运行时证据采集 + 逃生出口）、`browser-debug-toolkit`（浏览器 DevTools）、`hybrid-debug`（Hybrid 四层分析）。
 
 **工具限制**：✅ Read/Grep 辅助确定打点位置；打点代码、临时日志、复现脚本及验证性临时改动由 AI 直接添加并纳入登记（文件+位置+原内容+目的），进入下一阶段前按登记回滚并输出「临时改动清单 + 回滚验证」，未回滚不得进入；修复实现的正式改动仍归执行阶段；❌ 未经用户确认不得自行运行复现步骤
 
@@ -864,13 +860,13 @@ Jira ID、标题、优先级、状态、数据来源、问题描述、复现步�
 1. 展示 PR/MR URL（来自阶段9 `07-report.md`）和描述摘要，**立即停止，等用户完成 Code Review 并确认合并**
 2. 用户确认（说「合并」「merge」「确认」「OK」等）后，AI 依次执行：
 
-   #### 步骤 2.1：合并前覆盖率门控（强制）
+   #### 步骤 2.1：合并纪律（merge-discipline skill）
 
-   > 门控在 AI 即将执行合并动作时启动，覆盖用户显式确认「合并」、用户直接下达合并指令、AI 准备调用合并命令等所有合并场景。完整规范（触发时机 / 前置检测 / 门控步骤 / 判定矩阵 / 留痕模板 / 检查清单 / 模式生命周期）见 [reference.md](reference.md)「合并前覆盖率门控（强制）规范」。
-
-   **判定矩阵概要**（安全网，完整矩阵见 reference.md）：达标→继续步骤 2.2 合并；不达标→暂停；崩溃/无报告→视为未通过暂停；无测试代码→暂停；门控未运行而合并已发生（隐式漏跑）→暂停补跑，已合并则留痕。
-   **本步骤独立 Bash 权限**：运行 test-coverage-analyzer 脚本，不计入阶段 10「仅平台 CLI 合并命令」约束。
-   **留痕位置**：`.jira-fix/{JIRA-ID}/08-merge.md` 和 PR 描述（显式跳过 / 环境缺漏 / 隐式漏跑三种模板见 reference.md）。
+   > 合并动作执行前加载强依赖 skill `merge-discipline`（前置检查已保证可用），执行两部分：
+   > - **Part A 覆盖率门控**：test-coverage-analyzer 触发判定 + 判定矩阵 + 留痕（完整规范见 skill Part A；合并前快查表见 [reference.md](reference.md)「合并前检查清单」）
+   > - **Part B tip 钉死**：修复/docs push 后钉死 revision（`--sha`）+ Pipeline succeeded 语义核对 + 合入后祖先校验 + 双策略降级（完整规范见 skill Part B）
+   >
+   > 判定矩阵概要：门控达标→继续 Part B tip 钉死与步骤 2.2 合并；不达标/崩溃/无报告/无测试→暂停；隐式漏跑→补跑或留痕。
 
    #### 步骤 2.2：执行合并
 
@@ -909,6 +905,8 @@ Jira ID、标题、优先级、状态、数据来源、问题描述、复现步�
 - **覆盖率报告显示不达标，自动模式强行合并**——不达标必须暂停等用户决策（强制合并/补测试/放弃）
 - **用户显式跳过门控但未在 `08-merge.md` 和 PR 描述留痕**——跳过必须留痕，否则事后无法追溯门控被跳过
 - **未显式指定 `--base` 且未输出「MR 场景可能误判为 0 变更」警告**——`--base` 获取失败时的降级警告必须呈现给用户
+- **修复/docs push 后裸 merge（无 `--sha`、无合入后祖先校验）**——刚 push 的提交未入目标分支（见 `merge-discipline` Part B）
+- **把刚 push 后立即出现的「Pipeline succeeded」当当前 tip 已绿**——多半是旧 tip 结果（见 `merge-discipline` Part B step 2）
 - **Jira 回写时通过 `jira_transition_issue` 的 `comment` 参数传评论**（该参数不可靠，必须独立调用 `jira_add_comment`）
 - **Jira 回写失败后未输出警告，静默跳过**
 

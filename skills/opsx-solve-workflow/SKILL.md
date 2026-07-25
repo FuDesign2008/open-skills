@@ -16,6 +16,7 @@ dependencies:
   - known-issue-research
   - env-capability-discovery
   - ensure-tests
+  - merge-discipline
 ---
 
 # OPSX 八阶段问题解决工作流
@@ -46,7 +47,7 @@ dependencies:
 - **手动模式**：阶段 1、2、3、4、5、7、8 的关键出口必须等待用户确认。
 - **自动模式**：自动推进到验证；阶段 4 审查最多循环 3 轮，超限暂停。
 
-**强依赖 skill**（frontmatter `dependencies`，共 12 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
+**强依赖 skill**（frontmatter `dependencies`，共 13 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
 - `solution-review`（阶段 4 决策级审查）
 - `code-design-review`（阶段 4 代码设计审查）
 - `hybrid-debug`（阶段 2 Hybrid 全栈调试）
@@ -59,13 +60,14 @@ dependencies:
 - `known-issue-research`（阶段 2 调研路由 / 已知问题快搜 / 行业通病评估）
 - `env-capability-discovery`（环境能力探索：启动时一次扫描可用增强能力）
 - `ensure-tests`（阶段 6 测试确保：有测试基建时补全并运行；无基建经用户确认后搭建）
+- `merge-discipline`（阶段 8 合并纪律：覆盖率门控 + tip 钉死，合并前加载）
 
 ## 前置 skill 检查
 
-> 本 skill 通过 frontmatter `dependencies` 声明对 12 个 skill 的强依赖。启动时（阶段 0 前置检查通过后、阶段 1 之前）必须执行本检查。
+> 本 skill 通过 frontmatter `dependencies` 声明对 13 个 skill 的强依赖。启动时（阶段 0 前置检查通过后、阶段 1 之前）必须执行本检查。
 
 1. 扫描可用 skill（查 `<available_items>` 或用 `skill` 工具）
-2. 核对 12 个 dependencies 是否都在可用列表中
+2. 核对 13 个 dependencies 是否都在可用列表中
 3. 全部存在 → 继续后续流程
 4. 任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`「前置 skill 检查 — 缺失提示」）
 
@@ -297,16 +299,14 @@ Superpowers 是增强能力，不是硬依赖。检测到以下 skill 时，在�
    | ❌ 问题已不存在 | 报告「在当前代码库中未发现该问题，可能已被修复或逻辑已变更」，附相关代码位置，**停止分析，等待用户确认** |
    | ⚠️ 描述与代码不符 | 报告「代码行为与描述存在出入」，列出实际发现，**回到阶段 1 重新对齐问题描述** |
 
-2. **调研路由与外部调研**（存在性验证通过后立即执行，决定后续步骤侧重）
-
-   加载强依赖 skill `known-issue-research` 按其方法论执行：调研路由三态判断（🟢内部为主 / 🔵外部为主 / 🟣Hybrid 先外后内，判断不准默认内部为主）→ 按路由侧重执行**已知问题快搜**（🔵/🟣 路由下为**首要动作**，🟢 路由下为可选兜底）→ 根因明确指向平台/语言/协议/标准硬限制时执行**行业通病评估**（结论为「无可行解」时输出报告并**暂停等用户决定**）。本工作流步骤编号映射：`{root-cause step}` = 步骤 5「问题根因分析」；`{impact-assessment step}` = 步骤 7「影响范围评估」；`{upstream-eval step}` = 步骤 6「上游依赖修复评估」（快搜发现「上游已修复」线索时进入，评估升级可行性）。报告模板见 `known-issue-research/reference.md`。
+2. **调研路由**：加载 `known-issue-research` skill 执行（三态判断 + 已知问题快搜 + 行业通病评估，方法论见该 skill）。步骤映射：root-cause=步骤 5, impact=步骤 7, upstream-eval=步骤 6。
 
 3. **问题现象描述** - 复现条件和步骤；**问题可在浏览器中复现时，优先用 `browser-debug-toolkit` 复现问题并观察运行时状态**（不限于 UI/CSS/DOM；无浏览器自动化能力时按该 skill 的既有降级路径处理）
 4. **相关代码定位** - 文件路径+行号、关键函数/类
 5. **问题根因分析** - 数据流和调用链分析
 6. **上游依赖修复评估**（可选，根因明确为上游依赖 bug 时触发）
    - 触发条件：根因明确为上游依赖 bug；或步骤 2 已知问题快搜找到上游已修复版本。
-   - **加载 `upstream-dependency-debug` skill 执行**：4 步决策顺序（判断上游→查 Changelog→优先升级→不可行才 workaround）+ 通用升级工程纪律（包管理器一致性/验证链/semver/dedup）+ 结果处理表，见该 skill。
+   - **加载 `upstream-dependency-debug` skill 执行**（方法论见该 skill）。
    - 结果：升级低风险→进阶段 3 推荐升级方案；有风险→升级与 workaround 并列；未修复→workaround 注明临时性。
 
 7. **影响范围评估** - 受影响的模块/功能
@@ -328,13 +328,7 @@ Superpowers 是增强能力，不是硬依赖。检测到以下 skill 时，在�
 - 根因置信度为「模糊」或「未知」——能定位到大概模块，但无法确定具体逻辑或触发路径
 - 当前是重试/继续场景——已基于静态分析处理过一次，但问题仍然存在
 
-**加载以下强依赖 skill 按其方法论执行**（前置检查已保证可用）：
-
-- `runtime-evidence-debug`：运行时证据采集全流程（升级决策→打点→复现→证据分析→置信度门控→逃生出口→修复验证）。根因仍模糊时的逃生出口（WebSearch 升级搜索等）也由该 skill 提供。
-- `browser-debug-toolkit`：浏览器可复现问题优先用浏览器 DevTools 复现并实时检查运行时状态（DOM 树、计算样式、盒模型等），比代码层打点更高效。
-- `hybrid-debug`：Hybrid 应用（native + WebView/WKWebView/Electron + H5）问题的四层全链条分析，避免单层 whack-a-mole。
-
-具体执行步骤、置信度门控阈值、逃生出口判定见各 skill 的 SKILL.md。
+**加载强依赖 skill**（前置检查已保证可用，各自方法论见其 SKILL.md）：`runtime-evidence-debug`（运行时证据采集 + 逃生出口）、`browser-debug-toolkit`（浏览器 DevTools）、`hybrid-debug`（Hybrid 四层分析）。
 
 **工具限制**：✅ Read/Grep 辅助确定打点位置；打点与验证性改动按「临时改动权限与回滚门控」执行（AI 可直接添加打点，纳入登记）；❌ 未经用户确认不得自行运行复现步骤
 
@@ -521,15 +515,15 @@ Superpowers 增强规则：
 
 归档后必须检查 diff，确认主 specs 更新和 archive 目录迁移都进入工程根的 git 工作区变更。若检测到 `finishing-a-development-branch`，在归档和 diff 检查完成后，再借鉴其流程做分支收尾决策：保留当前分支、创建 PR、合并或继续开发。不得在测试未通过、归档未完成或 diff 未审查时宣布完成。
 
-> **顺序约束**：归档 + diff 检查 → 分支收尾决策 → 合并前覆盖率门控 → 执行合并。选择「保留当前分支」「继续开发」不触发门控。
+> **顺序约束**：归档 + diff 检查 → 分支收尾决策 → 合并纪律 `merge-discipline` → 执行合并。选择「保留当前分支」「继续开发」不触发合并纪律。
 
-#### 合并前覆盖率门控（强制）
+#### 合并纪律（merge-discipline skill）
 
-> 门控在 AI 即将执行合并动作时启动，覆盖分支收尾决策选定「合并」、用户直接下达合并指令、AI 准备调用合并命令等所有合并场景。完整规范（触发时机 / 前置检测 / 门控步骤 / 判定矩阵 / 留痕模板 / 检查清单 / 模式生命周期）见 [reference.md](reference.md)「合并前覆盖率门控（强制）规范」。
-
-**判定矩阵概要**（安全网，完整矩阵见 reference.md）：达标→继续合并；不达标→暂停；崩溃/无报告→视为未通过暂停；无测试代码→暂停；门控未运行而合并已发生（隐式漏跑）→暂停补跑，已合并则留痕。
-**本步骤独立 Bash 权限**：运行 test-coverage-analyzer 脚本，不改变阶段 8「仅限归档/文档」的工具约束本质（门控是合并子步骤而非归档动作）。
-**留痕位置**：PR 描述和 `design.md` 的 Verification Notes（显式跳过 / 环境缺漏 / 隐式漏跑三种模板见 reference.md）。
+> 合并动作执行前加载强依赖 skill `merge-discipline`（前置检查已保证可用），执行两部分：
+> - **Part A 覆盖率门控**：test-coverage-analyzer 触发判定 + 判定矩阵 + 留痕（完整规范见 skill Part A；合并前快查表见 [reference.md](reference.md)「合并前检查清单」）
+> - **Part B tip 钉死**：钉死 revision（`--sha`）+ Pipeline succeeded 语义 + 合入后祖先校验 + 双策略降级（完整规范见 skill Part B）
+>
+> 判定矩阵概要：门控达标→继续 Part B tip 钉死与合并；不达标/崩溃/无报告/无测试→暂停；隐式漏跑→补跑或留痕。
 
 ### 复盘改进（委托 learn-and-improve）
 
@@ -564,6 +558,8 @@ Superpowers 增强规则：
 | 覆盖率不达标自动模式强行合并 | 绕过用户决策强制合并不达标代码 | 不达标必须暂停等用户决策（强制合并/补测试/放弃） |
 | 显式跳过门控未留痕 | 事后无法追溯门控被跳过、责任不清 | 跳过必须在 PR 描述和 design.md 写入留痕（时间+决策人） |
 | `--base` 获取失败未输出降级警告 | MR 场景误判为 0 变更，门控形同虚设 | 降级时必须显式警告「未指定 base，MR 可能误判为 0 变更」 |
+| archive/docs push 后裸 merge（无 `--sha`、无祖先校验） | 合入旧 tip，archive 未入目标分支 | merge 必须 `--sha` 钉死 + 合入后祖先校验（见 `merge-discipline` Part B） |
+| 把刚 push 后立即出现的「Pipeline succeeded」当当前 tip 已绿 | 误信旧 tip 的绿结果，合入旧 tip | 必须核对结果 sha == 刚 push 的 tip（见 `merge-discipline` Part B step 2） |
 | archive 未完成或 diff 未审查就触发覆盖率门控 | 顺序错乱，门控基于不完整状态 | 顺序：archive+diff → 收尾决策 → 门控 → 合并 |
 | 实现中发现设计错误却继续硬做 | artifacts 与代码分叉 | 回写 proposal/specs/design/tasks 后再继续 |
 | `openspec/` 不存在却强行推进 | 无 schema/context，artifacts 结构混乱 | 阶段 0 门禁 1 未通过时必须停止，要求用户运行 `openspec init` |
