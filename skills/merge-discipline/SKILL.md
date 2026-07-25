@@ -1,17 +1,19 @@
 ---
 name: merge-discipline
-version: "1.0.0"
+version: "1.1.0"
 user-invocable: true
-description: "合并纪律：合并动作（glab/gh mr/pr merge）前必须加载——覆盖率门控（test-coverage-analyzer）+ tip 钉死（--sha 钉死 + 祖先校验），防 push→merge 竞态致 archive/修复未入目标分支。触发词：「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」 / merge discipline, coverage gate, post-push merge check. 被 opsx-jira-fix-workflow / opsx-solve-workflow / jira-fix-workflow frontmatter dependencies 强依赖。"
+description: "合并纪律：合并动作（glab/gh mr/pr merge）前必须加载——rebase/冲突预检（Part C，最先）+ 覆盖率门控（Part A，test-coverage-analyzer）+ tip 钉死（Part B，--sha 钉死 + 祖先校验），防盲目合入已移动的目标分支 + push→merge 竞态致 archive/修复未入目标分支。触发词：「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」 / merge discipline, rebase pre-check, coverage gate, post-push merge check. 被 opsx-jira-fix-workflow / opsx-solve-workflow / jira-fix-workflow frontmatter dependencies 强依赖。"
 ---
 
 # Merge Discipline
 
-> Internal shared skill — the single source of truth for merge-time discipline. Two parts: **coverage gate** (was triplicated across three workflow reference.md) + **tip pinning** (prevents the stale-tip merge race). Referencing workflows declare this in frontmatter `dependencies` and abort at startup if missing.
+> Internal shared skill — the single source of truth for merge-time discipline. Three parts: **rebase/conflict pre-check** (Part C, runs first — surfaces a moved target before merge) + **coverage gate** (Part A — was triplicated across three workflow reference.md) + **tip pinning** (Part B — prevents the stale-tip merge race). Referencing workflows declare this in frontmatter `dependencies` and abort at startup if missing.
 
 ## When this applies
 
 Any merge into a protected branch (`glab mr merge` / `gh pr merge` / `git merge <target>`) — whether from a workflow's branch-closeout decision, a direct user merge command, or AI preparing the merge call. "Keep branch" / "continue development" do not trigger.
+
+**Execution order when merging: Part C (rebase pre-check) → Part A (coverage gate) → Part B (tip pinning) → merge.** Part C runs first because a rebase changes the source tip, forcing A/B to re-run on the new tip.
 
 ---
 
@@ -80,14 +82,70 @@ Prevents the **stale-tip merge race**: archive/fix commits pushed seconds before
 
 ---
 
+## Part C — Rebase / conflict pre-check (runs BEFORE Part A)
+
+Prevents the **blind-merge-into-a-moving-target** failure: by the time the user says "merge", the target (`release/*`, `main`, …) has usually moved — teammates landed their own work. Merging without checking either fails at the platform (`mergeable=false`) or silently lands behind the tip. This Part makes the AI surface that and offer to rebase, instead of the user having to remember to ask.
+
+**Runs first.** A rebase changes the source tip, so Part A/B must re-run on the new tip — therefore C precedes A.
+
+### Detect
+
+```bash
+git fetch origin <target-branch>
+BEHIND=$(git rev-list --count HEAD..origin/<target-branch>)
+BASE=$(git merge-base HEAD origin/<target-branch>)
+CONFLICTS=$(git merge-tree "$BASE" HEAD origin/<target-branch> | grep -c "^changed in both")
+```
+
+`<target-branch>` = the MR/PR base (`gh pr view --json baseRefName -q .baseRefName` / `glab mr view <iid> -F json | jq -r .target_branch`) or the merge target the user named.
+
+### Decision matrix
+
+| State | Action |
+|---|---|
+| `BEHIND=0` and `CONFLICTS=0` | Clean — proceed to Part A |
+| `BEHIND>0` and `CONFLICTS=0` | Report "target N commits ahead; rebase applies cleanly" → wait for user confirm |
+| `CONFLICTS>0` | Report "target N ahead, ~M files conflict" → wait for user confirm |
+
+No auto-rebase without confirmation — rebase rewrites the source branch and triggers a full CI rerun; the user owns that decision.
+
+### On confirm — execute rebase (source branch only)
+
+The source is the user's personal fix branch (`fix/jira-fix-…`), which team policy allows to force-push. The protected target is never rewritten by this Part.
+
+```bash
+git rebase origin/<target-branch>
+# On conflict: delegate to git-conflict-resolve skill (mode=rebase — per-commit resolution)
+git push --force-with-lease origin <source-branch>
+```
+
+If `git-conflict-resolve` is unavailable or the user aborts, stop — leave the worktree mid-rebase (`git rebase --abort` to bail) for human resolution.
+
+### Scope boundary — this Part does NOT wait for CI
+
+After `--force-with-lease` push, this Part **ends**: it reports "rebased, PR updated, CI rerunning" and returns control to the workflow. CI-gating and the actual merge stay with the workflow's normal closeout (Part A → Part B → merge) — the user comes back after CI is green, same as any post-review merge. This Part is a rebase repair tool, not a merge-through-CI orchestrator.
+
+### Loop bound
+
+Each merge attempt triggers at most one rebase. If the target moves again while waiting for CI, the next merge attempt re-enters this Part and re-detects — bounded, not infinite.
+
+### Red flags
+
+- Merging without this Part because "CI is already green" (the green is on the old tip; target moved).
+- Auto-rebasing without user confirmation.
+- Force-pushing the protected target (this Part only rewrites the personal source branch).
+- Rebasing, then claiming merge done before Part B's ancestor check passes on the new tip.
+
+---
+
 ## Mode lifecycle
 
-Gate auto-running test-coverage-analyzer does not trigger "auto reverts to manual" (it's a sub-step of the merge flow). Gate pause (below-threshold / crash / implicit miss) = merge flow interrupted, reverts to manual per existing rules.
+Gate auto-running test-coverage-analyzer does not trigger "auto reverts to manual" (it's a sub-step of the merge flow). Gate pause (below-threshold / crash / implicit miss) = merge flow interrupted, reverts to manual per existing rules. Part C rebase execution follows the same rule: a user-confirmed rebase is a sub-step of the merge flow (does not itself revert to manual); an unresolved conflict or aborted rebase interrupts the merge flow and reverts to manual.
 
 ---
 
 ## Integration guide (for referencing workflows)
 
-- **Keep in your own body:** your stage ordering line (e.g. `archive → branch-closeout → coverage-gate → tip-discipline → merge → writeback`), a one-line pointer to this skill, and 1-2 key red-flags. Do **not** copy the gate steps or tip steps inline.
-- **Delegate to this skill:** both Part A (coverage gate) and Part B (tip pinning) — the full rules above.
-- **Quick-check table in your reference.md:** keep a compact checklist (gate 5 items + tip 3 items, each pointing to this skill's Part/step). It reminds; this skill defines.
+- **Keep in your own body:** your stage ordering line (e.g. `archive → branch-closeout → rebase-precheck → coverage-gate → tip-discipline → merge → writeback`), a one-line pointer to this skill, and 1-2 key red-flags. Do **not** copy the Part steps inline.
+- **Delegate to this skill:** all three Parts — C (rebase pre-check), A (coverage gate), B (tip pinning); the full rules above.
+- **Quick-check table in your reference.md:** keep a compact checklist (rebase 3 items + gate 5 items + tip 3 items, each pointing to this skill's Part/step). It reminds; this skill defines.

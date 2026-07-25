@@ -54,7 +54,7 @@ dependencies:
 - `workflow-mode-lifecycle`（自动/手动模式生命周期）、`clarifying-question-discipline`（主动提问硬纪律与调查优先）、`known-issue-research`（阶段 2 调研路由 / 已知问题快搜 / 行业通病评估）
 - `env-capability-discovery`（环境能力探索：启动时一次扫描可用增强能力）
 - `ensure-tests`（阶段 6.2.5 测试确保：有测试基建时补全并运行；无基建经用户确认后搭建）
-- `merge-discipline`（阶段 8 合并纪律：覆盖率门控 + tip 钉死，合并前加载）
+- `merge-discipline`（阶段 8 合并纪律：rebase 预检 + 覆盖率门控 + tip 钉死，合并前加载）
 
 ## 前置 skill 检查
 
@@ -550,11 +550,12 @@ PR/MR 描述必须包含：
 
 #### 8.3.1 合并纪律（merge-discipline skill）
 
-> 合并动作执行前加载强依赖 skill `merge-discipline`（前置检查已保证可用），执行两部分：
+> 合并动作执行前加载强依赖 skill `merge-discipline`（前置检查已保证可用），执行三部分（顺序 Part C → Part A → Part B）：
+> - **Part C rebase/冲突预检**：fetch + rev-list + merge-tree 检测目标分支领先量与冲突；需 rebase 时报告并等用户确认，rebase + force-with-lease push 后结束本轮（不管 CI，用户等 CI 绿后重新进入合并）；干净则放行 Part A（完整规范见 skill Part C）
 > - **Part A 覆盖率门控**：test-coverage-analyzer 触发判定 + 判定矩阵 + 留痕（完整规范见 skill Part A；合并前快查表见 [reference.md](reference.md)「合并前检查清单」）
 > - **Part B tip 钉死**：archive/docs push 后钉死 revision（`--sha`）+ Pipeline succeeded 语义核对 + 合入后祖先校验 + 双策略降级（完整规范见 skill Part B）
 >
-> 判定矩阵概要：门控达标→继续 Part B tip 钉死与合并；不达标/崩溃/无报告/无测试→暂停；隐式漏跑→补跑或留痕。
+> 判定矩阵概要：Part C 需 rebase→等用户确认后 rebase + push，结束本轮；Part C 干净→继续 Part A；门控达标→继续 Part B tip 钉死与合并；不达标/崩溃/无报告/无测试→暂停；隐式漏跑→补跑或留痕。
 
 ### 8.4 Jira 回写（合并完成后）
 
