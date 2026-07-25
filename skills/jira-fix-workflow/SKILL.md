@@ -905,6 +905,8 @@ Jira ID、标题、优先级、状态、数据来源、问题描述、复现步�
 - **覆盖率报告显示不达标，自动模式强行合并**——不达标必须暂停等用户决策（强制合并/补测试/放弃）
 - **用户显式跳过门控但未在 `08-merge.md` 和 PR 描述留痕**——跳过必须留痕，否则事后无法追溯门控被跳过
 - **未显式指定 `--base` 且未输出「MR 场景可能误判为 0 变更」警告**——`--base` 获取失败时的降级警告必须呈现给用户
+- **修复/docs push 后裸 merge（无 `--sha`、无合入后祖先校验）**——刚 push 的提交未入目标分支（见 `merge-discipline` Part B）
+- **把刚 push 后立即出现的「Pipeline succeeded」当当前 tip 已绿**——多半是旧 tip 结果（见 `merge-discipline` Part B step 2）
 - **Jira 回写时通过 `jira_transition_issue` 的 `comment` 参数传评论**（该参数不可靠，必须独立调用 `jira_add_comment`）
 - **Jira 回写失败后未输出警告，静默跳过**
 

@@ -2,7 +2,7 @@
 name: merge-discipline
 version: "1.0.0"
 user-invocable: true
-description: "合并纪律横切 skill：合并动作（glab/gh mr/pr merge）执行前必须加载，覆盖两部分——①覆盖率门控（test-coverage-analyzer 触发判定 + 判定矩阵 + 留痕）②tip 钉死（钉死 revision --sha + Pipeline succeeded 语义 + 合入后祖先校验 + 双策略降级），防 archive/修复提交未随 MR 合入目标分支的 push→merge 竞态与门控漏跑。触发词：「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」 / merge discipline, coverage gate, post-push merge check, merge integrity. 被 opsx-jira-fix-workflow / opsx-solve-workflow / jira-fix-workflow 三工作流 frontmatter dependencies 强依赖。"
+description: "合并纪律：合并动作（glab/gh mr/pr merge）前必须加载——覆盖率门控（test-coverage-analyzer）+ tip 钉死（--sha 钉死 + 祖先校验），防 push→merge 竞态致 archive/修复未入目标分支。触发词：「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」 / merge discipline, coverage gate, post-push merge check. 被 opsx-jira-fix-workflow / opsx-solve-workflow / jira-fix-workflow frontmatter dependencies 强依赖。"
 ---
 
 # Merge Discipline

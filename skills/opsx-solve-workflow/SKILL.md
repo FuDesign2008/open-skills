@@ -558,6 +558,8 @@ Superpowers 增强规则：
 | 覆盖率不达标自动模式强行合并 | 绕过用户决策强制合并不达标代码 | 不达标必须暂停等用户决策（强制合并/补测试/放弃） |
 | 显式跳过门控未留痕 | 事后无法追溯门控被跳过、责任不清 | 跳过必须在 PR 描述和 design.md 写入留痕（时间+决策人） |
 | `--base` 获取失败未输出降级警告 | MR 场景误判为 0 变更，门控形同虚设 | 降级时必须显式警告「未指定 base，MR 可能误判为 0 变更」 |
+| archive/docs push 后裸 merge（无 `--sha`、无祖先校验） | 合入旧 tip，archive 未入目标分支 | merge 必须 `--sha` 钉死 + 合入后祖先校验（见 `merge-discipline` Part B） |
+| 把刚 push 后立即出现的「Pipeline succeeded」当当前 tip 已绿 | 误信旧 tip 的绿结果，合入旧 tip | 必须核对结果 sha == 刚 push 的 tip（见 `merge-discipline` Part B step 2） |
 | archive 未完成或 diff 未审查就触发覆盖率门控 | 顺序错乱，门控基于不完整状态 | 顺序：archive+diff → 收尾决策 → 门控 → 合并 |
 | 实现中发现设计错误却继续硬做 | artifacts 与代码分叉 | 回写 proposal/specs/design/tasks 后再继续 |
 | `openspec/` 不存在却强行推进 | 无 schema/context，artifacts 结构混乱 | 阶段 0 门禁 1 未通过时必须停止，要求用户运行 `openspec init` |

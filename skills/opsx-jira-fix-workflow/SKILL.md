@@ -605,7 +605,9 @@ Jira 评论必须包含：
 > - ❌ 覆盖率门控脚本崩溃/无报告/退出码1 却继续合并（崩溃视为未通过，须暂停）
 > - ❌ 覆盖率不达标自动模式强行合并（须暂停等用户决策）
 > - ❌ 用户显式跳过门控但未在 PR 描述和 design.md 留痕
-> - ❌ archive（8.2）未完成就触发覆盖率门控（顺序：8.2 archive → 8.3 分支收尾决策 → 8.3.1 门控 → 合并 → 8.4 Jira 回写）
+> - ❌ archive（8.2）未完成就触发合并纪律（顺序：8.2 archive → 8.3 分支收尾 → 8.3.1 合并纪律 merge-discipline → 合并 → 8.4 Jira 回写）
+> - ❌ archive/docs push 后裸 merge（无 `--sha`、无合入后祖先校验）→ archive 未入目标分支（见 `merge-discipline` Part B）
+> - ❌ 把刚 push 后立即出现的「Pipeline succeeded」当当前 tip 已绿 → 多半是旧 tip 结果（见 `merge-discipline` Part B step 2）
 
 ## 批量 OPSX Jira 修复
 
