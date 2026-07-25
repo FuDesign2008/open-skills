@@ -21,8 +21,6 @@ Any merge into a protected branch (`glab mr merge` / `gh pr merge` / `git merge 
 
 Prevents the **blind-merge-into-a-moving-target** failure: by the time the user says "merge", the target (`release/*`, `main`, …) has usually moved — teammates landed their own work. Merging without checking either fails at the platform (`mergeable=false`) or silently lands behind the tip. This Part makes the AI surface that and offer to rebase, instead of the user having to remember to ask.
 
-**Runs first.** A rebase changes the source tip, so Part B/C must re-run on the new tip — therefore A precedes B.
-
 ### Detect
 
 ```bash
@@ -32,7 +30,7 @@ BASE=$(git merge-base HEAD origin/<target-branch>)
 CONFLICTS=$(git merge-tree "$BASE" HEAD origin/<target-branch> | grep -c "^changed in both")
 ```
 
-`<target-branch>` = the MR/PR base (`gh pr view --json baseRefName -q .baseRefName` / `glab mr view <iid> -F json | jq -r .target_branch`) or the merge target the user named.
+`<target-branch>` = the MR/PR base (query it via your platform's CLI) or the merge target the user named.
 
 ### Decision matrix
 
@@ -67,8 +65,6 @@ Each merge attempt triggers at most one rebase. If the target moves again while 
 ### Red flags
 
 - Merging without this Part because "CI is already green" (the green is on the old tip; target moved).
-- Auto-rebasing without user confirmation.
-- Force-pushing the protected target (this Part only rewrites the personal source branch).
 - Rebasing, then claiming merge done before Part C's ancestor check passes on the new tip.
 
 ---

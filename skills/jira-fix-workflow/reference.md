@@ -405,9 +405,9 @@ AI 自动优化方案中...
 > 完整规范见强依赖 skill `merge-discipline`（Part A rebase 预检 + Part B 覆盖率门控 + Part C tip 钉死）。本清单为合并前自检快查表。
 
 **rebase 预检（Part A，最先）**：
-- [ ] 是否 fetch 目标分支并检测领先量（`git rev-list --count HEAD..origin/<目标>`）？→ Part A
-- [ ] 是否检测冲突（`git merge-tree` 或平台 mergeable/conflict）？→ Part A
-- [ ] 需 rebase 时是否报告并等用户确认（不自动 rebase）？rebase + force-with-lease push 后是否结束本轮、不管 CI？→ Part A
+- [ ] 是否检测目标分支领先量？→ Part A
+- [ ] 是否检测冲突？→ Part A
+- [ ] 需 rebase 时是否报告并等用户确认（不自动）？rebase + push 后是否结束本轮、不管 CI？→ Part A
 
 **覆盖率门控（Part B）**：
 

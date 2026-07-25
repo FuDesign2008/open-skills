@@ -5,7 +5,7 @@
       "id": 1,
       "name": "rebase-needed-clean",
       "prompt": "我在用 jira-fix-workflow 修 YNOTR-12167，已到阶段10「Review 与合并」。修复分支 fix/jira-fix-YNOTR-12167 准备合入 release/8.2.80。但我开发期间 release/8.2.80 被同事推进了 3 个 commit（不冲突，rebase 应干净完成）。我是用户，刚对你说「合并」。请加载 merge-discipline skill，说明你会按什么流程处理（dry-run 说明题）。",
-      "expected_output": "Part C: fetch + rev-list + merge-tree 检测 → 报告目标领先、rebase 可干净完成 → 等用户确认 → rebase + force-with-lease push → 结束本轮（不管 CI），控制权交回工作流",
+      "expected_output": "Part A: fetch + rev-list + merge-tree 检测 → 报告目标领先、rebase 可干净完成 → 等用户确认 → rebase + force-with-lease push → 结束本轮（不管 CI），控制权交回工作流",
       "expectations": [
         "提议 fetch 目标 + 检测领先量（rev-list --count）",
         "提议检测冲突（merge-tree 或平台 mergeable）",
@@ -19,7 +19,7 @@
       "id": 2,
       "name": "conflict-present",
       "prompt": "我在用 jira-fix-workflow 修 YNOTR-12167，已到阶段10。修复分支 fix/jira-fix-YNOTR-12167 → release/8.2.80。release/8.2.80 期间被推进 3 个 commit，其中 2 个文件和我的改动重叠，预计 rebase 会冲突。我是用户，刚对你说「合并」。请加载 merge-discipline skill，说明你会按什么流程处理（dry-run 说明题）。",
-      "expected_output": "Part C: 检测出领先 + 冲突 → 报告冲突情况、等用户确认 → rebase + 委托 git-conflict-resolve 解冲突 → force-with-lease push → 结束本轮（不管 CI）",
+      "expected_output": "Part A: 检测出领先 + 冲突 → 报告冲突情况、等用户确认 → rebase + 委托 git-conflict-resolve 解冲突 → force-with-lease push → 结束本轮（不管 CI）",
       "expectations": [
         "提议 fetch + 检测领先量（rev-list）",
         "提议检测冲突（merge-tree/平台 conflict），判定存在冲突",
