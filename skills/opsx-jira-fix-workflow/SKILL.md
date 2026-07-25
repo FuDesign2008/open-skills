@@ -550,12 +550,12 @@ PR/MR 描述必须包含：
 
 #### 8.3.1 合并纪律（merge-discipline skill）
 
-> 合并动作执行前加载强依赖 skill `merge-discipline`（前置检查已保证可用），执行三部分（顺序 Part C → Part A → Part B）：
-> - **Part C rebase/冲突预检**：fetch + rev-list + merge-tree 检测目标分支领先量与冲突；需 rebase 时报告并等用户确认，rebase + force-with-lease push 后结束本轮（不管 CI，用户等 CI 绿后重新进入合并）；干净则放行 Part A（完整规范见 skill Part C）
-> - **Part A 覆盖率门控**：test-coverage-analyzer 触发判定 + 判定矩阵 + 留痕（完整规范见 skill Part A；合并前快查表见 [reference.md](reference.md)「合并前检查清单」）
-> - **Part B tip 钉死**：archive/docs push 后钉死 revision（`--sha`）+ Pipeline succeeded 语义核对 + 合入后祖先校验 + 双策略降级（完整规范见 skill Part B）
+> 合并动作执行前加载强依赖 skill `merge-discipline`（前置检查已保证可用），执行三部分（顺序 Part A → Part B → Part C）：
+> - **Part A rebase/冲突预检**：fetch + rev-list + merge-tree 检测目标分支领先量与冲突；需 rebase 时报告并等用户确认，rebase + force-with-lease push 后结束本轮（不管 CI，用户等 CI 绿后重新进入合并）；干净则放行 Part B（完整规范见 skill Part A）
+> - **Part B 覆盖率门控**：test-coverage-analyzer 触发判定 + 判定矩阵 + 留痕（完整规范见 skill Part B；合并前快查表见 [reference.md](reference.md)「合并前检查清单」）
+> - **Part C tip 钉死**：archive/docs push 后钉死 revision（`--sha`）+ Pipeline succeeded 语义核对 + 合入后祖先校验 + 双策略降级（完整规范见 skill Part C）
 >
-> 判定矩阵概要：Part C 需 rebase→等用户确认后 rebase + push，结束本轮；Part C 干净→继续 Part A；门控达标→继续 Part B tip 钉死与合并；不达标/崩溃/无报告/无测试→暂停；隐式漏跑→补跑或留痕。
+> 判定矩阵概要：Part A 需 rebase→等用户确认后 rebase + push，结束本轮；Part A 干净→继续 Part B；门控达标→继续 Part C tip 钉死与合并；不达标/崩溃/无报告/无测试→暂停；隐式漏跑→补跑或留痕。
 
 ### 8.4 Jira 回写（合并完成后）
 
@@ -607,8 +607,8 @@ Jira 评论必须包含：
 > - ❌ 覆盖率不达标自动模式强行合并（须暂停等用户决策）
 > - ❌ 用户显式跳过门控但未在 PR 描述和 design.md 留痕
 > - ❌ archive（8.2）未完成就触发合并纪律（顺序：8.2 archive → 8.3 分支收尾 → 8.3.1 合并纪律 merge-discipline → 合并 → 8.4 Jira 回写）
-> - ❌ archive/docs push 后裸 merge（无 `--sha`、无合入后祖先校验）→ archive 未入目标分支（见 `merge-discipline` Part B）
-> - ❌ 把刚 push 后立即出现的「Pipeline succeeded」当当前 tip 已绿 → 多半是旧 tip 结果（见 `merge-discipline` Part B step 2）
+> - ❌ archive/docs push 后裸 merge（无 `--sha`、无合入后祖先校验）→ archive 未入目标分支（见 `merge-discipline` Part C）
+> - ❌ 把刚 push 后立即出现的「Pipeline succeeded」当当前 tip 已绿 → 多半是旧 tip 结果（见 `merge-discipline` Part C step 2）
 
 ## 批量 OPSX Jira 修复
 

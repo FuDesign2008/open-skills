@@ -519,12 +519,12 @@ Superpowers 增强规则：
 
 #### 合并纪律（merge-discipline skill）
 
-> 合并动作执行前加载强依赖 skill `merge-discipline`（前置检查已保证可用），执行三部分（顺序 Part C → Part A → Part B）：
-> - **Part C rebase/冲突预检**：fetch + rev-list + merge-tree 检测目标分支领先量与冲突；需 rebase 时报告并等用户确认，rebase + force-with-lease push 后结束本轮（不管 CI，用户等 CI 绿后重新进入合并）；干净则放行 Part A（完整规范见 skill Part C）
-> - **Part A 覆盖率门控**：test-coverage-analyzer 触发判定 + 判定矩阵 + 留痕（完整规范见 skill Part A；合并前快查表见 [reference.md](reference.md)「合并前检查清单」）
-> - **Part B tip 钉死**：钉死 revision（`--sha`）+ Pipeline succeeded 语义 + 合入后祖先校验 + 双策略降级（完整规范见 skill Part B）
+> 合并动作执行前加载强依赖 skill `merge-discipline`（前置检查已保证可用），执行三部分（顺序 Part A → Part B → Part C）：
+> - **Part A rebase/冲突预检**：fetch + rev-list + merge-tree 检测目标分支领先量与冲突；需 rebase 时报告并等用户确认，rebase + force-with-lease push 后结束本轮（不管 CI，用户等 CI 绿后重新进入合并）；干净则放行 Part B（完整规范见 skill Part A）
+> - **Part B 覆盖率门控**：test-coverage-analyzer 触发判定 + 判定矩阵 + 留痕（完整规范见 skill Part B；合并前快查表见 [reference.md](reference.md)「合并前检查清单」）
+> - **Part C tip 钉死**：钉死 revision（`--sha`）+ Pipeline succeeded 语义 + 合入后祖先校验 + 双策略降级（完整规范见 skill Part C）
 >
-> 判定矩阵概要：Part C 需 rebase→等用户确认后 rebase + push，结束本轮；Part C 干净→继续 Part A；门控达标→继续 Part B tip 钉死与合并；不达标/崩溃/无报告/无测试→暂停；隐式漏跑→补跑或留痕。
+> 判定矩阵概要：Part A 需 rebase→等用户确认后 rebase + push，结束本轮；Part A 干净→继续 Part B；门控达标→继续 Part C tip 钉死与合并；不达标/崩溃/无报告/无测试→暂停；隐式漏跑→补跑或留痕。
 
 ### 复盘改进（委托 learn-and-improve）
 
@@ -559,8 +559,8 @@ Superpowers 增强规则：
 | 覆盖率不达标自动模式强行合并 | 绕过用户决策强制合并不达标代码 | 不达标必须暂停等用户决策（强制合并/补测试/放弃） |
 | 显式跳过门控未留痕 | 事后无法追溯门控被跳过、责任不清 | 跳过必须在 PR 描述和 design.md 写入留痕（时间+决策人） |
 | `--base` 获取失败未输出降级警告 | MR 场景误判为 0 变更，门控形同虚设 | 降级时必须显式警告「未指定 base，MR 可能误判为 0 变更」 |
-| archive/docs push 后裸 merge（无 `--sha`、无祖先校验） | 合入旧 tip，archive 未入目标分支 | merge 必须 `--sha` 钉死 + 合入后祖先校验（见 `merge-discipline` Part B） |
-| 把刚 push 后立即出现的「Pipeline succeeded」当当前 tip 已绿 | 误信旧 tip 的绿结果，合入旧 tip | 必须核对结果 sha == 刚 push 的 tip（见 `merge-discipline` Part B step 2） |
+| archive/docs push 后裸 merge（无 `--sha`、无祖先校验） | 合入旧 tip，archive 未入目标分支 | merge 必须 `--sha` 钉死 + 合入后祖先校验（见 `merge-discipline` Part C） |
+| 把刚 push 后立即出现的「Pipeline succeeded」当当前 tip 已绿 | 误信旧 tip 的绿结果，合入旧 tip | 必须核对结果 sha == 刚 push 的 tip（见 `merge-discipline` Part C step 2） |
 | archive 未完成或 diff 未审查就触发覆盖率门控 | 顺序错乱，门控基于不完整状态 | 顺序：archive+diff → 收尾决策 → 门控 → 合并 |
 | 实现中发现设计错误却继续硬做 | artifacts 与代码分叉 | 回写 proposal/specs/design/tasks 后再继续 |
 | `openspec/` 不存在却强行推进 | 无 schema/context，artifacts 结构混乱 | 阶段 0 门禁 1 未通过时必须停止，要求用户运行 `openspec init` |

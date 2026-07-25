@@ -862,12 +862,12 @@ Jira ID、标题、优先级、状态、数据来源、问题描述、复现步�
 
    #### 步骤 2.1：合并纪律（merge-discipline skill）
 
-   > 合并动作执行前加载强依赖 skill `merge-discipline`（前置检查已保证可用），执行三部分（顺序 Part C → Part A → Part B）：
-   > - **Part C rebase/冲突预检**：fetch + rev-list + merge-tree 检测目标分支领先量与冲突；需 rebase 时报告并等用户确认，rebase + force-with-lease push 后结束本轮（不管 CI，用户等 CI 绿后重新进入合并）；干净则放行 Part A（完整规范见 skill Part C）
-   > - **Part A 覆盖率门控**：test-coverage-analyzer 触发判定 + 判定矩阵 + 留痕（完整规范见 skill Part A；合并前快查表见 [reference.md](reference.md)「合并前检查清单」）
-   > - **Part B tip 钉死**：修复/docs push 后钉死 revision（`--sha`）+ Pipeline succeeded 语义核对 + 合入后祖先校验 + 双策略降级（完整规范见 skill Part B）
+   > 合并动作执行前加载强依赖 skill `merge-discipline`（前置检查已保证可用），执行三部分（顺序 Part A → Part B → Part C）：
+   > - **Part A rebase/冲突预检**：fetch + rev-list + merge-tree 检测目标分支领先量与冲突；需 rebase 时报告并等用户确认，rebase + force-with-lease push 后结束本轮（不管 CI，用户等 CI 绿后重新进入合并）；干净则放行 Part B（完整规范见 skill Part A）
+   > - **Part B 覆盖率门控**：test-coverage-analyzer 触发判定 + 判定矩阵 + 留痕（完整规范见 skill Part B；合并前快查表见 [reference.md](reference.md)「合并前检查清单」）
+   > - **Part C tip 钉死**：修复/docs push 后钉死 revision（`--sha`）+ Pipeline succeeded 语义核对 + 合入后祖先校验 + 双策略降级（完整规范见 skill Part C）
    >
-   > 判定矩阵概要：Part C 需 rebase→等用户确认后 rebase + push，结束本轮；Part C 干净→继续 Part A；门控达标→继续 Part B tip 钉死与步骤 2.2 合并；不达标/崩溃/无报告/无测试→暂停；隐式漏跑→补跑或留痕。
+   > 判定矩阵概要：Part A 需 rebase→等用户确认后 rebase + push，结束本轮；Part A 干净→继续 Part B；门控达标→继续 Part C tip 钉死与步骤 2.2 合并；不达标/崩溃/无报告/无测试→暂停；隐式漏跑→补跑或留痕。
 
    #### 步骤 2.2：执行合并
 
@@ -906,8 +906,8 @@ Jira ID、标题、优先级、状态、数据来源、问题描述、复现步�
 - **覆盖率报告显示不达标，自动模式强行合并**——不达标必须暂停等用户决策（强制合并/补测试/放弃）
 - **用户显式跳过门控但未在 `08-merge.md` 和 PR 描述留痕**——跳过必须留痕，否则事后无法追溯门控被跳过
 - **未显式指定 `--base` 且未输出「MR 场景可能误判为 0 变更」警告**——`--base` 获取失败时的降级警告必须呈现给用户
-- **修复/docs push 后裸 merge（无 `--sha`、无合入后祖先校验）**——刚 push 的提交未入目标分支（见 `merge-discipline` Part B）
-- **把刚 push 后立即出现的「Pipeline succeeded」当当前 tip 已绿**——多半是旧 tip 结果（见 `merge-discipline` Part B step 2）
+- **修复/docs push 后裸 merge（无 `--sha`、无合入后祖先校验）**——刚 push 的提交未入目标分支（见 `merge-discipline` Part C）
+- **把刚 push 后立即出现的「Pipeline succeeded」当当前 tip 已绿**——多半是旧 tip 结果（见 `merge-discipline` Part C step 2）
 - **Jira 回写时通过 `jira_transition_issue` 的 `comment` 参数传评论**（该参数不可靠，必须独立调用 `jira_add_comment`）
 - **Jira 回写失败后未输出警告，静默跳过**
 
