@@ -37,6 +37,7 @@ Match against each candidate's `name` and `description`:
 | 🧪 Test-driven | test, tdd, test-driven |
 | 🔧 Build repair | build-fix, build, linter, type-check |
 | ✅ Completion verification | verify, verification, complete |
+| 🖥️ Browser control | browser, ego-browser, playwright-mcp, agent-browser, chrome-devtools, cdp |
 | 🌿 Branch management | worktree, branch, git-worktree |
 
 This table contains **no stage numbers**: each referencing workflow keeps its own small capability→stage mapping table (stage numbering differs per workflow) alongside its reference note.

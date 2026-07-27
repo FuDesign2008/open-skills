@@ -9,6 +9,7 @@
 5. **Skill 变更走 `/opsx-solve-workflow` 沉淀** — 新增、改进或修复 skill 时，用 `/opsx-solve-workflow` 将需求、根因、行为变化、方案、计划、验证与归档沉淀到 `openspec/` artifacts（proposal/specs/design/tasks，归档后并入主 `specs/`），形成可追溯的行为契约。临时小修（改触发词、修正文）可直接编辑；涉及行为契约、多人评审或需长期追溯的变更走 opsx 规范化沉淀。skill 的写作质量仍遵循铁律 4（skill-creator）；opsx 管「做什么、为什么、归档」，skill-creator 管「怎么写得准」，两者互补。
 6. **Skill 正文描述意图，让 Agent 自选工具（平台无关）** — Skill 跨平台运行（Claude Code / Cursor / OpenCode 等），正文不得把某平台专属工具（如 Claude Code 的 `AskUserQuestion`、某平台专属 MCP/CLI）作为必需或首选，**也不得枚举「X 平台用 A 工具，Y 平台用 B」**——枚举仍是硬编码，且武断假设其他平台只有兜底能力。正确做法：**描述「要达成什么」（意图，如「结构化单选提问」），由运行该 skill 的 Agent 用其原生能力实现**；无对应能力时退回通用格式（如 prose）。提交前自查：正文是否硬编码了平台/工具枚举。
 7. **Skill description ≤1024 字符，只写触发路由四要素** — frontmatter `description` 的职责是让 Agent 路由触发，不是文档：只写「做什么 / 何时用 / 触发词（含中文，见铁律 3）/ Do NOT use 反向边界」，方法论细节、环节枚举、格式清单一律归入 SKILL.md 正文或 reference.md。硬上限 1024 字符（Agent Skills 规范，超限平台加载器会报警），软目标 ≤950（留统计口径余量）。修改 description 后运行 `npm run lint:skill-description` 校验；pre-commit 已内置该校验，超限将阻断提交。
+8. **能力断言必须实证** — 凡涉及「某工具/Skill 能做什么、不能做什么」「某能力市场上无竞品」等能力断言，写入文档或 Skill 前必须经一手实证：本地源码实证（目标 skill 的 SKILL.md / API 文档）+ 外部官方数据（GitHub、官方文档），不接受二手转述或「看起来合理」的推断。能力对比类文档需在文首标注核验日期与来源，便于后续刷新。
 
 ---
 
