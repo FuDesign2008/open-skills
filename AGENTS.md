@@ -8,6 +8,7 @@
 4. **创建 Skill 必须走 `/skill-creator` 工作流** — 新建 skill 或大幅重写已有 skill 时，先 `/skill-creator` 唤起 skill-creator（捕获意图 → 写草稿 → 测试用例 → 评估迭代 → 描述优化），而非凭经验直接手写 `SKILL.md`。skill-creator 提供渐进式披露（SKILL.md <500 行 + reference 详表）、frontmatter 规范、触发词 eval 优化等工程化约束，能显著提升触发准确率与执行质量。仅在以下情况可跳过完整流程直接编辑：① skill 内容极简（纯指令、无测试需求）；② 维护已有 skill 的小修小补（改触发词、修正文）。
 5. **Skill 变更走 `/opsx-solve-workflow` 沉淀** — 新增、改进或修复 skill 时，用 `/opsx-solve-workflow` 将需求、根因、行为变化、方案、计划、验证与归档沉淀到 `openspec/` artifacts（proposal/specs/design/tasks，归档后并入主 `specs/`），形成可追溯的行为契约。临时小修（改触发词、修正文）可直接编辑；涉及行为契约、多人评审或需长期追溯的变更走 opsx 规范化沉淀。skill 的写作质量仍遵循铁律 4（skill-creator）；opsx 管「做什么、为什么、归档」，skill-creator 管「怎么写得准」，两者互补。
 6. **Skill 正文描述意图，让 Agent 自选工具（平台无关）** — Skill 跨平台运行（Claude Code / Cursor / OpenCode 等），正文不得把某平台专属工具（如 Claude Code 的 `AskUserQuestion`、某平台专属 MCP/CLI）作为必需或首选，**也不得枚举「X 平台用 A 工具，Y 平台用 B」**——枚举仍是硬编码，且武断假设其他平台只有兜底能力。正确做法：**描述「要达成什么」（意图，如「结构化单选提问」），由运行该 skill 的 Agent 用其原生能力实现**；无对应能力时退回通用格式（如 prose）。提交前自查：正文是否硬编码了平台/工具枚举。
+7. **Skill description ≤1024 字符，只写触发路由四要素** — frontmatter `description` 的职责是让 Agent 路由触发，不是文档：只写「做什么 / 何时用 / 触发词（含中文，见铁律 3）/ Do NOT use 反向边界」，方法论细节、环节枚举、格式清单一律归入 SKILL.md 正文或 reference.md。硬上限 1024 字符（Agent Skills 规范，超限平台加载器会报警），软目标 ≤950（留统计口径余量）。修改 description 后运行 `npm run lint:skill-description` 校验；pre-commit 已内置该校验，超限将阻断提交。
 
 ---
 
@@ -29,7 +30,7 @@ open-skills/
 ├── .cursor-plugin/         # Cursor 平台配置（plugin.json）
 ├── .opencode/              # OpenCode 平台（ES Module 插件 + 安装脚本）→ 见 .opencode/AGENTS.md
 ├── docs/                   # 安装指南、实现文档（含 generated/ 自动生成索引）
-├── scripts/                # gen-skill-docs.mjs：由 skills 生成 docs/generated/skills-index.md
+├── scripts/                # gen-skill-docs.mjs：由 skills 生成 docs/generated/skills-index.md；lint-skill-description.mjs：description ≤1024 校验（见铁律 7）
 ├── openspec/               # OpenSpec 规范治理（changes/ 变更提案、specs/ 主行为契约；opsx 沉淀落点，见铁律 5）
 ├── .claude/                # OpenSpec OPSX 原生 skills（openspec-*）+ opsx/* 快捷命令
 └── .github/workflows/      # CI：版本递增（release.yml）、skills 索引校验（docs-skills-verify.yml）

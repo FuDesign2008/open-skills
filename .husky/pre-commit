@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# Lint skill description length (hard limit 1024 chars) when any SKILL.md changes.
+if git diff --cached --name-only | grep -qE '^skills/.+/SKILL\.md$'; then
+  node scripts/lint-skill-description.mjs || exit 1
+fi
+
 # Auto-regenerate skills index when skill metadata or generator script changes.
 if git diff --cached --name-only | grep -qE '^(skills/.+/SKILL\.md|scripts/gen-skill-docs\.mjs)$'; then
   echo "Regenerating docs/generated/skills-index.md..."
