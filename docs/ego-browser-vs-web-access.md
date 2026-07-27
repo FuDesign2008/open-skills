@@ -104,7 +104,8 @@ web-access 基于 CDP Proxy（HTTP `localhost:3456`，curl 脚本化），连接
 | 搜一篇文章 / 查一个信息 | **web-access** | 轻量，无需启动 app |
 | 批量抓取网页内容 | **web-access** | API 化，多 Agent 并行无竞态 |
 | 小红书 / 微博 / 公众号抓取 | **web-access** | 专项反爬适配 |
-| 轻量交互（点击展开、翻页、填表提交） | **web-access** | `/click` `/eval` 够用且更轻 |
+| 浏览器操控/调试（交互、JS、CDP、登录态） | **ego-browser** | 默认第一优选，单通道覆盖调试全链路；不可用/失败时降级 |
+| 轻量交互的降级与并行批量 | **web-access** | ego 不可用时降级通道；多 Agent 并行共享浏览器无竞态 |
 | 调试中途需人机切换（登录、验证码、支付） | **ego-browser** | handoff 机制，体系内唯一 |
 | 需要隔离 Space 不干扰用户浏览 | **ego-browser** | Task Space 隔离 |
 | 选择器脆弱页面（Canvas / 虚拟化 / 频繁改版） | **ego-browser** | 语义树 `@N` ref + 视觉模式 |
@@ -193,19 +194,16 @@ web-access 可承担调试链路中的**轻量环节**——`/eval` 读取运行
 
 ### 6.2 明确交叉场景的路由优先级
 
-当请求同时匹配两个 Skill 时（如"打开这个页面看看"），按**决策信号**路由（核验后修正版）：
+本仓库 skill 体系的路由策略（2026-07-27 定稿）：**浏览器操控/调试默认 ego-browser 优先，不可用或失败时降级**；纯信息检索仍归 web-access。注意区分事实与策略——web-access 实证具备交互与 JS 能力（见第二节），「ego 优先」是策略选择（能力最全、单通道覆盖调试全链路），不是因为它"唯一能动手"：
 
 ```
-if 只是读内容/搜索信息 → web-access（轻量）
+if 只是读内容/搜索信息 → web-access（轻量，retrieval 任务不走本策略）
 if 涉及反爬平台(小红书/微博/微信) → web-access（专项适配）
-if 轻量交互或并行批量抓取(点击/填表/滚动/截图) → web-access（够用且更轻）
-if 需要人机中途切换(登录/验证码/支付) → ego-browser（体系内唯一）
-if 需要隔离 Space 不干扰用户浏览 → ego-browser
-if 选择器脆弱页面需稳健定位 → ego-browser snapshotText（非 macOS → playwright-mcp a11y 快照）
-if 需要完整 DevTools 调试域(Console/Network/Performance)
-   ├─ 无登录态 → chrome-devtools-mcp（面板最强）
-   └─ 需登录态 → ego-browser cdp()（或 chrome-devtools-mcp attach 已有 Chrome）
-if 非 macOS 需要 ego-browser 类能力 → playwright-mcp → agent-browser
+if 浏览器操控/调试(交互/JS/CDP/登录态) → ego-browser（默认第一优选）
+   ├─ 不可用(未安装/非 macOS) → playwright-mcp → agent-browser
+   ├─ 需要专用面板(perf trace/network 瀑布)且 raw cdp() 太底层 → chrome-devtools-mcp
+   ├─ 需要轻量登录态控制或 curl 并行子 Agent → web-access CDP Proxy
+   └─ 无人值守 CI 回归 → Playwright（专家例外：CI 无用户浏览器）
 ```
 
 ### 6.3 Skill 能力互补的编排模式
@@ -231,7 +229,7 @@ if 非 macOS 需要 ego-browser 类能力 → playwright-mcp → agent-browser
 | **信息获取** | 有，但较重 | ⭐ 轻量高效 |
 | **反爬适配** | 通用 | ⭐ 平台专项 |
 
-> **选择原则（核验后修正）**：「动眼」（搜索/抓取/反爬/轻交互/并行批量）找 web-access；「动手且需要协作或深度」（人机切换 / 隔离 Space / 语义树定位 / 登录态+完整 CDP）找 ego-browser；纯面板调试（无登录态）找 chrome-devtools-mcp。三者是互补分工，不是「动手/动眼」简单二分。
+> **选择原则（2026-07-27 定稿）**：「动眼」（搜索/抓取/反爬）找 web-access；「动手」（操控/调试/JS/CDP）默认找 ego-browser——它单通道覆盖观察→复现→验证全链路；不可用（非 macOS/未安装）或失败时按 playwright-mcp → agent-browser → chrome-devtools-mcp（专用面板）→ web-access（轻量并行）降级；无人值守 CI 用 Playwright。
 
 ---
 
@@ -363,17 +361,13 @@ ego-browser 壁垒 = 继承登录态 + 隔离 Space + 人机切换 + heredoc 脚
 结合竞品分析，更新后的完整路由决策：
 
 ```
-┌─ 需要交互（点击/输入/滚动/上传/拖拽）？
-│  ├─ 需人机切换 / 隔离 Space / 语义树定位 ──→ ego-browser
-│  ├─ 轻量交互或并行批量 ──→ web-access（/click /eval，够用且更轻）
-│  └─ 非 macOS ──→ playwright-mcp → agent-browser
-│
-├─ 需要执行页面 JS / 调 DevTools / 调试？
-│  ├─ 完整 DevTools 面板（Console/Network/Performance）
-│  │   ├─ 无登录态 ──→ chrome-devtools-mcp（面板能力最强）
-│  │   └─ 需登录态 ──→ ego-browser cdp()（或 chrome-devtools-mcp attach 已有 Chrome）
-│  ├─ 页面内 JS 读取/验证 ──→ web-access /eval（轻量）或 ego-browser js()
-│  └─ 非 macOS 需语义树定位 ──→ playwright-mcp（a11y 快照）
+┌─ 浏览器操控/调试（交互/JS/CDP/登录态）？
+│  ├─ 默认 ──→ ego-browser（第一优选：全链路单通道覆盖）
+│  ├─ 不可用 / 失败 ──→ 降级链：
+│  │   ├─ 非 macOS ──→ playwright-mcp → agent-browser
+│  │   ├─ 需专用面板(perf/network) ──→ chrome-devtools-mcp
+│  │   ├─ 轻量登录态控制 / curl 并行 ──→ web-access CDP Proxy
+│  │   └─ 无人值守 CI ──→ Playwright（专家例外）
 │
 ├─ 只是读取网页内容 / 搜索信息？
 │  ├─ Yes，且目标是一般网站 ──→ web-access（轻量快速）
@@ -407,4 +401,4 @@ ego-browser 壁垒 = 继承登录态 + 隔离 Space + 人机切换 + heredoc 脚
 | **社区规模** | 早期 | — | ⭐ 97K+ | 35K+ | 30亿+(Chrome) |
 | **平台** | macOS only | 全平台 | 全平台 | 全平台 | 各平台 |
 
-> **最终建议（核验后修正）**：ego-browser 在开发者工具赛道有独特的壁垒组合（登录态 + Space + 原子化人机切换），但社区和跨平台是当前最大短板。Skill 体系中的分工：搜索、信息获取、反爬抓取、轻量交互与并行批量留给 web-access；人机切换、Space 隔离、语义树定位、登录态+完整 CDP 场景优先 ego-browser；纯面板调试（性能/网络/计算样式，无登录态）优先 chrome-devtools-mcp；非 macOS 环境按 playwright-mcp → agent-browser 降级；大规模 Agent 编排建议组合 Browser Use 等专业框架。
+> **最终建议（2026-07-27 定稿）**：ego-browser 在开发者工具赛道有独特的壁垒组合（登录态 + Space + 原子化人机切换），但社区和跨平台是当前最大短板。Skill 体系中的路由策略：**浏览器操控/调试默认 ego-browser 优先**（单通道覆盖观察→复现→验证全链路），不可用或失败时按 playwright-mcp → agent-browser → chrome-devtools-mcp（专用面板）→ web-access（轻量/并行）降级，无人值守 CI 用 Playwright；搜索、信息获取与反爬抓取留给 web-access；大规模 Agent 编排建议组合 Browser Use 等专业框架。

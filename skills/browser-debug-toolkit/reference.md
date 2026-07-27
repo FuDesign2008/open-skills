@@ -1,10 +1,10 @@
 # browser-debug-toolkit — Reference
 
-The main [SKILL.md](SKILL.md) is the lean decision document (three-channel comparison + decision signals). Read this when you've picked a channel and need the concrete API cheat sheets and debugging recipes:
+The main [SKILL.md](SKILL.md) is the lean decision document (default channel: **ego-browser**; degradation chain + comparison table). Read this when you've picked a channel and need the concrete API cheat sheets and debugging recipes:
 
-- **web-access CDP Proxy** → sections below (curl API + recipes 1–5)
-- **ego-browser** → "ego-browser channel — minimal heredoc recipes"
-- **chrome-devtools-mcp** → "chrome-devtools-mcp deepening — perf & network"
+- **ego-browser (default)** → "ego-browser channel — minimal heredoc recipes"
+- **chrome-devtools-mcp** (panel fallback / perf specialist) → "chrome-devtools-mcp deepening — perf & network"
+- **web-access CDP Proxy** (lightweight / parallel fallback) → sections below (curl API + recipes 1–5)
 
 ## web-access CDP Proxy — preflight + API cheat sheet
 
