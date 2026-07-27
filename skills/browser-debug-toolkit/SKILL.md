@@ -2,7 +2,7 @@
 name: browser-debug-toolkit
 version: "1.2.0"
 user-invocable: true
-description: "Browser runtime debugging toolkit — guides AI to prioritize browser DevTools and CDP-based tools for runtime inspection and control when debugging UI/CSS/DOM layout, frontend interaction, and rendering issues. Two CDP channels: chrome-devtools-mcp (inspection, DevTools panels) and the web-access skill's CDP Proxy (control + verify, carries login state, curl-scriptable; runtime-checked, aborts with an install hint if web-access is absent). Also covers Playwright. Triggers: 「浏览器调试」「UI 调试」「DOM 检查」「CSS 调试」「页面布局问题」「前端运行时调试」「chrome devtools」「CDP 调试」「登录态调试」 / browser debug, devtools, dom inspect, css debug, runtime debugging, login-state debug."
+description: "Browser runtime debugging toolkit — prioritize browser DevTools and CDP tools for runtime inspection and control when debugging UI/CSS/DOM layout, frontend interaction, and rendering issues. Three channels picked by signal: chrome-devtools-mcp (DevTools panels: computed style, network, perf trace), web-access CDP Proxy (lightweight control + login state, curl-scriptable; runtime-checked), ego-browser (macOS, runtime-checked: human-AI handoff, isolated task space, a11y-ref targeting, raw CDP + login state; non-macOS fallback playwright-mcp / agent-browser). Triggers: 「浏览器调试」「UI 调试」「DOM 检查」「CSS 调试」「页面布局问题」「前端运行时调试」「chrome devtools」「CDP 调试」「登录态调试」 / browser debug, devtools, dom inspect, css debug, runtime debugging, login-state debug."
 ---
 
 # Browser Runtime Debugging Toolkit
@@ -72,12 +72,15 @@ After install/enable, verify the MCP is loaded:
 | CSS not applying / specificity conflict | DevTools Elements → Styles | — | login-state repro: `/eval` getComputedStyle | Computed styles, override chain, box model |
 | Layout shift / box model anomaly | DevTools Elements → Computed/Layout | — | login-state repro: `/eval` getBoundingClientRect | Box model visualization, flex/grid guides |
 | Interaction anomaly (click not responding) | DevTools Console + Event Listeners | playwright click + screenshot | login-state repro + real gesture: `/click` `/clickAt` | Event listener inspection, JS runtime errors |
+| Login wall / captcha interrupts the debug flow | ego-browser: `handOffTaskSpace` → user acts → `takeOverTaskSpace` | — | — | Atomic human-AI handoff mid-debug; agent and user share one browser without fighting for control |
+| Selector-fragile UI (Canvas / virtualized list / frequently re-skinned page) | ego-browser: `snapshotText()` @N refs | playwright-mcp a11y snapshot | — | a11y-tree refs survive CSS/markup churn; re-snapshot after mutation |
+| Login state + full CDP domains needed together (e.g. network waterfall behind login) | ego-browser: `cdp('Network.*')` in logged-in space | — | `/eval` reads only; no full domains | Raw CDP passthrough with inherited login state |
 | Render performance (jank/frame drops) | DevTools Performance panel | `frontend-perf` skill | — | Flame chart, Long Tasks, render stats |
 | Visual regression (style overwritten) | `visual-qa` skill | playwright screenshot | before/after `/screenshot` diff | Screenshot diff, design review |
 | Async loading / network issues | DevTools Network panel | — | — | Request/response, waterfall, status codes |
 | State management anomaly (React/Vue) | React/Vue DevTools | — | — | Component tree, props/state, time travel |
 
-> The CDP Proxy column points to the external **`web-access`** skill — a runtime-local dependency (this skill does **not** declare it in frontmatter `dependencies`, so upstream workflows like solve-workflow stay free of any external-plugin requirement): verify `web-access` is available when you take this channel; if missing, abort and tell the user how to install it (no silent fallback). See the comparison below for when to pick it over chrome-devtools-mcp.
+> The CDP Proxy column points to the external **`web-access`** skill — a runtime-local dependency (this skill does **not** declare it in frontmatter `dependencies`, so upstream workflows like solve-workflow stay free of any external-plugin requirement): verify `web-access` is available when you take this channel; if missing, abort and tell the user how to install it (no silent fallback). The **ego-browser** rows follow the same pattern: ego-browser is an external, macOS-only skill — runtime-check it; if absent (or non-macOS), degrade to playwright-mcp (MCP, a11y-tree snapshots), then agent-browser (CLI), then the remaining channels. See the comparison below for when to pick each channel.
 
 ## Tool Usage Guides
 
@@ -117,21 +120,31 @@ After install/enable, verify the MCP is loaded:
 
 > Framework DevTools are browser extensions that AI cannot operate directly. Guide the user to install and inspect manually.
 
-## CDP Proxy (web-access) vs chrome-devtools-mcp
+## Three channels, three postures — choose by signal
 
-Two CDP channels, different debugging postures:
+Pick the channel by what the debug session **needs**, not by habit. The three overlap in basic interaction (click / fill / evaluate / screenshot) but differ sharply in posture:
 
-| Aspect | chrome-devtools-mcp | web-access CDP Proxy |
-|--------|---------------------|----------------------|
-| Posture | **Inspect** (DevTools panels: Elements / Network / Performance) | **Control + verify** (operate the page, capture state) |
-| Login state | Fresh session — no user cookies by default | Connects to user's daily browser — **login state native** |
-| Operation API | MCP tools (panel-aligned) | curl HTTP API (scriptable, batch-friendly) |
-| Real user gesture | Limited | `/clickAt` (CDP Input.dispatchMouseEvent), `/setFiles` |
-| Best for | Computed styles / box model / network waterfall / perf flame chart | Login-gated / dynamic / anti-scrape repro, before/after screenshot diff, scripted batch repro |
+| Aspect | chrome-devtools-mcp | web-access CDP Proxy | ego-browser (macOS) |
+|--------|---------------------|----------------------|---------------------|
+| Posture | **Inspect** (DevTools panels: Elements / Network / Performance) | **Lightweight control + verify** (operate the page, capture state) | **Full control + raw CDP + human-AI handoff** |
+| Login state | Fresh session by default; can attach to an existing Chrome | Connects to user's daily browser — **login state native** | Inherited from user's browser — **login state native** |
+| Element targeting | CSS / text queries | CSS via `/eval` | `snapshotText()` a11y refs (`@N`) + CSS + xpath + coordinates |
+| Full CDP domains (Network/Performance/Console) | ✅ via panels | ❌ (proxy subset: eval/click/scroll/screenshot) | ✅ `cdp()` raw passthrough |
+| Human-AI handoff mid-debug | ❌ | ❌ | ✅ `handOffTaskSpace` / `takeOverTaskSpace` |
+| Browser isolation | Separate fresh instance | Shares user's browser (background tabs, parallel-safe) | Isolated Task Space — never disturbs user's tabs |
+| Scripting posture | MCP tools (interactive) | curl HTTP API (batch, parallel agents) | heredoc JS batch (multi-step in one round) |
+| Platform | Cross-platform (Chrome-family) | Cross-platform | **macOS only** |
 
-Prefer the CDP Proxy for login-state repro, operate-to-reproduce flows, or when chrome-devtools-mcp is unavailable. **Tie-breaker**: when a bug needs *both* inspection (computed style / box model) **and** login state, the CDP Proxy wins — login state is the harder constraint (a fresh session simply cannot reach the content).
+**Decision signals:**
 
-For the curl API cheat sheet + debugging recipes, see [reference.md](reference.md).
+- Need computed styles / box model / network waterfall / perf flame chart → **chrome-devtools-mcp** (its panels are the strongest CDP-debugging surface; also the right tool for performance work — pair with `frontend-perf`).
+- Need login state + lightweight operate-to-reproduce (click/fill/eval/screenshot), curl-scriptable or parallel sub-agents → **web-access CDP Proxy**.
+- Need human-AI handoff (login wall / captcha / payment mid-debug), isolated task space, selector-fragile pages (a11y refs), or login state **and** full CDP domains at once → **ego-browser**.
+- **Tie-breaker** (unchanged): when a bug needs *both* panel inspection *and* login state, login state is the harder constraint — take a login-state channel (web-access for lightweight needs, ego-browser when you also need raw CDP or handoff).
+
+**Degradation chain for the ego-browser row**: ego-browser is macOS-only and external (runtime-checked, same weak-reference pattern as web-access). If unavailable → playwright-mcp (MCP form, a11y-tree snapshots — closest capability match) → agent-browser (CLI form) → fall back to the other two channels. Never silently fall back — tell the user which channel you are on.
+
+For the web-access curl API cheat sheet, the ego-browser heredoc recipes, and debugging recipes per channel, see [reference.md](reference.md).
 
 ## Workflow Integration
 
@@ -151,12 +164,14 @@ Signal keywords: style, layout, render, display, visibility, position, size, col
 → Yes → Prioritize browser tools to reproduce and inspect (this skill's decision table guides selection)
 → No → Follow original static analysis / console.log debugging process
 
-Tool selection priority:
-1. chrome-devtools-mcp (when MCP available) — real-time inspection, AI-operated
-2. web-access CDP Proxy — control + verify, login state, curl-scriptable (login-gated / dynamic / anti-scrape repro)
-3. playwright / webapp-testing — automated operations, screenshot verification
-4. visual-qa — visual comparison, design review
-5. Guide user to manually open DevTools — fallback when MCP unavailable
+Tool selection priority (decide by signal — full table in "Three channels" section):
+1. Full DevTools panels (computed style / box model / network / perf trace) → chrome-devtools-mcp
+2. Login state + lightweight control (click/fill/eval/screenshot), curl-batch or parallel agents → web-access CDP Proxy
+3. Human-AI handoff / isolated task space / a11y-ref targeting / login state + raw CDP → ego-browser (macOS, runtime-checked)
+   → ego-browser absent or non-macOS → playwright-mcp → agent-browser → remaining channels
+4. Automated batch verification / E2E → playwright / webapp-testing
+5. Visual comparison / design review → visual-qa
+6. No browser tooling available → guide user to manual DevTools
 
 MCP prerequisite check:
 → MCP missing? Present adaptive choice: A=auto-install / B=manual / C=skip

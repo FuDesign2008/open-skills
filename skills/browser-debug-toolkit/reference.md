@@ -1,6 +1,12 @@
 # browser-debug-toolkit — Reference
 
-The main [SKILL.md](SKILL.md) is the lean decision document. Read this when you've chosen the **web-access CDP Proxy** channel and need the concrete curl API + debugging recipes.
+The main [SKILL.md](SKILL.md) is the lean decision document (three-channel comparison + decision signals). Read this when you've picked a channel and need the concrete API cheat sheets and debugging recipes:
+
+- **web-access CDP Proxy** → sections below (curl API + recipes 1–5)
+- **ego-browser** → "ego-browser channel — minimal heredoc recipes"
+- **chrome-devtools-mcp** → "chrome-devtools-mcp deepening — perf & network"
+
+## web-access CDP Proxy — preflight + API cheat sheet
 
 The CDP Proxy lives in the external **`web-access`** skill. It speaks HTTP on `http://localhost:3456` and connects to the user's daily browser — so it carries login state natively, the main reason to reach for it over chrome-devtools-mcp during debugging.
 
@@ -49,4 +55,60 @@ Capture anomalous runtime state (`/eval` + `/screenshot`) → apply fix → re-c
 
 - Pure CSS / computed-style / box-model inspection with no login need → chrome-devtools-mcp is more direct.
 - Performance flame chart / network waterfall → chrome-devtools-mcp panels.
+- Human-AI handoff, task-space isolation, or a11y-ref targeting → ego-browser (see below).
 - The bug is statically obvious from code → Read / Grep first; don't spin up a browser.
+
+## ego-browser channel — minimal heredoc recipes
+
+ego-browser (external skill, **macOS only**) drives a real Chromium through `ego-browser nodejs <<'EOF' ... EOF` heredocs with preloaded helpers. Same weak-reference rule as web-access: runtime-check availability first; if missing, degrade per SKILL.md's chain (playwright-mcp → agent-browser → other channels) and tell the user. The Node.js runtime exits after each heredoc and keeps no state — start each round with `useOrCreateTaskSpace(nameOrId)` to reuse the same space and tabs. Full API surface lives in the ego-browser skill's own docs; below are the three debugging patterns that justify this channel.
+
+### Recipe A — Reproduce + inspect in an isolated space
+
+```bash
+ego-browser nodejs <<'EOF'
+const task = await useOrCreateTaskSpace('debug-login-bug')   // reuse across rounds
+await openOrReuseTab('https://app.example.com/dashboard')
+const snap = await snapshotText()          // a11y tree with [ref=N] tags
+cliLog(snap)
+await click('@15')                          // ref-based, survives CSS churn
+await captureScreenshot()
+cliLog(await drainEvents())                 // async event queue: navigation, network
+EOF
+```
+
+### Recipe B — Human-AI handoff (login wall / captcha mid-debug)
+
+```bash
+# Round 1: hit the wall → hand the whole space to the user
+ego-browser nodejs <<'EOF'
+const task = await useOrCreateTaskSpace('debug-login-bug')
+await handOffTaskSpace()                    // check result.done before claiming handoff
+EOF
+# ... user logs in / solves captcha, then confirms in chat ...
+
+# Round 2: take control back and continue the same debug session
+ego-browser nodejs <<'EOF'
+await takeOverTaskSpace('debug-login-bug')
+const state = await js(`({ errors: [...document.querySelectorAll('.error-msg')].map(e => e.textContent) })`)
+cliLog(state)
+EOF
+```
+
+### Recipe C — Raw CDP behind login (console / network domains)
+
+```bash
+ego-browser nodejs <<'EOF'
+const task = await useOrCreateTaskSpace('debug-login-bug')
+await cdp('Network.enable')
+await openOrReuseTab('https://app.example.com/dashboard')
+// ... interact to reproduce ...
+cliLog(await drainEvents())                 // includes network events once enabled
+EOF
+```
+
+## chrome-devtools-mcp deepening — perf & network
+
+The panels are the strongest CDP-debugging surface (Google's official MCP, 26+ tools). Two under-used recipes:
+
+- **Jank / frame drops**: record a performance trace while reproducing the interaction → inspect Long Tasks and the main-thread flame chart → pair with the `frontend-perf` skill for framework-specific root causes (React re-render storms, Angular CD cycles). Runtime trace first, code reading second.
+- **Async loading / network anomalies**: use the network tooling to list requests filtered by URL/status → inspect response bodies and timing waterfall → compare against the expected API contract. When the same page is behind login, either attach the MCP to an existing logged-in Chrome, or switch to ego-browser Recipe C (raw CDP with inherited login state).
