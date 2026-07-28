@@ -176,7 +176,7 @@ Run this layer only when the solution touches a **trust boundary** — authentic
 - A single business change requires cascading edits to 3+ modules with no direct business relationship (Shotgun Surgery), with no convergence strategy proposed.
 - Cyclomatic complexity >20 or cognitive complexity >30 in a function that is not inherently complex (no domain justification documented).
 
-**Layer B (default for non-trivial changes; required on full path):**
+**Layer B (full path):**
 - Dependency direction inverted — a stable module depends on an unstable one (violates Stable Dependencies Principle).
 - Business logic cannot be tested in isolation from external dependencies (violates Clean Architecture testability), with no compensating measure.
 - A scalability bottleneck is embedded with no mitigation plan for expected growth.

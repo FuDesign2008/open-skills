@@ -327,7 +327,7 @@ Delta spec 规范（由 `openspec-continue-change` skill 负责落实）：
 2. **副作用与风险**：是否影响其他模块、性能、安全、兼容性。
 3. **实现可行性**：涉及文件、依赖、迁移是否明确。
 4. **规范符合度**：是否符合现有代码模式和 OpenSpec spec 约定。
-5. **架构与设计质量**（若方案涉及代码修改）：加载 `code-design-review` skill，按其完整代码设计审查框架执行（Layer A + 默认充分的 Layer B + Layer C）。架构/长期可维护性权重见该 skill；不得以「近端可维护」单独放过明显更优且可行的架构。
+5. **架构与设计质量**（若方案涉及代码修改）：加载 `code-design-review` skill，按其完整代码设计审查框架执行（Layer A + Layer B + Layer C）。
 
 若检测到 `requesting-code-review`，在通过前额外做一次“spec 合规审查”：proposal 是否解释 why，delta specs 是否覆盖行为变化，design 是否处理风险，tasks 是否覆盖 requirements。
 

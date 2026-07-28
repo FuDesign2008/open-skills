@@ -430,7 +430,7 @@ Jira ID、标题、优先级、状态、数据来源、问题描述、复现步�
 
 **决策级审查**（加载 `solution-review` skill 按其框架执行）：4 核心维度（解决有效性 / 副作用与风险 / 实现可行性 / 规范符合度）+ 5 战略维度（可逆性校准 / 失效模式分析 / 可运维性 / 成本 vs 价值 / 团队认知适配）。
 
-**代码设计审查**（方案涉及代码时，加载 `code-design-review` skill）：Layer A 代码级指标 + Layer B 架构级属性（非平凡改动默认充分评估）+ Layer C 安全审查。阻断/非阻断以 `solution-review` / `code-design-review` 为准（含架构/长期可维护性权重）；**不得**把「有更优架构但近端可维护」当作非阻断。
+**代码设计审查**（方案涉及代码时，加载 `code-design-review` skill）：Layer A 代码级指标 + Layer B 架构级属性 + Layer C 安全审查。阻断/非阻断以 `solution-review` / `code-design-review` 为准。
 
 #### 审查结论（二级制）
 

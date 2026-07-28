@@ -55,9 +55,9 @@ These are the metrics that apply to any code change, regardless of scale. Each t
 6. **Complexity metrics** — **Cyclomatic complexity** (McCabe, 1976): count decision points + 1; threshold >10 warrants review, >15 is high risk, >20 is unacceptable for a single function. **Cognitive complexity** (SonarSource, 2016): weights nesting, recursion, and logical operators to capture human-readable difficulty; threshold >15 warrants review. Prefer cognitive complexity — it catches what cyclomatic misses (deep nesting reads as hard even with few branches).
 7. **Law of Demeter** (Lieberherr & Holland, 1989) — A method should only talk to its immediate friends, not strangers: `a.b().c().d()` ("train wreck") couples the caller to the internal structure of distant objects. Flag chains deeper than 2 levels in the proposed design.
 
-### Layer B — Architecture-level quality attributes (default for non-trivial changes)
+### Layer B — Architecture-level quality attributes
 
-These evaluate the solution's impact on system-level quality attributes. **Default:** run full Layer B whenever the solution adds modules, changes dependency direction, crosses module boundaries, or alters public contracts. **Quick path** (small, isolated change with no new boundaries and no dependency-direction impact) may do a fast Layer B skim — state that limitation in the report. Do not skip Layer B because implementation looks easy.
+These evaluate the solution's impact on system-level quality attributes. Run full Layer B when the solution adds modules, changes dependency direction, crosses module boundaries, or alters public contracts. **Quick path** (small, isolated change with no new boundaries and no dependency-direction impact) may do a fast Layer B skim — state that limitation in the report. Do not skip Layer B because implementation looks easy.
 
 8. **Testability** (Clean Architecture — Uncle Bob) — Can business logic be tested without the UI, database, web server, or external services? If the solution makes logic un-testable in isolation, that is an architecture violation. Hard-to-test signals: hidden dependencies, static method calls, singletons, law-of-Demeter violations.
 9. **Modularity** (ISO/IEC 25010 — Maintainability → Modularity) — Does one change minimize impact on other components?
@@ -75,7 +75,7 @@ These evaluate the solution's impact on system-level quality attributes. **Defau
 
 1. **Confirm the solution involves code.** If not, use `solution-review` instead.
 2. **Run Layer A** for every code change. Produce a pass/fail for each of the 7 metrics with concrete reasoning tied to the proposed code structure.
-3. **Run Layer B** by default for non-trivial code solutions (see Layer B header). Quick path only for small isolated changes; always disclose path in the report.
+3. **Run Layer B** per the Layer B section (full vs quick path). Always disclose path in the report.
 4. **Run Layer C** only if the solution touches a trust boundary (auth, input, data, external comms). Otherwise skip.
 5. **Produce a structured review report** (see Output below) with per-item verdict, blocking/non-blocking classification, and overall conclusion.
 6. **Gate on blocking issues.** Blocking issues mean the code design does not pass. Low implementation cost (including AI assistance) does **not** convert a material architecture gap into a non-blocking note.
@@ -87,7 +87,7 @@ These evaluate the solution's impact on system-level quality attributes. **Defau
 - Reckless-Inadvertent tech debt — God Object / Speculative Generality / Primitive Obsession introduced without awareness of better design.
 - A single business change requires cascading edits to 3+ modules with no direct business relationship (Shotgun Surgery), with no convergence strategy.
 - Dependency direction inverted — a stable module depends on an unstable one (violates SDP).
-- **(Full / default Layer B)** Business logic cannot be tested in isolation from external dependencies (violates Clean Architecture testability), with no compensating measure.
+- **(Layer B, full path)** Business logic cannot be tested in isolation from external dependencies (violates Clean Architecture testability), with no compensating measure.
 - **(Security)** An OWASP Top 10 category is violated at the design level (e.g., design allows injection, broken access control).
 - A **clearly superior** modular / dependency / boundary design is identified, is **feasible within the current change scope**, and **materially improves long-term maintainability** — and the team has not explicitly accepted Prudent-Deliberate debt with a repayment plan. Do **not** pass solely because the weaker design is correct and near-term maintainable.
 
