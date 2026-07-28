@@ -489,6 +489,8 @@ Superpowers 增强规则：
 
 ## 常见错误
 
+> 只记非直觉陷阱；复述阶段 Red Flags / 正文已写明规则的行不收录。
+
 | 错误 | 后果 | 修正 |
 |------|------|------|
 | 只走 solve 流程，不写 artifacts | 下次会话丢失上下文 | 关键结论必须进入 `openspec/changes/<name>/` |
@@ -505,8 +507,8 @@ Superpowers 增强规则：
 | 覆盖率不达标自动模式强行合并 | 绕过用户决策强制合并不达标代码 | 不达标必须暂停等用户决策（强制合并/补测试/放弃） |
 | 显式跳过门控未留痕 | 事后无法追溯门控被跳过、责任不清 | 跳过必须在 PR 描述和 design.md 写入留痕（时间+决策人） |
 | `--base` 获取失败未输出降级警告 | MR 场景误判为 0 变更，门控形同虚设 | 降级时必须显式警告「未指定 base，MR 可能误判为 0 变更」 |
-| archive/docs push 后裸 merge（无 `--sha`、无祖先校验） | 合入旧 tip，archive 未入目标分支 | merge 必须 `--sha` 钉死 + 合入后祖先校验（见 `merge-discipline` Part C） |
-| 把刚 push 后立即出现的「Pipeline succeeded」当当前 tip 已绿 | 误信旧 tip 的绿结果，合入旧 tip | 必须核对结果 sha == 刚 push 的 tip（见 `merge-discipline` Part C step 2） |
+| archive/docs push 后裸 merge（无 tip 钉死、无祖先校验） | 合入旧 tip，archive 未入目标分支 | merge 必须 tip 钉死（`gh`：`--match-head-commit`）+ 合入后祖先校验（见 `merge-discipline` Part C） |
+| 把刚 push 后立即出现的「Pipeline succeeded」当当前 tip 已绿 | 误信旧 tip 的绿结果，合入旧 tip | 必须核对结果 sha == 刚 push 的 tip（见 `merge-discipline` Part C） |
 | archive 未完成或 diff 未审查就触发覆盖率门控 | 顺序错乱，门控基于不完整状态 | 顺序：archive+diff → 收尾决策 → 门控 → 合并 |
 | 实现中发现设计错误却继续硬做 | artifacts 与代码分叉 | 回写 proposal/specs/design/tasks 后再继续 |
 | `openspec/` 不存在却强行推进 | 无 schema/context，artifacts 结构混乱 | 阶段 0 门禁 1 未通过时必须停止，要求用户运行 `openspec init` |
@@ -520,19 +522,8 @@ Superpowers 增强规则：
 | 阶段 6 验证报告将"设计了场景"写成"验证已通过" | 用户接受虚假的通过结论 | 报告中每项必须标注"已执行（命令+输出摘要）"或"待执行（操作指引）" |
 | delta spec requirement 不包含 SHALL/MUST | `openspec validate` 报错，需多轮修复 | requirement 描述必须含 SHALL 或 MUST；使用 `#### Scenario:` 添加场景 |
 | 浏览器断言条件基于猜测而非观察实际 DOM | waitForFunction 超时，测试失败 | 先 evaluate 目标元素的真实值，再决定断言写法 |
-| 跳过阶段 1 直接读代码 | 误解问题、无效分析 | 手动模式必须先完成明确问题并获确认 |
-| 跳过存在性验证直接进入根因分析 | 分析不存在的问题、浪费上下文 | 阶段 2 必须以存在性验证为第一步 |
-| 存在性验证结论为「不存在/描述不符」但继续分析 | 方向全错 | 立即停止并报告，等待用户确认 |
-| 行业通病评估（步骤 2，见 `known-issue-research`）结论为「无可行解」但未暂停等用户确认 | 可能产出无意义方案 | 输出评估报告后暂停，等用户决定是否继续 |
-| 只生成 1 个方案 | 方案无对比，遗漏更优解 | 必须输出 2-5 个方案对比表 |
-| 审查不通过仍直接进入阶段 5 | 带问题的方案进入执行，返工成本高 | 必须循环审查直到通过或达到上限 |
-| 自动模式审查循环超过 3 轮不暂停 | 无限循环浪费资源 | 达到 3 轮上限必须暂停等用户介入 |
-| 增强能力调用失败或未命中时阻断流程 | 不必要的中断 | 增强能力必须静默跳过不阻断（可用性已由前置检查保证，见 `env-capability-discovery`） |
+| 增强能力调用失败或未命中时阻断流程 | 不必要的中断 | 增强能力必须静默跳过不阻断（见 `env-capability-discovery`） |
 | 增强能力突破阶段工具约束 | 只读阶段被写入 | 增强能力不改变阶段工具约束 |
-| 路由判定为 🔵/🟣 却跳过已知问题快搜；或 🟢内部路由下触发条件命中却跳过早搜 | 浪费多轮调试时间，可能在已知解上反复踩坑 | 🔵/🟣 路由下已知问题快搜（步骤 2，见 `known-issue-research`）为首要动作必须先执行；🟢 路由下满足触发条件时先执行 WebSearch 再打点 |
-| 多轮打点后根因仍不明确，继续增加打点而不升级 | 陷入打点死循环，根因永远无法通过代码观测定位 | 日志分析后置信度仍为「模糊/未知」时，必须转向 `runtime-evidence-debug` 的逃生出口（Phase 6）进行网络搜索 |
-| 方案中包含非必要功能或过度设计 | 方案臃肿，OpenSpec 变更范围膨胀 | 剔除非必要功能（YAGNI），只写必要的行为变化 |
-| 根因涉及具名第三方库却未查上游 Changelog 就堆 workaround | 在已修复的上游 bug 上反复踩坑、堆出无效 workaround 技术债 | 优先查上游 Changelog/Release Notes，走步骤 6 评估升级依赖 |
 
 ## 最小成功标准
 
