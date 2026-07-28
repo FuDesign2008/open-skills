@@ -231,34 +231,9 @@ dependencies:
 
 确认或创建 Jira 对应的 OpenSpec change。若阶段 1 已创建或复用 change，本阶段只校验并补全 artifacts；手动模式必须先确认 change 名称；自动模式可生成后继续。
 
-命名建议：
-
-```text
-fix-<jira-id-lower>-<short-topic>
-```
-
-例如：
-
-```text
-fix-ynotr-12167-ai-summary-button
-```
-
-创建方式：读取并委托 `openspec-new-change` skill（按其 SKILL.md 执行；`/opsx:new` 为同能力入口别名）。阶段 0 门禁已保证该 skill 可用；若仍缺失，按 `openspec-workspace-gates` 停止并指导 `openspec init` / `openspec update`，**不得**手写 `openspec/changes/` 绕过原生 skill。
-
-必须写入：
-
-```text
-openspec/changes/<change-name>/proposal.md
-openspec/changes/<change-name>/specs/<capability>/spec.md
-openspec/changes/<change-name>/design.md
-openspec/changes/<change-name>/tasks.md
-```
-
-最低完整度：`design.md` 至少包含以下 5 块——Jira Context / Root Cause / Options / Risk / Verification Notes。
-
-Delta spec 必须使用 `## ADDED Requirements` / `## MODIFIED Requirements` / `## REMOVED Requirements` / `## RENAMED Requirements`，每个 requirement 必须包含至少一个 `#### Scenario:`。
-
-`proposal.md`、`design.md` 各字段的完整写作要求，以及 delta spec 常见格式错误，见 [reference.md](reference.md)「阶段 3 Artifacts 字段清单」。
+- **命名**：`fix-<jira-id-lower>-<short-topic>`（例：`fix-ynotr-12167-ai-summary-button`）
+- **创建**：委托 `openspec-new-change`（读其 SKILL.md；`/opsx:new` 为入口别名）。**不得**手写 `openspec/changes/` 绕过原生 skill（缺失时按 `openspec-workspace-gates` 停止并安装）
+- **Jira 完整度**：`design.md` 至少含 Jira Context / Root Cause / Options / Risk / Verification Notes；proposal / delta spec / 字段细节见 [reference.md](reference.md)「阶段 3 Artifacts 字段清单」
 
 ## 阶段 4：探索与审查方案
 
