@@ -248,7 +248,7 @@ dependencies:
 
 **由 `solution-review` skill 提供 9 维度框架**（4 核心维度：解决有效性 / 副作用与风险 / 实现可行性 / 规范符合度；5 战略维度：可逆性校准 / 失效模式分析 / 可运维性 / 成本 vs 价值 / 团队认知适配）。
 
-**方案涉及代码时，额外由 `code-design-review` skill 提供 3 层审查**（Layer A 代码级指标 7 项 / Layer B 架构级属性 5 项 / Layer C 安全审查）。
+**方案涉及代码时，额外由 `code-design-review` skill 提供 3 层审查**（Layer A 代码级指标 7 项 / Layer B 架构级属性 5 项——非平凡改动默认充分评估 / Layer C 安全审查）。架构与长期可维护性权重见该 skill。
 
 具体维度的含义、判定标准、blocking/non-blocking 阈值见两个 review skill 的 SKILL.md。本工作流在审查时加载它们并按其框架输出审查报告。
 
@@ -259,7 +259,7 @@ dependencies:
 | ✅ **通过** | 各项审查维度均无阻断问题，仅存在可接受的低风险 | 进入阶段5 |
 | ❌ **不通过** | 任一维度存在需解决的问题或不可接受的风险 | 进入优化→重新审查循环 |
 
-**阻断/非阻断判定**：完整的 blocking/non-blocking 标准由 `solution-review`（决策级）和 `code-design-review`（代码设计级）skill 提供。审查时加载对应 skill，按其标准判定每个维度的通过/不通过。本工作流只负责汇总各维度结论，按二级制给出整体审查结论。
+**阻断/非阻断判定**：完整的 blocking/non-blocking 标准由 `solution-review`（决策级）和 `code-design-review`（代码设计级）skill 提供——含 AI 写码时代下对**架构优雅度 / 长期可维护性**的更高权重。审查时加载对应 skill，按其标准判定；本工作流只负责汇总。代码方案须按 `code-design-review` 要求默认充分评估 Layer B（仅文档化的 quick path 可轻量）。
 
 ### 循环流程
 

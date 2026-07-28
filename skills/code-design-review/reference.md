@@ -176,21 +176,21 @@ Run this layer only when the solution touches a **trust boundary** — authentic
 - A single business change requires cascading edits to 3+ modules with no direct business relationship (Shotgun Surgery), with no convergence strategy proposed.
 - Cyclomatic complexity >20 or cognitive complexity >30 in a function that is not inherently complex (no domain justification documented).
 
-**Layer B (full path only):**
+**Layer B (default for non-trivial changes; required on full path):**
 - Dependency direction inverted — a stable module depends on an unstable one (violates Stable Dependencies Principle).
 - Business logic cannot be tested in isolation from external dependencies (violates Clean Architecture testability), with no compensating measure.
 - A scalability bottleneck is embedded with no mitigation plan for expected growth.
+- A clearly superior modular / dependency / boundary design is identified, is feasible within the current change scope, and materially improves long-term maintainability — without explicit Prudent-Deliberate acceptance and repayment plan. Do not pass solely because the weaker design is correct and near-term maintainable. Low implementation cost (including AI assistance) does not weaken this gate.
 
 **Layer C (trust-boundary changes only):**
 - An OWASP Top 10 category is violated at the design level (injection, broken access control, sensitive data exposure, etc.).
 
 ### Non-blocking (note as recommendation, do not block)
 
-- A more elegant implementation exists, but the current one is correct and does not harm maintainability.
-- Prudent-Deliberate tech debt with a documented repayment plan.
-- A superior architecture exists, but the current one does not harm correctness or near-term maintainability (deferrable to a later iteration).
+- Style or naming preferences that do not change structure, coupling, or change amplification.
+- Prudent-Deliberate tech debt with a documented repayment plan (including an explicitly accepted weaker architecture).
 - Complexity slightly above threshold in an inherently complex domain (document the reasoning — domain complexity is essential, not accidental).
-- Code style preferences that do not affect correctness or maintainability.
+- A more elegant *implementation detail* (same architecture) exists, but the current one is correct and does not worsen long-term maintainability.
 
 ---
 

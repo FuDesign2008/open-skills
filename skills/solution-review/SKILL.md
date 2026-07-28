@@ -1,6 +1,6 @@
 ---
 name: solution-review
-version: "1.0.0"
+version: "1.1.0"
 user-invocable: true
 description: "Authoritative framework for reviewing any proposed solution (code, config, process, tooling, or architecture decision) before implementation. Covers four core dimensions (effectiveness, side-effects/risks, feasibility, spec compliance) plus five strategic dimensions that catch decision-level failures the core four miss: reversibility calibration (Bezos one-way/two-way doors), failure-mode analysis (FMEA), operability (SRE Production Readiness Review), cost-vs-value (CBAM/WSJF), and team cognitive fit (Team Topologies). Use this skill whenever you need to review, validate, stress-test, or approve a proposed solution, plan, design doc, or approach — before any code is written or change is applied. Triggers — 「审查方案」「方案审查」「评估方案」「方案评估」「review proposal」「方案可行吗」「这个方案靠谱吗」「方案有没有风险」「方案评审」「设计评审」「决策评审」 / solution review, proposal review, design review, decision review, stress-test a plan, validate an approach."
 ---
@@ -59,7 +59,7 @@ Nine dimensions, in two tiers. The four **core** dimensions are mandatory for ev
 5. **Reversibility calibration** (Bezos, *Type 1 vs Type 2 Decisions*, 2016 Amazon Shareholder Letter) — Is this a one-way door (irreversible: data migration, public API, schema change) or a two-way door (easily rolled back)? One-way doors demand maximum review rigor; two-way doors favor speed. Misclassifying a one-way door as two-way is the most expensive review error.
 6. **Failure-mode analysis** (FMEA — *Failure Mode and Effects Analysis*, ASQ/NASA) — Enumerate how the solution can fail: for each component, what failure modes exist? What is the severity × likelihood × detectability? High-Risk-Priority-Number failures need mitigation before approval.
 7. **Operability** (Google SRE, *Production Readiness Review*, 2016) — If this ships, can it be operated? Are there SLIs/SLOs? Is there monitoring and alerting? Is there a rollback path? What is the on-call burden? A solution that works but cannot be operated is a future incident.
-8. **Cost vs value** (CBAM — SEI/CMU, *Cost Benefit Analysis Method*, 2003; and WSJF — Reinertsen, *Principles of Product Development Flow*, 2009) — Is the effort worth the outcome? What is the cost of delay (does delivering this late lose economic value)? Is there a cheaper alternative that achieves 80% of the value?
+8. **Cost vs value** (CBAM — SEI/CMU, *Cost Benefit Analysis Method*, 2003; and WSJF — Reinertsen, *Principles of Product Development Flow*, 2009) — Is the effort worth the outcome? What is the cost of delay? Is there a cheaper alternative that achieves 80% of the value? **Include long-term maintenance / change-amplification cost.** Low implementation effort (including AI-assisted coding) does **not** by itself justify a structurally weaker design when a better feasible alternative exists.
 9. **Team cognitive fit** (Skelton & Pais, *Team Topologies*, 2019) — Does the solution fit the team's current cognitive capacity? Does it require knowledge the team does not have and cannot quickly acquire? A technically superior solution the team cannot maintain is a liability, not an asset.
 
 > Detailed method, application steps, and source citations for each dimension are in [reference.md](reference.md).
@@ -83,13 +83,14 @@ Nine dimensions, in two tiers. The four **core** dimensions are mandatory for ev
 - **(One-way doors only)** A failure mode with high severity × high likelihood has no mitigation.
 - **(One-way doors only)** The solution has no rollback path and is irreversible.
 - **(One-way doors only)** The cost clearly exceeds the value and no cheaper alternative was considered.
+- A **structural / architectural** alternative is clearly superior for long-term maintainability, is feasible in scope, and is rejected only because the weaker option is faster to implement — without Prudent-Deliberate debt acceptance. (When the solution involves code, align with `code-design-review` architecture gates.)
 
 **Non-blocking** (note as recommendation, do not block):
 - Low-risk items that already have mitigation.
-- Style preferences that do not affect correctness.
-- Performance improvements deferrable to a later iteration.
-- A more elegant approach exists, but the current one is correct and maintainable.
-- Deliberate, documented technical debt with a repayment plan.
+- Style preferences that do not affect correctness or structure.
+- Performance improvements deferrable to a later iteration (when not structural).
+- Style-level elegance without structural / change-amplification impact.
+- Deliberate, documented technical debt with a repayment plan (including explicitly accepted weaker architecture).
 
 > The full blocking/non-blocking criteria with framework-specific thresholds are in [reference.md](reference.md).
 
