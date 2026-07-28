@@ -1,8 +1,8 @@
 ---
 name: jira-fix-workflow
-version: "3.19.0"
+version: "3.20.0"
 user-invocable: true
-description: 当用户说「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」时触发。适用于从 Jira 链接出发、对单个 bug 进行端到端修复的场景。
+description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」 / fix this bug, jira-fix, auto fix, force fix, resume fix. Do NOT use for batch fixes across multiple issues — use jira-fix-batch instead."
 dependencies:
   - solution-review
   - code-design-review
@@ -20,231 +20,231 @@ dependencies:
   - jira-status-writeback
 ---
 
-# Jira Bug 修复工作流
+# Jira Bug-Fix Workflow
 
-> 端到端 Jira Bug 修复流程，阶段 1～6 只读不写。默认手动模式，阶段间需用户确认。
+> End-to-end Jira bug-fix flow; stages 1-6 are read-only. Manual mode (default) requires confirmation between stages.
 >
-> **前提**：mcp-atlassian 已配置且 PAT 有效；Git 环境正常。
-> **格式参考**：输出模板、state 目录、commit 格式、出口话术见 [reference.md](reference.md)。
+> **Prerequisites**: mcp-atlassian is configured with a valid PAT; the Git environment is healthy.
+> **Format reference**: output templates, the state directory, commit format, and exit scripts are in [reference.md](reference.md).
 
-## 触发词与模式
+## Triggers and Modes
 
-| 说法示例 | 模式 | 说明 |
+| Phrasing example | Mode | Note |
 |---------|------|------|
-| 「修复这个 bug [URL]」「帮我修复 [URL]」`jira-fix [URL]` | 👤 手动 | 默认，方案/计划/提交需用户确认 |
-| 「自动修复 [URL]」「修复 [URL] 自动模式」`jira-fix [URL] --auto` | 🤖 自动 | 全流程自动执行，无需确认 |
-| 「强制修复 [URL]」「跳过分级修复 [URL]」`jira-fix [URL] --force` | 🤖 自动 | 跳过难度分级，强制自动执行 |
-| 「继续修复 [URL]」「再次修复 [URL]」`jira-fix [URL] --retry` | 👤 手动 | 跳过阶段0/1，从**阶段3**重新分析 |
-| 「从上次继续」「恢复修复 [URL]」`jira-fix [URL] --resume` | 当前模式 | 从断点恢复 |
+| "修复这个 bug [URL]", "帮我修复 [URL]", `jira-fix [URL]` | 👤 Manual | Default; solution/plan/commit need user confirmation |
+| "自动修复 [URL]", "修复 [URL] 自动模式", `jira-fix [URL] --auto` | 🤖 Auto | Runs the full flow with no confirmation |
+| "强制修复 [URL]", "跳过分级修复 [URL]", `jira-fix [URL] --force` | 🤖 Auto | Skips difficulty grading, forces auto execution |
+| "继续修复 [URL]", "再次修复 [URL]", `jira-fix [URL] --retry` | 👤 Manual | Skips stages 0/1, re-analyzes from **stage 3** |
+| "从上次继续", "恢复修复 [URL]", `jira-fix [URL] --resume` | Current mode | Resumes from the last checkpoint |
 
-**模式识别**：含「自动」「--auto」→ 自动；含「强制」「跳过分级」→ 跳过分级（自动）；含「继续修复」「再次修复」「--retry」→ 阶段3重入；含「从上次继续」「恢复」「--resume」→ 断点恢复；其余手动。
+**Mode detection**: contains "自动" / `--auto` → auto; contains "强制" / "跳过分级" → skip grading (auto); contains "继续修复" / "再次修复" / `--retry` → re-enter at stage 3; contains "从上次继续" / "恢复" / `--resume` → resume from checkpoint; otherwise manual.
 
-## 强依赖与前置检查
+## Strong Dependencies & Prerequisite Check
 
-强依赖见 frontmatter `dependencies`。阶段 0 通过后、阶段 1 前扫描可用 skill；任一缺失 → 结构化提示并**立即中止**（格式见 `solve-workflow/reference.md`）。**不降级**。
+Strong dependencies are listed in frontmatter `dependencies`. After stage 0 passes and before stage 1, scan available skills; any missing → print a structured notice and **abort immediately** (format in `solve-workflow/reference.md`). **No degradation.**
 
-## 模式生命周期
+## Mode Lifecycle
 
-核心规则由 `workflow-mode-lifecycle` 承载。「全流程完成」= 正常完成阶段 0–10（含任一阶段最终终止）；失败/极难/用户停止/审查超限后介入终止 → 恢复手动。重进自动须**显式触发**；「继续修复」「再改一下」等隐式延续**不**重激活自动。
+Core rules live in `workflow-mode-lifecycle`. "Full flow complete" means stages 0-10 finished normally (including any stage's final termination); failure abort / 🔴 extremely-hard termination / user stop / review-cap intervention-termination all revert to manual. Re-entering auto requires an **explicit** trigger; implicit continuation ("继续修复", "再改一下") does **not** reactivate it.
 
-**特有差异**：阶段 9 完成 / 阶段 10 合并完成 / 极难终止（自动）→ 恢复手动；阶段 8 未达标回退保持当前模式（自动 ≤2 次）；`--retry` → 重置手动；`--resume` → 沿用断点模式。
+**Workflow-specific differences**: stage 9 complete / stage 10 merge complete / 🔴 extremely-hard termination (auto) → revert to manual; stage 8 under-threshold rollback keeps the current mode (auto, capped at 2 rollbacks); `--retry` → reset to manual; `--resume` → keep the checkpoint's mode.
 
-## ⚡ 快速参考（执行前必读）
+## ⚡ Quick Reference (read before executing)
 
-| 阶段 | Edit/Write | Bash | 👤 手动停止点 | 🤖 自动停止点 | 必须输出 |
+| Stage | Edit/Write | Bash | 👤 Manual stop point | 🤖 Auto stop point | Required output |
 |------|-----------|------|-------------|-------------|---------|
-| 0 前置 | ❌ | ❌ | 失败终止；成功→1 | 失败/P0 终止；成功继续 | 检查摘要 |
-| 1 读 Jira | ❌ | ❌ | →2 | →2 | Jira 摘要 |
-| 2 理解对齐 | ❌ | ❌ | ⛔ 等确认→3 | 跳过→3 | 复述＋歧义 |
-| 3 分析 | ❌ | ❌ | 存在性失败停；完→4 后⏸️→5 | 存在性失败停；完继续 | 根因＋难度 |
-| 4 难度 | ❌ | ❌ | 极难⛔ A/B；非极难不单独停 | 极难⛔ 终止；否则继续 | 难度等级 |
-| 5 方案审查 | ❌ | ❌ | ⛔ 选方案；⛔ 审查后 | 审查超3轮⛔ | 方案表＋审查 |
-| 6 计划 | ❌ | ❌ | ⛔ 等确认 | 困难/高风险⛔ | 修改清单 |
-| 7 执行 | ✅ | ✅ | ⛔ 等审查；多工程分支先确认 | 困难⛔ 等审查 | 执行报告 |
-| 8 验证 | ❌ | ✅ 测 | ⛔ 等确认 | 通过→9；未达标回退≤2 | 验证结果 |
-| 9 提交 | ❌ | ✅ git/CLI | ⛔ 确认后 push+PR | 自动 push+PR | 完成报告＋URL |
-| 10 合并 | ❌ | ✅ 合并/可选覆盖率 | ⛔ 确认后合并 | ⛔ 同左，须确认 | 合并／清理／Jira |
+| 0 Prerequisite check | ❌ | ❌ | Abort on failure; success→1 | Abort on failure/P0; success continues | Check summary |
+| 1 Read Jira | ❌ | ❌ | →2 | →2 | Jira summary |
+| 2 Understanding alignment | ❌ | ❌ | ⛔ Wait for confirmation→3 | Skip→3 | Restatement + ambiguities |
+| 3 Analyze | ❌ | ❌ | Stop on existence-check failure; done→4 then ⏸️→5 | Stop on existence-check failure; done continues | Root cause + difficulty |
+| 4 Grading | ❌ | ❌ | 🔴⛔ present A/B; otherwise no separate stop | 🔴⛔ terminate; otherwise continue | Difficulty grade |
+| 5 Solution review | ❌ | ❌ | ⛔ pick solution; ⛔ after review | ⛔ if review exceeds 3 rounds | Solution table + review |
+| 6 Plan | ❌ | ❌ | ⛔ wait for confirmation | ⛔ if hard/high-risk | Change list |
+| 7 Execute | ✅ | ✅ | ⛔ wait for review; multi-repo confirm branches first | ⛔ wait for review if hard | Execution report |
+| 8 Verify | ❌ | ✅ test | ⛔ wait for confirmation | Pass→9; under-threshold rollback ≤2 | Verification result |
+| 9 Submit | ❌ | ✅ git/CLI | ⛔ confirm, then push+PR | Auto push+PR | Completion report + URL |
+| 10 Merge | ❌ | ✅ merge/optional coverage | ⛔ confirm, then merge | ⛔ same, confirmation required | Merge/cleanup/Jira report |
 
-阶段 7：先建分支；构建/lint/tsc 前调用 `node-version-discipline`。阶段 10 Part C 按偏好/询问决定是否跑覆盖率 analyzer。
+Stage 7: create the branch first; call `node-version-discipline` before build/lint/tsc. Stage 10 Part C decides whether to run the coverage analyzer per preference/ask.
 
-自动/手动阶段差异见 [reference.md](reference.md)「模式差异速查」。
+Auto/manual per-stage differences: [reference.md](reference.md) § Mode Differences Quick Reference.
 
-## 通用原则
+## General Principles
 
-- **先调查再发言**：无代码证据不做判断
-- **主动提问**：`clarifying-question-discipline`（一次一问、多轮问清；问清优先，不急着答）
-- **Jira 状态边界**：研发只流转到「已修复」；关闭/验证通过由 QA
+- **Investigate before speaking**: no verdict without code evidence
+- **Active questioning**: follow `clarifying-question-discipline` (one question per turn; multi-round until clear; clarify first, do not rush to answer)
+- **Jira status boundary**: engineering only transitions the issue to "已修复" (Fixed); closing / marking verified belongs to QA
 
-## 路径选择
+## Path Selection
 
-阶段 4 分级后选择；可升级不可降级。
+Chosen after stage 4's grading; may upgrade, never downgrade.
 
-| 路径 | 适用 | 要求 |
+| Path | Fits | Requirement |
 |------|------|------|
-| 精简 | 🟢 容易 | 方案可 1 个+风险；计划可合并；阶段 8/9 不可跳 |
-| 标准 | 🟡 中等 | 阶段 1–10 标准执行 |
-| 完整 | 🟠 困难 / 🔴 极难选 B | 全阶段；阶段 7 后暂停审查 |
+| Lean | 🟢 Easy | 1 solution + a risk note is enough; plan may fold in; stages 8/9 never skipped |
+| Standard | 🟡 Medium | Run stages 1-10 in full |
+| Full | 🟠 Hard / 🔴 Extremely-hard choosing B | All stages; pause for review after stage 7 |
 
-手动升级需用户确认。
+Upgrading in manual mode requires user confirmation.
 
-## 状态持久化（中断恢复）
+## State Persistence (interruption recovery)
 
-**恢复**：有 state.json 时，🤖 从 `current_phase` 续；👤 询问是否恢复。**清理**：完成时 `current_phase: "completed"`。目录与 schema 见 [reference.md](reference.md)「状态目录与 state.json」。
+**Resume**: when `state.json` exists, 🤖 auto continues from `current_phase`; 👤 manual asks whether to resume. **Cleanup**: on completion set `current_phase: "completed"`. Directory layout and schema: [reference.md](reference.md) § State Directory and state.json.
 
-**`--retry`（阶段3重入）**：跳过 0/1；读已有 `01-jira-info.md`；一次问清「上次修了什么 / 新现象」；写入 `02-analysis.md`「本次迭代背景」；重置 state（`current_phase: 3`，`completed_phases: [0,1]`，清空 grade/option/review_*）；分支加 `-v2`/`-v3`…；根因仍不清时优先🔬打点调试。
-
----
-
-## 阶段0：前置检查
-
-任一失败则中断。
-
-1. 识别模式（含 `--force` / `--resume`），写入 state.json
-2. `jira_get_issue`（标题/优先级）连通检查；失败终止
-3. **P0 拦截**（仅自动）：P0 → 终止，改手动
-4. Git：🤖 不净→stash；👤 不净→提示处理
-
-输出见 [reference.md](reference.md)「阶段0」。成功后直接进阶段1。
+**`--retry` (stage-3 re-entry)**: skip 0/1; read the existing `01-jira-info.md`; ask once "what was fixed last time / what's the new symptom"; write "this iteration's context" into `02-analysis.md`; reset state (`current_phase: 3`, `completed_phases: [0,1]`, clear `grade`/`selected_option`/`review_*`); append `-v2`/`-v3`… to the branch name; if root cause is still unclear, prefer instrumentation debugging.
 
 ---
 
-## 阶段1：读取 Jira 信息
+## Stage 0: Prerequisite Check
 
-调用 `jira-read {JIRA-ID} --live`（降级缓存 → 再降级手动/终止）。保存 `01-jira-info.md`。提取：ID、标题、优先级、状态、描述、复现、期望/实际、附件、评论。输出见 reference「阶段 1」。工具：✅ mcp / jira-read；❌ Edit/Write/Bash。直接进阶段2。
+Any failure aborts the flow.
 
----
+1. Detect the mode (including `--force` / `--resume`), write it to `state.json`
+2. `jira_get_issue` (title/priority) connectivity check; abort on failure
+3. **P0 interception** (auto only): P0 → abort, switch to manual
+4. Git: 🤖 dirty→stash; 👤 dirty→prompt to handle
 
-## 阶段2：理解对齐
-
-基于阶段1 复述理解、暴露歧义；**禁止读代码**。🤖 跳过→3。👤 必须确认后→3。
-
-输出：问题复述（无技术判断）／关键要素／歧义（一次一问）／Scope 拆解（若适用，仍禁探代码）。格式见 reference「阶段 2」；保存 `02-alignment.md`。
-
----
-
-## 阶段3：分析问题
-
-加载 `analysis-core` §§1–3。映射：`{next-stage}`=阶段4「难度分级」；`{root-cause step}`=根因分析；`{impact-assessment step}`=影响范围；`{upstream-eval step}`=上游依赖修复评估。
-
-**本工作流差异**：① 行业通病评估为**门控**；② 🚫 无可行解→报告+**停止不进阶段5**+写 Jira 评论（模板见 reference）；③ 存在性 ❌→停+Jira 评论+等用户；④ 产物 `02-analysis.md`（含难度预判）。
-
-👤 连续执行阶段4，分级追加到输出末，再⏸️确认→5。🤖 →阶段4。
+Output: [reference.md](reference.md) § Stage 0. On success, proceed directly to stage 1.
 
 ---
 
-## 阶段4：难度分级 + 模式决策网关
+## Stage 1: Read Jira Info
 
-### 🔴 极难（满足任一）
+Call `jira-read {JIRA-ID} --live` (degrade to cache → degrade further to manual/abort). Save `01-jira-info.md`. Extract: ID, title, priority, status, description, repro steps, expected/actual result, attachments, comments. Output: reference.md § Stage 1. Tools: ✅ mcp / jira-read; ❌ Edit/Write/Bash. Proceed directly to stage 2.
 
-根因未知｜架构变更｜数据迁移｜API 协议变更｜预估文件>10 或行数>500｜跨仓库/跨服务
+---
 
-### 其余等级
+## Stage 2: Understanding Alignment
 
-文件≤3 且根因清晰→🟢；4–10 且基本清晰→🟡；≤10 且较清晰但改动多→🟠
+Restate the understanding from stage 1 and surface ambiguities; **reading code is forbidden**. 🤖 skip→3. 👤 must confirm before →3.
 
-### 模式 × 等级
+Output: problem restatement (no technical judgment) / key elements / ambiguities (one question per turn) / scope breakdown (if applicable, still no code exploration). Format: reference.md § Stage 2; save `02-alignment.md`.
 
-| 等级 | 🤖 | 👤 |
+---
+
+## Stage 3: Analyze the Problem
+
+Load `analysis-core` §§1-3. Mapping: `{next-stage}` = stage 4 "difficulty grading"; `{root-cause step}` = root-cause analysis; `{impact-assessment step}` = impact scope; `{upstream-eval step}` = upstream-dependency fix evaluation.
+
+**Workflow-specific differences**: ① the industry-wide-issue evaluation is a **gate**; ② 🚫 no viable fix → report + **stop, do not enter stage 5** + write a Jira comment (template in reference.md); ③ existence check ❌ → stop + Jira comment + wait for the user; ④ artifact `02-analysis.md` (includes a difficulty pre-assessment).
+
+👤 continue directly into stage 4, append the grading to the end of the output, then ⏸️ pause for confirmation before →5. 🤖 → stage 4.
+
+---
+
+## Stage 4: Difficulty Grading + Mode Decision Gateway
+
+### 🔴 Extremely hard (any one qualifies)
+
+Root cause unknown | architectural change | data migration | API-protocol change | estimated files >10 or lines >500 | cross-repo / cross-service
+
+### Other grades
+
+Files ≤3 and root cause clear → 🟢; 4-10 and mostly clear → 🟡; ≤10 but less clear with a larger change → 🟠
+
+### Mode × Grade
+
+| Grade | 🤖 | 👤 |
 |------|-----|-----|
-| 🟢/🟡 | 正常执行 | 可提示切换自动，继续手动 |
-| 🟠 | 阶段7后暂停审查 | 正常手动 |
-| 🔴 | **终止**+标记报告 | 风险提示，选 A/B |
+| 🟢/🟡 | Execute normally | May suggest switching to auto; continue manual |
+| 🟠 | Pause for review after stage 7 | Normal manual |
+| 🔴 | **Terminate** + flag the report | Risk notice, choose A/B |
 
-分级写入 `04-grade.md` 与 state `grade`；声明路径。模板见 reference「阶段 4」。👤 非极难不单独停；极难选 B 话术见 reference。🤖 非极难→5。
-
----
-
-## 阶段5：探索与审查方案
-
-提供 2–3 方案（YAGNI）。🤖 自动选（彻底>规范>质量>改动少）→审查。👤 缺偏好时先一问，再对比表。
-
-输出：清单→展开→**唯一**对比表（见 reference「阶段5 方案对比」）→ `03-options.md`。👤 对比表后停。
-
-**审查**：加载 `pdca-review-orchestration`。映射：`{next-stage}`=阶段6；`{artifact-sink}`=`03-options.md`；`{extra-dimensions}`=无；`{batch-overcap-behavior}`=标记「审查未通过（超限）」并处理下一 issue。✅ Read；❌ Edit/Write/Bash。
+Write the grade to `04-grade.md` and state `grade`; declare the path. Template: reference.md § Stage 4. 👤 no separate stop for non-extremely-hard cases; the 🔴 choose-B script is in reference.md. 🤖 non-extremely-hard →5.
 
 ---
 
-## 阶段6：制定计划
+## Stage 5: Explore & Review Solutions
 
-须含：根因/方案回顾、架构（可选 Mermaid）、文件清单表、顺序、测试场景、影响范围、回滚。保存 `04-plan.md`。
+Offer 2-3 solutions (YAGNI). 🤖 auto-select (priority: thorough > best-practice > code quality > smallest change) → review. 👤 ask once if preference is missing, then present the comparison table.
 
-| 场景 | 行为 |
+Output: list → expanded detail → **one** comparison table (see reference.md § Stage 5 Solution Comparison) → `03-options.md`. 👤 stop after the comparison table.
+
+**Review**: load `pdca-review-orchestration`. Mapping: `{next-stage}` = stage 6; `{artifact-sink}` = `03-options.md`; `{extra-dimensions}` = none; `{batch-overcap-behavior}` = mark "review failed (cap)" and move to the next issue. ✅ Read; ❌ Edit/Write/Bash.
+
+---
+
+## Stage 6: Make a Plan
+
+Must include: root-cause/solution recap, architecture (optional Mermaid), file change table, order, test scenarios, impact scope, rollback. Save `04-plan.md`.
+
+| Scenario | Behavior |
 |------|------|
-| 🤖 普通 | 自动→7 |
-| 🤖 🟠 或风险>中 | 暂停等确认 |
-| 👤 普通 | 等确认 |
-| 👤 极难选 B | 须二次确认「我已知晓风险，继续执行」 |
+| 🤖 Normal | Auto→7 |
+| 🤖 🟠 or risk > medium | Pause for confirmation |
+| 👤 Normal | Wait for confirmation |
+| 👤 🔴 chose B | Requires a second confirmation: "I understand the risk, proceed" |
 
-出口话术见 reference。
-
----
-
-## 阶段7：执行计划
-
-**分支**：命名与单/多工程流程见 [reference.md](reference.md)「阶段7 分支创建细节」；写入 `00-branch.md`。
-
-严格按计划执行；`TodoWrite` / checkbox 完成一项勾一项。每处改动标 `// fix [JIRA-ID]`。质量：`node-version-discipline` → ReadLints → 有 tsconfig 则 `typescript-check`。🤖 多工程分仓改+各仓 lint，写 `reports/[JIRA-ID]-analysis.md`。
-
-执行后：🤖 普通→8，🟠 暂停审查；👤 普通等确认→8，极难选B 暂停不自动提交。报告→`05-execution.md`。业务逻辑缺测时 `ensure-tests`（`mode=advisory`）。出口话术见 reference。
+Exit script: reference.md.
 
 ---
 
-## 阶段8：检查验证
+## Stage 7: Execute the Plan
 
-只输出结果，不改代码。对照 Jira 复现/期望、阶段6、测试、副作用、根因；调试闭环用 `analysis-core` §4。诚实标注见 `pdca-review-orchestration`。模板见 reference「阶段8」。
+**Branch**: naming and single-/multi-repo flow are in [reference.md](reference.md) § Stage 7 Branch-Creation Details; write `00-branch.md`.
 
-| 结论 | 后续 |
+Execute strictly per the plan; check off `TodoWrite` / plan checkboxes item by item as completed. Tag every change `// fix [JIRA-ID]`. Quality gate: `node-version-discipline` → `ReadLints` → `typescript-check` when a tsconfig exists. 🤖 multi-repo changes and lints per repo, write `reports/[JIRA-ID]-analysis.md`.
+
+After execution: 🤖 normal→8, 🟠 pause for review; 👤 normal wait for confirmation→8, 🔴 chose B pause without auto-committing. Report → `05-execution.md`. When business logic lacks tests, call `ensure-tests` (`mode=advisory`). Exit script: reference.md.
+
+---
+
+## Stage 8: Check & Verify
+
+Output the result only — do not change code. Compare against the Jira repro/expected result, stage 6's plan, tests, side effects, and root cause; use `analysis-core` §4 for the debug-verify loop. Verification-report honesty per `pdca-review-orchestration`. Template: reference.md § Stage 8.
+
+| Verdict | Next |
 |------|------|
 | ✅ | →9 |
-| ❌ | 实现误→7；方案缺陷→5；根因不全→3 |
+| ❌ | Implementation error→7; solution flaw→5; incomplete root cause→3 |
 
-🤖 未达标自动回退≤2 次后暂停。👤 等「通过 / 返回修复 / 重选方案」。保存 `06-verification.md`。
-
----
-
-## 阶段9：提交 PR/MR
-
-1. 收集 Jira ID、根因、方案、文件、报告路径
-2. `git-commit`（execute=true）：add/commit/push；message 格式见 reference「Commit message 格式」（须含 Jira ID）
-3. 按 remote 建 PR/MR（`gh` / `glab`）；描述含根因、方案、文件、验证场景（功能/边界/回归各≥2）、Jira 链接
-
-👤 展示计划后停，确认后 AI 执行。🤖 直接执行。完成输出见 reference「阶段 9」→`07-report.md`。
+🤖 auto-rolls back on under-threshold results, capped at 2, then pauses. 👤 waits for "通过" (pass) / "返回修复" (return to fix) / "重选方案" (reselect solution). Save `06-verification.md`.
 
 ---
 
-## 阶段10：Review 与合并
+## Stage 9: Submit PR/MR
 
-展示 PR/MR URL 后**立即停止**（话术见 reference）。**自动与手动均须用户确认后合并**。
+1. Collect the Jira ID, root cause, solution, files, and report paths
+2. `git-commit` (`execute=true`): add/commit/push; message format in reference.md § Commit Message Format (must include the Jira ID)
+3. Open a PR/MR matching the remote (`gh` / `glab`); description includes root cause, solution, files, verification scenarios (≥2 each of functional/boundary/regression), and the Jira link
 
-用户确认后：
-
-1. 加载 `merge-discipline`（Part A→B→C→D；清单见该 skill reference）
-2. 合并（`gh pr merge --merge` / `glab mr merge`）→ 删远程修复分支 → 同步默认分支 → 删本地分支
-3. 加载 `jira-status-writeback`（字段映射：分支、Commit、PR URL、根因、方案、文件、报告、验证场景）；失败不阻断
-
-写入 `08-merge.md`；state `current_phase: "completed"`。
+👤 stop after presenting the plan; the AI executes once confirmed. 🤖 executes directly. Completion output: reference.md § Stage 9 → `07-report.md`.
 
 ---
 
-## 安全机制（自动模式）
+## Stage 10: Review & Merge
 
-改前 stash；警告：>10 文件或 >500 行；阻断：>20 文件或 >1000 行（需 `--force`）；Linter 错阻断；审查循环上限 3 轮；记录自动决策。
+Present the PR/MR URL and **stop immediately** (script in reference.md). **Both auto and manual require user confirmation before merging.**
+
+Once confirmed:
+
+1. Load `merge-discipline` (Part A→B→C→D; checklist in that skill's reference.md)
+2. Merge (`gh pr merge --merge` / `glab mr merge`) → delete the remote fix branch → sync the default branch → delete the local branch
+3. Load `jira-status-writeback` (field map: branch, commit, PR URL, root cause, solution, files, report, verification scenarios); a writeback failure does not block completion
+
+Write `08-merge.md`; state `current_phase: "completed"`.
 
 ---
 
-## 常见错误
+## Safety Mechanisms (auto mode)
 
-> 只记非直觉陷阱。合并→`merge-discipline`；回写→`jira-status-writeback`；通病/上游→`known-issue-research` / `upstream-dependency-debug`。不复述正文。
+Stash before changing; warn at >10 files or >500 lines; block at >20 files or >1000 lines (requires `--force`); block on linter errors; review loop capped at 3 rounds; log every automatic decision.
 
-| 错误 | 修正 |
+---
+
+## Common Mistakes
+
+> Only non-obvious pitfalls are listed here. Merging → `merge-discipline`; writeback → `jira-status-writeback`; industry-wide/upstream issues → `known-issue-research` / `upstream-dependency-debug`. Rules already stated in the stage body are not repeated.
+
+| Mistake | Fix |
 |------|------|
-| 👤 跳过阶段2 或阶段2读代码 | 先对齐；阶段2仅基于 Jira |
-| 存在性不符仍继续 | 停+Jira 评论，等确认 |
-| 🤖 极难仍执行 / 回退超2次不暂停 / 未确认就合并 | 走阶段4网关；超限暂停；合并须确认 |
-| 缺 `// fix [JIRA-ID]` | 每处改动标注 |
+| 👤 skips stage 2, or reads code during stage 2 | Align first; stage 2 is Jira-info-only |
+| Continuing despite an existence-check mismatch | Stop + Jira comment, wait for confirmation |
+| 🤖 executes anyway at 🔴; rolls back more than twice without pausing; merges without confirmation | Follow the stage 4 gateway; pause at the cap; merging always needs confirmation |
+| Missing `// fix [JIRA-ID]` | Tag every change |
 
 ---
 
-## 批量修复
+## Batch Fix
 
-使用 `jira-fix-batch` skill。
+Use the `jira-fix-batch` skill.

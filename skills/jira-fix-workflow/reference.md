@@ -1,48 +1,48 @@
-# Jira Fix Workflow — 输出格式参考
+# Jira Fix Workflow — Output Format Reference
 
-本文件为 `jira-fix-workflow` skill 的各阶段输出格式示例，供 AI 格式化输出时参考。
+Per-stage output-format examples for the `jira-fix-workflow` skill, for the AI to follow when formatting output.
 
-阶段 3 分析方法论见 `analysis-core`；行业通病门控模板见下文「行业通病评估报告」。
+Stage 3 analysis methodology lives in `analysis-core`; the industry-wide-issue evaluation template is below under "Industry-Wide Issue Evaluation Report".
 
 ---
 
-## 模式差异速查
+## Mode Differences Quick Reference
 
-| 阶段 | 🤖 自动 | 👤 手动 |
+| Stage | 🤖 Auto | 👤 Manual |
 |------|--------|--------|
-| 0 前置 | P0 拦截；工作区不净→stash | 工作区不净→提示处理 |
-| 2 理解对齐 | 跳过→3 | 复述后等确认→3 |
-| 4 难度 | 极难→终止 | 极难→A/B |
-| 5 方案审查 | 循环审查≤3；超限暂停 | 选方案→审查→用户判定 |
-| 6 计划 | 普通自动确认；困难/高风险暂停 | 等确认 |
-| 7 执行 | 自动建分支；困难后暂停审查 | 单工程直接建分支；多工程先确认 |
-| 8 验证 | 未达标回退≤2 次后暂停 | 等确认后→9 |
-| 9 提交 | 自动 push + PR/MR | 展示计划，确认后执行 |
-| 10 合并 | ⛔ 须确认后合并（与手动相同） | 须确认后合并 |
-| 中断恢复 | 直接从断点续 | 询问是否恢复 |
+| 0 Prerequisite check | P0 interception; dirty workspace→stash | Dirty workspace→prompt to handle |
+| 2 Understanding alignment | Skip→3 | Restate, then wait for confirmation→3 |
+| 4 Grading | 🔴 Extremely hard→terminate | 🔴 Extremely hard→A/B |
+| 5 Solution review | Loop review ≤3 rounds; pause at cap | Pick solution→review→user verdict |
+| 6 Plan | Normal auto-confirm; pause if hard/high-risk | Wait for confirmation |
+| 7 Execute | Auto-creates branch; pause for review if hard | Single-repo creates directly; multi-repo confirms first |
+| 8 Verify | Auto-rolls back ≤2 times, then pauses | Wait for confirmation, then→9 |
+| 9 Submit | Auto push + PR/MR | Present the plan, execute once confirmed |
+| 10 Merge | ⛔ Merge requires confirmation (same as manual) | Merge requires confirmation |
+| Interruption recovery | Continue directly from checkpoint | Ask whether to resume |
 
 ---
 
-## 状态目录与 state.json
+## State Directory and state.json
 
-目录布局（`.jira-fix/{JIRA-ID}/`）：
+Directory layout (`.jira-fix/{JIRA-ID}/`):
 
 ```
-state.json           ← 进度（mode、review_round、review_status）
-00-branch.md         ← 阶段7 前置（创建修复分支）
-01-jira-info.md      ← 阶段1
-02-alignment.md      ← 阶段2（手动模式）
-02-analysis.md       ← 阶段3
-04-grade.md          ← 阶段4
-03-options.md        ← 阶段5（方案 + 审查记录）
-04-plan.md           ← 阶段6
-05-execution.md      ← 阶段7
-06-verification.md   ← 阶段8
-07-report.md         ← 阶段9
-08-merge.md          ← 阶段10
+state.json           ← progress (mode, review_round, review_status)
+00-branch.md         ← stage 7 pre-step (fix-branch creation)
+01-jira-info.md      ← stage 1
+02-alignment.md      ← stage 2 (manual mode)
+02-analysis.md       ← stage 3
+04-grade.md          ← stage 4
+03-options.md        ← stage 5 (solutions + review record)
+04-plan.md           ← stage 6
+05-execution.md      ← stage 7
+06-verification.md   ← stage 8
+07-report.md         ← stage 9
+08-merge.md          ← stage 10
 ```
 
-`state.json` 示例：
+`state.json` example:
 
 ```json
 {
@@ -61,42 +61,42 @@ state.json           ← 进度（mode、review_round、review_status）
 }
 ```
 
-- `review_round`：0–3；`review_status`：null | in_progress | passed | failed_max_rounds
+- `review_round`: 0-3; `review_status`: null | in_progress | passed | failed_max_rounds
 
-## Commit message 格式
+## Commit Message Format
 
 ```
 <type>(<scope>): <Jira-ID> <subject>
 ```
 
-示例：`fix(ai-summary): YNOTR-12167 修复分享链接中AI摘要按钮显示问题`
+Example: `fix(ai-summary): YNOTR-12167 修复分享链接中AI摘要按钮显示问题`
 
-Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-summary、share、auth、api、ui、core。
+Type: fix, feat, refactor, perf, style, docs, test. Scope examples: ai-summary, share, auth, api, ui, core.
 
-## 阶段出口话术
+## Stage Exit Scripts
 
-阶段停止点见 SKILL「快速参考」。需要固定附言时用下列文案：
+Stop points are in the SKILL.md "Quick Reference". When a fixed closing line is needed, use the wording below:
 
-- **阶段2（手动）**：请确认理解是否准确，或补充 Jira 描述中遗漏的信息。
-- **阶段6（手动）**：⏸️ 阶段6（制定计划）完成。是否进入**阶段7：执行计划**？回复「确认」继续，或说明需要调整。
-- **阶段7 分支（手动·单工程）**：✅ 修复分支已创建：`fix/jira-fix-[JIRA-ID]`，开始执行代码修改。
-- **阶段7 分支（手动·多工程）**：⏸️ 多工程分支已创建，即将开始代码修改，回复「确认」继续。
-- **阶段7（手动）**：⏸️ 阶段7（执行计划）完成，请审查代码。是否进入**阶段8：检查验证**？回复「确认」继续，或告知需要调整。
-- **阶段9（手动）**：⏸️ 提交计划已就绪。确认后 AI 将执行 push + 创建 PR/MR。回复「确认」继续，或告知需要修改。
-- **阶段10（自动/手动）**：⏸️ PR/MR 已在阶段9创建，请完成 Code Review。确认合并后回复「确认」，AI 将执行合并并清理分支。
-- **阶段4 极难选 B（手动）**：⚠️ 已知晓高风险，进入**阶段5：探索与审查方案**，回复「确认」继续，或回复「A」终止。
+- **Stage 2 (manual)**: 请确认理解是否准确，或补充 Jira 描述中遗漏的信息。
+- **Stage 6 (manual)**: ⏸️ 阶段6（制定计划）完成。是否进入**阶段7：执行计划**？回复「确认」继续，或说明需要调整。
+- **Stage 7 branch (manual, single-repo)**: ✅ 修复分支已创建：`fix/jira-fix-[JIRA-ID]`，开始执行代码修改。
+- **Stage 7 branch (manual, multi-repo)**: ⏸️ 多工程分支已创建，即将开始代码修改，回复「确认」继续。
+- **Stage 7 (manual)**: ⏸️ 阶段7（执行计划）完成，请审查代码。是否进入**阶段8：检查验证**？回复「确认」继续，或告知需要调整。
+- **Stage 9 (manual)**: ⏸️ 提交计划已就绪。确认后 AI 将执行 push + 创建 PR/MR。回复「确认」继续，或告知需要修改。
+- **Stage 10 (auto/manual)**: ⏸️ PR/MR 已在阶段9创建，请完成 Code Review。确认合并后回复「确认」，AI 将执行合并并清理分支。
+- **Stage 4 extremely-hard, choosing B (manual)**: ⚠️ 已知晓高风险，进入**阶段5：探索与审查方案**，回复「确认」继续，或回复「A」终止。
 
-## 阶段7 分支创建细节
+## Stage 7 Branch-Creation Details
 
-- **命名**：`fix/jira-fix-[JIRA-ID]`（如 `fix/jira-fix-YNOTR-12167`）
-- **[🤖]**：按阶段6 文件清单匹配各工程 `.git` 根 → 批量 `git checkout -b …`；失败终止
-- **[👤 单工程]**：直接创建，附出口话术「阶段7 分支（手动·单工程）」
-- **[👤 多工程]**：展示工程/基础分支/分支名，确认后创建，附「阶段7 分支（手动·多工程）」
-- 写入 `00-branch.md`，更新 state.json `branch`；输出模板见下文「阶段 7：Git 分支创建完成」
+- **Naming**: `fix/jira-fix-[JIRA-ID]` (e.g. `fix/jira-fix-YNOTR-12167`)
+- **[🤖]**: match each repo's `.git` root against stage 6's file list → batch `git checkout -b …`; abort on failure
+- **[👤 single-repo]**: create directly, append the "Stage 7 branch (manual, single-repo)" script
+- **[👤 multi-repo]**: present repo/base-branch/branch-name, create once confirmed, append "Stage 7 branch (manual, multi-repo)"
+- Write `00-branch.md`, update `state.json` `branch`; output template below under "Stage 7: Git Branch Created"
 
 ---
 
-## 阶段0：前置检查完成
+## Stage 0: Prerequisite Check Complete
 
 ```
 ## 阶段0完成：前置检查通过
@@ -114,7 +114,7 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 
 ---
 
-## 阶段 1：读取 Jira 信息
+## Stage 1: Read Jira Info
 
 ```
 ## 阶段1完成：Jira信息已读取
@@ -139,7 +139,7 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 
 ---
 
-## 阶段 2：理解对齐
+## Stage 2: Understanding Alignment
 
 ```
 【问题复述】我理解这个 Bug 是：...（一句话，不含技术判断）
@@ -149,11 +149,11 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 请确认我的理解是否准确，或补充 Jira 描述中遗漏的信息。
 ```
 
-保存到 `.jira-fix/{JIRA-ID}/02-alignment.md`。
+Save to `.jira-fix/{JIRA-ID}/02-alignment.md`.
 
 ---
 
-## 阶段 3：分析完成
+## Stage 3: Analysis Complete
 
 ```
 ## 阶段3：分析完成
@@ -192,9 +192,9 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 
 ---
 
-## 阶段 4：难度分级
+## Stage 4: Difficulty Grading
 
-**[🤖 自动] 极难 → 终止报告**：
+**[🤖 Auto] Extremely hard → termination report**:
 ```
 ## ⚠️ jira-fix 已终止：难度超出自动修复阈值
 
@@ -215,7 +215,7 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
   3. 团队评审后再修复
 ```
 
-**[👤 手动] 极难 → 风险提示 + 选项**：
+**[👤 Manual] Extremely hard → risk notice + options**:
 ```
 ## ⚠️ 高风险提示：当前问题难度评级为「极难」
 
@@ -236,7 +236,7 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 请回复 A 或 B：
 ```
 
-**[👤 手动] 容易/中等 → 建议切换自动**：
+**[👤 Manual] Easy/medium → suggest switching to auto**:
 ```
 💡 提示：此问题难度评级为「容易/中等」
 预估改动 [X] 个文件，根因明确，风险可控。
@@ -247,9 +247,9 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 
 ---
 
-## 阶段 5：方案评估
+## Stage 5: Solution Evaluation
 
-**[🤖 自动]**：
+**[🤖 Auto]**:
 ```
 ## 阶段5：方案已自动选择
 
@@ -265,7 +265,7 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 进入方案审查（第 1 轮）
 ```
 
-**[👤 手动]**：
+**[👤 Manual]**:
 ```
 ## 阶段5：评估方案
 
@@ -281,17 +281,17 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 
 ---
 
-## 阶段 5-审查：输出模板
+## Stage 5 Review: Output Template
 
-审查报告正文与循环规则按强依赖 `pdca-review-orchestration` 执行（完整 `solution-review` / 条件 `code-design-review`、二级制、自动≤3 轮、设计摘要）。本文件**不**再维护「四维度评估」示例全文。
+The review report body and loop rules follow the strong dependency `pdca-review-orchestration` (full `solution-review` / conditional `code-design-review`, binary verdict, auto-mode ≤3 rounds, design summary). This file no longer maintains a full "four-dimension evaluation" example.
 
-将审查记录追加到 `.jira-fix/{JIRA-ID}/03-options.md`（`{artifact-sink}`）。
+Append the review record to `.jira-fix/{JIRA-ID}/03-options.md` (`{artifact-sink}`).
 
-**[🤖 自动 · 通过]** 共享审查结论为 ✅ 后，进入阶段6：制定计划。
+**[🤖 Auto · pass]** Once the shared review concludes ✅, proceed to stage 6: make a plan.
 
-**[🤖 自动 · 不通过]** 输出优化说明 → 重审；达 3 轮上限时：
-- **非批量**：暂停，列出摘要与「继续审查 / 重选方案 / 手动调整」选项，等用户介入
-- **批量**（`{batch-overcap-behavior}`）：
+**[🤖 Auto · fail]** Output the optimization notes → re-review; at the 3-round cap:
+- **Non-batch**: pause, list a summary with "continue review / reselect solution / manual adjustment" options, wait for the user
+- **Batch** (`{batch-overcap-behavior}`):
 
 ```
 ## ⚠️ [{JIRA-ID}] 方案审查超限，已跳过
@@ -302,7 +302,7 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 **处理**: 跳过阶段7-9，继续处理下一个 issue
 ```
 
-**[👤 手动]** 在共享审查报告后追加：
+**[👤 Manual]** Append after the shared review report:
 
 ```
 请判定：
@@ -313,9 +313,9 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 
 ---
 
-## 阶段 7：Git 分支创建完成（执行前置）
+## Stage 7: Git Branch Created (execution pre-step)
 
-**[🤖 自动] 单项目**：
+**[🤖 Auto] Single project**:
 ```
 ## 阶段7前置：Git分支已自动创建
 
@@ -328,7 +328,7 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 自动继续执行计划
 ```
 
-**[🤖 自动] 多项目**：
+**[🤖 Auto] Multi-project**:
 ```
 ## 阶段7前置：Git分支已自动创建（多项目）
 
@@ -341,7 +341,7 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 自动继续执行计划
 ```
 
-**[👤 手动]**：
+**[👤 Manual]**:
 ```
 ## 阶段7前置：Git分支已创建
 
@@ -355,9 +355,9 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 
 ---
 
-## 阶段 9：提交完成
+## Stage 9: Submission Complete
 
-**Jira 回写评论模板（阶段 10 步骤 2.3，随 `jira-status-writeback` 字段映射渲染）**：
+**Jira writeback comment template** (stage 10 step 2.3, rendered with `jira-status-writeback`'s field map):
 ```
 **AI 自动修复报告**
 
@@ -372,7 +372,7 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 代码已合并到主分支，请进行 QA 验证。
 ```
 
-手动模式额外包含「验证场景」章节：
+Manual mode additionally includes a "验证场景" (verification scenarios) section:
 ```
 ### 验证场景
 
@@ -382,7 +382,7 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 2. ...
 ```
 
-**完成输出 [🤖 自动]**：
+**Completion output [🤖 Auto]**:
 ```
 ## 阶段9完成：代码已自动提交并推送
 
@@ -394,7 +394,7 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 - [模式状态] 自动模式已完成本轮，已恢复为手动模式。阶段 10 合并仍需您确认。
 ```
 
-**完成输出 [🤖 自动] 多项目**：
+**Completion output [🤖 Auto] multi-project**:
 ```
 ## 阶段9完成：代码已自动提交并推送（多项目）
 
@@ -408,15 +408,15 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 
 ---
 
-## 合并前检查清单
+## Pre-Merge Checklist
 
-见强依赖 `merge-discipline` 的 [reference.md](../merge-discipline/reference.md)「合并前检查清单」（Part A–D 单源；勿在本文件复制正文）。
+See the strong dependency `merge-discipline`'s [reference.md](../merge-discipline/reference.md) § Pre-Merge Checklist (single source, Part A-D — do not duplicate its body here).
 
 ---
 
-## 行业通病评估报告
+## Industry-Wide Issue Evaluation Report
 
-> 阶段3 经 `analysis-core` → `known-issue-research` 做行业通病评估；结论为 🚫「行业公认难题，无可行解」时输出本模板。评估方法论见 `known-issue-research`；jira-fix 特有差异：该评估为门控，无可行解时停止流程并写 Jira 评论。
+> Stage 3 delegates to `known-issue-research` via `analysis-core` for the industry-wide-issue evaluation; output this template when the conclusion is 🚫 "an industry-recognized hard problem, no viable fix". Evaluation methodology lives in `known-issue-research`; jira-fix's specific difference: this evaluation is a **gate** — a no-viable-fix conclusion stops the flow and writes a Jira comment.
 
 ```
 【行业通病评估】
@@ -429,7 +429,7 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 
 ---
 
-## 阶段8 验证结果
+## Stage 8: Verification Result
 
 ```
 【验证结果】
@@ -441,7 +441,7 @@ Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-su
 - 验证结论：✅ 通过 / ❌ 未达标（含返回路径）
 ```
 
-## 阶段5 方案对比
+## Stage 5: Solution Comparison
 
 | 方案 | 描述 | 优点 | 缺点 | 复杂度 | 推荐度 |
 |------|------|------|------|--------|--------|
