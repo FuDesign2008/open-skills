@@ -81,6 +81,8 @@ open-skills/
 | env-capability-discovery | 工作流增强 | 无（默认弱引用；solve-workflow、opsx-solve-workflow、jira-fix-workflow、opsx-jira-fix-workflow 声明为强依赖） |
 | known-issue-research | 调研方法论 | effective-web-research |
 | analysis-core | 分析方法论 | known-issue-research、runtime-evidence-debug、browser-debug-toolkit、hybrid-debug、upstream-dependency-debug |
+| pdca-review-orchestration | 工作流编排 | solution-review、code-design-review |
+| openspec-workspace-gates | OpenSpec 门禁 | 无 |
 
 > 💕 AI 编码陪伴（coding-fangirl）已迁移至独立工程 [oh-my-fangirl](https://github.com/FuDesign2008/oh-my-fangirl)。
 

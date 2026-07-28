@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.7.1"
+version: "1.8.0"
 user-invocable: true
 description: 当用户说"opsx-jira-fix"、"OpenSpec Jira 修复"、"规范化修复 Jira"、"opsx修复Jira"、"Jira OpenSpec 修复"、"opsx自动修复Jira"、"用OpenSpec修复Jira"或"opsx-jira-fix-workflow"时触发。适用于从 Jira issue 出发，并需要将根因、行为变更、修复计划、验证和归档沉淀到 OpenSpec artifacts 的端到端 Bug 修复。
 dependencies:
@@ -17,6 +17,8 @@ dependencies:
   - env-capability-discovery
   - ensure-tests
   - merge-discipline
+  - pdca-review-orchestration
+  - openspec-workspace-gates
 ---
 
 # OPSX Jira Bug 修复工作流
@@ -48,15 +50,16 @@ dependencies:
 - **强制模式**：触发词含“强制”或 `--force` 时可跳过难度终止，但仍不得跳过验证和归档检查。
 - **继续修复**：触发词含“继续修复”“再次修复”“从上次继续”或 `--retry` 时，先定位现有 OpenSpec change，再从 `design.md`、`tasks.md` checkbox、当前 Git 分支和 PR/MR 状态恢复上下文。
 
-**强依赖 skill**（frontmatter `dependencies`，共 13 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
-- `solution-review`（阶段 4 决策级审查）、`code-design-review`（阶段 4 代码设计审查）
+**强依赖 skill**（frontmatter `dependencies`，共 15 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
+- `pdca-review-orchestration`（阶段 4 审查编排；依赖 `solution-review` 与 `code-design-review`）
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`（经 `analysis-core` 委托；阶段 2 + 阶段 7）
 - `analysis-core`（阶段 2 分析方法论单源：临时改动门控 / 打点调试 / 分析步骤骨架 / 调试-验证闭环）
 - `node-version-discipline`（阶段 6 执行验证前 Node 版本对齐）
 - `workflow-mode-lifecycle`（自动/手动模式生命周期）、`clarifying-question-discipline`（主动提问硬纪律与调查优先）、`known-issue-research`（阶段 2 调研路由 / 已知问题快搜 / 行业通病评估）
 - `env-capability-discovery`（环境能力探索：启动时一次扫描可用增强能力）
 - `ensure-tests`（阶段 6.2.5 测试确保：有测试基建时补全并运行；无基建经用户确认后搭建）
-- `merge-discipline`（阶段 8 合并纪律：OpenSpec archive 关联门控 + rebase 预检 + 覆盖率门控 + tip 钉死，合并前加载）
+- `merge-discipline`（阶段 8 合并纪律）
+- `openspec-workspace-gates`（阶段 0 OpenSpec 工程与原生 skill 门禁）
 
 ## 前置 skill 检查
 
@@ -102,42 +105,8 @@ dependencies:
 1. 解析 Jira URL / Jira ID，识别模式（manual / auto / force / retry）。
 2. 检查 Jira 数据可读：优先 `jira-read {JIRA-ID} --live` 或 mcp-atlassian；失败则读本地缓存；仍失败则终止。
 3. 检查 Git 状态：自动模式可 stash；手动模式提示用户处理。
-4. **OpenSpec 工程定位与目录检查**：
-
-   **工程定位**（workspace 多工程场景必须执行；依次尝试，命中即停止）：
-   1. cwd 下存在 `openspec/` → 工程根 = cwd（单工程场景，零额外开销）
-   2. 当前编辑文件所在目录向上查找 `openspec/` → 工程根 = 命中目录
-   3. cwd 直接子目录中含 `openspec/`：仅一个 → 自动采用；多个 → 列出候选让用户选择
-   4. 均未命中 → 输出"未找到 OpenSpec 工程"并停止
-
-   定位后输出 `【工程定位结果】目标工程根：<绝对路径>`。通过 Bash `cd "<工程根>"` 切换工作目录，后续所有 `openspec/` 路径、CLI 命令、artifact 写入和委托原生 OPSX skill 均在工程根下执行。若无法切换 cwd，所有路径使用工程根的绝对路径。
-
-   **目录检查**：确认工程根存在 `openspec/`；不存在时询问是否运行 `openspec init`，不得静默初始化。
-5. 门禁 2：OPSX 原生 Skills 检查：
-
-   扫描工程根中所有已安装工具的 skills 目录（如 `.claude/skills/`、`.cursor/skills/` 等），检查是否存在以下必需的原生 OPSX skills：
-
-   | 所需 skill | 对应阶段 | 用途 |
-   |-----------|---------|------|
-   | `openspec-new-change` | 阶段 3 | 创建 change 目录 |
-   | `openspec-continue-change` | 阶段 3/4/5 | 逐步创建各 artifact |
-   | `openspec-apply-change` | 阶段 6 | 按 tasks 执行实现 |
-   | `openspec-archive-change` | 阶段 8 | 归档 change |
-
-   `openspec-verify-change` 为可选 skill，存在时在阶段 7 使用。
-
-   > ⚠️ **判断规则（严格）**：必须按上表的**精确 skill 名称**逐一核查。找到其他名称的 openspec skill（如旧版的 `openspec-propose`）**不算通过**。
-
-   - **全部必需 skills 存在** → 建立 OPSX 原生 Skills 能力表，通过。
-   - **任一必需 skill 不存在** → **立即停止**，输出提示要求用户运行 `openspec init` 或 `openspec update` 补全 skills。
-
-   **OPSX 原生 Skills 使用约定**：
-
-   1. **调用前先读取 SKILL.md**：每次委托前必须先读取对应 skill 的 SKILL.md，不得凭记忆调用。
-   2. **本 skill 保留阶段门禁**：原生 skill 执行完成后，本 skill 继续执行阶段确认、暂停、循环审查等门禁逻辑。
-   3. **CLI 工具调用不是降级**：`openspec validate` 等 CLI 工具命令可直接使用，不属于「绕过原生 skills」。
-
-6. 检查 OpenSpec 命令（在工程根下执行）：优先使用 `openspec list`、`openspec status`、`openspec validate`；不可用时可直接读写 `openspec/`，但必须说明降级。
+4. **OpenSpec 工程与原生 skill 门禁**：加载 `openspec-workspace-gates`，执行工程定位、`openspec/` 检查和精确原生 OPSX skill 门禁；通过后继续本工作流。
+5. 检查 OpenSpec 命令（在工程根下执行）：优先使用 `openspec list`、`openspec status`、`openspec validate`。
 7. 继续修复时，先定位 OpenSpec change：优先从当前分支名推断；其次搜索 `openspec/changes/*/{proposal.md,design.md,tasks.md}` 中的 Jira ID；再次查看 PR/MR 描述中的 OpenSpec change 路径；仍无法唯一确定时只问用户 1 个问题确认 change 名称。定位后使用 `openspec status --change <name>`、`openspec show <change-name>`、`design.md`、`tasks.md` checkbox 和当前 Git 分支恢复进度。
 8. 扫描 Superpowers 类增强能力（扫描方法论见上文「环境能力探索」）；发现则记录，未发现则静默降级。
 
@@ -202,7 +171,7 @@ dependencies:
 
 完成后自动进入阶段 2。
 
-> ⚠️ **提问硬纪律（阶段 1 理解对齐）**：完整纪律（一次一问、提问格式、简答约定、调查优先原则）由强依赖 skill `clarifying-question-discipline` 承载——前置检查已保证可用。若 Jira 描述信息不足需向用户追问，**每次只问 1 个最关键的问题**（优先级：目的 → 约束 → 成功标准），得到回答后再问下一个。提问用「单问题 + 多选项」结构化形式，优先 Agent 原生结构化提问能力，无则用 prose。
+> ⚠️ 加载 `clarifying-question-discipline`：Jira 信息不足时每轮只问一个关键问题，按目的 → 约束 → 成功标准逐轮收敛。
 >
 > 🚩 **Red Flag**：一次列出多个歧义点让用户回答（违反硬纪律，见 `clarifying-question-discipline`）——每次只问 1 个最关键的，得到回答后再问下一个。
 
@@ -338,32 +307,7 @@ Delta spec 必须使用：
 
 手动模式输出方案表后暂停，等待用户选择；自动模式自动选择最优方案。
 
-选定方案后必须审查：
-
-**决策级审查**（加载 `solution-review` skill 按其 9 维度框架执行）：4 核心维度（解决有效性 / 副作用与风险 / 实现可行性 / 规范符合度）+ 5 战略维度（可逆性校准 / 失效模式分析 / 可运维性 / 成本 vs 价值 / 团队认知适配）。
-
-**代码设计审查**（方案涉及代码时，加载 `code-design-review` skill）：Layer A 代码级指标 + Layer B 架构级属性 + Layer C 安全审查。阻断/非阻断以两 review skill 为准。
-
-**OPSX 特化维度**（本工作流独有，solution-review 不覆盖）：
-1. **Spec 覆盖**：方案是否覆盖 delta specs 中的 requirements 和 scenarios。
-2. **Jira 状态边界**：方案是否只会流转到“已修复”，不越权关闭。
-
-审查不通过时，自动模式最多优化并重审 3 轮；手动模式等待用户决定修改、重选或继续。
-
-审查通过后，确认 `design.md` 的以下内容完整反映了审查结论：
-
-- **Goals / Non-Goals**：审查中确认的修复范围和排除范围是否已更新
-- **Decisions**：方案取舍的关键决策是否已记录
-- **Risks**：审查中识别的风险缓解措施是否已补充
-- **Open Questions**：遗留问题是否已列出并标注责任人
-
-若 `design.md` 缺少以上任一项，补充后再进入阶段 5。
-
-输出追加到：
-
-```text
-openspec/changes/<change-name>/design.md
-```
+加载 `pdca-review-orchestration` 并按其完整审查契约执行。本工作流映射：`{next-stage}` = 阶段 5「制定计划」；`{artifact-sink}` = `openspec/changes/<change-name>/design.md`；`{extra-dimensions}` = Spec 覆盖（requirements/scenarios）和 Jira 状态边界（仅流转至“已修复”）；`{batch-overcap-behavior}` = `N/A`。
 
 > 🚩 **Red Flags（阶段 4）**：
 > - ❌ 审查只覆盖根因，未检查 spec 覆盖和副作用
@@ -425,14 +369,7 @@ fix/jira-fix-<JIRA-ID>
 
 所有 `tasks.md` checkbox 全部勾选后，在进入阶段 7 验证前，强制执行以下步骤：
 
-读取 `ensure-tests` skill 的 SKILL.md，按其指令执行：
-
-1. 检测项目技术栈与现有测试框架
-2. 若框架缺失，**先按「一次一问」纪律询问用户「是否增加测试基建」**：同意 → 按技术栈选型安装并配置；不同意 → 跳过测试生成，在执行报告中提醒「建议补充单元测试以防止回归」，不阻断流程
-3. 以本次修复涉及的逻辑文件为重点作用域，生成单元测试（必须，排除 UI 层）并运行
-4. 若检测到 E2E 框架，生成并运行 E2E 测试（可选）
-
-**阻断条件**：单元测试运行失败时，不得进入阶段 7 验证；应先修复失败的测试或实现。
+读取并调用 `ensure-tests`，声明 `mode=mandatory`，作用域为本次修复的逻辑文件；其失败或拒绝必要脚手架时阻断进入阶段 7。
 
 ### 6.3 Superpowers 增强
 
@@ -456,7 +393,7 @@ fix/jira-fix-<JIRA-ID>
 1. OpenSpec 校验：
    - 若检测到 `openspec-verify-change` skill → 读取其 SKILL.md，委托执行验证。
    - 若不存在 → 直接运行 `openspec validate <change-name>` 或 `openspec validate --changes`（CLI 工具调用，非降级）。
-**Node 版本对齐（前置，须在工程验证前完成）**：调用 `node-version-discipline` skill 对齐项目声明的 Node 版本（该 skill 按完整探测链 `.nvmrc` → `.node-version` → `.tool-versions` → `volta` → `engines.node` → CI 配置 定位；无声明时停下来询问用户，不猜测；单条命令内 `source ~/.nvm/nvm.sh && nvm use <版本> && <命令>`，`node -v` 确认）。下方测试/lint/类型检查/构建命令均在对齐版本下执行。
+**Node 版本对齐（前置）**：调用 `node-version-discipline` 对齐项目声明的 Node 版本后，再运行下方验证命令。
 
 2. 工程验证：测试、lint、类型检查、构建（对齐版本下执行）
 3. 行为对照：逐条核对 delta spec requirements 和 scenarios
@@ -464,7 +401,7 @@ fix/jira-fix-<JIRA-ID>
 5. 副作用检查：相关模块和平台是否受影响；验证报告须披露 `Node(声明版本 vX) ✅/⚠️ 未对齐`
 6. 调试-验证闭环：若阶段 2 用了调试 skill 定位根因，按 `analysis-core` §4 用**同一 skill** 验证修复（而非只跑测试）
 
-> ⚠️ **验证报告诚实原则**：每一项必须在括号中明确标注"已执行（命令+输出摘要）"或"待执行（需人工操作的具体步骤）"，不得将"设计了验证场景"误写为"验证已通过"。AI 不能直接执行浏览器交互的步骤，必须诚实标注为"待执行"并给出具体操作指引。
+> 按 `pdca-review-orchestration` 的验证报告诚实规则标注每项结果。
 
 验证输出格式：
 
@@ -527,11 +464,7 @@ PR/MR 描述必须包含：
 
 #### 8.3.1 合并纪律（merge-discipline skill）
 
-> 合并动作执行前加载强依赖 skill `merge-discipline`（前置检查已保证可用），执行四部分（顺序 Part A → B → C → D）；**用户直接说 merge 也必须加载，不得隐式跳过**：
-> - **Part A OpenSpec archive 关联门控**：关联 active change 且未 archive → 阻断；无关联则放行（完整规范见 skill Part A）
-> - **Part B rebase/冲突预检**：见 skill Part B
-> - **Part C 覆盖率门控**：见 skill Part C；快查表见 `merge-discipline/reference.md`「合并前检查清单」
-> - **Part D tip 钉死**：见 skill Part D（Strategy B 仅事故恢复）
+> 合并动作执行前加载 `merge-discipline`，按 Part A → B → C → D 执行；合并前检查清单见 `merge-discipline/reference.md`。用户直接说 merge 也必须加载，不得隐式跳过。
 
 ### 8.4 Jira 回写（合并完成后）
 

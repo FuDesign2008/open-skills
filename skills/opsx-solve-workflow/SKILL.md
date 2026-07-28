@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.8.1"
+version: "1.9.0"
 user-invocable: true
 description: 当用户说"opsx解决"、"OpenSpec解决"、"规范化解决"、"创建OpenSpec变更"、"创建opsx变更"、"用OpenSpec分析"、"用OpenSpec修复"、"opsx自动解决"、"OpenSpec自动解决"、"opsx-solve"或"opsx-solve-workflow"时触发。适用于需要将分析、方案、计划、实现、验证和归档沉淀到OpenSpec artifacts的功能开发、Bug修复、重构和复杂工程任务。
 dependencies:
@@ -18,6 +18,8 @@ dependencies:
   - env-capability-discovery
   - ensure-tests
   - merge-discipline
+  - pdca-review-orchestration
+  - openspec-workspace-gates
 ---
 
 # OPSX 八阶段问题解决工作流
@@ -48,9 +50,8 @@ dependencies:
 - **手动模式**：阶段 1、2、3、4、5、7、8 的关键出口必须等待用户确认。
 - **自动模式**：自动推进到验证；阶段 4 审查最多循环 3 轮，超限暂停。
 
-**强依赖 skill**（frontmatter `dependencies`，共 14 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
-- `solution-review`（阶段 4 决策级审查）
-- `code-design-review`（阶段 4 代码设计审查）
+**强依赖 skill**（frontmatter `dependencies`，共 16 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
+- `pdca-review-orchestration`（阶段 4 审查编排；依赖 `solution-review` 与 `code-design-review`）
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`（经 `analysis-core` 委托；阶段 2 + 阶段 7）
 - `analysis-core`（阶段 2 分析方法论单源：临时改动门控 / 打点调试 / 分析步骤骨架 / 调试-验证闭环）
 - `node-version-discipline`（阶段 7 Node 版本对齐）
@@ -60,7 +61,8 @@ dependencies:
 - `known-issue-research`（阶段 2 调研路由 / 已知问题快搜 / 行业通病评估）
 - `env-capability-discovery`（环境能力探索：启动时一次扫描可用增强能力）
 - `ensure-tests`（阶段 6 测试确保：有测试基建时补全并运行；无基建经用户确认后搭建）
-- `merge-discipline`（阶段 8 合并纪律：OpenSpec archive 关联门控 + rebase 预检 + 覆盖率门控 + tip 钉死，合并前加载）
+- `merge-discipline`（阶段 8 合并纪律）
+- `openspec-workspace-gates`（阶段 0 OpenSpec 工程与原生 skill 门禁）
 
 ## 前置 skill 检查
 
@@ -87,90 +89,7 @@ dependencies:
 
 ## 阶段 0：环境检查与路径选择
 
-本 skill 要求 OpenSpec 完整初始化，不设降级路径。启动后依次执行三道门禁（门禁 0 定位工程 → 门禁 1 检查 OpenSpec 目录 → 门禁 2 检查 OPSX skills）：
-
-### 门禁 0：OpenSpec 工程定位
-
-> 本步骤在门禁 1 之前执行，确定本次变更的目标工程根目录（后续简称**工程根**）。门禁 1、门禁 2 的检查以及后续所有阶段的 `openspec/` 路径解析和 CLI 命令执行，均基于此工程根。
-
-**为什么需要**：在 Workspace（多工程工作区）场景下，当前工作目录（cwd）可能不是 OpenSpec 工程根——OpenSpec 初始化在 workspace 下的某个子工程目录中。本步骤负责定位到真正的工程根。
-
-**定位优先级**（依次尝试，命中即停止）：
-
-1. **cwd 即工程根**：cwd 下存在 `openspec/` 目录 → 工程根 = cwd。（单工程场景，行为与原有完全一致）
-2. **当前编辑文件推断**：若可获取当前正在编辑的文件路径，从该文件所在目录向上逐级查找，第一个含 `openspec/` 的目录即为工程根。
-3. **cwd 子目录扫描**：扫描 cwd 的直接子目录，查找含 `openspec/` 的目录：
-   - 仅一个命中 → 工程根 = 该子目录
-   - 多个命中 → 列出所有候选工程，让用户选择
-4. **均未命中** → 输出："未在当前目录及其子目录中找到 OpenSpec 工程。请 cd 到已初始化 OpenSpec 的工程目录，或运行 `openspec init`。" 并停止。
-
-**渐进增强**：若检测到 `ows:select` skill 或 `workspace_list` 工具，可利用其 workspace 工程列表辅助第 3 步的子目录扫描。不存在时按通用扫描逻辑执行。
-
-**定位结果**（必须输出）：
-
-```text
-【工程定位结果】目标工程根：<绝对路径>
-```
-
-- 唯一命中（优先级 1/2/3a）：输出定位结果后继续门禁 1。
-- 多候选（优先级 3b）：列出候选，等用户选择后输出定位结果，再继续门禁 1。
-
-**后续使用约定**：本 skill 中所有 `openspec/`、`openspec/changes/`、`openspec/specs/` 等路径，均**相对于工程根**解析。`openspec` CLI 命令（init/validate/list/status/archive 等）均在工程根目录下执行。
-
-**执行约定**：定位后，通过 Bash `cd "<工程根绝对路径>"` 切换工作目录。后续所有 Read/Write/Bash 操作、`openspec` CLI 命令、委托原生 OPSX skill 均在工程根下执行。若无法切换 cwd，则所有 `openspec/` 路径必须使用工程根的绝对路径。
-
-### 门禁 1：OpenSpec 目录检查
-
-> 基于门禁 0 定位到的工程根检查。
-
-检查工程根目录是否存在 `openspec/`：
-
-- **存在** → 通过，继续门禁 2。
-- **不存在** → **立即停止**，输出：
-
-  ```
-  本 skill 需要 OpenSpec 完整初始化。
-  请先运行：openspec init
-  完成后重新触发本 skill。
-  ```
-
-### 门禁 2：OPSX 原生 Skills 检查
-
-扫描工程根中所有已安装工具的 skills 目录（如 `.claude/skills/`、`.cursor/skills/` 等），检查是否存在以下必需的原生 OPSX skills：
-
-| 所需 skill | 对应阶段 | 用途 |
-|-----------|---------|------|
-| `openspec-new-change` | 阶段 1 | 创建 change 目录 |
-| `openspec-continue-change` | 阶段 2/3/4/5 | 逐步创建各 artifact |
-| `openspec-apply-change` | 阶段 6 | 按 tasks 执行实现 |
-| `openspec-archive-change` | 阶段 8 | 归档 change |
-
-`openspec-verify-change` 为可选 skill，存在时在阶段 7 使用。
-
-**扫描范围**：不同 AI 工具的 skills 目录不同（Claude Code 用 `.claude/skills/`，Cursor 用 `.cursor/skills/`，Cline 用 `.cline/skills/` 等）。应依次检查工程根内所有存在的工具目录；只要在任一目录下找到对应 skill，即视为存在。
-
-> ⚠️ **判断规则（严格）**：必须按上表的**精确 skill 名称**逐一核查。
-> 找到其他名称的 openspec skill（如旧版的 `openspec-propose`）**不算通过**，
-> 不得以任何形式降级为手写 artifacts 或绕过原生 skill 流程。
-> 版本不匹配与 skill 缺失属于同等严重的阻断条件。
-
-- **全部必需 skills 存在** → 建立 OPSX 原生 Skills 能力表，通过。
-- **任一必需 skill 不存在** → **立即停止**，输出：
-
-  ```
-  openspec/ 目录已存在，但未检测到完整的 OPSX skills。
-  请运行以下命令生成所需 skills 后，重新触发本 skill：
-    openspec init    （首次初始化）
-    openspec update  （已有项目，补全 skills）
-  ```
-
-### OPSX 原生 Skills 使用约定
-
-三道门禁通过后，各阶段委托原生 skill 前必须遵守：
-
-1. **调用前先读取 SKILL.md**：每次委托前必须先读取对应 skill 的 SKILL.md，不得凭记忆调用。
-2. **本 skill 保留阶段门禁**：原生 skill 执行完成后，本 skill 继续执行阶段确认、暂停、循环审查等门禁逻辑。
-3. **CLI 工具调用不是降级**：`openspec validate` 等 CLI 工具命令可直接使用，不属于「绕过原生 skills」。
+本 skill 要求 OpenSpec 完整初始化，不设降级路径。加载 `openspec-workspace-gates` 并执行其工程定位、`openspec/` 检查和精确原生 OPSX skill 门禁；通过后，本工作流保留阶段门禁与后续编排。
 
 ### 通过后的准备步骤
 
@@ -237,7 +156,7 @@ Superpowers 是增强能力，不是硬依赖。检测到以下 skill 时，在�
 
 ## 阶段 1：明确问题
 
-**⚠️ 一次一问、多轮问清（硬纪律，无条件适用）**：完整纪律（一次一问、多轮问清、提问格式、简答约定、调查优先原则）由强依赖 skill `clarifying-question-discipline` 承载——前置检查已保证可用。要点：信息不足时，每轮只问 **1 个最关键的问题**（优先级：目的 → 约束 → 成功标准），**得到回答后基于该回答提下一个——多个未知分多轮问清，每轮基于上一轮回答精化**；**禁止**一次抛多个问题或一次列多个疑问点。优先 Agent 原生结构化提问能力，无则用 prose。无论是否检测到 brainstorming skill，此纪律都必须遵守（brainstorming 的提问纪律是通用做法，不是触发条件）。
+**⚠️ 主动提问**：加载 `clarifying-question-discipline`；信息不足时每轮只问一个关键问题，按目的 → 约束 → 成功标准逐轮收敛。
 
 手动模式必须依次完成以下步骤：
 
@@ -321,38 +240,7 @@ Delta spec 规范（由 `openspec-continue-change` skill 负责落实）：
 
 ## 阶段 4：审查方案
 
-对选定方案进行四维审查：
-
-1. **解决有效性**：是否覆盖根因和目标行为。
-2. **副作用与风险**：是否影响其他模块、性能、安全、兼容性。
-3. **实现可行性**：涉及文件、依赖、迁移是否明确。
-4. **规范符合度**：是否符合现有代码模式和 OpenSpec spec 约定。
-5. **架构与设计质量**（若方案涉及代码修改）：加载 `code-design-review` skill，按其完整代码设计审查框架执行（Layer A + Layer B + Layer C）。
-
-若检测到 `requesting-code-review`，在通过前额外做一次“spec 合规审查”：proposal 是否解释 why，delta specs 是否覆盖行为变化，design 是否处理风险，tasks 是否覆盖 requirements。
-
-🔌 **OPSX Skills 集成**：审查通过后，通过 `openspec-continue-change` skill 创建 `design.md`（先读取其 SKILL.md，再按其指令执行；proposal 完成后 design 即为 ready）。本 skill 不直接手写 design.md 内容。`design.md` 应覆盖的结构（由 skill 负责落实）：Context、Goals / Non-Goals、Decisions、Risks / Trade-offs、Migration Plan、Open Questions。
-
-不通过时：
-
-- 手动模式：输出审查报告，等待用户决定"修改方案 / 重选方案 / 继续"。
-- 自动模式：根据问题自动优化方案并重新审查，最多 3 轮。
-
-### 审查结论（二级制）
-
-| 结论 | 判定标准 | 后续动作 |
-|------|---------|---------|
-| ✅ **通过** | 各项审查维度均无阻断问题，仅存在可接受的低风险 | 进入阶段 5 |
-| ❌ **不通过** | 任一维度存在需解决的问题或不可接受的风险 | 进入优化→重新审查循环 |
-
-**阻断问题判定指引**（满足任一即为 ❌ 不通过；细节以 `solution-review` / `code-design-review` 为准）：
-
-- 方案无法完整覆盖根因，或解决质量明显低效低质（解决有效性不足）
-- 存在已识别但未提出缓解措施的中/高风险
-- 涉及的修改文件或依赖关系不明确，无法据此制定可执行计划
-- 与项目现有设计模式或编码规范明显冲突
-- 可能引入新 bug 或破坏现有功能的副作用未被处理
-- 代码方案存在可行且明显更优的架构/长期可维护性设计，却仅因「近端还能用 / 实现更快」而放过（见两 review skill 的架构权重门控）
+加载 `pdca-review-orchestration` 并按其完整审查契约执行。本工作流映射：`{next-stage}` = 阶段 5「制定计划」；`{artifact-sink}` = 通过 `openspec-continue-change` 创建的 `design.md`；`{extra-dimensions}` = `requesting-code-review` 可用时执行 Spec 合规审查（proposal why、delta specs 行为、design 风险、tasks 覆盖 requirements）；`{batch-overcap-behavior}` = `N/A`。审查通过后按原生 skill 创建 `design.md`。
 
 **非阻断问题**（可标注为建议，但不阻止通过；**不得**把「有更优架构但近端可维护」当作非阻断）：
 
@@ -404,14 +292,7 @@ Superpowers 增强规则：
 
 所有 `tasks.md` checkbox 全部勾选后，在输出执行报告前，强制执行以下步骤：
 
-读取 `ensure-tests` skill 的 SKILL.md，按其指令执行：
-
-1. 检测项目技术栈与现有测试框架
-2. 若框架缺失，**先按「一次一问」纪律询问用户「是否增加测试基建」**：同意 → 按技术栈选型安装并配置；不同意 → 跳过测试生成，在执行报告中提醒「建议补充单元测试以防止回归」，不阻断流程
-3. 以本次变更涉及的逻辑文件为重点作用域，生成单元测试（必须，排除 UI 层）并运行
-4. 若检测到 E2E 框架，生成并运行 E2E 测试（可选）
-
-**阻断条件**：单元测试运行失败时，不得进入阶段 7；应先修复失败的测试或实现，再输出执行报告。
+读取并调用 `ensure-tests`，声明 `mode=mandatory`，作用域为本次变更的逻辑文件；其失败或拒绝必要脚手架时阻断进入阶段 7。
 
 🔌 **OPSX Skills 集成**：调用 `openspec-apply-change` skill 执行任务（先读取其 SKILL.md，再按其指令逐项完成 tasks）。`openspec-apply-change` skill 内部会通过 CLI 查询 change 状态和获取执行指令；本 skill 不直接调用 CLI 推进执行。
 
@@ -422,7 +303,7 @@ Superpowers 增强规则：
 1. **OpenSpec 校验**：
    - 若检测到 `openspec-verify-change` skill → 读取其 SKILL.md，委托执行验证。
    - 若不存在 → 直接运行 `openspec validate <change-name>` 或 `openspec validate --changes`（CLI 工具调用，非降级）。
-**Node 版本对齐（前置，须在工程验证前完成）**：调用 `node-version-discipline` skill 对齐项目声明的 Node 版本（该 skill 按完整探测链 `.nvmrc` → `.node-version` → `.tool-versions` → `volta` → `engines.node` → CI 配置 定位；无声明时停下来询问用户，不猜测；单条命令内 `source ~/.nvm/nvm.sh && nvm use <版本> && <命令>`，`node -v` 确认）。下方所有测试/类型检查/lint/构建命令在对齐版本下执行，验证报告披露 `Node(声明版本 vX) ✅/⚠️`。
+**Node 版本对齐（前置）**：调用 `node-version-discipline` 对齐项目声明的 Node 版本后，再运行下方工程验证命令。
 
 2. **工程验证**：运行项目相关测试、类型检查、lint 或构建（对齐版本下执行）。
 3. **行为对照**：逐条对照 delta spec 的 requirements 和 scenarios，确认实现覆盖。
@@ -432,9 +313,7 @@ Superpowers 增强规则：
 
 输出格式见 [reference.md](reference.md)「阶段 7 检查验证」。
 
-> ⚠️ **验证报告诚实原则**：每一项必须在括号中明确标注"已执行（命令+输出摘要）"
-> 或"待执行（需人工操作的具体步骤）"，不得将"设计了验证场景"误写为"验证已通过"。
-> AI 不能直接执行浏览器交互的步骤，必须诚实标注为"待执行"并给出具体操作指引。
+> 按 `pdca-review-orchestration` 的验证报告诚实规则标注每项结果。
 
 手动模式在此暂停，等待用户确认是否进入归档。验证失败时不得归档；应回到阶段 4、5 或 6。
 
@@ -467,19 +346,11 @@ Superpowers 增强规则：
 
 #### 合并纪律（merge-discipline skill）
 
-> 合并动作执行前加载强依赖 skill `merge-discipline`（前置检查已保证可用），执行四部分（顺序 Part A → B → C → D）；**用户直接说 merge 也必须加载，不得隐式跳过**：
-> - **Part A OpenSpec archive 关联门控**：关联 active change（diff 含 `openspec/changes/<name>/` 或会话绑定名仍在 `openspec list`）且未 archive → 阻断合并；无关联则放行（完整规范见 skill Part A）
-> - **Part B rebase/冲突预检**：fetch + rev-list + merge-tree；需 rebase 时报告并等确认（完整规范见 skill Part B）
-> - **Part C 覆盖率门控**：见 skill Part C；快查表见 `merge-discipline/reference.md`「合并前检查清单」
-> - **Part D tip 钉死**：见 skill Part D（Strategy B 仅事故恢复，不得作为关联 active change 时的推荐主路径）
+> 合并动作执行前加载 `merge-discipline`，按 Part A → B → C → D 执行；合并前检查清单见 `merge-discipline/reference.md`。用户直接说 merge 也必须加载，不得隐式跳过。
 
 ### 复盘改进（委托 learn-and-improve）
 
-归档与分支收尾完成后，加载 `learn-and-improve` skill 执行复盘改进与经验沉淀：
-1. 结构化复盘（按场景选 SSC / KPT / AAR + 5Why 根因）
-2. 沉淀价值判断（三道门：会否复现 × 已验证 × 团队级）
-3. 沉淀载体选择（决策树：`AGENTS.md` / `CLAUDE.md` / `.cursor/rules/` / 项目内 skill / 总结文档）
-4. 有效性验证 + 改进闭环（检索复用机制 + single/double-loop）
+归档与分支收尾完成后，加载 `learn-and-improve` 并按其框架复盘；OpenSpec artifacts 正常归档不受其沉淀价值门控限制。
 
 > **OpenSpec artifacts**（`proposal.md`、`specs/`、`design.md`、`tasks.md`）是本 skill 的核心产出，正常归档流程落盘，不受 `learn-and-improve` 的沉淀价值门控限制。
 > **AI 工程知识**（`AGENTS.md`、`CLAUDE.md`、`.cursor/rules/`、项目内 skill 等）的沉淀价值判断与载体选择，由 `learn-and-improve` 的决策树负责；写入前必须等用户明确要求。
