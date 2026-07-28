@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.7.0"
+version: "1.7.1"
 user-invocable: true
 description: 当用户说"opsx-jira-fix"、"OpenSpec Jira 修复"、"规范化修复 Jira"、"opsx修复Jira"、"Jira OpenSpec 修复"、"opsx自动修复Jira"、"用OpenSpec修复Jira"或"opsx-jira-fix-workflow"时触发。适用于从 Jira issue 出发，并需要将根因、行为变更、修复计划、验证和归档沉淀到 OpenSpec artifacts 的端到端 Bug 修复。
 dependencies:
@@ -161,7 +161,7 @@ dependencies:
 |------|---------|---------|
 | 0 前置检查 | Read、Grep、Glob、Bash（只读检查）、Jira API（只读） | Edit、Write、Git 写操作 |
 | 1 读取 Jira | Jira API、jira-read、Read、OPSX skills（创建 change） | Edit 业务代码、Write 业务代码、改变实现的 Bash |
-| 2 分析问题 | Read、Grep、WebSearch（1.5 调研路由 / 4.5 上游评估专用；打点调试：用户添加打点，AI 只读分析） | Edit、Write 业务代码 |
+| 2 分析问题 | Read、Grep、WebSearch；分析辅助 Edit/Write 按 `analysis-core` §1（须登记回滚） | 以实现修复为目的的业务代码改动 |
 | 3 创建 Change | OPSX 原生 skills、Write（artifacts） | Edit 业务代码 |
 | 4 探索方案 | Read、Grep | Edit、Write 业务代码 |
 | 5 制定计划 | Read、Write（仅 tasks.md） | Edit 业务代码 |
@@ -218,29 +218,24 @@ dependencies:
 
 ## 阶段 2：分析问题
 
-只读分析为主；分析辅助性临时改动按 `analysis-core` §1 登记并回滚。
+> 分析方法论单源：`analysis-core`。修复实现归执行阶段。
 
-### 分析方法论（委托 `analysis-core`）
+### 委托 `analysis-core`
 
-加载强依赖 skill `analysis-core` 并按其 §§1–3 执行。本工作流映射：
+加载强依赖 `analysis-core`，按其 §§1–3 执行。本工作流映射（号+名）：
 
 - `{next-stage}` = 阶段 3「创建 OpenSpec Change」
 - `{root-cause step}` = 步骤 4；`{impact-assessment step}` = 步骤 5；`{upstream-eval step}` = 步骤 4.5
 
-### 本工作流编排（在 `analysis-core` 骨架之上）
+### 本工作流编排（保留）
 
-必须执行：
+在 `analysis-core` 骨架之上额外完成：
 
-1. **存在性验证**：搜索相关代码，判断 Jira 描述的问题在当前代码库是否仍存在。
-1.5 **调研路由**：经 `analysis-core` → `known-issue-research`（映射见上）。
-2. **现象对齐**：复现条件、期望 vs 实际。
-3. **代码定位**：文件路径、关键函数、调用链、状态流。
-4. **根因分析**：区分直接原因和根本原因；必要时追问“为什么”至少 3 次。
-4.5 **上游依赖修复评估**（可选）：经 `analysis-core` §2 步骤 6 / `upstream-dependency-debug`。
-5. **影响范围**：模块、平台、调用方、兼容性、风险面。
-6. **难度分级**：容易 / 中等 / 困难 / 极难。
+- **难度分级**（容易/中等/困难/极难）与**路径选择**（精简/增量/完整）；Scope 扩大时升级路径
+- **产物落点**：写入 `design.md` 的 Problem Analysis / Root Cause / Impact（须已有 change；否则先回阶段 1）
+- **存在性 ❌ / 描述不符**：暂停；写 Jira 评论前需用户确认
 
-分级建议：
+分级与路径表：
 
 | 等级 | 触发条件 | 行为 |
 |------|----------|------|
@@ -249,27 +244,13 @@ dependencies:
 | 困难 | 风险较高或影响范围较广 | 阶段 5 后暂停审查 |
 | 极难 | 根因未知、架构变更、数据迁移、API 协议变更、跨仓库 | 自动模式终止；手动模式二次确认 |
 
-路径选择（与难度分级关联）：
-
 | 难度 | 路径 | 要求 |
 |------|------|------|
-| 容易 | 精简路径 | proposal 和 delta specs 可保持精简，不跳过验证 |
+| 容易 | 精简路径 | proposal/delta specs 可精简，不跳过验证 |
 | 中等 | 增量路径 | proposal/specs/design/tasks 全部产出 |
-| 困难/极难 | 完整路径 | 阶段 1-8 全部执行，`brainstorming` 辅助分析 |
+| 困难/极难 | 完整路径 | 阶段 1-8 全执行，可用 `brainstorming` |
 
-执行中发现范围扩大时必须升级路径：精简 → 增量，增量 → 完整。手动模式下升级需用户确认。
-
-输出进入 `openspec/changes/<change-name>/design.md` 的 Problem Analysis / Root Cause / Impact 小节。阶段 2 开始前必须已有已确认或已创建的 change；若没有，先回到阶段 1 的 change 确认/创建规则，不得只在对话中保留分析结论。
-
-若问题不存在或 Jira 描述与代码不符，暂停，向 Jira 写评论前需用户确认。
-
-> 🚩 **Red Flags（阶段 2）**：
-> - ❌ 未做存在性验证就假设问题仍存在
-> - ❌ 根因分析停在表面，未追问「为什么」至少 3 次
-> - ❌ 分析结论只保留在对话中，未写入 design.md
-> - ❌ 根因置信度模糊却不触发打点调试（见 `analysis-core` §3）
-> - ❌ Scope 扩大时未升级路径（精简→增量→完整）
-> - ❌ 违反 `analysis-core` / `known-issue-research` 的调研路由与临时改动门控 Red Flags
+> 🚩 **Red Flags**：未做存在性验证；根因过浅；结论未入 design.md；模糊却不触发打点（`analysis-core` §3）；未升级路径；违反 `analysis-core` / `known-issue-research` 门控
 
 ---
 

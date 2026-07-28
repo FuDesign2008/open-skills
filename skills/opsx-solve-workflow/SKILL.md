@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.8.0"
+version: "1.8.1"
 user-invocable: true
 description: 当用户说"opsx解决"、"OpenSpec解决"、"规范化解决"、"创建OpenSpec变更"、"创建opsx变更"、"用OpenSpec分析"、"用OpenSpec修复"、"opsx自动解决"、"OpenSpec自动解决"、"opsx-solve"或"opsx-solve-workflow"时触发。适用于需要将分析、方案、计划、实现、验证和归档沉淀到OpenSpec artifacts的功能开发、Bug修复、重构和复杂工程任务。
 dependencies:
@@ -266,20 +266,20 @@ Superpowers 是增强能力，不是硬依赖。检测到以下 skill 时，在�
 
 ## 阶段 2：分析问题
 
-> 原则：只读分析为主；允许分析辅助性临时改动（打点/临时日志/复现脚本/验证性临时改实现），须登记并在进入阶段 3 前全部回滚；本阶段不留任何实现变更——修复实现仍归阶段 6（执行计划）。
+> 分析方法论单源：`analysis-core`。本阶段不留实现变更——修复归阶段 6。
 
 🔌 若环境探索发现「🔍 调试分析」类能力，在根因分析环节调用（假设驱动调查、证据链构建）。
 
-### 分析方法论（委托 `analysis-core`）
+### 委托 `analysis-core`
 
-加载强依赖 skill `analysis-core` 并按其 §§1–3 执行（临时改动门控、分析步骤骨架、打点调试）。本工作流映射：
+加载强依赖 `analysis-core`，按其 §§1–3 执行。本工作流映射（号+名）：
 
 - `{next-stage}` = 阶段 3「探索方案」
 - `{root-cause step}` = 步骤 5；`{impact-assessment step}` = 步骤 7；`{upstream-eval step}` = 步骤 6
 
-🔌 **OPSX Skills 集成**：技术分析阶段**不创建任何 artifact**。根因分析结论（Why / Impact）会在阶段 3 方案选定后，作为上下文一并写入 `proposal.md`。
+🔌 **OPSX**：本阶段**不创建 artifact**；Why / Impact 在阶段 3 方案选定后写入 `proposal.md`。
 
-若发现问题不存在或描述与代码不符，暂停并让用户重新确认，不进入方案阶段。
+若存在性失败或描述不符，暂停等用户确认，不进入方案阶段。
 
 ---
 

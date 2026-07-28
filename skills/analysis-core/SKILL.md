@@ -1,6 +1,6 @@
 ---
 name: analysis-core
-version: "1.0.0"
+version: "1.0.1"
 user-invocable: false
 description: "Shared analysis-stage methodology for PDCA fix workflows: temporary-change permission and rollback gate, instrumentation-debug triggers with debug-skill delegation, analysis step skeleton (existence → research routing → phenomenon/locate/root-cause/upstream-eval/impact), and debug-verify loop. Parameterizes the post-analysis exit as {next-stage}. Referenced via frontmatter dependencies by solve-workflow, opsx-solve-workflow, jira-fix-workflow, opsx-jira-fix-workflow. Triggers — 「分析阶段核心」「分析核心」「临时改动门控」「打点调试门控」「调试验证闭环」「analysis-core」 / analysis stage core, temp-change gate, instrumentation debug gate, debug-verify loop."
 dependencies:
@@ -104,7 +104,8 @@ When the analysis stage used a debug skill to find the root cause, the workflow'
 ## Integration guide (for referencing workflows)
 
 - **Declare** `analysis-core` in frontmatter `dependencies`; abort at workflow startup if missing.
-- **Reference line must state** `{next-stage}` (number + name) and the `known-issue-research` step maps.
-- **Replace** inlined copies of §§1–4 with a load/reference; keep workflow-only orchestration in the workflow body.
-- **Verify stage**: point at §4 instead of pasting the debug-verify bullets again.
+- **Thin reference shape (preferred):** one short「委托 `analysis-core`」block with `{next-stage}` + known-issue-research step maps (number + name only); do **not** restate §§1–3 prose or re-list the analysis step skeleton.
+- **Keep in the workflow body:** orchestration only — exits/mode, OpenSpec/Jira sinks, intentional divergences (形似神异), difficulty/path tables.
+- **Verify stage:** one line pointing at §4 — do not paste debug-verify bullets.
+- **reference.md:** point to this skill for methodology; keep workflow-specific output templates; do not duplicate gate prose.
 - **Do not** sink intentional divergences (coverage-gate strength, ensure-tests blocking, industry-eval Jira gate, etc.) into this skill.
