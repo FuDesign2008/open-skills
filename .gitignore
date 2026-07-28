@@ -168,3 +168,7 @@ skills/*-workspace/
 
 # Review skill artifacts (临时 review 产物，/review 等 skill 生成)
 .review-*.md
+
+# Eval EN batch1 generated viewers (local only)
+skills/_eval-en-batch1-tools/viewers/
+skills/_eval-en-batch1-tools/_viewer-stage/

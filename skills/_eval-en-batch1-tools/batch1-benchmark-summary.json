@@ -1,0 +1,158 @@
+[
+  {
+    "skill": "solve-workflow",
+    "with_skill_mean": 1.0,
+    "old_skill_mean": 0.7222222222222222,
+    "delta_mean": 0.2777777777777778,
+    "per_eval": [
+      {
+        "name": "clarify-trigger-manual",
+        "with": 1.0,
+        "old": 0.5,
+        "delta": 0.5
+      },
+      {
+        "name": "auto-mode-revert",
+        "with": 1.0,
+        "old": 0.6666666666666666,
+        "delta": 0.33333333333333337
+      },
+      {
+        "name": "analysis-core-thin-ref",
+        "with": 1.0,
+        "old": 1.0,
+        "delta": 0.0
+      }
+    ]
+  },
+  {
+    "skill": "opsx-solve-workflow",
+    "with_skill_mean": 0.5555555555555555,
+    "old_skill_mean": 0.4444444444444444,
+    "delta_mean": 0.11111111111111105,
+    "per_eval": [
+      {
+        "name": "opsx-trigger-and-change-gate",
+        "with": 0.6666666666666666,
+        "old": 0.6666666666666666,
+        "delta": 0.0
+      },
+      {
+        "name": "clarify-first",
+        "with": 0.3333333333333333,
+        "old": 0.3333333333333333,
+        "delta": 0.0
+      },
+      {
+        "name": "proposal-after-solution",
+        "with": 0.6666666666666666,
+        "old": 0.3333333333333333,
+        "delta": 0.3333333333333333
+      }
+    ]
+  },
+  {
+    "skill": "jira-fix-workflow",
+    "with_skill_mean": 1.0,
+    "old_skill_mean": 1.0,
+    "delta_mean": 0.0,
+    "per_eval": [
+      {
+        "name": "trigger-with-url",
+        "with": 1.0,
+        "old": 1.0,
+        "delta": 0.0
+      },
+      {
+        "name": "auto-flag",
+        "with": 1.0,
+        "old": 1.0,
+        "delta": 0.0
+      },
+      {
+        "name": "merge-then-writeback",
+        "with": 1.0,
+        "old": 1.0,
+        "delta": 0.0
+      }
+    ]
+  },
+  {
+    "skill": "opsx-jira-fix-workflow",
+    "with_skill_mean": 0.7777777777777778,
+    "old_skill_mean": 0.7777777777777778,
+    "delta_mean": 0.0,
+    "per_eval": [
+      {
+        "name": "opsx-jira-trigger-gates",
+        "with": 1.0,
+        "old": 1.0,
+        "delta": 0.0
+      },
+      {
+        "name": "clarify-pointer",
+        "with": 0.3333333333333333,
+        "old": 0.3333333333333333,
+        "delta": 0.0
+      },
+      {
+        "name": "archive-before-merge",
+        "with": 1.0,
+        "old": 1.0,
+        "delta": 0.0
+      }
+    ]
+  },
+  {
+    "skill": "jira-fix-batch",
+    "with_skill_mean": 0.6666666666666666,
+    "old_skill_mean": 0.5555555555555555,
+    "delta_mean": 0.11111111111111116,
+    "per_eval": [
+      {
+        "name": "batch-trigger-orchestration",
+        "with": 0.6666666666666666,
+        "old": 1.0,
+        "delta": -0.33333333333333337
+      },
+      {
+        "name": "batch-auto-propagation",
+        "with": 0.3333333333333333,
+        "old": 0.3333333333333333,
+        "delta": 0.0
+      },
+      {
+        "name": "relationship-skip-duplicate",
+        "with": 1.0,
+        "old": 0.3333333333333333,
+        "delta": 0.6666666666666667
+      }
+    ]
+  },
+  {
+    "skill": "opsx-jira-fix-batch",
+    "with_skill_mean": 0.8888888888888888,
+    "old_skill_mean": 0.3333333333333333,
+    "delta_mean": 0.5555555555555556,
+    "per_eval": [
+      {
+        "name": "opsx-batch-vs-plain",
+        "with": 1.0,
+        "old": 1.0,
+        "delta": 0.0
+      },
+      {
+        "name": "cross-project-changes",
+        "with": 1.0,
+        "old": 0.0,
+        "delta": 1.0
+      },
+      {
+        "name": "conflict-pause",
+        "with": 0.6666666666666666,
+        "old": 0.0,
+        "delta": 0.6666666666666666
+      }
+    ]
+  }
+]
