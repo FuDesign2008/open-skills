@@ -1,23 +1,73 @@
 ---
 name: merge-discipline
-version: "1.1.0"
+version: "1.2.0"
 user-invocable: true
-description: "合并纪律：合并动作（glab/gh mr/pr merge）前必须加载——rebase/冲突预检（Part A，最先）+ 覆盖率门控（Part B，test-coverage-analyzer）+ tip 钉死（Part C，--sha 钉死 + 祖先校验），防盲目合入已移动的目标分支 + push→merge 竞态致 archive/修复未入目标分支。触发词：「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」 / merge discipline, rebase pre-check, coverage gate, post-push merge check. 被 opsx-jira-fix-workflow / opsx-solve-workflow / jira-fix-workflow frontmatter dependencies 强依赖。"
+description: "合并纪律：合并动作（glab/gh mr/pr merge）前必须加载——OpenSpec archive 关联门控（Part A，最先）+ rebase/冲突预检（Part B）+ 覆盖率门控（Part C）+ tip 钉死（Part D）。关联 active OpenSpec change 时未 archive 不得 merge；用户直接说 merge 也不得隐式跳过。触发词：「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, post-push merge check. 被 opsx-jira-fix-workflow / opsx-solve-workflow / jira-fix-workflow frontmatter dependencies 强依赖。"
 ---
 
 # Merge Discipline
 
-> Internal shared skill — the single source of truth for merge-time discipline. Three parts, run in order **A → B → C**: **rebase/conflict pre-check** (Part A — surfaces a moved target before merge) + **coverage gate** (Part B — was triplicated across three workflow reference.md) + **tip pinning** (Part C — prevents the stale-tip merge race). Referencing workflows declare this in frontmatter `dependencies` and abort at startup if missing.
+> Internal shared skill — the single source of truth for merge-time discipline. Four parts, run in order **A → B → C → D**: **OpenSpec archive association gate** (Part A) + **rebase/conflict pre-check** (Part B) + **coverage gate** (Part C) + **tip pinning** (Part D). Referencing workflows declare this in frontmatter `dependencies` and abort at startup if missing.
 
 ## When this applies
 
-Any merge into a protected branch (`glab mr merge` / `gh pr merge` / `git merge <target>`) — whether from a workflow's branch-closeout decision, a direct user merge command, or AI preparing the merge call. "Keep branch" / "continue development" do not trigger.
+Any merge into a protected branch (`glab mr merge` / `gh pr merge` / `git merge <target>`) — whether from a workflow's branch-closeout decision, a **direct user merge command** ("merge MR" / "合并"), or AI preparing the merge call. "Keep branch" / "continue development" do not trigger.
 
-**Execution order when merging: Part A (rebase pre-check) → Part B (coverage gate) → Part C (tip pinning) → merge.** Part A runs first because a rebase changes the source tip, forcing B/C to re-run on the new tip.
+**Execution order when merging: Part A (archive gate) → Part B (rebase) → Part C (coverage) → Part D (tip pinning) → merge.** Part A runs first so archive work is not deferred past rebase/CI. A rebase changes the source tip, forcing Parts C/D to re-run on the new tip.
 
 ---
 
-## Part A — Rebase / conflict pre-check
+## Part A — OpenSpec archive association gate
+
+Prevents **merge-then-archive**: implementation lands on the protected branch while OpenSpec delta specs / archive still live only on a follow-up docs PR.
+
+### Association (either hit = associated)
+
+1. **Diff hit**: the PR or branch diff includes paths under `openspec/changes/<name>/` that are **not** under `openspec/changes/archive/`.
+2. **Session hit**: a session-bound OpenSpec change name still appears as active in `openspec list` (not archived).
+
+### Decision matrix
+
+| State | Action |
+|---|---|
+| Not associated | Pass through → Part B |
+| Associated and change already archived (only under `openspec/changes/archive/…`, absent from `openspec list`) | Pass through → Part B |
+| Associated and change still **active** | **Block merge**. Name the change(s). Require archive (sync main specs + move to `openspec/changes/archive/`) on the **same source tip**, then re-enter merge from Part A. Do **not** run Part B/C/D or the merge command. |
+
+### Hard rules
+
+- Direct user merge commands **MUST** run this Part — **no implicit skip**.
+- User may force-continue only with **explicit** skip 留痕 (template below); default is block.
+- Do **not** recommend a separate post-merge archive MR while the change is still associated and active (see Part D Strategy B — recovery only).
+
+### Detect (illustrative)
+
+```bash
+# Diff hit (GitHub example — adapt for platform)
+gh pr diff <id> --name-only | grep -E '^openspec/changes/[^/]+/' | grep -v '^openspec/changes/archive/'
+
+# Session hit
+openspec list --json   # active names; compare to session-bound change
+```
+
+### 留痕 templates
+
+Location: PR description and `design.md` Verification Notes (when present).
+
+| Case | Template |
+|------|----------|
+| User explicit skip | `【OpenSpec archive 门控跳过】用户显式跳过，关联 change 仍为 active。时间：<ISO>。决策人：用户。change：<name>。` |
+| Implicit miss (merged without gate) | `【OpenSpec archive 门控漏跑】合并已发生但 Part A 未运行。时间：<ISO>。漏跑阶段：<合并前/合并后>。` |
+
+### Red flags
+
+- Merging because "stage 8 already said archive later" or "we'll open a docs PR after merge".
+- Skipping Part A on a direct "merge MR" while `openspec/changes/<name>/` is still in the PR diff.
+- Treating Strategy B as the happy path for an open, associated MR.
+
+---
+
+## Part B — Rebase / conflict pre-check
 
 Prevents the **blind-merge-into-a-moving-target** failure: by the time the user says "merge", the target (`release/*`, `main`, …) has usually moved — teammates landed their own work. Merging without checking either fails at the platform (`mergeable=false`) or silently lands behind the tip. This Part makes the AI surface that and offer to rebase, instead of the user having to remember to ask.
 
@@ -36,7 +86,7 @@ CONFLICTS=$(git merge-tree "$BASE" HEAD origin/<target-branch> | grep -c "^chang
 
 | State | Action |
 |---|---|
-| `BEHIND=0` and `CONFLICTS=0` | Clean — proceed to Part B |
+| `BEHIND=0` and `CONFLICTS=0` | Clean — proceed to Part C |
 | `BEHIND>0` and `CONFLICTS=0` | Report "target N commits ahead; rebase applies cleanly" → wait for user confirm |
 | `CONFLICTS>0` | Report "target N ahead, ~M files conflict" → wait for user confirm |
 
@@ -56,20 +106,20 @@ If `git-conflict-resolve` is unavailable or the user aborts, stop — leave the 
 
 ### Scope boundary — this Part does NOT wait for CI
 
-After `--force-with-lease` push, this Part **ends**: it reports "rebased, PR updated, CI rerunning" and returns control to the workflow. CI-gating and the actual merge stay with the workflow's normal closeout (Part B → Part C → merge) — the user comes back after CI is green, same as any post-review merge. This Part is a rebase repair tool, not a merge-through-CI orchestrator.
+After `--force-with-lease` push, this Part **ends**: it reports "rebased, PR updated, CI rerunning" and returns control to the workflow. CI-gating and the actual merge stay with the workflow's normal closeout (Part C → Part D → merge) — the user comes back after CI is green, same as any post-review merge. This Part is a rebase repair tool, not a merge-through-CI orchestrator.
 
 ### Loop bound
 
-Each merge attempt triggers at most one rebase. If the target moves again while waiting for CI, the next merge attempt re-enters this Part and re-detects — bounded, not infinite.
+Each merge attempt triggers at most one rebase. If the target moves again while waiting for CI, the next merge attempt re-enters from Part A and re-detects — bounded, not infinite.
 
 ### Red flags
 
 - Merging without this Part because "CI is already green" (the green is on the old tip; target moved).
-- Rebasing, then claiming merge done before Part C's ancestor check passes on the new tip.
+- Rebasing, then claiming merge done before Part D's ancestor check passes on the new tip.
 
 ---
 
-## Part B — Coverage gate
+## Part C — Coverage gate
 
 ### Pre-detection
 
@@ -89,7 +139,7 @@ If the environment has `test-coverage-analyzer` skill, run the gate steps below.
 
    | Result | 🤖 Auto | 👤 Manual |
    |---|---|---|
-   | ✅ Report generated + coverage meets threshold | Continue to Part C (tip pinning) | Prompt pass, wait for user re-confirm |
+   | ✅ Report generated + coverage meets threshold | Continue to Part D (tip pinning) | Prompt pass, wait for user re-confirm |
    | ⚠️ Coverage below threshold | Pause, output report, await user (force/add-tests/abort) | same |
    | 💥 Crash / no report / exit 1 | Treat as gate-fail, pause | same |
    | 📭 No test code / 0% pass | Present report, pause for user judgment | same |
@@ -107,7 +157,7 @@ Location: PR description and `design.md` Verification Notes.
 
 ---
 
-## Part C — Tip pinning (after gate passes, before merge)
+## Part D — Tip pinning (after gate passes, before merge)
 
 Prevents the **stale-tip merge race**: archive/fix commits pushed seconds before merge fail to enter the target because the merge fast-forwards to the pre-push tip (whose pipeline was already green), while the freshly-pushed commits stay on the source branch. (Postmortem: `docs/mr-merge-stale-tip-archive-miss-incident.md`.)
 
@@ -115,11 +165,11 @@ Prevents the **stale-tip merge race**: archive/fix commits pushed seconds before
    ```bash
    MERGE_SHA=$(git rev-parse origin/<source-branch>)   # or the SHA returned by push
    ```
-   Merge with `glab mr merge <id> --sha "$MERGE_SHA" -y` (GitLab) or `gh pr merge <id> --sha "$MERGE_SHA"` (GitHub). The `--sha` makes the platform reject a tip mismatch. A bare merge with no `--sha` is forbidden.
-   If the platform CLI has no `--sha`: wait for that tip's pipeline to pass before merging, and treat step 3 as the mandatory backstop.
+   Merge with `glab mr merge <id> --sha "$MERGE_SHA" -y` (GitLab) or `gh pr merge <id> --match-head-commit "$MERGE_SHA"` (GitHub; older docs may say `--sha` — use the flag your `gh` supports). A bare merge with no tip pin is forbidden.
+   If the platform CLI has no tip-pin flag: wait for that tip's pipeline to pass before merging, and treat step 3 as the mandatory backstop.
 
 2. **Do not trust an instant `Pipeline succeeded`.**
-   If a new commit was pushed just before merge, an immediately-appearing `Pipeline succeeded` is almost certainly the **old** tip's result. Verify the result's sha equals the just-pushed tip, or rely on step 1's `--sha`.
+   If a new commit was pushed just before merge, an immediately-appearing `Pipeline succeeded` is almost certainly the **old** tip's result. Verify the result's sha equals the just-pushed tip, or rely on step 1's tip pin.
 
 3. **Ancestor check after merge (mandatory).**
    ```bash
@@ -129,19 +179,19 @@ Prevents the **stale-tip merge race**: archive/fix commits pushed seconds before
    MISSING → freshly-pushed commits (archive / specs sync / fixes) did not enter the target. Do **not** claim completion, do **not** proceed to Jira writeback. Open a backfill MR (cherry-pick) or pause for the user.
 
 4. **Dual strategy & fallback.**
-   - **Strategy A (default):** MR is open and main fix is mergeable → merge archive + main fix in the same MR with tip pinned (run steps 1-3).
-   - **Strategy B (fallback):** MR already merged or tip-race risk is high → open a separate docs MR for archive. List explicitly "archive pending !N"; never pretend archive is already on the target.
+   - **Strategy A (default):** MR is open and mergeable; any associated OpenSpec change is already archived (or there is no association) → merge implementation + archive on the **same** tip with tip pinned (run steps 1-3).
+   - **Strategy B (recovery only):** implementation MR was **already merged accidentally** and archive is still pending → open a separate docs MR for archive; list explicitly "archive pending !N" with 留痕; never pretend archive is already on the target. **MUST NOT** be recommended while the MR is still open and associated with an **active** change — that case is Part A block, not Strategy B.
 
 ---
 
 ## Mode lifecycle
 
-Gate auto-running test-coverage-analyzer does not trigger "auto reverts to manual" (it's a sub-step of the merge flow). Gate pause (below-threshold / crash / implicit miss) = merge flow interrupted, reverts to manual per existing rules. Part A rebase execution follows the same rule: a user-confirmed rebase is a sub-step of the merge flow (does not itself revert to manual); an unresolved conflict or aborted rebase interrupts the merge flow and reverts to manual.
+Gate auto-running test-coverage-analyzer does not trigger "auto reverts to manual" (it's a sub-step of the merge flow). Gate pause (Part A block / below-threshold / crash / implicit miss) = merge flow interrupted, reverts to manual per existing rules. Part B rebase execution follows the same rule: a user-confirmed rebase is a sub-step of the merge flow (does not itself revert to manual); an unresolved conflict or aborted rebase interrupts the merge flow and reverts to manual.
 
 ---
 
 ## Integration guide (for referencing workflows)
 
-- **Keep in your own body:** your stage ordering line (e.g. `archive → branch-closeout → rebase-precheck → coverage-gate → tip-discipline → merge → writeback`), a one-line pointer to this skill, and 1-2 key red-flags. Do **not** copy the Part steps inline.
-- **Delegate to this skill:** all three Parts — A (rebase pre-check), B (coverage gate), C (tip pinning); the full rules above.
-- **Quick-check table in your reference.md:** keep a compact checklist (rebase 3 items + gate 5 items + tip 3 items, each pointing to this skill's Part/step). It reminds; this skill defines.
+- **Keep in your own body:** your stage ordering line (e.g. `archive → branch-closeout → merge-discipline(A→B→C→D) → merge → writeback`), a one-line pointer to this skill, and 1-2 key red-flags. Do **not** copy the Part steps inline.
+- **Delegate to this skill:** all four Parts — A (archive gate), B (rebase), C (coverage), D (tip pinning).
+- **Quick-check table in your reference.md:** keep a compact checklist (archive 2–3 items + rebase 3 + gate 5 + tip 3, each pointing to this skill's Part/step). It reminds; this skill defines.
