@@ -1,0 +1,41 @@
+{
+  "skill_name": "analysis-core",
+  "evals": [
+    {
+      "id": 1,
+      "name": "temp-change-gate-blocks-next-stage",
+      "prompt": "You are in a PDCA workflow's analysis stage. You added temporary logging in src/foo.ts to validate a hypothesis. The user asks you to proceed to solution exploration. Load analysis-core and say what you must do before entering {next-stage} (dry-run explanation).",
+      "expected_output": "Restore from the register, output 临时改动清单 + 回滚验证, refuse entering {next-stage} if anything remains unrolled-back",
+      "expectations": [
+        "Mentions register fields: file + location + original content + purpose",
+        "Requires rollback before {next-stage}",
+        "Requires outputting 临时改动清单 + 回滚验证",
+        "Does not treat git diff alone as the rollback authority"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "instrumentation-when-fuzzy",
+      "prompt": "Root-cause confidence is fuzzy after static analysis of a React WebView bug. Load analysis-core and explain which debug skills you load and under what tool limits (dry-run).",
+      "expected_output": "Load runtime-evidence-debug, browser-debug-toolkit, hybrid-debug; follow temp-change gate for instrumentation; do not run reproduction without user confirmation",
+      "expectations": [
+        "Names runtime-evidence-debug",
+        "Names browser-debug-toolkit",
+        "Names hybrid-debug",
+        "Instrumentation edits follow the temporary-change gate",
+        "Reproduction steps need user confirmation"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "missing-dep-aborts",
+      "prompt": "analysis-core is listed in a workflow's dependencies, but runtime-evidence-debug is not installed in this environment. What must happen on load?",
+      "expected_output": "Abort; print npx skills add FuDesign2008/open-skills install hint; no silent degrade",
+      "expectations": [
+        "Aborts rather than continuing without the dependency",
+        "Mentions install command or npx skills add",
+        "No silent fallback / degrade"
+      ]
+    }
+  ]
+}

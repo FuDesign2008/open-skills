@@ -4,10 +4,11 @@
 > 
 > 变更 skill 后：commit 时 pre-commit hook 自动更新；或手动执行 `node scripts/gen-skill-docs.mjs`
 
-本仓库当前共 **38** 个 skill。
+本仓库当前共 **39** 个 skill。
 
 | Skill | 版本 | 用户可唤起 | 描述（含触发条件） |
 | --- | --- | --- | --- |
+| **analysis-core** | 1.0.0 | 否 | Shared analysis-stage methodology for PDCA fix workflows: temporary-change permission and rollback gate, instrumentation-debug triggers with debug-skill delegation, analysis step skeleton (existence → research routing → phenomenon/locate/root-cause/upstream-eval/impact), and debug-verify loop. Parameterizes the post-analysis exit as {next-stage}. Referenced via frontmatter dependencies by solve-workflow, opsx-solve-workflow, jira-fix-workflow, opsx-jira-fix-workflow. Triggers — 「分析阶段核心」「分析核心」「临时改动门控」「打点调试门控」「调试验证闭环」「analysis-core」 / analysis stage core, temp-change gate, instrumentation debug gate, debug-verify loop. |
 | **android-webview-debug** | 1.0.0 | 是 | Unified WebView remote debugging toggle for Android projects. `android-webview-debug-enable` sets all `setWebContentsDebuggingEnabled` calls to `true` and records modified locations with their original content; `android-webview-debug-revert` restores from the record, listing any mismatched entries at the end for manual confirmation. Triggers: 「开启 WebView 调试」「恢复 WebView 调试」 / android-webview-debug-enable, android-webview-debug-revert. Suitable for Android projects that need to uniformly enable or restore WebView debugging. |
 | **article-writer** | 1.0.0 | 是 | Use when 用户想写公众号、知乎技术文章、自媒体内容，或基于已有技术文档改写为可发布文章时。 |
 | **browser-debug-toolkit** | 1.2.0 | 是 | Browser runtime debugging toolkit — prioritize browser DevTools and CDP tools for runtime inspection and control when debugging UI/CSS/DOM layout, frontend interaction, and rendering issues. Default channel: ego-browser (macOS, runtime-checked) — full interaction, js(), raw cdp(), inherited login state, isolated task space, human-AI handoff. On unavailability or failure degrade along: playwright-mcp → agent-browser (non-macOS); web-access CDP Proxy (lightweight control + login state, curl-parallel); chrome-devtools-mcp (DevTools panels: computed style, network, perf trace). Triggers: 「浏览器调试」「UI 调试」「DOM 检查」「CSS 调试」「页面布局问题」「前端运行时调试」「chrome devtools」「CDP 调试」「登录态调试」 / browser debug, devtools, dom inspect, css debug, runtime debugging, login-state debug. |
