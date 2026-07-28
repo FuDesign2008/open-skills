@@ -99,23 +99,23 @@ Nine dimensions, in two tiers. The four **core** dimensions are mandatory for ev
 A review report with this structure:
 
 ```
-【方案审查报告】
-- 审查对象：[solution name / summary]
-- 可逆性分类：[one-way door / two-way door] → review depth: [maximum / standard]
-- 核心维度评估：
-  1. 解决有效性：✅/❌ [reasoning]
-  2. 副作用与风险：✅/❌ [reasoning]
-  3. 实现可行性：✅/❌ [reasoning]
-  4. 规范符合度：✅/❌ [reasoning]
-- 战略维度评估（按可逆性深度）：
-  5. 可逆性校准：[classification + rationale]
-  6. 失效模式分析：✅/❌/N/A [top failure modes + RPN]
-  7. 可运维性：✅/❌/N/A [monitoring/rollback/on-call assessment]
-  8. 成本 vs 价值：✅/❌/N/A [cost-value assessment]
-  9. 团队认知适配：✅/❌/N/A [team fit assessment]
-- 问题清单：[#] [description] [severity: blocking/non-blocking]
-- 审查结论：✅ 通过 / ❌ 不通过
-- [❌ 不通过时] 优化建议：[per-issue improvement direction]
+【Solution review report】
+- Subject: [solution name / summary]
+- Reversibility: [one-way door / two-way door] → review depth: [maximum / standard]
+- Core dimensions:
+  1. Effectiveness: ✅/❌ [reasoning]
+  2. Side effects & risks: ✅/❌ [reasoning]
+  3. Feasibility: ✅/❌ [reasoning]
+  4. Spec compliance: ✅/❌ [reasoning]
+- Strategic dimensions (by reversibility depth):
+  5. Reversibility calibration: [classification + rationale]
+  6. Failure-mode analysis: ✅/❌/N/A [top failure modes + RPN]
+  7. Operability: ✅/❌/N/A [monitoring/rollback/on-call assessment]
+  8. Cost vs value: ✅/❌/N/A [cost-value assessment]
+  9. Team cognitive fit: ✅/❌/N/A [team fit assessment]
+- Issue list: [#] [description] [severity: blocking/non-blocking]
+- Verdict: ✅ pass / ❌ fail
+- [On ❌] Optimization guidance: [per-issue improvement direction]
 ```
 
 ## Anti-patterns (forbidden moves)

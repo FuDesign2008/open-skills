@@ -2,185 +2,185 @@
 name: git-release-start
 version: "1.0.0"
 user-invocable: true
-description: 当版本迭代开始时需要创建 release 分支时使用，适用于分支命名规范不统一、多仓库需同步创建、或需要确保本地 tracking 正确指向 origin/release/X.Y.Z 的场景。支持 GitLab、GitHub 等平台，单仓库和多仓库均可。触发词：创建release分支、开release分支、开分支、迭代分支、create release branch。
+description: "Use when a version iteration starts and a release branch must be created — handles inconsistent branch-naming conventions across repos, multi-repo synchronized creation, and ensuring local tracking correctly points to origin/release/X.Y.Z rather than the base branch. Works with GitLab, GitHub, and other Git hosting platforms; single-repo or multi-repo. Triggers — 「创建release分支」「开release分支」「开分支」「迭代分支」 / create release branch."
 ---
 
-# Git 仓库 Release 分支创建工作流（git-release-start）
+# Git Release Start
 
 ## Overview
 
-在版本迭代开始时，从主开发分支创建 release 分支。**核心原则：先在远程创建，再同步到本地**——`git checkout -b release/X origin/master` 会让本地分支 tracking 指向 `origin/master` 而非 `origin/release/X`，埋下后续 push/pull 混乱的隐患。
+At the start of a version iteration, create a release branch from the main development branch. **Core principle: create on remote first, then sync to local** — `git checkout -b release/X origin/master` makes the local branch track `origin/master` instead of `origin/release/X`, planting a landmine for later push/pull confusion.
 
-**配对 skill：** `git-release-start`（迭代开始，本 skill）↔ `git-release-finish`（迭代结束，打 tag + 合并）
+**Pairing**: `git-release-start` (iteration start, this skill) ↔ `git-release-finish` (iteration end, tag + merge).
 
 ---
 
-## 平台 CLI 映射
+## Platform CLI mapping
 
-| 平台 | CLI 工具 | 远程创建分支 |
+| Platform | CLI tool | Create branch on remote |
 |------|---------|------------|
-| GitLab（SaaS / 自托管） | `glab` | `glab api POST "projects/:fullpath/repository/branches?branch=<NAME>&ref=<BASE>"` |
+| GitLab (SaaS / self-hosted) | `glab` | `glab api POST "projects/:fullpath/repository/branches?branch=<NAME>&ref=<BASE>"` |
 | GitHub | `gh` | `gh api repos/:owner/:repo/git/refs -f ref=refs/heads/<NAME> -f sha=<BASE_SHA>` |
 
-**文档约定**：以下用 `<GIT_CLI>` 代指平台 CLI。核心 git 操作（fetch、checkout）均为平台无关。
+**Convention**: `<GIT_CLI>` below stands for the platform's CLI tool — pick the row above that matches your environment, or the equivalent command for other platforms. Core git operations (fetch, checkout) are platform-agnostic.
 
 ---
 
-## 适用 / 不适用
+## Use when / Do not use for
 
-**适用场景**：
-- 版本迭代开始时，需要从主分支创建新的 release 分支
-- 多个仓库需要统一创建同版本的 release 分支
-- 需要确保分支的 tracking 指向正确（而非指向 master/main）
-- 已有历史 release 分支命名，需要遵循统一规范
+**Use when**:
+- A version iteration starts and a new release branch needs to be created from the main branch
+- Multiple repos need release branches for the same version, created in a coordinated way
+- The branch's tracking must be verified correct (not accidentally pointing at master/main)
+- An existing release-branch naming convention exists and must be followed
 
-**不适用场景**：
-- 非 Git 托管平台
+**Do not use for**:
+- Non-Git hosting platforms
 
-> **原则：流程必须完整执行。** 无论仓库数量多少，每个阶段都不可跳过。"就创建个分支而已"是常见的跳过验证后 tracking 指向错误的原因。
+> **Principle: the flow must run end-to-end.** No phase can be skipped, regardless of repo count. "It's just creating a branch" is the most common cause of skipping verification and ending up with wrong tracking.
 
-## 调用前置条件
+## Pre-conditions
 
-- 已安装对应平台 CLI 并完成认证
-- 确认版本号（如 `8.2.70`）
-- 确认基础分支（如 `master` 或 `main`）
+- The corresponding platform CLI is installed and authenticated
+- The version number is confirmed (e.g. `8.2.70`)
+- The base branch is confirmed (e.g. `master` or `main`)
 
 ---
 
-## 阶段总览
+## Phase map
 
-| 阶段 | 操作 | 关键工具 |
+| Phase | Operation | Key tools |
 |------|------|---------|
-| 1 | 确认版本号与基础分支 | — |
-| 2 | 分析各仓库 release 分支命名规范 | `git branch -r` |
-| 3 | 远程创建 release 分支 | `<GIT_CLI>` api |
-| 4 | 本地同步 + 设置 tracking | `git fetch` + `git checkout --track` |
-| 5 | 更新环境文件 | `echo` / 文本写入 |
-| 6 | 验证 | `git branch` + `cat` |
-| 7 | 输出报告 | — |
+| 1 | Confirm version number and base branch | — |
+| 2 | Analyze each repo's release-branch naming convention | `git branch -r` |
+| 3 | Create the release branch on remote | `<GIT_CLI>` api |
+| 4 | Sync locally + set tracking | `git fetch` + `git checkout --track` |
+| 5 | Update environment file | `echo` / text write |
+| 6 | Verify | `git branch` + `cat` |
+| 7 | Output report | — |
 
 ---
 
-## 阶段1：确认版本号与基础分支
+## Phase 1: Confirm version number and base branch
 
-> ⚠️ 创建前确认，避免创建错误版本或基于错误分支。
+> ⚠️ Confirm before creating, to avoid creating the wrong version or basing off the wrong branch.
 
-### 1.1 版本号确认
+### 1.1 Version number confirmation
 
-若用户消息中已明确版本号，直接使用，无需重复询问。否则向用户确认：
-- 新版本号（如 `8.2.70`）
-- 上一个版本号（用于阶段2对比历史分支命名，如 `8.2.60`）
+If the user's message already states the version number, use it directly without asking again. Otherwise confirm with the user:
+- The new version number (e.g. `8.2.70`)
+- The previous version number (used in Phase 2 to compare historical branch naming, e.g. `8.2.60`)
 
-检查：
-- 新版本 tag 是否已存在：`git ls-remote origin refs/tags/<TAG_PATTERN>`
-- 新版本 release 分支是否已存在：`git ls-remote origin refs/heads/release/<VERSION>`
-- 若已存在，报错停止，询问是否复用或改名
+Checks:
+- Whether the new version's tag already exists: `git ls-remote origin refs/tags/<TAG_PATTERN>`
+- Whether the new version's release branch already exists: `git ls-remote origin refs/heads/release/<VERSION>`
+- If it already exists, abort with an error and ask whether to reuse it or rename
 
-### 1.2 基础分支确认
+### 1.2 Base branch confirmation
 
-release 分支从哪个分支创建？通常是主开发分支。
+Which branch should the release branch be created from? Usually the main development branch.
 
 ```bash
-# 确认基础分支存在且是最新
+# Confirm the base branch exists and is up to date
 git fetch origin <BASE_BRANCH>
 git log --oneline origin/<BASE_BRANCH> -3
 ```
 
-> ⚠️ **remote HEAD 可能指向已废弃的分支**：仓库迁移或分支策略调整后，remote HEAD 可能仍指向旧主分支（如 `master`），而实际活跃主分支已变为 `main`。若 remote HEAD 指向的分支落后另一候选分支数百 commits，说明 HEAD 已过期。**以合并历史（`git log --merges | grep "into 'main'"`）为准，必要时向用户确认**。
+> ⚠️ **Remote HEAD may point at a deprecated branch**: after repo migrations or branch-policy changes, remote HEAD may still point at the old main branch (e.g. `master`) while the actually active main branch has become `main`. If the branch remote HEAD points to is hundreds of commits behind another candidate branch, HEAD is stale. **Trust merge history (`git log --merges | grep "into 'main'"`) as the source of truth, and confirm with the user if needed.**
 
-**输出：确认表（阶段1仅确认版本号与 base 分支，release 分支名由阶段2分析后确定）**
+**Output: confirmation table (Phase 1 only confirms version number and base branch; the release branch name is determined after Phase 2's analysis)**
 
-| 仓库 | 版本号 | 基础分支 |
-|------|--------|---------|
+| Repo | Version | Base branch |
+|------|--------|--------|
 | repo-A | 8.2.70 | master |
 
-**在确认后进入阶段2（分析 release 分支命名规范）。**
+**After confirmation, proceed to Phase 2 (analyze release-branch naming convention).**
 
 ---
 
-## 阶段2：分析 Release 分支命名规范
+## Phase 2: Analyze release-branch naming convention
 
-> ⚠️ release 分支命名可能不是简单的 `release/X.Y.Z`，需要查历史。本阶段输出最终分支名，完成后才能进入阶段3创建。
+> ⚠️ Release-branch naming may not be simply `release/X.Y.Z` — check history. This phase outputs the final branch name; only after it completes can Phase 3 create the branch.
 
 ```bash
-# 查看已有的 release 分支
+# List existing release branches
 git branch -r | grep "origin/release"
 ```
 
-### 识别规则
+### Identification rules
 
-| 历史分支模式 | 命名规范 |
+| Historical branch pattern | Naming convention |
 |-------------|---------|
 | `origin/release/8.2.60`, `origin/release/8.2.52` | `release/{VERSION}` |
 | `origin/release/8.2.60-perf` | `release/{VERSION}-perf` |
-| `origin/release/mobile-7.5.720` | `release/mobile-{VERSION}`（产品前缀） |
+| `origin/release/mobile-7.5.720` | `release/mobile-{VERSION}` (product prefix) |
 
-**多产品仓库**：每个产品线有独立的 release 分支命名，本次只创建当前产品线的分支。
+**Multi-product repos**: each product line has its own release-branch naming; only create the branch for the current product line this time.
 
-### 输出：确认表
+### Output: confirmation table
 
-| 仓库 | release 分支名 | 历史示例 |
+| Repo | Release branch name | Historical example |
 |------|---------------|---------|
 | repo-A | `release/8.2.70` | `release/8.2.60` |
 | repo-B | `release/8.2.70-perf` | `release/8.2.60-perf` |
 
-**在确认分支名称后与用户对齐，再执行阶段3。**
+**Align with the user on the branch name before executing Phase 3.**
 
 ---
 
-## 阶段3：远程创建 Release 分支
+## Phase 3: Create the release branch on remote
 
-> ⚠️ **核心教训**：必须在远程创建，再同步到本地。不能先本地建再 push。
-> 
-> 原因：`git checkout -b release/X origin/master` 创建的本地分支 tracking 指向 `origin/master` 而非 `origin/release/X`，后续 push 和 pull 会出现混乱。
+> ⚠️ **Core lesson**: must create on remote first, then sync to local. Do not create locally first and push.
+>
+> Reason: a local branch created with `git checkout -b release/X origin/master` tracks `origin/master` instead of `origin/release/X`, causing confusion in later pushes and pulls.
 
-对所有仓库**并行执行**：
+Run in parallel for all repos:
 
 ```bash
-# GitLab — 使用 API 在远程创建分支（`:fullpath` 在 repo 目录内自动解析）
+# GitLab — create the branch on remote via API (`:fullpath` auto-resolves inside the repo directory)
 glab api --method POST \
   "projects/:fullpath/repository/branches?branch=<RELEASE_BRANCH>&ref=<BASE_BRANCH>"
 
-# GitHub — `gh` 在 repo 目录内执行时 `:owner/:repo` 自动解析
+# GitHub — `:owner/:repo` auto-resolves when `gh` runs inside the repo directory
 BASE_SHA=$(git rev-parse origin/<BASE_BRANCH>)
 gh api repos/:owner/:repo/git/refs \
   -f ref="refs/heads/<RELEASE_BRANCH>" \
   -f sha="$BASE_SHA"
-# 若自动解析失败，手动替换为实际值，如：gh api repos/myorg/myrepo/git/refs ...
+# If auto-resolution fails, substitute the actual values manually, e.g.: gh api repos/myorg/myrepo/git/refs ...
 ```
 
-**参数说明**：
-- `branch`：新 release 分支完整名称（含路径，如 `release/8.2.70`）
-- `ref` / `sha`：基于哪个分支创建（主开发分支）
-- `:fullpath`：GitLab 自动解析，GitHub 需要手动替换 `:owner/:repo`
+**Parameters**:
+- `branch`: the full name of the new release branch (including path, e.g. `release/8.2.70`)
+- `ref` / `sha`: which branch to create from (the main development branch)
+- `:fullpath`: auto-resolved by GitLab; GitHub requires manually substituting `:owner/:repo`
 
 ---
 
-## 阶段4：本地同步 + 设置 Tracking
+## Phase 4: Sync locally + set tracking
 
-> ⚠️ 使用 `--track` 确保本地分支 tracking 指向 `origin/<RELEASE_BRANCH>`。
+> ⚠️ Use `--track` to ensure the local branch tracks `origin/<RELEASE_BRANCH>`.
 
-对所有仓库**并行执行**：
+Run in parallel for all repos:
 
 ```bash
 git fetch origin <RELEASE_BRANCH>
 git checkout -b <RELEASE_BRANCH> --track origin/<RELEASE_BRANCH>
 ```
 
-**验证 tracking**：
+**Verify tracking**:
 
 ```bash
 git branch -vv | grep '^\*'
-# 期望输出：* release/8.2.70  <SHA> [origin/release/8.2.70] <commit message>
+# Expected output: * release/8.2.70  <SHA> [origin/release/8.2.70] <commit message>
 ```
 
-> **如果 `[origin/master]` 出现在 tracking 列**：说明用了错误的创建方式，需要 `git branch -u origin/release/8.2.70` 修正。
+> **If `[origin/master]` appears in the tracking column**: the branch was created the wrong way; fix it with `git branch -u origin/release/8.2.70`.
 
 ---
 
-## 阶段5：更新环境文件
+## Phase 5: Update environment file
 
-> 部分仓库需要在 `release-branch` 文件中记录当前分支名（CI 脚本等可能会读取）。
+> Some repos need the current branch name recorded in a `release-branch` file (which CI scripts etc. may read).
 
 ```bash
 echo "<RELEASE_BRANCH>" > release-branch
@@ -188,89 +188,89 @@ git add release-branch
 git commit -m "chore: update release-branch to <RELEASE_BRANCH>"
 ```
 
-**注意**：如果仓库不使用 `release-branch` 文件（没有历史提交记录），跳过此步骤。
+**Note**: if the repo doesn't use a `release-branch` file (no historical commits for it), skip this step.
 
 ```bash
-# 检查是否已有此文件
+# Check whether this file has existing history
 git log --oneline -- release-branch | head -3
 ```
 
 ---
 
-## 阶段6：验证
+## Phase 6: Verify
 
-对每个仓库执行以下验证：
+Run the following verification for each repo:
 
 ```bash
-# 5. push 通道畅通（无权限报错即可）
+# Push channel is clear (no permission errors is enough)
 git push --dry-run origin <RELEASE_BRANCH>
-# 期望：显示待推送内容或 "Everything up-to-date"，无 "rejected" 或权限报错
+# Expected: shows what would be pushed, or "Everything up-to-date"; no "rejected" or permission errors
 ```
 
-**若有任何一项不通过，中止并修正，确认后再进入阶段7。**
+**If any check fails, stop and fix it; only proceed to Phase 7 after confirming.**
 
 ---
 
-## 阶段7：输出报告
+## Phase 7: Output report
 
-生成确认表：
+Generate a confirmation table:
 
-| 仓库 | 远程分支 | 本地 tracking | release-branch | 状态 |
+| Repo | Remote branch | Local tracking | release-branch | Status |
 |------|---------|-------------|---------------|------|
 | repo-A | `origin/release/8.2.70` | `[origin/release/8.2.70]` | `release/8.2.70` | ✅ |
 | repo-B | `origin/release/8.2.70-perf` | `[origin/release/8.2.70-perf]` | N/A | ✅ |
 
 ---
 
-## 错误处理
+## Error handling
 
-| 场景 | 处理方式 |
+| Scenario | Handling |
 |------|---------|
-| tag 已存在 | 报错停止，可能是重复发版 |
-| release 分支已存在（远程） | 询问是否复用（直接 checkout）还是改名 |
-| 基础分支不存在 | 报错停止，要求确认正确的 base ref |
-| `glab api` 返回 401 / 403 | 检查 `glab auth status`，重新认证 |
-| tracking 指向错误（`[origin/master]`） | `git branch -u origin/<RELEASE_BRANCH>` 修正 |
-| 本地已有同名分支 | `git branch -D <NAME>` 删除本地，重新 checkout |
-| push dry-run 失败 | 检查 remote URL 和权限 |
+| Tag already exists | Abort with an error; may indicate a duplicate release |
+| Release branch already exists (remote) | Ask whether to reuse it (checkout directly) or rename |
+| Base branch doesn't exist | Abort with an error, ask for the correct base ref |
+| `glab api` returns 401 / 403 | Check `glab auth status`, re-authenticate |
+| Tracking points to the wrong branch (`[origin/master]`) | Fix with `git branch -u origin/<RELEASE_BRANCH>` |
+| A local branch with the same name already exists | `git branch -D <NAME>` to delete it locally, then checkout again |
+| `push --dry-run` fails | Check the remote URL and permissions |
 
 ---
 
-## 常见错误
+## Common mistakes
 
-| ❌ 错误做法 | ✅ 正确做法 | 后果 |
+| ❌ Wrong | ✅ Right | Consequence |
 |------------|------------|------|
-| `git checkout -b release/X origin/master` 然后 push | `glab api` 远程创建 → fetch → `--track` | tracking 指向 `origin/master`，后续 pull/push 混乱 |
-| 本地先建分支再 push 到远程 | 远程先建分支再 fetch 到本地 | 同上 |
-| 跳过阶段5不检查/不更新 `release-branch` | 确认并更新 | CI 可能读取错误的 release-branch 值 |
-| 假设所有仓库命名一致 | 逐仓库查历史 branch 名 | 部分仓库分支名带特殊后缀（如 `-perf`）被遗漏 |
-| 不验证 tracking 就认为完成了 | 阶段6逐项验证 | 错误的 tracking 在后续 merge/push 时才会暴露 |
+| `git checkout -b release/X origin/master` then push | Create on remote via `<GIT_CLI>` api → fetch → `--track` | Tracking points to `origin/master`, causing confusion in later pull/push |
+| Create the branch locally first, then push to remote | Create the branch on remote first, then fetch to local | Same as above |
+| Skip Phase 5's check/update of `release-branch` | Confirm and update it | CI may read the wrong release-branch value |
+| Assume all repos use the same naming | Check historical branch names per repo | Some repos' branch names carry special suffixes (e.g. `-perf`) and get missed |
+| Consider the task done without verifying tracking | Verify each item in Phase 6 | Wrong tracking only surfaces later, during merge/push |
 
 ---
 
-## 快速参考命令
+## Quick reference commands
 
 ```bash
-# 查看已有 release 分支
+# List existing release branches
 git branch -r | grep "origin/release"
 
-# GitLab — 远程创建
+# GitLab — create on remote
 glab api --method POST "projects/:fullpath/repository/branches?branch=<NAME>&ref=<BASE>"
 
-# GitHub — 远程创建
+# GitHub — create on remote
 gh api repos/<OWNER>/<REPO>/git/refs -f ref="refs/heads/<NAME>" -f sha="$(git rev-parse origin/<BASE>)"
 
-# 本地同步
+# Sync locally
 git fetch origin <NAME>
 git checkout -b <NAME> --track origin/<NAME>
 
-# 修正 tracking（如指向错误）
+# Fix tracking (if pointed wrong)
 git branch -u origin/<NAME>
 
-# 更新 release-branch
+# Update release-branch
 echo "<NAME>" > release-branch
 
-# 验证
+# Verify
 git branch --show-current
 git branch -vv | grep '^\*'
 git ls-remote origin refs/heads/<NAME>

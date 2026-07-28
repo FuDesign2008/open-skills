@@ -69,7 +69,7 @@ state.json           ← progress (mode, review_round, review_status)
 <type>(<scope>): <Jira-ID> <subject>
 ```
 
-Example: `fix(ai-summary): YNOTR-12167 修复分享链接中AI摘要按钮显示问题`
+Example: `fix(ai-summary): PROJ-123 fix AI-summary button visibility in share links`
 
 Type: fix, feat, refactor, perf, style, docs, test. Scope examples: ai-summary, share, auth, api, ui, core.
 
@@ -77,14 +77,14 @@ Type: fix, feat, refactor, perf, style, docs, test. Scope examples: ai-summary, 
 
 Stop points are in the SKILL.md "Quick Reference". When a fixed closing line is needed, use the wording below:
 
-- **Stage 2 (manual)**: 请确认理解是否准确，或补充 Jira 描述中遗漏的信息。
-- **Stage 6 (manual)**: ⏸️ 阶段6（制定计划）完成。是否进入**阶段7：执行计划**？回复「确认」继续，或说明需要调整。
-- **Stage 7 branch (manual, single-repo)**: ✅ 修复分支已创建：`fix/jira-fix-[JIRA-ID]`，开始执行代码修改。
-- **Stage 7 branch (manual, multi-repo)**: ⏸️ 多工程分支已创建，即将开始代码修改，回复「确认」继续。
-- **Stage 7 (manual)**: ⏸️ 阶段7（执行计划）完成，请审查代码。是否进入**阶段8：检查验证**？回复「确认」继续，或告知需要调整。
-- **Stage 9 (manual)**: ⏸️ 提交计划已就绪。确认后 AI 将执行 push + 创建 PR/MR。回复「确认」继续，或告知需要修改。
-- **Stage 10 (auto/manual)**: ⏸️ PR/MR 已在阶段9创建，请完成 Code Review。确认合并后回复「确认」，AI 将执行合并并清理分支。
-- **Stage 4 extremely-hard, choosing B (manual)**: ⚠️ 已知晓高风险，进入**阶段5：探索与审查方案**，回复「确认」继续，或回复「A」终止。
+- **Stage 2 (manual)**: Please confirm whether the understanding is accurate, or add any details missing from the Jira description.
+- **Stage 6 (manual)**: ⏸️ Stage 6 (make a plan) complete. Proceed to **Stage 7: Execute the Plan**? Reply 「确认」/"confirm" to continue, or describe what needs adjusting.
+- **Stage 7 branch (manual, single-repo)**: ✅ Fix branch created: `fix/jira-fix-[JIRA-ID]`, starting code changes.
+- **Stage 7 branch (manual, multi-repo)**: ⏸️ Multi-repo branches created; about to start code changes. Reply 「确认」/"confirm" to continue.
+- **Stage 7 (manual)**: ⏸️ Stage 7 (execute the plan) complete, please review the code. Proceed to **Stage 8: Check & Verify**? Reply 「确认」/"confirm" to continue, or let me know what needs adjusting.
+- **Stage 9 (manual)**: ⏸️ Submission plan ready. Once confirmed, the AI will push and open a PR/MR. Reply 「确认」/"confirm" to continue, or let me know what needs changing.
+- **Stage 10 (auto/manual)**: ⏸️ The PR/MR was created in stage 9; please complete code review. Reply 「确认」/"confirm" once you approve the merge, and the AI will merge and clean up the branch.
+- **Stage 4 extremely-hard, choosing B (manual)**: ⚠️ Risk acknowledged; proceeding to **Stage 5: Explore & Review Solutions**. Reply 「确认」/"confirm" to continue, or reply 「A」to terminate.
 
 ## Stage 7 Branch-Creation Details
 
@@ -99,17 +99,17 @@ Stop points are in the SKILL.md "Quick Reference". When a fixed closing line is 
 ## Stage 0: Prerequisite Check Complete
 
 ```
-## 阶段0完成：前置检查通过
+## Stage 0 Complete: Prerequisite Check Passed
 
 **Jira ID**: YNOTR-12167
-**Issue 标题**: [标题]（已确认存在）
-**优先级**: P1
-**执行模式**: 🤖 自动 / 👤 手动
-**mcp-atlassian**: ✅ 已连接
-**Git 仓库**: ✅
+**Issue Title**: [title] (existence confirmed)
+**Priority**: P1
+**Execution Mode**: 🤖 Auto / 👤 Manual
+**mcp-atlassian**: ✅ Connected
+**Git Repository**: ✅
 
 ---
-进入阶段1：读取 Jira 信息
+Proceeding to Stage 1: Read Jira Info
 ```
 
 ---
@@ -117,24 +117,24 @@ Stop points are in the SKILL.md "Quick Reference". When a fixed closing line is 
 ## Stage 1: Read Jira Info
 
 ```
-## 阶段1完成：Jira信息已读取
+## Stage 1 Complete: Jira Info Retrieved
 
 **Jira ID**: YNOTR-12167
-**标题**: [标题]
-**优先级**: P1
-**状态**: 待处理
-**数据来源**: API 最新 / 本地缓存
+**Title**: [title]
+**Priority**: P1
+**Status**: To Do
+**Data Source**: Live API / Local Cache
 
-**问题描述**: [描述]
-**复现步骤**: 1. ... 2. ...
-**期望结果**: [期望]
-**实际结果**: [实际]
+**Problem Description**: [description]
+**Repro Steps**: 1. ... 2. ...
+**Expected Result**: [expected]
+**Actual Result**: [actual]
 
-**评论摘要**: 共 X 条
-> 最新评论 - [用户]（[时间]）: [内容摘要]
+**Comment Summary**: X total
+> Latest comment - [user] ([time]): [content summary]
 
 ---
-[🤖 自动 / 👤 手动] 进入阶段2：理解对齐
+[🤖 Auto / 👤 Manual] Proceeding to Stage 2: Understanding Alignment
 ```
 
 ---
@@ -142,11 +142,11 @@ Stop points are in the SKILL.md "Quick Reference". When a fixed closing line is 
 ## Stage 2: Understanding Alignment
 
 ```
-【问题复述】我理解这个 Bug 是：...（一句话，不含技术判断）
-【关键要素】触发条件：... / 期望行为：... / 实际行为：... / 复现环境：...
-【歧义与假设】（若有）
-[问题] A [...] B [...]
-请确认我的理解是否准确，或补充 Jira 描述中遗漏的信息。
+[Problem Restatement] My understanding of this bug is: ... (one sentence, no technical judgment)
+[Key Elements] Trigger condition: ... / Expected behavior: ... / Actual behavior: ... / Repro environment: ...
+[Ambiguities & Assumptions] (if any)
+[Question] A [...] B [...]
+Please confirm whether my understanding is accurate, or add any details missing from the Jira description.
 ```
 
 Save to `.jira-fix/{JIRA-ID}/02-alignment.md`.
@@ -156,38 +156,38 @@ Save to `.jira-fix/{JIRA-ID}/02-alignment.md`.
 ## Stage 3: Analysis Complete
 
 ```
-## 阶段3：分析完成
+## Stage 3: Analysis Complete
 
-### 0. 存在性验证
-**结论**: ✅ 问题存在（在 `path/file.js` 中确认）
+### 0. Existence Verification
+**Conclusion**: ✅ Problem confirmed (verified in `path/file.js`)
 
-### 1. 问题现象
-**复现步骤**: 1. ... 2. ...
-**期望结果**: [期望]
-**实际结果**: [实际]
+### 1. Problem Symptoms
+**Repro Steps**: 1. ... 2. ...
+**Expected Result**: [expected]
+**Actual Result**: [actual]
 
-### 2. 相关代码定位
-- `path/file.js:行号` - [说明]
+### 2. Relevant Code Location
+- `path/file.js:line` - [note]
 
-### 3. 根因分析
-**直接原因**: [描述]
-**根本原因**: [描述]
-**调用链**: [流程]
+### 3. Root Cause Analysis
+**Immediate Cause**: [description]
+**Root Cause**: [description]
+**Call Chain**: [flow]
 
-### 3.5 行业通病评估
-**结论**: ✅ 非行业通病，属可修复问题
+### 3.5 Industry-Wide Issue Evaluation
+**Conclusion**: ✅ Not an industry-wide issue; fixable
 
-### 4. 影响范围
-**受影响模块**: [列表]
-**平台**: Web端 / Mobile端
-**连带影响**: [列表]
+### 4. Impact Scope
+**Affected Modules**: [list]
+**Platform**: Web / Mobile
+**Side Effects**: [list]
 
-### 5. 难度预判
-**预估改动文件数**: X 个
-**根因清晰度**: 清晰 / 基本清晰 / 模糊 / 未知
+### 5. Difficulty Pre-Assessment
+**Estimated Files Changed**: X
+**Root-Cause Clarity**: Clear / Mostly clear / Vague / Unknown
 
 ---
-进入阶段4：难度分级
+Proceeding to Stage 4: Difficulty Grading
 ```
 
 ---
@@ -196,53 +196,53 @@ Save to `.jira-fix/{JIRA-ID}/02-alignment.md`.
 
 **[🤖 Auto] Extremely hard → termination report**:
 ```
-## ⚠️ jira-fix 已终止：难度超出自动修复阈值
+## ⚠️ jira-fix Terminated: Difficulty Exceeds Auto-Fix Threshold
 
 **Jira ID**: YNOTR-12167
-**难度等级**: 🔴 极难
-**命中条件**:
-  - [x] 根因未知：分析后无法定位具体修改点
-  - [ ] 涉及架构变更
-  - [ ] 改动范围过大
+**Difficulty Grade**: 🔴 Extremely Hard
+**Matched Conditions**:
+  - [x] Root cause unknown: unable to pinpoint a specific fix location after analysis
+  - [ ] Architectural change involved
+  - [ ] Change scope too large
 
-**已完成工作**:
-  - 分支已创建：fix/jira-fix-YNOTR-12167
-  - 分析已保存：.jira-fix/YNOTR-12167/02-analysis.md
+**Work Completed**:
+  - Branch created: fix/jira-fix-YNOTR-12167
+  - Analysis saved: .jira-fix/YNOTR-12167/02-analysis.md
 
-**建议后续行动**:
-  1. 使用手动模式继续：jira-fix [URL] --manual --resume
-  2. 跳过分级强制执行：jira-fix [URL] --force（风险自担）
-  3. 团队评审后再修复
+**Recommended Next Steps**:
+  1. Continue with manual mode: jira-fix [URL] --manual --resume
+  2. Skip grading and force execution: jira-fix [URL] --force (at your own risk)
+  3. Fix after a team review
 ```
 
 **[👤 Manual] Extremely hard → risk notice + options**:
 ```
-## ⚠️ 高风险提示：当前问题难度评级为「极难」
+## ⚠️ High-Risk Notice: This Issue Is Graded "Extremely Hard"
 
-**命中条件**:
-  - [x] [触发条件名称]: [具体说明]
+**Matched Conditions**:
+  - [x] [trigger condition name]: [specific detail]
 
-**建议**：
+**Recommendation**:
 
-  选项 A — 仅保留分析（推荐）
-    保存分析至 .jira-fix/YNOTR-12167/02-analysis.md
-    在 Jira 添加评论「AI 分析完成，需人工评估后继续修复」
-    结束本次修复，等待人工接手
+  Option A — Analysis only (recommended)
+    Save the analysis to .jira-fix/YNOTR-12167/02-analysis.md
+    Add a Jira comment: "AI analysis complete; human evaluation needed before continuing the fix"
+    End this fix attempt and wait for a human to take over
 
-  选项 B — 继续执行（风险自担）
-    阶段6制定计划后，强制要求二次确认才可进入阶段7
-    阶段7执行完成后不自动提交，等用户审查代码后手动提交
+  Option B — Continue anyway (at your own risk)
+    After stage 6's plan, require a second confirmation before entering stage 7
+    After stage 7 executes, do not auto-commit; wait for the user to review the code before committing manually
 
-请回复 A 或 B：
+Please reply A or B:
 ```
 
 **[👤 Manual] Easy/medium → suggest switching to auto**:
 ```
-💡 提示：此问题难度评级为「容易/中等」
-预估改动 [X] 个文件，根因明确，风险可控。
-可切换自动模式：「修复这个 bug [URL]」（不加手动模式即可）
+💡 Note: this issue is graded "Easy/Medium"
+Estimated [X] files changed, root cause clear, risk manageable.
+You can switch to auto mode: "fix this bug [URL]" (without the manual-mode flag).
 
-继续手动流程请直接输入「继续」。
+To continue the manual flow, just reply "继续"/"continue".
 ```
 
 ---
@@ -251,32 +251,32 @@ Save to `.jira-fix/{JIRA-ID}/02-alignment.md`.
 
 **[🤖 Auto]**:
 ```
-## 阶段5：方案已自动选择
+## Stage 5: Solution Auto-Selected
 
-| 方案 | 核心思路 | 复杂度 | 风险 | 推荐度 |
+| Solution | Core Approach | Complexity | Risk | Recommendation |
 |------|---------|--------|------|--------|
-| 方案1 | [思路] | 低 | 低 | ⭐⭐⭐⭐⭐ |
-| 方案2 | [思路] | 中 | 低 | ⭐⭐⭐ |
+| Solution 1 | [approach] | Low | Low | ⭐⭐⭐⭐⭐ |
+| Solution 2 | [approach] | Medium | Low | ⭐⭐⭐ |
 
-**AI 自动选择**：方案1
-**选择理由**: 1. ... 2. ...
+**AI Auto-Selected**: Solution 1
+**Selection Rationale**: 1. ... 2. ...
 
 ---
-进入方案审查（第 1 轮）
+Entering solution review (round 1)
 ```
 
 **[👤 Manual]**:
 ```
-## 阶段5：评估方案
+## Stage 5: Evaluate Solutions
 
-[方案对比表]
-[每个方案详细说明]
+[solution comparison table]
+[detailed description of each solution]
 
-### 推荐方案：方案1
-理由：...
+### Recommended Solution: Solution 1
+Rationale: ...
 
 ---
-请选择方案编号，进入方案审查
+Please select a solution number to enter solution review
 ```
 
 ---
@@ -294,21 +294,21 @@ Append the review record to `.jira-fix/{JIRA-ID}/03-options.md` (`{artifact-sink
 - **Batch** (`{batch-overcap-behavior}`):
 
 ```
-## ⚠️ [{JIRA-ID}] 方案审查超限，已跳过
+## ⚠️ [{JIRA-ID}] Solution Review Exceeded Cap, Skipped
 
-**难度等级**: … → 标记为「审查未通过（超限）」
-**审查轮次**: 3 / 3
-**未解决问题**: …
-**处理**: 跳过阶段7-9，继续处理下一个 issue
+**Difficulty Grade**: … → marked "review failed (cap exceeded)"
+**Review Round**: 3 / 3
+**Unresolved Issues**: …
+**Action**: Skip stages 7-9, continue with the next issue
 ```
 
 **[👤 Manual]** Append after the shared review report:
 
 ```
-请判定：
-- 说「通过」「确认」→ 进入阶段6
-- 说「修改方案」「完善方案」「优化方案」→ 按指导优化后重新审查
-- 说「重选方案」→ 回到方案选择
+Please give a verdict:
+- Say 「通过」/「确认」("pass"/"confirm") → proceed to stage 6
+- Say 「修改方案」/「完善方案」/「优化方案」("revise the solution") → refine per the feedback and re-review
+- Say 「重选方案」("reselect solution") → go back to solution selection
 ```
 
 ---
@@ -317,40 +317,40 @@ Append the review record to `.jira-fix/{JIRA-ID}/03-options.md` (`{artifact-sink
 
 **[🤖 Auto] Single project**:
 ```
-## 阶段7前置：Git分支已自动创建
+## Stage 7 Pre-Step: Git Branch Auto-Created
 
 **Jira ID**: YNOTR-12167
-**基础分支**: release/8.2.30
-**修复分支**: fix/jira-fix-YNOTR-12167
-**状态**: 已自动切换到修复分支
+**Base Branch**: release/8.2.30
+**Fix Branch**: fix/jira-fix-YNOTR-12167
+**Status**: Automatically switched to the fix branch
 
 ---
-自动继续执行计划
+Auto-continuing to execute the plan
 ```
 
 **[🤖 Auto] Multi-project**:
 ```
-## 阶段7前置：Git分支已自动创建（多项目）
+## Stage 7 Pre-Step: Git Branches Auto-Created (Multi-Project)
 
-| 项目 | 基础分支 | 修复分支 | 状态 |
+| Project | Base Branch | Fix Branch | Status |
 |------|---------|---------|------|
-| backend | release/8.2.30 | fix/jira-fix-YNOTR-12167 | ✅ 已创建 |
-| frontend | release/8.2.30 | fix/jira-fix-YNOTR-12167 | ✅ 已创建 |
+| backend | release/8.2.30 | fix/jira-fix-YNOTR-12167 | ✅ Created |
+| frontend | release/8.2.30 | fix/jira-fix-YNOTR-12167 | ✅ Created |
 
 ---
-自动继续执行计划
+Auto-continuing to execute the plan
 ```
 
 **[👤 Manual]**:
 ```
-## 阶段7前置：Git分支已创建
+## Stage 7 Pre-Step: Git Branch Created
 
 **Jira ID**: YNOTR-12167
-**基础分支**: release/8.2.30（来源：main_branch 文件）
-**修复分支**: fix/jira-fix-YNOTR-12167
+**Base Branch**: release/8.2.30 (source: main_branch file)
+**Fix Branch**: fix/jira-fix-YNOTR-12167
 
 ---
-开始执行代码修改
+Starting code changes
 ```
 
 ---
@@ -359,51 +359,51 @@ Append the review record to `.jira-fix/{JIRA-ID}/03-options.md` (`{artifact-sink
 
 **Jira writeback comment template** (stage 10 step 2.3, rendered with `jira-status-writeback`'s field map):
 ```
-**AI 自动修复报告**
+**AI Auto-Fix Report**
 
-- **修复分支**: fix/jira-fix-{JIRA-ID}
+- **Fix Branch**: fix/jira-fix-{JIRA-ID}
 - **Commit**: {commit_hash}
 - **PR/MR URL**: {pr_mr_url}
-- **根因**: {root_cause_summary}
-- **修复方案**: {solution_summary}
-- **修改文件**: {file_list}
-- **分析报告**: reports/{JIRA-ID}-analysis.md
+- **Root Cause**: {root_cause_summary}
+- **Fix Solution**: {solution_summary}
+- **Files Changed**: {file_list}
+- **Analysis Report**: reports/{JIRA-ID}-analysis.md
 
-代码已合并到主分支，请进行 QA 验证。
+Code has been merged to the main branch; please proceed with QA verification.
 ```
 
-Manual mode additionally includes a "验证场景" (verification scenarios) section:
+Manual mode additionally includes a "Verification Scenarios" section:
 ```
-### 验证场景
+### Verification Scenarios
 
-1. [场景名称]
-   操作：[具体步骤，1-3步]
-   预期：[用户可观察到的结果]
+1. [scenario name]
+   Steps: [specific steps, 1-3 steps]
+   Expected: [user-observable result]
 2. ...
 ```
 
 **Completion output [🤖 Auto]**:
 ```
-## 阶段9完成：代码已自动提交并推送
+## Stage 9 Complete: Code Auto-Committed and Pushed
 
-**修复分支**: fix/jira-fix-[JIRA-ID]
+**Fix Branch**: fix/jira-fix-[JIRA-ID]
 **Commit**: [commit hash]
-**推送状态**: ✅ 成功
+**Push Status**: ✅ Success
 **PR/MR URL**: [URL]
-**分析报告**: reports/[JIRA-ID]-analysis.md
-- [模式状态] 自动模式已完成本轮，已恢复为手动模式。阶段 10 合并仍需您确认。
+**Analysis Report**: reports/[JIRA-ID]-analysis.md
+- [Mode Status] Auto mode has completed this round and reverted to manual mode. Stage 10 merge still requires your confirmation.
 ```
 
 **Completion output [🤖 Auto] multi-project**:
 ```
-## 阶段9完成：代码已自动提交并推送（多项目）
+## Stage 9 Complete: Code Auto-Committed and Pushed (Multi-Project)
 
-| 项目 | Commit | 推送状态 | 改动 |
+| Project | Commit | Push Status | Changes |
 |------|--------|---------|------|
-| backend | a1b2c3d | ✅ 成功 | +45/-12 (3 files) |
-| frontend | e4f5g6h | ✅ 成功 | +23/-8 (2 files) |
+| backend | a1b2c3d | ✅ Success | +45/-12 (3 files) |
+| frontend | e4f5g6h | ✅ Success | +23/-8 (2 files) |
 
-**分析报告**: reports/[JIRA-ID]-analysis.md
+**Analysis Report**: reports/[JIRA-ID]-analysis.md
 ```
 
 ---
@@ -419,12 +419,12 @@ See the strong dependency `merge-discipline`'s [reference.md](../merge-disciplin
 > Stage 3 delegates to `known-issue-research` via `analysis-core` for the industry-wide-issue evaluation; output this template when the conclusion is 🚫 "an industry-recognized hard problem, no viable fix". Evaluation methodology lives in `known-issue-research`; jira-fix's specific difference: this evaluation is a **gate** — a no-viable-fix conclusion stops the flow and writes a Jira comment.
 
 ```
-【行业通病评估】
-- 问题本质：...（根因一句话总结）
-- 行业现状：...（已知公开记录、主流框架态度、大厂处理方式）
-- 调研结论：该问题属于 [平台限制/协议约束/语言特性/标准规范]，业界目前无可行解
-- 建议：接受现状 / 评估替代方案（非修复）/ 与产品对齐预期
-流程已中断，不进入方案探索阶段。
+[Industry-Wide Issue Evaluation]
+- Problem essence: ... (one-sentence root-cause summary)
+- Industry status: ... (known public records, mainstream framework stance, how major vendors handle it)
+- Research conclusion: this issue falls under [platform limitation/protocol constraint/language characteristic/standard spec]; no viable fix exists industry-wide
+- Recommendation: accept the current state / evaluate a workaround (not a fix) / align expectations with product
+Flow interrupted; not proceeding to the solution-exploration stage.
 ```
 
 ---
@@ -432,17 +432,17 @@ See the strong dependency `merge-discipline`'s [reference.md](../merge-disciplin
 ## Stage 8: Verification Result
 
 ```
-【验证结果】
-- Jira 复现步骤验证：（逐项 ✅ / ❌）
-- 与阶段6计划对比：已完成 … / 未完成 …
-- 测试结论：（已运行附结果；无自动化则列手动要点）
-- 副作用：Node / Linter / TS / 功能副作用
-- 逻辑完整性：…
-- 验证结论：✅ 通过 / ❌ 未达标（含返回路径）
+[Verification Result]
+- Jira repro-steps verification: (✅ / ❌ per item)
+- Comparison against the stage 6 plan: completed … / not completed …
+- Test conclusion: (attach results if run; list manual checkpoints if no automation)
+- Side effects: Node / Linter / TS / functional side effects
+- Logical completeness: …
+- Verification verdict: ✅ Pass / ❌ Below threshold (include the return path)
 ```
 
 ## Stage 5: Solution Comparison
 
-| 方案 | 描述 | 优点 | 缺点 | 复杂度 | 推荐度 |
+| Solution | Description | Pros | Cons | Complexity | Recommendation |
 |------|------|------|------|--------|--------|
-| 方案1 | … | … | … | 低/中/高 | ⭐… |
+| Solution 1 | … | … | … | Low/Medium/High | ⭐… |

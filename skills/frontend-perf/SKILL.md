@@ -2,177 +2,177 @@
 name: frontend-perf
 version: '2.0.0'
 user-invocable: false
-description: 前端（含 Electron 桌面端）性能优化领域知识库，含 React 16-19、Angular 9-18+、Electron 12-28+ 版本专属优化知识。配合 perf-workflow skill 使用：perf-workflow 驱动分析流程，本 skill 提供前端专属量化标准、版本感知优化方案、瓶颈模式与工具速查。当分析 Web 前端（React/Angular/Vue）、Electron 桌面端性能问题时使用。
+description: "Frontend (including Electron desktop) performance optimization knowledge base, covering version-specific optimization knowledge for React 16-19, Angular 9-18+, and Electron 12-28+. Works together with the perf-workflow skill: perf-workflow drives the analysis process while this skill supplies frontend-specific quantitative standards, version-aware optimization strategies, bottleneck patterns, and tool references. Use when analyzing performance issues in Web frontend (React/Angular/Vue) or Electron desktop apps. Triggers — 「前端性能」「前端性能优化」「Electron 性能」 / frontend performance, frontend perf optimization, Electron performance."
 ---
 
-# 前端性能优化领域知识库
+# Frontend Performance Optimization Knowledge Base
 
-## 与 perf-workflow 的协作关系
+## Relationship with perf-workflow
 
-本 skill 是 `perf-workflow` 的**知识层**，perf-workflow 是**流程层**，两者配合使用。
+This skill is the **knowledge layer** for `perf-workflow`, which is the **process layer**; the two are used together.
 
-| perf-workflow 阶段 | 本 skill 提供的前端专属内容              |
+| perf-workflow stage | Frontend-specific content provided by this skill |
 | ------------------ | --------------------------------------- |
-| 阶段 1：性能证据   | 量化基准：RAIL / Web Vitals / Electron 指标阈值 |
-| 阶段 2：性能定位   | 前端瓶颈模式表；渲染流水线定位规则       |
-| 阶段 3：性能假设   | 前端专属根因（重排/长任务/IPC/泄漏）     |
-| 阶段 4：性能监控   | 适用工具与打点位置                       |
-| 阶段 5：性能优化   | 优化方案优先级速查（P0 → P1 → P2）       |
-| 阶段 6：性能验证   | 达标标准（LCP/INP/CLS/启动耗时）         |
+| Stage 1: Performance evidence | Quantitative baselines: RAIL / Web Vitals / Electron metric thresholds |
+| Stage 2: Performance localization | Frontend bottleneck pattern table; render-pipeline localization rules |
+| Stage 3: Performance hypothesis | Frontend-specific root causes (reflow / long tasks / IPC / leaks) |
+| Stage 4: Performance monitoring | Applicable tools and instrumentation points |
+| Stage 5: Performance optimization | Optimization priority reference (P0 → P1 → P2) |
+| Stage 6: Performance verification | Pass criteria (LCP/INP/CLS/startup time) |
 
 ---
 
-## 量化标准速查
+## Quantitative Standards Quick Reference
 
-### RAIL 模型（Google Chrome 团队，W3C 推荐）
+### RAIL Model (Google Chrome team, W3C recommended)
 
-| 阶段 | 全称        | 用户体验阈值                   | 核心优化方向                         |
+| Phase | Full name | User-perceived threshold | Core optimization direction |
 | ---- | ----------- | ------------------------------ | ------------------------------------ |
-| R    | Response 响应 | 交互 → 反馈 **< 100ms**        | 事件处理轻量化，禁止阻塞主线程       |
-| A    | Animation 动画 | 帧率稳定 60fps，单帧 **< 16ms** | 仅用 transform/opacity，避免重排     |
-| I    | Idle 空闲   | 空闲任务拆分到 **< 50ms**      | requestIdleCallback 调度非紧急任务   |
-| L    | Load 加载   | 首屏内容 **< 2s**，可用 **< 5s** | 减少关键资源数量与体积               |
+| R | Response | Interaction → feedback **< 100ms** | Lightweight event handlers, never block the main thread |
+| A | Animation | Steady 60fps, per-frame **< 16ms** | Only use transform/opacity, avoid reflow |
+| I | Idle | Split idle work into **< 50ms** chunks | Use requestIdleCallback to schedule non-urgent tasks |
+| L | Load | First content **< 2s**, usable **< 5s** | Reduce the number and size of critical resources |
 
-### Web Vitals 三项核心指标（2024 年生效版）
+### Web Vitals: The Three Core Metrics (2024 edition)
 
-| 指标 | 全称           | 达标（良好） | 需优化  | 对应优化方向             |
+| Metric | Full name | Good | Needs improvement | Optimization focus |
 | ---- | -------------- | ------------ | ------- | ------------------------ |
-| LCP  | 最大内容绘制   | < 2.5s       | > 4s    | 首屏加载、关键渲染路径   |
-| INP  | 下一帧交互绘制 | < 200ms      | > 500ms | 主线程长任务、交互响应   |
-| CLS  | 累积布局偏移   | < 0.1        | > 0.25  | 布局稳定性、图片尺寸预留 |
+| LCP | Largest Contentful Paint | < 2.5s | > 4s | First-screen loading, critical rendering path |
+| INP | Interaction to Next Paint | < 200ms | > 500ms | Main-thread long tasks, interaction responsiveness |
+| CLS | Cumulative Layout Shift | < 0.1 | > 0.25 | Layout stability, reserved image dimensions |
 
-### Electron 桌面端扩展指标
+### Electron Desktop Extended Metrics
 
-| 指标         | 达标阈值（业界通用）     | 定位工具                        |
+| Metric | Pass threshold (industry standard) | Localization tool |
 | ------------ | ------------------------ | ------------------------------- |
-| 冷启动耗时   | Windows < 2s，macOS < 1.5s | Electron DevTools / 打点计时    |
-| 热启动耗时   | < 500ms                  | 打点计时                        |
-| IPC 往返耗时 | 单次 < 50ms（频繁调用时）  | IPC 日志打点                    |
-| 渲染进程内存 | 无持续上涨，基线稳定     | Chrome DevTools Memory 面板     |
-| 主线程 CPU   | 空闲时接近 0，无长任务   | Chrome DevTools Performance 面板 |
+| Cold start time | Windows < 2s, macOS < 1.5s | Electron DevTools / instrumentation timing |
+| Warm start time | < 500ms | Instrumentation timing |
+| IPC round-trip time | < 50ms per call (for frequent calls) | IPC log instrumentation |
+| Renderer process memory | No sustained growth, stable baseline | Chrome DevTools Memory panel |
+| Main-thread CPU | Near 0 when idle, no long tasks | Chrome DevTools Performance panel |
 
 ---
 
-## 前端专属瓶颈模式
+## Frontend-Specific Bottleneck Patterns
 
-补充 perf-workflow 阶段 3 通用模式表，以下为前端常见具体形态：
+Supplements the generic pattern table in perf-workflow Stage 3; below are common concrete forms seen in frontend code:
 
-| 模式              | 前端具体表现                                   | 典型触发场景（前端）                              | 定位工具                        |
+| Pattern | Concrete frontend manifestation | Typical trigger scenario (frontend) | Localization tool |
 | ----------------- | ---------------------------------------------- | ------------------------------------------------- | ------------------------------- |
-| **重排（Layout）** | 读写几何属性触发整个渲染流水线重新执行         | 修改宽高/位置；读取 offsetWidth/scrollTop 后写 DOM | Performance 面板 Layout 标记    |
-| **重绘（Paint）**  | 修改视觉属性触发重绘，跳过 Layout              | 改变颜色/阴影/背景                                | Performance 面板 Paint 标记     |
-| **主线程长任务**  | 单个任务 > 50ms 阻塞事件循环，INP 超标         | 大数据处理/复杂计算/同步 IPC 在主线程执行         | Performance 面板 Long Task 标记 |
-| **无效重渲染**    | 组件 props/state 未变但触发 re-render          | props 引用不稳定；全局状态粒度过粗；context 过度更新 | React Profiler / Vue DevTools   |
-| **IPC 阻塞**      | Electron 同步 IPC 或高频 IPC 占满主线程        | sendSync 调用；scroll/input 事件中高频发送 IPC    | Electron 日志 + Performance 面板 |
-| **内存持续增长**  | 内存不释放，GC 无法回收，最终导致卡顿/崩溃    | 事件未解绑；定时器未清理；大对象被闭包持有        | Memory 面板 Heap Snapshot       |
-| **布局抖动（Thrashing）** | 「读-写-读-写」DOM 属性交替，每次写后强制同步布局 | 循环内交替读取/修改 DOM 几何属性                | Performance 面板密集 Layout 标记 |
-| **React Concurrent 未利用** | React 18+ 项目长计算仍在同步路径执行，阻塞用户输入响应 | 未使用 `useTransition` / `startTransition` 标记低优先级更新 | React DevTools Profiler 时间轴 |
-| **Angular Zone 过度触发** | Zone.js 拦截所有异步操作触发全树变更检测 | 未用 `NgZone.runOutsideAngular()` 隔离高频事件 | Angular DevTools Profiler |
+| **Reflow (Layout)** | Reading/writing geometric properties re-triggers the entire render pipeline | Changing width/height/position; reading offsetWidth/scrollTop then writing to the DOM | Performance panel Layout marker |
+| **Repaint (Paint)** | Changing visual properties triggers a repaint, skipping Layout | Changing color/shadow/background | Performance panel Paint marker |
+| **Main-thread long task** | A single task > 50ms blocks the event loop, INP exceeds target | Heavy data processing/complex computation/synchronous IPC running on the main thread | Performance panel Long Task marker |
+| **Unnecessary re-render** | Component props/state unchanged but re-render is still triggered | Unstable props references; overly coarse global state granularity; excessive context updates | React Profiler / Vue DevTools |
+| **IPC blocking** | Electron synchronous IPC or high-frequency IPC saturates the main thread | sendSync calls; sending IPC at high frequency inside scroll/input handlers | Electron logs + Performance panel |
+| **Continuous memory growth** | Memory not released, GC cannot reclaim it, eventually causing jank/crash | Event listeners not unbound; timers not cleared; large objects held by closures | Memory panel Heap Snapshot |
+| **Layout thrashing** | Alternating "read-write-read-write" of DOM properties, each write forces a synchronous layout | Alternately reading/modifying DOM geometry inside a loop | Performance panel with dense Layout markers |
+| **Underused React Concurrent features** | In React 18+ projects, long computations still run on the synchronous path, blocking user input response | Not using `useTransition` / `startTransition` to mark low-priority updates | React DevTools Profiler timeline |
+| **Excessive Angular Zone triggering** | Zone.js intercepts every async operation and triggers change detection across the whole tree | Not using `NgZone.runOutsideAngular()` to isolate high-frequency events | Angular DevTools Profiler |
 
 ---
 
-## 框架版本关键优化特性
+## Key Optimization Features by Framework Version
 
-在分析/优化阶段，先确认框架版本，再选对应方案——不同版本策略差异显著。
+During analysis/optimization, confirm the framework version first, then pick the matching strategy — strategies differ significantly between versions.
 
-### React 版本
+### React Versions
 
-| 版本    | 关键性能特性                                                                    | 优化影响                                                       |
+| Version | Key performance feature | Optimization impact |
 | ------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| 16.x    | `PureComponent` / `shouldComponentUpdate` / Class 组件                          | 手动控制重渲染，无 Hook                                        |
-| 16.8+   | `useMemo` / `useCallback` / `useRef` / `React.memo`                             | 函数组件可做细粒度缓存                                         |
-| 18      | **Concurrent Rendering** / 自动批处理 / `useTransition` / `useDeferredValue`    | 优先级调度；多次 setState 自动合并；长任务可标记为低优先级     |
-| 19      | **React Compiler（自动 memoization）** / `use()`                                | 编译器自动处理引用稳定性，大多数场景无需手写 memo              |
+| 16.x | `PureComponent` / `shouldComponentUpdate` / class components | Manual control of re-renders, no Hooks |
+| 16.8+ | `useMemo` / `useCallback` / `useRef` / `React.memo` | Function components can do fine-grained memoization |
+| 18 | **Concurrent Rendering** / automatic batching / `useTransition` / `useDeferredValue` | Priority scheduling; multiple setState calls auto-merge; long tasks can be marked low priority |
+| 19 | **React Compiler (automatic memoization)** / `use()` | The compiler automatically handles reference stability; most cases no longer need hand-written memo |
 
-### Angular 版本
+### Angular Versions
 
-| 版本  | 关键性能特性                                          | 优化影响                                  |
+| Version | Key performance feature | Optimization impact |
 | ----- | ----------------------------------------------------- | ----------------------------------------- |
-| 9+    | Ivy 编译器                                            | 更小 bundle、更快编译、tree-shaking 友好  |
-| 14+   | Standalone Components                                 | 减少 NgModule 开销，懒加载粒度更细        |
-| 16+   | **Signals**（`signal()` / `computed()` / `effect()`） | 细粒度响应式，可绕过 Zone.js 变更检测     |
-| 17+   | **`@defer` 块** / `@for ... track`                    | 内置延迟渲染；trackBy 内置到模板语法      |
-| 18+   | Zoneless 变更检测（实验性）                           | 去掉 Zone.js 补丁，彻底消除 Zone 触发开销 |
+| 9+ | Ivy compiler | Smaller bundles, faster compilation, tree-shaking friendly |
+| 14+ | Standalone Components | Reduces NgModule overhead, finer-grained lazy loading |
+| 16+ | **Signals** (`signal()` / `computed()` / `effect()`) | Fine-grained reactivity, can bypass Zone.js change detection |
+| 17+ | **`@defer` blocks** / `@for ... track` | Built-in deferred rendering; trackBy built into the template syntax |
+| 18+ | Zoneless change detection (experimental) | Removes the Zone.js patch, fully eliminating Zone-triggered overhead |
 
-### Electron 版本
+### Electron Versions
 
-| 版本  | 关键性能特性                                   | 优化影响                                            |
+| Version | Key performance feature | Optimization impact |
 | ----- | ---------------------------------------------- | --------------------------------------------------- |
-| 12+   | `remote` 模块废弃，`contextIsolation` 默认开启 | 必须用 `contextBridge`，消除 remote 的同步 IPC 开销 |
-| 20+   | `sandbox: true` 默认开启                       | 渲染进程初始化更轻量，需调整 preload 脚本           |
-| 22+   | **`UtilityProcess` API**                       | CPU 密集任务的正确归宿，替代 `child_process.fork`   |
-| 28+   | 渲染进程 ESM 原生支持                          | 可用原生 `import()`，tree-shaking 更彻底            |
+| 12+ | `remote` module deprecated, `contextIsolation` on by default | Must use `contextBridge`, eliminating remote's synchronous IPC overhead |
+| 20+ | `sandbox: true` on by default | Lighter renderer process initialization, requires adjusting the preload script |
+| 22+ | **`UtilityProcess` API** | The proper home for CPU-intensive tasks, replacing `child_process.fork` |
+| 28+ | Native ESM support in the renderer process | Native `import()` is usable, more thorough tree-shaking |
 
 ---
 
-## 浏览器渲染流水线要点
+## Browser Rendering Pipeline Essentials
 
-渲染路径：`DOM → CSSOM → Style → Layout（重排）→ Paint（重绘）→ Composite（合成）`
+Render path: `DOM → CSSOM → Style → Layout (reflow) → Paint (repaint) → Composite`
 
-| 操作类型 | 触发的最高开销阶段 | 典型 CSS 属性                    | 性能等级 |
+| Operation type | Highest-cost phase triggered | Typical CSS properties | Performance tier |
 | -------- | ----------------- | --------------------------------- | -------- |
-| 几何修改 | Layout（重排）    | width / height / top / margin     | 最慢     |
-| 视觉修改 | Paint（重绘）     | color / background / box-shadow   | 中等     |
-| 合成修改 | Composite（仅合成）| transform / opacity              | 最快     |
+| Geometric change | Layout (reflow) | width / height / top / margin | Slowest |
+| Visual change | Paint (repaint) | color / background / box-shadow | Medium |
+| Composite change | Composite only | transform / opacity | Fastest |
 
-**核心规则**：动画和滚动只用 `transform` / `opacity`，其余属性修改尽量批量、减少次数。
+**Core rule**: animations and scrolling should only use `transform` / `opacity`; batch and minimize any other property changes.
 
 ---
 
-## Electron 多进程要点
+## Electron Multi-Process Essentials
 
-| 进程类型     | 核心职责                       | 阻塞影响           | 优化红线                                 |
+| Process type | Core responsibility | Blocking impact | Optimization red line |
 | ------------ | ------------------------------ | ------------------ | ---------------------------------------- |
-| **主进程**   | 应用生命周期、窗口管理、系统 API | 所有窗口卡顿无响应 | 禁止同步 IO / CPU 密集任务 / 高频循环    |
-| **渲染进程** | 窗口 UI 渲染、JS 执行、用户交互 | 当前窗口卡顿       | 同 Web 前端规则；禁止同步 IPC            |
-| **GPU 进程** | 3D 绘制、硬件加速、合成层渲染  | 动画卡顿、画面撕裂 | 避免过度硬件加速；防合成层爆炸           |
-| **Worker 进程** | CPU 密集任务、文件 IO、后台计算 | 不影响 UI 线程   | 所有耗时任务必须放到此类进程/Worker 执行 |
+| **Main process** | App lifecycle, window management, system APIs | All windows freeze / become unresponsive | No synchronous IO / CPU-intensive tasks / tight loops |
+| **Renderer process** | Window UI rendering, JS execution, user interaction | The current window freezes | Same rules as web frontend; no synchronous IPC |
+| **GPU process** | 3D drawing, hardware acceleration, compositor layer rendering | Animation jank, screen tearing | Avoid excessive hardware acceleration; prevent compositor layer explosion |
+| **Worker process** | CPU-intensive tasks, file IO, background computation | Does not affect the UI thread | All time-consuming tasks must run on this type of process/Worker |
 
-**IPC 核心规则**：禁止 `ipcRenderer.sendSync`；高频事件中 IPC 必须节流；大数据用 SharedArrayBuffer 零拷贝传输。
-
----
-
-## 优化方案优先级速查
-
-优先优化**耗时占比高的环节**，< 10% 占比的点即便优化 100 倍整体收益也有限（阿姆达尔定律）。
-
-### P0：先做（影响大、成本低）
-
-- **长任务拆分**：把 > 50ms 的同步任务拆成 < 50ms 小片，用 `requestIdleCallback` 调度
-- **虚拟滚动**：长列表（> 100 项）必须用 react-window / vue-virtual-scroller
-- **避免重排**：动画只用 transform/opacity；批量读后批量写 DOM
-- **异步 IPC**：Electron 所有 IPC 改为异步；去掉所有 `sendSync`
-- **Web Worker**：大数据解析/加密/复杂计算移出主线程
-
-### P1：次之（中等成本，明显收益）
-
-- **组件缓存**：React.memo / useMemo / useCallback 稳定 props 和函数引用
-- **状态粒度**：拆分过粗的全局状态，减少不必要的重渲染范围
-- **代码分割**：路由级 / 组件级动态 import，减少首屏 JS 体积
-- **Electron 启动**：主进程入口极致轻量；非首屏模块异步加载
-
-### P2：可选（工程化收益，周期较长）
-
-- **缓存策略**：静态资源长期强缓存 + hash 文件名；Service Worker 离线缓存
-- **包体积瘦身**：Tree-Shaking；按需引入大库；图片用 WebP/AVIF
-- **性能预算 + CI/CD 门禁**：把 LCP/INP/包体积纳入流水线，超标拦截发布
-
-详细落地方案见 [reference.md](reference.md)。
+**Core IPC rule**: never use `ipcRenderer.sendSync`; throttle IPC in high-frequency events; use SharedArrayBuffer for zero-copy transfer of large data.
 
 ---
 
-## 分析工具速查
+## Optimization Priority Quick Reference
 
-| 场景             | 推荐工具                                          |
+Prioritize the steps that consume the largest share of time — optimizing a step that accounts for < 10% by 100x still yields limited overall gain (Amdahl's law).
+
+### P0: Do first (high impact, low cost)
+
+- **Split long tasks**: break synchronous tasks > 50ms into chunks < 50ms, scheduled via `requestIdleCallback`
+- **Virtual scrolling**: mandatory for long lists (> 100 items), use react-window / vue-virtual-scroller
+- **Avoid reflow**: use only transform/opacity for animation; batch-read then batch-write the DOM
+- **Async IPC**: convert all Electron IPC to async; remove every `sendSync`
+- **Web Worker**: move large-data parsing/encryption/complex computation off the main thread
+
+### P1: Next (moderate cost, clear payoff)
+
+- **Component memoization**: React.memo / useMemo / useCallback to stabilize props and function references
+- **State granularity**: split overly coarse global state to reduce unnecessary re-render scope
+- **Code splitting**: route-level / component-level dynamic import to reduce first-screen JS size
+- **Electron startup**: keep the main-process entry as lean as possible; load non-first-screen modules asynchronously
+
+### P2: Optional (engineering payoff, longer horizon)
+
+- **Caching strategy**: long-term strong caching + hashed filenames for static assets; Service Worker offline caching
+- **Bundle size reduction**: tree-shaking; import large libraries on demand; use WebP/AVIF for images
+- **Performance budget + CI/CD gate**: bring LCP/INP/bundle size into the pipeline, block releases that exceed the budget
+
+See [reference.md](reference.md) for detailed implementation approaches.
+
+---
+
+## Analysis Tools Quick Reference
+
+| Scenario | Recommended tool |
 | ---------------- | ------------------------------------------------- |
-| 主线程长任务     | Chrome DevTools → Performance 面板 → Long Tasks   |
-| 渲染瓶颈         | Chrome DevTools → Performance → Rendering 面板    |
-| React 重渲染         | React DevTools Profiler（火焰图 + 排名图）                               |
-| React 18+ 调度优先级 | React DevTools Profiler → 时间轴视图查看 Concurrent 优先级标记           |
-| Angular 变更检测     | Angular DevTools → Profiler（查看变更检测次数与耗时）                    |
-| Angular Signals      | Angular DevTools 17+ → Signal 依赖图可视化（实验性）                     |
-| 内存泄漏             | Chrome DevTools → Memory → Heap Snapshot 对比                           |
-| Web Vitals           | Lighthouse / Chrome DevTools → Performance Insights                      |
-| Electron 进程总览    | `app.getAppMetrics()` 查看各进程 CPU / 内存；系统资源监视器              |
-| Electron IPC 耗时    | 自定义日志打点 + Chrome DevTools Performance 面板                        |
-| 包体积分析           | webpack-bundle-analyzer / vite-plugin-inspect                            |
+| Main-thread long tasks | Chrome DevTools → Performance panel → Long Tasks |
+| Rendering bottlenecks | Chrome DevTools → Performance → Rendering panel |
+| React re-renders | React DevTools Profiler (flame graph + ranked chart) |
+| React 18+ scheduling priority | React DevTools Profiler → timeline view, check Concurrent priority markers |
+| Angular change detection | Angular DevTools → Profiler (check change detection count and duration) |
+| Angular Signals | Angular DevTools 17+ → Signal dependency graph visualization (experimental) |
+| Memory leaks | Chrome DevTools → Memory → compare Heap Snapshots |
+| Web Vitals | Lighthouse / Chrome DevTools → Performance Insights |
+| Electron process overview | `app.getAppMetrics()` to check CPU/memory per process; system resource monitor |
+| Electron IPC timing | Custom log instrumentation + Chrome DevTools Performance panel |
+| Bundle size analysis | webpack-bundle-analyzer / vite-plugin-inspect |

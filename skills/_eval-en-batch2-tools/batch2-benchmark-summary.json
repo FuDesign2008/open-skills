@@ -1,0 +1,114 @@
+[
+  {
+    "skill": "perf-workflow",
+    "with_skill_mean": 1.0,
+    "old_skill_mean": 0.3333333333333333,
+    "delta_mean": 0.6666666666666667,
+    "per_eval": [
+      {
+        "name": "trigger-perf-analysis",
+        "with": 1.0,
+        "old": 0.3333333333333333,
+        "delta": 0.6666666666666667
+      },
+      {
+        "name": "stage-order-gate",
+        "with": 1.0,
+        "old": 0.0,
+        "delta": 1.0
+      },
+      {
+        "name": "clarify-discipline",
+        "with": 1.0,
+        "old": 0.6666666666666666,
+        "delta": 0.33333333333333337
+      }
+    ]
+  },
+  {
+    "skill": "frontend-perf",
+    "with_skill_mean": 0.8333333333333333,
+    "old_skill_mean": 0.8333333333333333,
+    "delta_mean": 0.0,
+    "per_eval": [
+      {
+        "name": "trigger-frontend-perf",
+        "with": 1.0,
+        "old": 1.0,
+        "delta": 0.0
+      },
+      {
+        "name": "metric-or-checklist",
+        "with": 0.6666666666666666,
+        "old": 0.6666666666666666,
+        "delta": 0.0
+      }
+    ]
+  },
+  {
+    "skill": "git-conflict-resolve",
+    "with_skill_mean": 1.0,
+    "old_skill_mean": 0.5555555555555555,
+    "delta_mean": 0.44444444444444453,
+    "per_eval": [
+      {
+        "name": "trigger-conflict",
+        "with": 1.0,
+        "old": 0.6666666666666666,
+        "delta": 0.33333333333333337
+      },
+      {
+        "name": "confidence-gate",
+        "with": 1.0,
+        "old": 0.3333333333333333,
+        "delta": 0.6666666666666667
+      },
+      {
+        "name": "build-artifact-shortcircuit",
+        "with": 1.0,
+        "old": 0.6666666666666666,
+        "delta": 0.33333333333333337
+      }
+    ]
+  },
+  {
+    "skill": "git-release-start",
+    "with_skill_mean": 1.0,
+    "old_skill_mean": 0.8333333333333333,
+    "delta_mean": 0.16666666666666674,
+    "per_eval": [
+      {
+        "name": "trigger-release-branch",
+        "with": 1.0,
+        "old": 1.0,
+        "delta": 0.0
+      },
+      {
+        "name": "multi-repo-sync",
+        "with": 1.0,
+        "old": 0.6666666666666666,
+        "delta": 0.33333333333333337
+      }
+    ]
+  },
+  {
+    "skill": "merge-discipline",
+    "with_skill_mean": 1.0,
+    "old_skill_mean": 1.0,
+    "delta_mean": 0.0,
+    "per_eval": [
+      {
+        "name": "part-a-archive-gate",
+        "with": 1.0,
+        "old": 1.0,
+        "delta": 0.0
+      },
+      {
+        "name": "tip-pin",
+        "with": 1.0,
+        "old": 1.0,
+        "delta": 0.0
+      }
+    ]
+  }
+]

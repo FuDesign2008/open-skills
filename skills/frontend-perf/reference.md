@@ -1,62 +1,62 @@
-# 前端性能优化方案详细参考
+# Frontend Performance Optimization: Detailed Reference
 
-本文件是 SKILL.md 中优化方案优先级的详细展开，按分类组织。分析阶段（perf-workflow 阶段 2/3）以 SKILL.md 为主；实施阶段（阶段 5）按需查阅本文件。
+This file is the detailed expansion of the optimization priorities in SKILL.md, organized by category. During the analysis stage (perf-workflow Stage 2/3), rely primarily on SKILL.md; during implementation (Stage 5), consult this file as needed.
 
 ---
 
-## 一、渲染性能优化
+## 1. Rendering Performance Optimization
 
-### 重排重绘规避
+### Avoiding Reflow and Repaint
 
-**核心原则**：几何属性修改代价最高（触发 Layout），视觉属性次之（触发 Paint），transform/opacity 最低（仅 Composite）。
+**Core principle**: changing geometric properties is the most expensive (triggers Layout), visual properties are next (triggers Paint), and transform/opacity are cheapest (Composite only).
 
-**批量 DOM 修改**：
-- 用 `DocumentFragment` 离线构建 DOM 树，一次性插入
-- 修改多个样式时，用 `classList` 或修改 `cssText` 代替逐条修改 `style`
-- 避免在循环中读写 DOM：先批量读取所有需要的值，再批量修改
+**Batch DOM modifications**:
+- Build the DOM tree offline with `DocumentFragment` and insert it in one shot
+- When changing multiple styles, use `classList` or modify `cssText` instead of setting `style` property by property
+- Avoid reading and writing the DOM inside a loop: batch-read all needed values first, then batch-write
 
-**布局抖动（Layout Thrashing）修复模式**：
+**Fixing layout thrashing**:
 ```
-// 错误：读-写交替，每次写后强制同步 Layout
+// Wrong: alternating read-write, each write forces a synchronous Layout
 for (item of items) {
-  item.style.width = item.offsetWidth + 10 + 'px'  // 读 → 写 → 强制 Layout
+  item.style.width = item.offsetWidth + 10 + 'px'  // read → write → forced Layout
 }
 
-// 正确：先读取所有值，再批量写
-const widths = items.map(item => item.offsetWidth)  // 批量读
-items.forEach((item, i) => item.style.width = widths[i] + 10 + 'px')  // 批量写
+// Correct: read all values first, then batch-write
+const widths = items.map(item => item.offsetWidth)  // batch read
+items.forEach((item, i) => item.style.width = widths[i] + 10 + 'px')  // batch write
 ```
 
-**动画优化**：
-- 只用 `transform` 和 `opacity` 实现动画（仅触发 Composite）
-- 用 `will-change: transform` 提前提升到独立合成层（避免滥用，层数过多反而增加内存）
-- 绝对禁止用 `top/left/width/height` 做动画
+**Animation optimization**:
+- Only use `transform` and `opacity` for animations (Composite only)
+- Use `will-change: transform` to promote to an independent compositor layer ahead of time (avoid overuse — too many layers increases memory usage instead)
+- Never animate `top/left/width/height`
 
 ---
 
-## 二、React / Angular 重渲染优化
+## 2. React / Angular Re-render Optimization
 
-### React 无效重渲染排查与修复
+### Diagnosing and Fixing Unnecessary React Re-renders
 
-**定位方式**：React DevTools Profiler → 火焰图 → 查看哪些组件在不必要时重渲染（灰色 = 未渲染，彩色 = 渲染了）
+**How to locate**: React DevTools Profiler → flame graph → check which components re-render unnecessarily (gray = not rendered, colored = rendered)
 
-**常见根因与修复**：
+**Common root causes and fixes**:
 
-| 根因                      | 修复方案                                              |
+| Root cause | Fix |
 | ------------------------- | ----------------------------------------------------- |
-| 父组件重渲染带动子组件    | `React.memo` 包裹子组件，稳定 props 引用              |
-| 每次渲染创建新对象/数组   | `useMemo(() => ({...}), [deps])` 缓存引用             |
-| 每次渲染创建新函数        | `useCallback(() => fn, [deps])` 稳定回调引用          |
-| Context 变化影响所有消费者 | 拆分 Context；或用 `useMemo` 缓存 Context value       |
-| 全局状态粒度太粗          | 拆分 atom（Jotai/Zustand）；selector 精确订阅         |
+| Parent re-render cascades to children | Wrap the child with `React.memo` to stabilize the props reference |
+| New object/array created on every render | Cache the reference with `useMemo(() => ({...}), [deps])` |
+| New function created on every render | Stabilize the callback reference with `useCallback(() => fn, [deps])` |
+| Context change affects all consumers | Split the context; or cache the context value with `useMemo` |
+| Global state granularity too coarse | Split into atoms (Jotai/Zustand); subscribe precisely with selectors |
 
-**状态粒度优化**：把大的全局 Store 拆分成独立的小 store 或 atom，组件只订阅自己需要的片段，避免任何状态变化引发全局重渲染。
+**State granularity optimization**: split a large global store into independent small stores or atoms so that components only subscribe to the slice they need, avoiding any state change triggering a global re-render.
 
-### React 18+ Concurrent 特性（优先使用）
+### React 18+ Concurrent Features (use these first)
 
-React 18 引入并发渲染，核心思路是**给状态更新打优先级标记**，让用户交互永远优先于低优先级更新。
+React 18 introduces concurrent rendering, whose core idea is to **mark state updates with a priority**, so user interactions always take priority over low-priority updates.
 
-**`useTransition`（推荐：搜索/筛选/导航等场景）**：
+**`useTransition` (recommended for search/filter/navigation scenarios)**:
 
 ```tsx
 function SearchResults() {
@@ -65,9 +65,9 @@ function SearchResults() {
   const [isPending, startTransition] = useTransition()
 
   function handleChange(e) {
-    setQuery(e.target.value)          // 高优先级：立即更新输入框
+    setQuery(e.target.value)          // High priority: update the input immediately
     startTransition(() => {
-      setResults(filterData(e.target.value))  // 低优先级：结果可以延迟
+      setResults(filterData(e.target.value))  // Low priority: results can lag
     })
   }
 
@@ -80,36 +80,36 @@ function SearchResults() {
 }
 ```
 
-**`useDeferredValue`（推荐：昂贵的派生渲染）**：
+**`useDeferredValue` (recommended for expensive derived rendering)**:
 
 ```tsx
 function App() {
   const [text, setText] = useState('')
-  const deferredText = useDeferredValue(text)  // 渲染落后于输入，但不阻塞输入
+  const deferredText = useDeferredValue(text)  // Rendering lags behind input, but never blocks input
 
   return (
     <>
       <input value={text} onChange={e => setText(e.target.value)} />
-      <HeavyList query={deferredText} />  {/* deferredText 可能暂时落后 */}
+      <HeavyList query={deferredText} />  {/* deferredText may lag temporarily */}
     </>
   )
 }
 ```
 
-**自动批处理（React 18 新增）**：React 18 在 `setTimeout`、`Promise`、原生事件中也自动合并 setState，无需手动用 `unstable_batchedUpdates`。
+**Automatic batching (new in React 18)**: React 18 also automatically merges setState calls inside `setTimeout`, `Promise`, and native event handlers, so `unstable_batchedUpdates` is no longer needed manually.
 
 ```tsx
-// React 18：这两次 setState 自动合并为一次渲染
+// React 18: these two setState calls automatically merge into a single render
 setTimeout(() => {
-  setA(1)  // 不触发渲染
-  setB(2)  // 合并后触发一次渲染
+  setA(1)  // does not trigger a render
+  setB(2)  // triggers one render after merging
 }, 0)
 ```
 
-**`Suspense` 数据边界（配合懒加载）**：
+**`Suspense` data boundary (paired with lazy loading)**:
 
 ```tsx
-// 路由级代码分割 + Suspense
+// Route-level code splitting + Suspense
 const HeavyPage = React.lazy(() => import('./HeavyPage'))
 
 function App() {
@@ -121,29 +121,29 @@ function App() {
 }
 ```
 
-**`startTransition`（非 Hook 场景）**：
+**`startTransition` (for non-Hook contexts)**:
 
 ```tsx
 import { startTransition } from 'react'
 
-// Class 组件或工具函数中使用
+// Used inside class components or utility functions
 startTransition(() => {
-  setState(newValue)  // 标记为低优先级
+  setState(newValue)  // Mark as low priority
 })
 ```
 
 ---
 
-### React 19 React Compiler（自动 memoization）
+### React 19 React Compiler (Automatic Memoization)
 
-> 适用版本：React 19+，需配合 babel-plugin-react-compiler
+> Applies to React 19+, requires babel-plugin-react-compiler
 
-**核心原理**：编译器静态分析组件代码，自动插入 `useMemo` / `useCallback` / `React.memo` 等缓存指令，开发者无需手动编写。
+**Core principle**: the compiler statically analyzes component code and automatically inserts caching directives such as `useMemo` / `useCallback` / `React.memo`, so developers no longer need to write them by hand.
 
-**迁移前置检查**：
+**Pre-migration check**:
 
 ```bash
-# 用官方 ESLint 插件扫描兼容性问题
+# Use the official ESLint plugin to scan for compatibility issues
 npm install eslint-plugin-react-compiler --save-dev
 ```
 
@@ -155,49 +155,49 @@ npm install eslint-plugin-react-compiler --save-dev
 }
 ```
 
-**编译器无法优化的场景（仍需手动处理）**：
+**Scenarios the compiler cannot optimize (still need manual handling)**:
 
-| 场景                    | 原因                              | 解决方案                         |
+| Scenario | Reason | Solution |
 | ----------------------- | --------------------------------- | -------------------------------- |
-| 动态 `key` 依赖外部可变量 | 编译器无法追踪外部副作用          | 手动 `useMemo`                   |
-| 外部可变引用（`ref.current`）| 编译器假设引用稳定              | 重构为 state 或明确标注依赖      |
-| 第三方库不纯函数        | 编译器无法分析黑盒函数的副作用    | 包裹纯函数包装层                 |
+| Dynamic `key` depends on an external mutable value | The compiler cannot track external side effects | Manual `useMemo` |
+| External mutable reference (`ref.current`) | The compiler assumes references are stable | Refactor into state or explicitly annotate the dependency |
+| Third-party library with impure functions | The compiler cannot analyze side effects of black-box functions | Wrap it in a pure-function wrapper |
 
-**迁移建议**：现有 React 18 项目逐步迁移，先对叶子组件开启，稳定后再扩展到父组件。
+**Migration advice**: migrate existing React 18 projects incrementally — enable it on leaf components first, then extend to parent components once stable.
 
 ---
 
-### React 16.x 遗留项目优化
+### Optimizing Legacy React 16.x Projects
 
-> 无法升级 React 版本时的最优实践
+> Best practices when upgrading the React version is not an option
 
-**Class 组件手动缓存**：
+**Manual memoization with class components**:
 
 ```tsx
-// shouldComponentUpdate：精确控制重渲染
+// shouldComponentUpdate: precise control over re-renders
 class ExpensiveComponent extends React.Component {
   shouldComponentUpdate(nextProps, nextState) {
-    return nextProps.data !== this.props.data  // 引用对比
+    return nextProps.data !== this.props.data  // reference comparison
   }
   render() { /* ... */ }
 }
 
-// PureComponent：浅比较 props 和 state（注意：数组/对象需保证不可变性）
+// PureComponent: shallow comparison of props and state (note: arrays/objects must remain immutable)
 class ListItem extends React.PureComponent {
   render() { return <div>{this.props.label}</div> }
 }
 ```
 
-**render 函数中的性能陷阱**：
+**Performance pitfalls inside render**:
 
 ```tsx
-// 错误：每次渲染都创建新的对象和函数
+// Wrong: creates a new object and function on every render
 render() {
   return <Child style={{ color: 'red' }} onClick={() => this.handle()} />
-  //              ^^^ 新对象          ^^^ 新函数 → 触发 Child 重渲染
+  //              ^^^ new object          ^^^ new function → triggers Child re-render
 }
 
-// 正确：把样式和函数提到 render 外
+// Correct: hoist the style and function out of render
 const STYLE = { color: 'red' }
 class Parent extends React.Component {
   handleClick = () => this.handle()
@@ -207,12 +207,12 @@ class Parent extends React.Component {
 }
 ```
 
-**手动批处理（React 16 无自动批处理）**：
+**Manual batching (React 16 has no automatic batching)**:
 
 ```tsx
 import { unstable_batchedUpdates } from 'react-dom'
 
-// setTimeout/异步回调中多次 setState 需手动合并
+// Multiple setState calls inside setTimeout/async callbacks must be merged manually
 setTimeout(() => {
   unstable_batchedUpdates(() => {
     setA(1)
@@ -223,11 +223,11 @@ setTimeout(() => {
 
 ---
 
-### Angular 变更检测深度优化
+### Deep Optimization of Angular Change Detection
 
-Angular 的变更检测由 Zone.js 驱动——它猴子补丁了所有异步 API（`setTimeout`、`addEventListener`、`Promise`、`XMLHttpRequest`），任何一个异步操作完成都会触发整个组件树的脏检查。优化核心是**减少检测频次 + 缩小检测范围**。
+Angular's change detection is driven by Zone.js — it monkey-patches every async API (`setTimeout`, `addEventListener`, `Promise`, `XMLHttpRequest`), so any async operation completing triggers a dirty-check of the entire component tree. The core of optimization is to **reduce check frequency and shrink the check scope**.
 
-**`OnPush` 策略（必做）**：
+**`OnPush` strategy (mandatory)**:
 
 ```typescript
 @Component({
@@ -236,14 +236,14 @@ Angular 的变更检测由 Zone.js 驱动——它猴子补丁了所有异步 AP
   template: `<div>{{ item.name }}</div>`,
 })
 export class ItemComponent {
-  @Input() item!: Item  // 只有 item 引用变化时才检测
+  @Input() item!: Item  // Checked only when the item reference changes
 }
 ```
 
-`OnPush` 触发条件：`@Input` 引用变化 / `async pipe` 发射新值 / 组件内部事件 / 手动 `markForCheck()`。
-使用 `OnPush` 时必须保证数据不可变性（修改时创建新对象/数组，而非直接 mutate）。
+`OnPush` trigger conditions: `@Input` reference changes / `async pipe` emits a new value / an internal component event / manual `markForCheck()`.
+When using `OnPush`, data immutability must be guaranteed (create a new object/array on modification instead of mutating in place).
 
-**`NgZone.runOutsideAngular()`（高频事件必做）**：
+**`NgZone.runOutsideAngular()` (mandatory for high-frequency events)**:
 
 ```typescript
 @Component({ /* ... */ })
@@ -252,14 +252,14 @@ export class CanvasComponent implements OnInit {
 
   ngOnInit() {
     this.ngZone.runOutsideAngular(() => {
-      // scroll/mousemove/requestAnimationFrame 在 Zone 外执行，不触发变更检测
+      // scroll/mousemove/requestAnimationFrame run outside the Zone, no change detection triggered
       window.addEventListener('scroll', this.onScroll.bind(this), { passive: true })
       requestAnimationFrame(this.renderLoop.bind(this))
     })
   }
 
   onScroll() {
-    // 只有真正需要更新 UI 时，才回到 Zone 内触发检测
+    // Only re-enter the Zone to trigger detection when the UI actually needs updating
     if (needsUpdate) {
       this.ngZone.run(() => this.updateVisibleItems())
     }
@@ -267,96 +267,96 @@ export class CanvasComponent implements OnInit {
 }
 ```
 
-**纯管道（Pure Pipe，替代模板内函数调用）**：
+**Pure pipes (replacing function calls inside templates)**:
 
 ```typescript
-// 错误：模板内调用函数，每次检测都执行
+// Wrong: calling a function inside the template runs it on every check
 // <div>{{ formatDate(item.date) }}</div>
 
-// 正确：纯管道自动缓存（相同输入不重复计算）
+// Correct: a pure pipe caches automatically (same input is not recomputed)
 @Pipe({ name: 'formatDate', pure: true })
 export class FormatDatePipe implements PipeTransform {
   transform(date: Date): string {
-    return /* 格式化逻辑 */
+    return /* formatting logic */
   }
 }
 // <div>{{ item.date | formatDate }}</div>
 ```
 
-**列表渲染 `trackBy`（Angular 16 及以前）**：
+**List rendering `trackBy` (Angular 16 and earlier)**:
 
 ```typescript
-// 组件
+// Component
 trackById(index: number, item: Item): number {
-  return item.id  // 用唯一 id 而非 index，避免数据重排时重新渲染所有项
+  return item.id  // Use a unique id instead of index to avoid re-rendering all items when data is reordered
 }
 
-// 模板
+// Template
 // <div *ngFor="let item of items; trackBy: trackById">{{ item.name }}</div>
 ```
 
 ---
 
-### Angular 16+ Signals（推荐新项目使用）
+### Angular 16+ Signals (recommended for new projects)
 
-Signals 是细粒度响应式系统，与 Zone.js 变更检测并行存在，**只有读取了 signal 的组件才会在 signal 变化时更新**，彻底避免全树脏检查。
+Signals is a fine-grained reactivity system that coexists with Zone.js change detection — **only components that read a signal update when that signal changes**, fully avoiding whole-tree dirty checking.
 
-**基础用法**：
+**Basic usage**:
 
 ```typescript
 import { signal, computed, effect } from '@angular/core'
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.OnPush,  // 配合 OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,  // Pair with OnPush
   template: `<div>{{ count() }} — {{ doubled() }}</div>`,
 })
 export class CounterComponent {
-  count = signal(0)  // 可写 signal
-  doubled = computed(() => this.count() * 2)  // 派生 signal，自动缓存
+  count = signal(0)  // Writable signal
+  doubled = computed(() => this.count() * 2)  // Derived signal, cached automatically
 
   increment() {
-    this.count.update(v => v + 1)  // 只有读取了 count 的组件会更新
+    this.count.update(v => v + 1)  // Only components reading count will update
   }
 
   constructor() {
     effect(() => {
-      console.log('count changed:', this.count())  // 副作用追踪
+      console.log('count changed:', this.count())  // Side-effect tracking
     })
   }
 }
 ```
 
-**从 `BehaviorSubject` 迁移到 `signal()`**：
+**Migrating from `BehaviorSubject` to `signal()`**:
 
 ```typescript
-// 旧方式（BehaviorSubject）
+// Old approach (BehaviorSubject)
 readonly items$ = new BehaviorSubject<Item[]>([])
 
-// 新方式（signal）
+// New approach (signal)
 readonly items = signal<Item[]>([])
 
-// 模板中：items$ | async  →  items()
+// In the template: items$ | async  →  items()
 ```
 
-**`toSignal` / `toObservable`（渐进式迁移）**：
+**`toSignal` / `toObservable` (incremental migration)**:
 
 ```typescript
 import { toSignal, toObservable } from '@angular/core/rxjs-interop'
 
-// 把 Observable 转为 signal（在已有 RxJS 代码中渐进迁移）
+// Convert an Observable to a signal (for incremental migration within existing RxJS code)
 readonly data = toSignal(this.dataService.getData$(), { initialValue: [] })
 ```
 
 ---
 
-### Angular 17+ `@defer` 块（内置延迟加载）
+### Angular 17+ `@defer` Blocks (Built-in Lazy Loading)
 
-`@defer` 是 Angular 17 引入的模板级延迟加载，替代手动 `IntersectionObserver` + 动态 `import()`。
+`@defer` is the template-level lazy loading introduced in Angular 17, replacing manual `IntersectionObserver` + dynamic `import()`.
 
-**按视口加载**（懒加载长页面的非首屏组件）：
+**Load on viewport** (lazy-load non-first-screen components on long pages):
 
 ```html
-<!-- 组件进入视口时才加载 -->
+<!-- Loads only when the component enters the viewport -->
 @defer (on viewport) {
   <app-heavy-chart [data]="chartData" />
 } @placeholder {
@@ -364,21 +364,21 @@ readonly data = toSignal(this.dataService.getData$(), { initialValue: [] })
 } @loading (minimum 200ms) {
   <app-spinner />
 } @error {
-  <p>图表加载失败</p>
+  <p>Chart failed to load</p>
 }
 ```
 
-**按交互加载**（点击/悬停时才加载）：
+**Load on interaction** (load on click/hover):
 
 ```html
 @defer (on interaction) {
   <app-rich-editor [(content)]="content" />
 } @placeholder {
-  <div class="editor-placeholder">点击开始编辑</div>
+  <div class="editor-placeholder">Click to start editing</div>
 }
 ```
 
-**按空闲时间加载**（浏览器空闲时加载低优先级模块）：
+**Load on idle** (load low-priority modules when the browser is idle):
 
 ```html
 @defer (on idle) {
@@ -386,10 +386,10 @@ readonly data = toSignal(this.dataService.getData$(), { initialValue: [] })
 }
 ```
 
-**预取（`prefetch`）控制**：
+**Prefetch control**:
 
 ```html
-<!-- 立即预取 JS，但等到视口交叉时才渲染 -->
+<!-- Prefetch the JS immediately, but render only when it crosses the viewport -->
 @defer (on viewport; prefetch on idle) {
   <app-heavy-section />
 }
@@ -397,9 +397,9 @@ readonly data = toSignal(this.dataService.getData$(), { initialValue: [] })
 
 ---
 
-### Angular 模块懒加载
+### Angular Module Lazy Loading
 
-**路由级懒加载（所有版本）**：
+**Route-level lazy loading (all versions)**:
 
 ```typescript
 // app-routing.module.ts
@@ -409,48 +409,48 @@ readonly data = toSignal(this.dataService.getData$(), { initialValue: [] })
 }
 ```
 
-**Standalone 组件懒加载（Angular 14+，粒度更细）**：
+**Standalone component lazy loading (Angular 14+, finer granularity)**:
 
 ```typescript
-// 不需要 NgModule 包装，直接懒加载单个组件
+// No NgModule wrapper needed, lazy-load a single component directly
 {
   path: 'profile',
   loadComponent: () => import('./profile/profile.component').then(c => c.ProfileComponent)
 }
 ```
 
-**预加载策略（提升导航速度）**：
+**Preloading strategy (speeds up navigation)**:
 
 ```typescript
 @NgModule({
   imports: [RouterModule.forRoot(routes, {
-    preloadingStrategy: PreloadAllModules  // 路由加载完成后预加载所有懒加载模块
-    // 或自定义策略：只预加载标记了 preload: true 的路由
+    preloadingStrategy: PreloadAllModules  // Preload all lazy modules after the initial route load
+    // Or a custom strategy: only preload routes marked preload: true
   })]
 })
 ```
 
 ---
 
-## 三、长列表与大数据渲染
+## 3. Long Lists and Large-Data Rendering
 
-### 虚拟滚动（必做，列表 > 100 项时）
+### Virtual Scrolling (mandatory for lists > 100 items)
 
-**原理**：只渲染视口内可见的列表项（通常 10～30 个），其余用占位元素撑高度。
+**Principle**: only render the list items visible in the viewport (typically 10–30), and use placeholder elements to preserve the total height.
 
-**常用方案**：
-- React：`react-window`（轻量）或 `react-virtualized`（功能全）
-- Vue：`vue-virtual-scroller`
-- Angular：`@angular/cdk/scrolling`（CDK VirtualScrollViewport）
+**Common solutions**:
+- React: `react-window` (lightweight) or `react-virtualized` (full-featured)
+- Vue: `vue-virtual-scroller`
+- Angular: `@angular/cdk/scrolling` (CDK VirtualScrollViewport)
 
-**注意事项**：
-- 固定行高比动态行高性能好；动态行高需要预估高度并在渲染后更新
-- 虚拟滚动不适用于需要 DOM 全量存在的场景（如全文搜索高亮）
+**Notes**:
+- Fixed row height performs better than dynamic row height; dynamic row height requires estimating the height and updating it after render
+- Virtual scrolling is not suitable for scenarios that require the full DOM to be present (e.g., full-text search highlighting)
 
-### 大数据分片渲染
+### Chunked Rendering for Large Datasets
 
 ```javascript
-// 用 requestIdleCallback 把大量 DOM 操作拆分成多帧执行
+// Use requestIdleCallback to split a large batch of DOM operations across multiple frames
 function renderChunks(items, chunkSize = 50) {
   let index = 0
   function renderNext(deadline) {
@@ -465,33 +465,33 @@ function renderChunks(items, chunkSize = 50) {
 
 ---
 
-## 四、主线程长任务优化
+## 4. Main-Thread Long Task Optimization
 
-### 任务拆分（Short Task Scheduling）
+### Short Task Scheduling
 
 ```javascript
-// 把大循环拆分成 < 50ms 的小片
+// Split a large loop into chunks < 50ms
 async function processLargeArray(items) {
   const CHUNK_SIZE = 1000
   for (let i = 0; i < items.length; i += CHUNK_SIZE) {
     const chunk = items.slice(i, i + CHUNK_SIZE)
     processChunk(chunk)
-    // 让出主线程，允许浏览器处理用户交互
+    // Yield the main thread so the browser can handle user interaction
     await new Promise(resolve => setTimeout(resolve, 0))
   }
 }
 ```
 
-### Web Worker（CPU 密集任务必做）
+### Web Worker (mandatory for CPU-intensive tasks)
 
-适合移出主线程的任务：
-- 大数据解析（JSON/CSV/Excel）
-- 加密/解密/哈希计算
-- 图像处理（压缩/滤镜）
-- 复杂数学计算/路径规划
+Tasks that should be moved off the main thread:
+- Large-data parsing (JSON/CSV/Excel)
+- Encryption/decryption/hashing
+- Image processing (compression/filters)
+- Complex math/path-planning computation
 
 ```javascript
-// 主线程
+// Main thread
 const worker = new Worker('./heavy-task.worker.js')
 worker.postMessage({ data: largeData })
 worker.onmessage = (e) => handleResult(e.data)
@@ -505,81 +505,81 @@ self.onmessage = (e) => {
 
 ---
 
-## 五、内存泄漏防控
+## 5. Memory Leak Prevention
 
-### 常见泄漏场景与修复
+### Common Leak Scenarios and Fixes
 
-| 泄漏场景              | 修复方式                                                   |
-| --------------------- | ---------------------------------------------------------- |
-| 事件监听未移除        | `removeEventListener` 或 AbortController                   |
-| 定时器/延时器未清理   | `clearInterval` / `clearTimeout` 在组件销毁时执行          |
-| 网络请求未取消        | fetch 用 AbortController；axios 用 CancelToken            |
-| 闭包持有大对象        | 检查回调函数是否意外捕获了大数组/DOM 引用                  |
-| React useEffect 副作用 | 返回 cleanup 函数，取消订阅/移除监听/清理定时器            |
-| Angular 订阅未取消    | `takeUntil(destroy$)` 或 `async pipe` 自动取消订阅         |
+| Leak scenario | Fix |
+| --------------------- | ------------------------------------------------------------- |
+| Event listener not removed | `removeEventListener` or AbortController |
+| Timer/interval not cleared | `clearInterval` / `clearTimeout` on component teardown |
+| Network request not cancelled | fetch: use AbortController; axios: use CancelToken |
+| Closure holding a large object | Check whether the callback accidentally captured a large array/DOM reference |
+| React useEffect side effect | Return a cleanup function to unsubscribe/remove listeners/clear timers |
+| Angular subscription not unsubscribed | `takeUntil(destroy$)` or `async pipe` to auto-unsubscribe |
 
-**定位工具**：Chrome DevTools → Memory → 两次 Heap Snapshot 对比 → 查看新增对象
+**Localization tool**: Chrome DevTools → Memory → compare two Heap Snapshots → check newly added objects
 
 ---
 
-## 六、Electron 专属优化
+## 6. Electron-Specific Optimization
 
-### 启动链路优化
+### Startup Chain Optimization
 
-**主进程入口瘦身**：
-- 动态 `require`（用 `import()` 懒加载非必须模块）
-- 禁止在入口文件做同步 IO、数据库初始化、配置读取等耗时操作
-- 把插件加载、非核心服务注册延迟到首窗口 `ready-to-show` 之后
+**Trim the main-process entry**:
+- Use dynamic `require` (or `import()` to lazy-load non-essential modules)
+- Never do synchronous IO, database initialization, or config reading in the entry file
+- Defer plugin loading and non-core service registration until after the first window's `ready-to-show`
 
-**渲染进程首屏加速**：
-- 窗口创建时开启 `show: false`，等 `ready-to-show` 事件触发后再显示，避免白屏
-- preload 脚本按需加载，只暴露必须的原生 API
-- 骨架屏：用轻量原生闪屏页替代 Web 骨架屏
+**Speeding up renderer first paint**:
+- Create the window with `show: false`, and only display it after the `ready-to-show` event fires, to avoid a white flash
+- Load the preload script on demand, exposing only the native APIs that are strictly necessary
+- Splash screen: use a lightweight native splash instead of a web-based skeleton screen
 
-**V8 编译缓存**：
-- 使用 `v8-compile-cache` 或 electron-builder 的 bytecode 缓存，减少二次启动的 JS 解析耗时
+**V8 compile cache**:
+- Use `v8-compile-cache` or electron-builder's bytecode cache to reduce JS parsing time on subsequent launches
 
-### IPC 通信优化
+### IPC Communication Optimization
 
-**禁止同步 IPC，始终用异步**：
+**Never use synchronous IPC, always use async**:
 
 ```typescript
-// 错误：同步 IPC，完全阻塞渲染进程主线程（甚至阻塞主进程）
+// Wrong: synchronous IPC, completely blocks the renderer's main thread (and can even block the main process)
 const result = ipcRenderer.sendSync('get-data', params)
 
-// 正确：异步 IPC，不阻塞主线程
+// Correct: async IPC, does not block the main thread
 const result = await ipcRenderer.invoke('get-data', params)
 ```
 
-**高频场景（scroll/input 等）中 IPC 必须节流**：
+**IPC must be throttled in high-frequency scenarios (scroll/input, etc.)**:
 
 ```javascript
 const throttledSync = throttle((data) => {
   ipcRenderer.send('sync-state', data)
-}, 100)  // 最多每 100ms 发送一次
+}, 100)  // Send at most once every 100ms
 ```
 
-**大数据传输（避免序列化开销）**：
+**Large data transfer (avoid serialization overhead)**:
 
 ```javascript
-// 用 SharedArrayBuffer 零拷贝共享内存
+// Use SharedArrayBuffer for zero-copy shared memory
 const sharedBuffer = new SharedArrayBuffer(1024 * 1024)
 ipcRenderer.postMessage('share-buffer', null, [sharedBuffer])
-// 主进程中
+// In the main process
 ipcMain.on('share-buffer', (event, _, [buffer]) => {
-  const arr = new Int32Array(buffer)  // 直接读写，无需序列化
+  const arr = new Int32Array(buffer)  // Read/write directly, no serialization needed
 })
 ```
 
 ---
 
-### UtilityProcess（Electron 22+，CPU 密集任务的正确归宿）
+### UtilityProcess (Electron 22+, the proper home for CPU-intensive tasks)
 
-> 替代 `child_process.fork`，`UtilityProcess` 是 Electron 22 引入的原生进程 API，内置 IPC 通道，无需手动设置 `process.on('message')`。
+> Replacing `child_process.fork`, `UtilityProcess` is the native process API introduced in Electron 22, with a built-in IPC channel that requires no manual `process.on('message')` setup.
 
-**适合场景**：数据库操作、文件批量处理、加密解密、大数据解析、复杂算法。
+**Suitable scenarios**: database operations, bulk file processing, encryption/decryption, large-data parsing, complex algorithms.
 
-**基础用法（主进程中创建）**：
+**Basic usage (created in the main process)**:
 
 ```typescript
 // main.ts
@@ -596,7 +596,7 @@ function createWorker() {
   )
 
   workerProcess.on('message', (message) => {
-    // 收到 worker 处理结果，转发给渲染进程
+    // Received the worker's result, forward it to the renderer process
     mainWindow.webContents.send('worker-result', message)
   })
 
@@ -606,36 +606,36 @@ function createWorker() {
   })
 }
 
-// 主进程接收渲染进程请求，转发给 worker
+// The main process receives a request from the renderer and forwards it to the worker
 ipcMain.handle('run-heavy-task', async (_, data) => {
   workerProcess?.postMessage({ type: 'process', data })
 })
 ```
 
-**Worker 脚本（worker.js）**：
+**Worker script (worker.js)**:
 
 ```javascript
-// worker.js（运行在独立进程）
+// worker.js (runs in a separate process)
 process.parentPort.on('message', (event) => {
   const { type, data } = event.data
   if (type === 'process') {
-    const result = doHeavyWork(data)  // 耗时计算，不阻塞主进程/渲染进程
+    const result = doHeavyWork(data)  // Time-consuming computation, doesn't block the main/renderer process
     process.parentPort.postMessage({ type: 'result', result })
   }
 })
 ```
 
-**直接用 `MessagePort` 让渲染进程和 Worker 直接通信（跳过主进程转发）**：
+**Use `MessagePort` to let the renderer and the worker talk directly (skip forwarding through the main process)**:
 
 ```typescript
-// main.ts：建立渲染进程 ↔ Worker 的直连通道
+// main.ts: set up a direct channel between the renderer and the worker
 ipcMain.handle('connect-worker', (event) => {
   const { port1, port2 } = new MessageChannelMain()
   workerProcess?.postMessage({ type: 'port' }, [port1])
   event.senderFrame.postMessage('worker-port', null, [port2])
 })
 
-// renderer：直接向 worker 发消息，无需主进程中转
+// renderer: send messages directly to the worker, no main-process relay needed
 window.addEventListener('message', (event) => {
   if (event.data === 'worker-port') {
     const port = event.ports[0]
@@ -647,62 +647,62 @@ window.addEventListener('message', (event) => {
 
 ---
 
-### contextBridge 性能模式（Electron 12+）
+### contextBridge Performance Patterns (Electron 12+)
 
-> `contextBridge` 是 `contextIsolation: true` 下暴露 API 给渲染进程的唯一推荐方式。
+> `contextBridge` is the only recommended way to expose APIs to the renderer process under `contextIsolation: true`.
 
-**精简暴露原则（避免暴露大对象）**：
+**Minimal-exposure principle (avoid exposing large objects)**:
 
 ```typescript
 // preload.ts
 import { contextBridge, ipcRenderer } from 'electron'
 
-// 错误：暴露完整的 ipcRenderer，带来安全风险和初始化开销
+// Wrong: exposing the entire ipcRenderer, which brings security risk and initialization overhead
 // contextBridge.exposeInMainWorld('ipc', ipcRenderer)
 
-// 正确：只暴露渲染进程真正需要的最小 API 集
+// Correct: expose only the minimal API set the renderer actually needs
 contextBridge.exposeInMainWorld('myApp', {
-  // 批量 API 设计：一次 invoke 处理多个操作，减少 IPC 往返次数
+  // Batch API design: one invoke handles multiple operations, reducing IPC round trips
   batchQuery: (queries: BatchQuery[]) => ipcRenderer.invoke('batch-query', queries),
-  // 单一功能 API
+  // Single-purpose API
   getNoteContent: (id: string) => ipcRenderer.invoke('get-note', id),
   saveNote: (id: string, content: string) => ipcRenderer.invoke('save-note', { id, content }),
-  // 事件监听
+  // Event listener
   onSyncStatus: (callback: (status: SyncStatus) => void) => {
     ipcRenderer.on('sync-status', (_, status) => callback(status))
-    return () => ipcRenderer.removeAllListeners('sync-status')  // 返回清理函数
+    return () => ipcRenderer.removeAllListeners('sync-status')  // Return a cleanup function
   },
 })
 ```
 
-**批量 API 设计模式（减少 IPC 次数）**：
+**Batch API design pattern (reduce IPC call count)**:
 
 ```typescript
-// 错误：多次单独 IPC（N 次网络往返）
+// Wrong: multiple separate IPC calls (N round trips)
 const title = await myApp.getNoteTitle(id)
 const content = await myApp.getNoteContent(id)
 const tags = await myApp.getNoteTags(id)
 
-// 正确：一次 IPC 批量获取（1 次往返）
+// Correct: one IPC call fetches everything in a batch (1 round trip)
 const { title, content, tags } = await myApp.getNoteDetail(id)
 ```
 
 ---
 
-### remote 模块迁移（Electron < 12 遗留项目）
+### Migrating Off the `remote` Module (legacy Electron < 12 projects)
 
-> `remote` 模块在 Electron 12 中废弃，14 中移除。每次 `remote.xxx` 调用都是**同步 IPC**，严重阻塞渲染进程主线程。
+> The `remote` module was deprecated in Electron 12 and removed in 14. Every `remote.xxx` call is a **synchronous IPC** call that severely blocks the renderer's main thread.
 
-**问题诊断**：在 Performance 面板中，如果看到密集的同步 IPC 调用（通常标记为 `IPC_SYNC`），排查是否有 `remote` 使用。
+**Diagnosis**: in the Performance panel, if you see dense synchronous IPC calls (usually marked `IPC_SYNC`), check whether `remote` is being used.
 
-**迁移模式：`remote.xxx` → `ipcRenderer.invoke` + 主进程 handler**：
+**Migration pattern: `remote.xxx` → `ipcRenderer.invoke` + a main-process handler**:
 
 ```typescript
-// 迁移前（错误：同步 IPC）
+// Before migration (wrong: synchronous IPC)
 const { dialog } = require('electron').remote
 const result = dialog.showOpenDialogSync({ properties: ['openFile'] })
 
-// 迁移后（正确：异步 IPC）
+// After migration (correct: async IPC)
 // preload.ts
 contextBridge.exposeInMainWorld('dialog', {
   openFile: () => ipcRenderer.invoke('dialog:open-file'),
@@ -718,14 +718,14 @@ ipcMain.handle('dialog:open-file', async () => {
 const filePath = await window.dialog.openFile()
 ```
 
-**`remote.getCurrentWindow()` 迁移**：
+**Migrating `remote.getCurrentWindow()`**:
 
 ```typescript
-// 迁移前
+// Before
 const win = require('electron').remote.getCurrentWindow()
 win.minimize()
 
-// 迁移后（preload.ts）
+// After (preload.ts)
 contextBridge.exposeInMainWorld('windowControl', {
   minimize: () => ipcRenderer.send('window:minimize'),
   maximize: () => ipcRenderer.send('window:maximize'),
@@ -738,66 +738,66 @@ ipcMain.on('window:minimize', (event) => {
 })
 ```
 
-### 进程资源管控
+### Process Resource Management
 
-- 非活跃窗口降低渲染帧率：`win.webContents.setFrameRate(1)` 减少后台 CPU 占用
-- 窗口销毁时彻底释放资源：移除所有 IPC 监听器、解除对 `win` 对象的引用
-- 沙箱模式（Electron 20+ 默认开启）：`sandbox: true` + `contextIsolation: true` 减少渲染进程初始化开销，同时提升安全性
+- Lower the frame rate of inactive windows: `win.webContents.setFrameRate(1)` reduces background CPU usage
+- Fully release resources on window destruction: remove all IPC listeners, drop references to the `win` object
+- Sandbox mode (on by default since Electron 20+): `sandbox: true` + `contextIsolation: true` reduces renderer initialization overhead while improving security
 
 ---
 
-## 七、加载性能优化
+## 7. Loading Performance Optimization
 
-### 代码分割
+### Code Splitting
 
 ```javascript
-// React 路由级分割
+// React route-level splitting
 const LazyPage = React.lazy(() => import('./pages/HeavyPage'))
 
-// 条件加载（仅在需要时加载）
+// Conditional loading (loaded only when needed)
 const loadHeavyFeature = async () => {
   const { HeavyFeature } = await import('./features/HeavyFeature')
   return HeavyFeature
 }
 ```
 
-### 关键渲染路径
+### Critical Rendering Path
 
-- 首屏必须的 CSS 内联到 `<head>`，非关键 CSS 异步加载
-- 关键 JS 保持最小；非关键 JS 用 `defer` 或动态导入
-- 用 `<link rel="preload">` 预加载首屏字体/图片；用 `<link rel="preconnect">` 提前建立跨域连接
+- Inline the CSS required for the first screen into `<head>`; load non-critical CSS asynchronously
+- Keep critical JS to a minimum; use `defer` or dynamic import for non-critical JS
+- Use `<link rel="preload">` to preload first-screen fonts/images; use `<link rel="preconnect">` to establish cross-origin connections early
 
-### 图片优化
+### Image Optimization
 
-- 格式：WebP（通用）或 AVIF（更高压缩比）
-- 尺寸：根据实际显示尺寸提供多分辨率（`srcset`）
-- 懒加载：`<img loading="lazy">` 或 IntersectionObserver
-- 重要图片：`<img loading="eager" fetchpriority="high">` 避免 LCP 延迟
+- Format: WebP (general purpose) or AVIF (higher compression ratio)
+- Size: serve multiple resolutions based on actual display size (`srcset`)
+- Lazy loading: `<img loading="lazy">` or IntersectionObserver
+- Important images: `<img loading="eager" fetchpriority="high">` to avoid delaying LCP
 
 ---
 
-## 八、性能预算与工程化管控
+## 8. Performance Budgets and Engineering Controls
 
-### 性能预算参考值（结合项目实际调整）
+### Performance Budget Reference Values (adjust to your project)
 
-| 指标              | 建议红线          |
+| Metric | Suggested red line |
 | ----------------- | ----------------- |
-| 首屏 JS 总大小    | < 300KB（gzip 后）|
-| LCP               | < 2.5s            |
-| INP               | < 200ms           |
-| CLS               | < 0.1             |
-| Electron 冷启动   | < 2s              |
-| 主线程长任务数    | 关键交互路径 0 个 |
+| First-screen total JS size | < 300KB (gzipped) |
+| LCP | < 2.5s |
+| INP | < 200ms |
+| CLS | < 0.1 |
+| Electron cold start | < 2s |
+| Main-thread long tasks | 0 on critical interaction paths |
 
-### CI/CD 集成
+### CI/CD Integration
 
 ```bash
-# Lighthouse CI 示例（GitHub Actions）
+# Lighthouse CI example (GitHub Actions)
 - name: Run Lighthouse CI
   run: |
     npm install -g @lhci/cli
     lhci autorun --config=lighthouserc.json
-  # lighthouserc.json 中配置 assert 阈值，不达标则流水线失败
+  # Configure assert thresholds in lighthouserc.json; the pipeline fails if they aren't met
 ```
 
-webpack-bundle-analyzer 集成到构建流程，每次构建后生成包体积报告，发现异常体积增长时告警。
+Integrate webpack-bundle-analyzer into the build process to generate a bundle size report after every build, and alert on abnormal size growth.
