@@ -36,7 +36,15 @@ An open library of agent skills — workflows, performance, Jira, Git, and more.
 
 ## Install & Update
 
-One command to install all skills globally (works with any agent that supports `npx skills`):
+Non-interactive global install (recommended; avoids PromptScript ✗ noise):
+
+```bash
+git clone https://github.com/FuDesign2008/open-skills.git
+cd open-skills
+node scripts/install-skills.mjs
+```
+
+Or interactive / single-agent via the underlying CLI:
 
 ```bash
 npx skills add FuDesign2008/open-skills -g

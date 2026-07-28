@@ -72,7 +72,7 @@ dependencies:
 ## 通用原则
 
 - **先调查再发言**：无代码证据不做判断
-- **主动提问**：`clarifying-question-discipline`（一次一问）
+- **主动提问**：`clarifying-question-discipline`（一次一问、多轮问清；问清优先，不急着答）
 - **Jira 状态边界**：研发只流转到「已修复」；关闭/验证通过由 QA
 
 ## 路径选择

@@ -7,7 +7,7 @@
 
 当阶段进行中信息不足以保证输出质量时，AI MUST 每次只向用户提出 **1 个最关键的问题**（优先级：目的 → 约束 → 成功标准），得到回答后再问下一个；MUST NOT 一次抛多个问题或一次列多个疑问点让用户逐个回答。
 
-此约束规范的是**单轮交互**：一条消息只含 1 个问题（**一次一问**）。当存在多个未知时，AI MUST 通过多次一问一答、分多轮把问题问清（**多轮问清**），且每一轮的问题 MUST 基于上一轮回答来精化（渐进收敛）。
+此约束规范的是**单轮交互**：一条消息只含 1 个问题（**一次一问**）。当存在多个未知时，AI MUST 通过**多轮追问**把问题问清（**多轮问清**），且每一轮的问题 MUST 基于上一轮回答来精化（渐进收敛）。MUST NOT 使用「一问一答」表述该纪律（该措辞易被误读为每轮提问后立即给出解答）。
 
 该纪律为**无条件硬纪律**——MUST NOT 依赖「是否检测到某个可选增强 skill」作为触发前提；无论可选增强 skill 存在与否，都必须遵守。
 
@@ -20,6 +20,11 @@
 
 - **WHEN** AI 识别出多个待确认的未知项（如目的、规模、约束、成功标准同时缺失）
 - **THEN** AI 每轮只提出优先级最高的 1 个（通常先问目的），并明确告知仍有后续未知、将逐个追问（「得到回答后再问下一个」），逐轮推进直到信息充分；MUST NOT 只问 1 个就停止而丢弃其余未知
+
+#### Scenario: 纪律措辞不使用一问一答
+
+- **WHEN** an agent reads `clarifying-question-discipline` spec or skill body / workflow one-line pointers that cite this discipline
+- **THEN** the normative slogan is「一次一问、多轮问清」(or English equivalent one-per-turn + multi-round-until-clear), and MUST NOT instruct via「一问一答」
 
 ### Requirement: 「疑问点列出」步骤的措辞 SHALL 与一次一问硬纪律一致
 
@@ -90,4 +95,18 @@ skill 跨平台运行（Claude Code / Cursor / OpenCode 等），提问方式 MU
 
 - **WHEN** 声明依赖的工作流启动时前置检查发现 `clarifying-question-discipline` 不可用
 - **THEN** 立即中止流程并输出缺失提示（含安装命令），不降级运行
+
+### Requirement: Clarification rounds SHALL prioritize asking until clear over answering
+
+During clarification (information-gathering) rounds, the AI MUST focus on making the problem clear through one-question-per-turn multi-round asking. It MUST NOT rush to provide solutions, conclusions, or full answers while critical unknowns remain. Analysis and answering MAY proceed only after the problem is sufficiently clear (or the user explicitly asks to proceed / answer now).
+
+#### Scenario: Hold answer while clarifying
+
+- **WHEN** the user is still answering clarifying questions and purpose/constraints/success criteria are not yet sufficient
+- **THEN** the AI asks the next single clarifying question (or confirms clarity) and MUST NOT deliver the solution or a premature full answer in that same clarification turn
+
+#### Scenario: User asks to proceed early
+
+- **WHEN** the user explicitly asks to skip further clarification and proceed to analysis or an answer
+- **THEN** the AI MAY leave clarification and proceed, recording assumed defaults for remaining unknowns
 
