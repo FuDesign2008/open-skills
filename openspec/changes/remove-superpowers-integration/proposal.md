@@ -8,6 +8,7 @@
 - 从 `solve-workflow`、`opsx-solve-workflow`、`jira-fix-workflow`、`opsx-jira-fix-workflow` 移除 `env-capability-discovery` 依赖、能力→阶段映射、「🔌 若环境探索发现…」类指引，以及 Superpowers 专节/点名调用。
 - 删除 `skills/env-capability-discovery/`；主 `openspec/specs/env-capability-discovery` 归档移除对应能力要求。
 - 同步 `AGENTS.md` 依赖表、`workflow-contract-sync` 中对 env 的引用、jira-fix `enhanced_capabilities` / clarifying 举例等残留。
+- `clarifying-question-discipline` 主 spec 去掉 brainstorming 点名举例（与 SKILL 正文对齐）。
 
 ## Capabilities
 
@@ -19,9 +20,10 @@
 
 - `env-capability-discovery`: **REMOVED** — 取消共享环境能力探索契约；工作流不得再依赖可选增强扫描。
 - `workflow-contract-sync`: 去掉「须声明/薄引用 env-capability-discovery」类要求；宿主不得再嵌入 env 方法论或能力映射表。
+- `clarifying-question-discipline`: 无条件硬纪律措辞改为中性「可选增强 skill」，不再点名 brainstorming。
 
 ## Impact
 
 - Skills：四宿主 + 删除 env-capability-discovery；次要：`clarifying-question-discipline` 举例、jira-fix reference state 字段、AGENTS.md、skills-index（hook 生成）。
-- Specs：`openspec/specs/env-capability-discovery`、`workflow-contract-sync`。
+- Specs：`openspec/specs/env-capability-discovery`、`workflow-contract-sync`、`clarifying-question-discipline`。
 - 不改：`analysis-core`、`ensure-tests`、`merge-discipline`、原生 OPSX、PDCA 门禁。
