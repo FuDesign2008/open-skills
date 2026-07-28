@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.8.0"
+version: "1.9.0"
 user-invocable: true
 description: 当用户说"opsx-jira-fix"、"OpenSpec Jira 修复"、"规范化修复 Jira"、"opsx修复Jira"、"Jira OpenSpec 修复"、"opsx自动修复Jira"、"用OpenSpec修复Jira"或"opsx-jira-fix-workflow"时触发。适用于从 Jira issue 出发，并需要将根因、行为变更、修复计划、验证和归档沉淀到 OpenSpec artifacts 的端到端 Bug 修复。
 dependencies:
@@ -19,6 +19,7 @@ dependencies:
   - merge-discipline
   - pdca-review-orchestration
   - openspec-workspace-gates
+  - jira-status-writeback
 ---
 
 # OPSX Jira Bug 修复工作流
@@ -50,7 +51,7 @@ dependencies:
 - **强制模式**：触发词含“强制”或 `--force` 时可跳过难度终止，但仍不得跳过验证和归档检查。
 - **继续修复**：触发词含“继续修复”“再次修复”“从上次继续”或 `--retry` 时，先定位现有 OpenSpec change，再从 `design.md`、`tasks.md` checkbox、当前 Git 分支和 PR/MR 状态恢复上下文。
 
-**强依赖 skill**（frontmatter `dependencies`，共 15 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
+**强依赖 skill**（frontmatter `dependencies`，共 16 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
 - `pdca-review-orchestration`（阶段 4 审查编排；依赖 `solution-review` 与 `code-design-review`）
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`（经 `analysis-core` 委托；阶段 2 + 阶段 7）
 - `analysis-core`（阶段 2 分析方法论单源：临时改动门控 / 打点调试 / 分析步骤骨架 / 调试-验证闭环）
@@ -60,13 +61,14 @@ dependencies:
 - `ensure-tests`（阶段 6.2.5 测试确保：有测试基建时补全并运行；无基建经用户确认后搭建）
 - `merge-discipline`（阶段 8 合并纪律）
 - `openspec-workspace-gates`（阶段 0 OpenSpec 工程与原生 skill 门禁）
+- `jira-status-writeback`（阶段 8 合并后回写：状态流转 + 修复评论单源 SOP）
 
 ## 前置 skill 检查
 
-> 本 skill 通过 frontmatter `dependencies` 声明对 13 个 skill 的强依赖。启动时（阶段 0 前置检查之前）必须执行本检查。
+> 本 skill 通过 frontmatter `dependencies` 声明对 16 个 skill 的强依赖。启动时（阶段 0 前置检查之前）必须执行本检查。
 
 1. 扫描可用 skill（查 `<available_items>` 或用 `skill` 工具）
-2. 核对 13 个 dependencies 是否都在可用列表中
+2. 核对 16 个 dependencies 是否都在可用列表中
 3. 全部存在 → 继续阶段 0 前置检查
 4. 任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`）
 
@@ -229,69 +231,9 @@ dependencies:
 
 确认或创建 Jira 对应的 OpenSpec change。若阶段 1 已创建或复用 change，本阶段只校验并补全 artifacts；手动模式必须先确认 change 名称；自动模式可生成后继续。
 
-命名建议：
-
-```text
-fix-<jira-id-lower>-<short-topic>
-```
-
-例如：
-
-```text
-fix-ynotr-12167-ai-summary-button
-```
-
-推荐创建方式：
-
-```text
-/opsx:new <change-name>
-```
-
-若当前环境没有 `/opsx:new`，可手动创建：
-
-```text
-openspec/changes/<change-name>/
-```
-
-必须写入：
-
-```text
-openspec/changes/<change-name>/proposal.md
-openspec/changes/<change-name>/specs/<capability>/spec.md
-openspec/changes/<change-name>/design.md
-openspec/changes/<change-name>/tasks.md
-```
-
-`proposal.md` 必须包含：
-
-- Why：Jira 链接、问题摘要、用户影响、为什么现在修
-- What Changes：行为变化，而不是实现细节
-- Capabilities：新增或修改的 capability
-- Impact：代码、API、平台、风险
-
-`design.md` 必须包含：
-
-- Jira Context：Jira 标题、关键描述、复现路径、期望和实际结果
-- Problem Analysis：存在性验证、根因、影响范围、难度分级
-- Goals / Non-Goals：修复目标和明确排除的范围
-- Options：候选方案、取舍、推荐方案
-- Risk：副作用、回滚策略、QA 关注点
-- Migration Plan：（涉及数据库/API/配置变更时必填）迁移步骤和回滚方案
-- Verification Notes：验证场景、测试命令、人工验证项
-
-Delta spec 必须使用：
-
-- `## ADDED Requirements`
-- `## MODIFIED Requirements`
-- `## REMOVED Requirements`
-- `## RENAMED Requirements`
-
-每个 requirement 必须包含至少一个 `#### Scenario:`。
-
-> 常见格式错误（会导致 `openspec validate` 失败）：
-> - `### REQ-001:` → 格式错，标题必须是 `### Requirement: <描述>`
-> - `### Requirement: 初始化` → 缺 SHALL/MUST，描述必须包含 SHALL 或 MUST
-> - 无 `#### Scenario:` 块 → 每个 requirement 至少需要一个场景
+- **命名**：`fix-<jira-id-lower>-<short-topic>`（例：`fix-ynotr-12167-ai-summary-button`）
+- **创建**：委托 `openspec-new-change`（读其 SKILL.md；`/opsx:new` 为入口别名）
+- **Jira 完整度**：`design.md` 至少含 Jira Context / Root Cause / Options / Risk / Verification Notes；proposal / delta spec / 字段细节见 [reference.md](reference.md)「阶段 3 Artifacts 字段清单」
 
 ## 阶段 4：探索与审查方案
 
@@ -468,57 +410,30 @@ PR/MR 描述必须包含：
 
 ### 8.4 Jira 回写（合并完成后）
 
-PR/MR 已成功合并，代码已进入主分支，此时回写 Jira 状态准确反映修复已合入。
+PR/MR 已成功合并，代码已进入主分支，此时回写 Jira 状态准确反映修复已合入。加载强依赖 `jira-status-writeback`，按其 SOP 执行状态流转与修复评论，本工作流提供以下字段映射：
 
-⚠️ **必须分两步独立调用**：① `jira_transition_issue` 流转状态（不传 `comment` 参数）；② `jira_add_comment(issue_key=..., body=...)` 写修复评论。禁止通过 `jira_transition_issue` 的 `comment` 参数传评论——该参数不可靠，评论可能被静默丢弃；`jira_add_comment` 的评论内容参数名为 `body`（非 `comment`）。
-
-研发角色只流转到"已修复"；关闭、验证通过、已验证等状态由 QA 角色流转。
-
-Jira 评论必须包含：
-
-- 修复分支 / PR URL / Commit
-- 根因摘要
-- 修复方案
-- OpenSpec change 路径
-- 验证场景
-- 风险或待 QA 关注点
+| jira-status-writeback 字段 | 取值 |
+|------|------|
+| Fix branch / Commit / PR/MR URL | 修复分支名 / 合并后主干 SHA / PR/MR 链接 |
+| Root cause | 阶段 2 根因摘要 |
+| Fix summary | 修复方案 |
+| Changed files | 修改文件清单 |
+| Verification | 阶段 7 验证场景 |
+| Extra | OpenSpec change 路径、风险或待 QA 关注点 |
 
 收尾记录以 PR/MR、Jira 评论和 OpenSpec archive 结果为准。
 
 ### 8.5 AI 工程沉淀
 
-**OpenSpec artifacts**（`proposal.md`、`specs/`、`design.md`、`tasks.md`）是本 skill 的核心产出，正常归档流程落盘，不受以下门控限制。
-
-**AI 工程知识**（`AGENTS.md`、`CLAUDE.md`、`.cursor/rules/`、项目内 skill 等）须先过沉淀价值门控：
-
-- ✅ **建议固化**：高复用、已验证、对团队或工程有长期价值的经验（如困难/极难 bug 的排查模式）
-- ❌ **不建议固化**：一次性经验、未验证判断、个人临时偏好、本次 change 专属配置
-- **写入前必须等用户明确要求**：除非用户明确说「写入规则」「创建 skill」「更新文档」，否则只输出建议，不落盘
-
-推荐沉淀载体：
-
-| 载体 | 适用内容 |
-|------|----------|
-| `AGENTS.md` | 项目级、跨工具、团队共享的长期规则与工程约定 |
-| `CLAUDE.md` | Claude Code 专属的行为约束、工作流偏好 |
-| `.cursor/rules/` | Cursor 专属规则 |
-| 项目内 skill | 步骤稳定、可复用的工作流 |
-| 总结文档 | 一次性复盘、背景记录 |
+OpenSpec artifacts 正常归档。`AGENTS.md` / 规则 / skill 等 AI 工程知识：**写入前须用户明确要求**；一次性/未验证经验不建议固化。
 
 > 🚩 **Red Flags（阶段 8）**：
 > - ❌ 验证未通过就提交 PR
-> - ❌ Jira 评论通过 `jira_transition_issue` 的 `comment` 参数传递（会被丢弃）
-> - ❌ Jira 状态越权流转到「关闭」「验证通过」等
+> - ❌ Jira 评论通过 `jira_transition_issue` 的 `comment` 参数传递，或状态越权流转到「关闭」「验证通过」等（SOP 见 `jira-status-writeback`）
 > - ❌ archive 失败后手动操作 `openspec/` 目录
 > - ❌ PR 描述缺少 OpenSpec change 路径或验证证据
-> - ❌ 分支收尾决策为「保留分支/继续开发」却触发了覆盖率门控（门控仅「合并」决策触发）
 > - ❌ `ask` 偏好下未询问用户就默认跑 analyzer（见 `merge-discipline` Part C）
-> - ❌ 在应跑条件下脚本崩溃/无报告/退出码1 却继续合并（崩溃视为未通过，须暂停）
-> - ❌ 在应跑条件下覆盖率不达标却自动强行合并（须暂停等用户决策）
-> - ❌ 用户显式跳过门控但未在 PR 描述和 design.md 留痕
 > - ❌ archive（8.2）未完成就触发合并纪律（顺序：8.2 archive → 8.3 分支收尾 → 8.3.1 合并纪律 merge-discipline → 合并 → 8.4 Jira 回写）
-> - ❌ archive/docs push 后裸 merge（无 tip pin、无合入后祖先校验）→ archive 未入目标分支（见 `merge-discipline` Part D）
-> - ❌ 把刚 push 后立即出现的「Pipeline succeeded」当当前 tip 已绿 → 多半是旧 tip 结果（见 `merge-discipline` Part D step 2）
 
 ## 批量 OPSX Jira 修复
 
@@ -526,14 +441,13 @@ Jira 评论必须包含：
 
 ## 常见错误
 
-> 只记本 skill 非直觉陷阱。合并/覆盖率/archive → `merge-discipline`；工程根/`openspec/`/原生 skill → `openspec-workspace-gates`；增强能力 → `env-capability-discovery`。不复述阶段正文已写明的规则。
+> 只记本 skill 非直觉陷阱。合并/覆盖率/archive → `merge-discipline`；工程根/`openspec/`/原生 skill → `openspec-workspace-gates`；增强能力 → `env-capability-discovery`；Jira 回写 SOP → `jira-status-writeback`。不复述阶段正文已写明的规则。
 
 | 错误 | 后果 | 修正 |
 |------|------|------|
 | 创建额外本地运行态目录 | OpenSpec 之外第二套记录 | 统一记到 OpenSpec artifacts、PR/MR 与 Jira 评论 |
-| 只写 OpenSpec，不回写 Jira | Jira 流程断裂，QA 无法跟进 | 合并完成后必须 `jira_add_comment` 并流转到「已修复」 |
-| Jira 状态越权（研发直接关单等） | 误关闭 issue，流程越权 | 只允许流转到「已修复」 |
-| 用 `jira_transition_issue` 的 `comment` 传评论 | 评论被静默丢弃 | 独立调用 `jira_add_comment` |
+| 只写 OpenSpec，不回写 Jira | Jira 流程断裂，QA 无法跟进 | 阶段 8.4 合并完成后必须加载 `jira-status-writeback` 完成回写 |
+| Jira 回写复述两步 API 细节或状态越权判断 | 与 `jira-status-writeback` 漂移，评论丢失或误关单 | 阶段 8.4 只传字段映射，SOP 细节以 `jira-status-writeback` 为准 |
 | 快速修复误走 OPSX 路径 | 流程过重 | 无需规范沉淀时用 `jira-fix-workflow` |
 | 批量修复只按列表机械执行 | 重复修、丢依赖或行为冲突 | 执行前后识别 issue 关系，写入 Related Issues / Risk / Dependencies |
 | 阶段 2 分析后立刻创建 proposal | Why/What 割裂，artifact 重写 | proposal 在阶段 4 方案选定后一次写完整 |

@@ -6,6 +6,81 @@
 
 ---
 
+## 状态目录与 state.json
+
+目录布局（`.jira-fix/{JIRA-ID}/`）：
+
+```
+state.json           ← 进度（mode、review_round、review_status）
+00-branch.md         ← 阶段7 前置（创建修复分支）
+01-jira-info.md      ← 阶段1
+02-alignment.md      ← 阶段2（手动模式）
+02-analysis.md       ← 阶段3
+04-grade.md          ← 阶段4
+03-options.md        ← 阶段5（方案 + 审查记录）
+04-plan.md           ← 阶段6
+05-execution.md      ← 阶段7
+06-verification.md   ← 阶段8
+07-report.md         ← 阶段9
+08-merge.md          ← 阶段10
+```
+
+`state.json` 示例：
+
+```json
+{
+  "jira_id": "YNOTR-12345",
+  "jira_url": "https://your-jira.example.com/browse/YNOTR-12345",
+  "mode": "manual",
+  "current_phase": 3,
+  "completed_phases": [0, 1],
+  "branch": "fix/jira-fix-YNOTR-12345",
+  "grade": null,
+  "selected_option": null,
+  "review_round": 0,
+  "review_status": null,
+  "enhanced_capabilities": {},
+  "started_at": "ISO_TIMESTAMP",
+  "last_updated": "ISO_TIMESTAMP"
+}
+```
+
+- `review_round`：0–3；`review_status`：null | in_progress | passed | failed_max_rounds
+- `enhanced_capabilities`：阶段 0 扫描结果（能力类型 → skill 名）；`{}` = 未命中
+
+## Commit message 格式
+
+```
+<type>(<scope>): <Jira-ID> <subject>
+```
+
+示例：`fix(ai-summary): YNOTR-12167 修复分享链接中AI摘要按钮显示问题`
+
+Type：fix、feat、refactor、perf、style、docs、test。Scope 示例：ai-summary、share、auth、api、ui、core。
+
+## 阶段出口话术
+
+阶段停止点见 SKILL「快速参考」。需要固定附言时用下列文案：
+
+- **阶段2（手动）**：请确认理解是否准确，或补充 Jira 描述中遗漏的信息。
+- **阶段6（手动）**：⏸️ 阶段6（制定计划）完成。是否进入**阶段7：执行计划**？回复「确认」继续，或说明需要调整。
+- **阶段7 分支（手动·单工程）**：✅ 修复分支已创建：`fix/jira-fix-[JIRA-ID]`，开始执行代码修改。
+- **阶段7 分支（手动·多工程）**：⏸️ 多工程分支已创建，即将开始代码修改，回复「确认」继续。
+- **阶段7（手动）**：⏸️ 阶段7（执行计划）完成，请审查代码。是否进入**阶段8：检查验证**？回复「确认」继续，或告知需要调整。
+- **阶段9（手动）**：⏸️ 提交计划已就绪。确认后 AI 将执行 push + 创建 PR/MR。回复「确认」继续，或告知需要修改。
+- **阶段10（自动/手动）**：⏸️ PR/MR 已在阶段9创建，请完成 Code Review。确认合并后回复「确认」，AI 将执行合并并清理分支。
+- **阶段4 极难选 B（手动）**：⚠️ 已知晓高风险，进入**阶段5：探索与审查方案**，回复「确认」继续，或回复「A」终止。
+
+## 阶段7 分支创建细节
+
+- **命名**：`fix/jira-fix-[JIRA-ID]`（如 `fix/jira-fix-YNOTR-12167`）
+- **[🤖]**：按阶段6 文件清单匹配各工程 `.git` 根 → 批量 `git checkout -b …`；失败终止
+- **[👤 单工程]**：直接创建，附出口话术「阶段7 分支（手动·单工程）」
+- **[👤 多工程]**：展示工程/基础分支/分支名，确认后创建，附「阶段7 分支（手动·多工程）」
+- 写入 `00-branch.md`，更新 state.json `branch`；输出模板见下文「阶段 7：Git 分支创建完成」
+
+---
+
 ## 阶段0：前置检查完成
 
 ```
@@ -44,9 +119,22 @@
 > 最新评论 - [用户]（[时间]）: [内容摘要]
 
 ---
-[🤖 自动] 自动进入阶段3：分析问题
-[👤 手动] 准备进入阶段3：分析问题
+[🤖 自动 / 👤 手动] 进入阶段2：理解对齐
 ```
+
+---
+
+## 阶段 2：理解对齐
+
+```
+【问题复述】我理解这个 Bug 是：...（一句话，不含技术判断）
+【关键要素】触发条件：... / 期望行为：... / 实际行为：... / 复现环境：...
+【歧义与假设】（若有）
+[问题] A [...] B [...]
+请确认我的理解是否准确，或补充 Jira 描述中遗漏的信息。
+```
+
+保存到 `.jira-fix/{JIRA-ID}/02-alignment.md`。
 
 ---
 
@@ -254,7 +342,7 @@
 
 ## 阶段 9：提交完成
 
-**Jira 回写评论模板（阶段 10 合并完成后使用）**：
+**Jira 回写评论模板（阶段 10 步骤 2.3，随 `jira-status-writeback` 字段映射渲染）**：
 ```
 **AI 自动修复报告**
 
@@ -323,3 +411,23 @@
 - 建议：接受现状 / 评估替代方案（非修复）/ 与产品对齐预期
 流程已中断，不进入方案探索阶段。
 ```
+
+---
+
+## 阶段8 验证结果
+
+```
+【验证结果】
+- Jira 复现步骤验证：（逐项 ✅ / ❌）
+- 与阶段6计划对比：已完成 … / 未完成 …
+- 测试结论：（已运行附结果；无自动化则列手动要点）
+- 副作用：Node / Linter / TS / 功能副作用
+- 逻辑完整性：…
+- 验证结论：✅ 通过 / ❌ 未达标（含返回路径）
+```
+
+## 阶段5 方案对比
+
+| 方案 | 描述 | 优点 | 缺点 | 复杂度 | 推荐度 |
+|------|------|------|------|--------|--------|
+| 方案1 | … | … | … | 低/中/高 | ⭐… |
