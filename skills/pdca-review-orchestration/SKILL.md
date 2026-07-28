@@ -1,11 +1,12 @@
 ---
 name: pdca-review-orchestration
-version: "1.0.0"
+version: "1.1.0"
 user-invocable: false
-description: "Shared orchestration for PDCA solution-review stages: requires full decision review, code-design review for code-affecting solutions, binary pass/fail, bounded auto optimization, user gates, design summary, and verification-report honesty. Used by PDCA workflows. Triggers — 「PDCA 审查编排」「方案审查编排」「审查闭环」「验证报告诚实」 / PDCA review orchestration, solution review loop, verification honesty. Do NOT use as a standalone task workflow."
+description: "Shared orchestration for PDCA solution-review stages: full decision review, code-design review for code-affecting solutions, Standards∥Spec dual-axis verdicts (no cross-axis merge rank), binary pass/fail, bounded auto optimization, design summary, and verification-report honesty composed with completion-evidence-discipline. Used by PDCA workflows. Triggers — 「PDCA 审查编排」「方案审查编排」「审查闭环」「验证报告诚实」「双轴审查」 / PDCA review orchestration, dual-axis review, verification honesty. Do NOT use as a standalone task workflow."
 dependencies:
   - solution-review
   - code-design-review
+  - completion-evidence-discipline
 ---
 
 # PDCA Review Orchestration
@@ -30,10 +31,14 @@ Never hardcode a host workflow's stage numbers, OpenSpec paths, Jira state trans
 1. Always load and run the complete `solution-review` framework: all core dimensions and strategic dimensions at the depth determined by reversibility.
 2. When the solution affects code, also load and run `code-design-review` Layer A/B/C according to its applicability rules.
 3. Apply `{extra-dimensions}` after the shared reviews. These checks supplement, never replace, `solution-review`.
-4. Aggregate the review skills' blocking criteria into a binary result:
-   - **Pass:** no blocking issues remain.
-   - **Fail:** at least one blocking issue remains.
-5. Write the review record and passed design summary to `{artifact-sink}`.
+4. Keep **two axes** separate in the report (labels MAY vary; meaning MUST NOT):
+   - **Standards** — design / quality / smell / security fitness (`solution-review` strategic+core quality aspects and `code-design-review` when applicable).
+   - **Spec** — fit to the chosen solution, ticket, or OpenSpec delta / stated requirements.
+   Axes MAY run in parallel (e.g. separate subagents). **MUST NOT** merge both into one undifferentiated ranked list; a pass on one axis MUST NOT hide a fail on the other.
+5. Aggregate blocking criteria into a binary overall result:
+   - **Pass:** no blocking issues remain on **either** axis (and `{extra-dimensions}`).
+   - **Fail:** at least one blocking issue remains on any axis.
+6. Write the review record and passed design summary to `{artifact-sink}`.
 
 ## Review loop and gates
 
@@ -55,13 +60,15 @@ Every verification result must disclose its execution state:
 
 Do not report designed scenarios or inferred correctness as completed verification. Browser or other unavailable manual interactions remain pending with actionable instructions.
 
+**Compose with `completion-evidence-discipline`:** an **Executed** / pass claim is valid only when backed by fresh evidence from the **current turn** per that skill's Iron Law. Load `completion-evidence-discipline` at verification time; do not paste its prose into hosts.
+
 ## Integration guide
 
 Referencing workflows must:
 
-1. Declare `pdca-review-orchestration` in frontmatter dependencies and perform their normal dependency gate.
+1. Declare `pdca-review-orchestration` in frontmatter dependencies and perform their normal dependency gate (transitively requires `completion-evidence-discipline`).
 2. At the review stage, load this skill and map all placeholders using numbers and names where applicable.
 3. Keep only host orchestration: stage exit wording, `{extra-dimensions}`, `{artifact-sink}`, and `{batch-overcap-behavior}`.
-4. Point their verification stage to this skill's honesty rule in one sentence.
+4. Point their verification stage to this skill's honesty rule **and** `completion-evidence-discipline` in at most one or two sentences.
 
-Do not duplicate binary tables, blocking lists, three-round loop prose, design-summary templates, or verification-honesty blocks in hosts.
+Do not duplicate binary tables, blocking lists, three-round loop prose, design-summary templates, dual-axis definitions, or verification-honesty blocks in hosts.

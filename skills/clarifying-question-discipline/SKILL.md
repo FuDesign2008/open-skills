@@ -1,8 +1,8 @@
 ---
 name: clarifying-question-discipline
-version: "1.1.0"
+version: "1.2.0"
 user-invocable: false
-description: "Hard discipline for asking the user clarifying questions: ask exactly ONE most critical question per round (priority: purpose → constraints → success criteria), resolve unknowns across MULTIPLE rounds until the problem is clear, and do NOT rush to answers or solutions during clarification. Also carries the investigation-first principle. Referenced via frontmatter dependencies by workflow skills (solve-workflow, opsx-solve-workflow, jira-fix-workflow, opsx-jira-fix-workflow, perf-workflow); load when a workflow delegates user-questioning guidance."
+description: "Hard discipline for asking the user clarifying questions: ask exactly ONE most critical question per round (priority: purpose → constraints → success criteria), include a recommended answer when asking, resolve unknowns across MULTIPLE rounds until clear, distinguish fact self-check vs decision ask-human, and do NOT rush to solutions during clarification. Also carries the investigation-first principle. Referenced via frontmatter dependencies by workflow skills (solve-workflow, opsx-solve-workflow, jira-fix-workflow, opsx-jira-fix-workflow, perf-workflow). Triggers — 「一次一问」「多轮问清」「澄清提问纪律」「推荐答案提问」 / clarifying question discipline."
 ---
 
 # Clarifying Question Discipline
@@ -33,9 +33,19 @@ Describe intent; the agent picks its own native capability (platform-agnostic, p
 [One sentence stating the question clearly]
 - A option one
 - B option two
+Recommended: A (brief rationale)
 ```
 
+**Recommended answer (mandatory when a reasonable default exists):** every question MUST include a recommended option or stated default with a one-line rationale, so the user can accept quickly or override. MUST NOT ask a bare open question with no suggested resolution when a default is knowable.
+
 **Short-answer convention**: the user may reply with just an option letter ("A", "B"); parse it and continue.
+
+## Fact self-check versus decision ask-human
+
+Before spending the one-question slot:
+
+1. **Fact self-check** — if the needed fact is readable from the repo, already-referenced files, or prior user messages, verify it yourself; do **not** ask the user to restate it.
+2. **Decision ask-human** — reserve user questions for preferences, product/tech decisions, unavailable context, or confirmations that cannot be derived from evidence you already have.
 
 ## Investigation-first principle
 

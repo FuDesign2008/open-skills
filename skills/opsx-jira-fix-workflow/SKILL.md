@@ -19,6 +19,7 @@ dependencies:
   - pdca-review-orchestration
   - openspec-workspace-gates
   - jira-status-writeback
+  - completion-evidence-discipline
 ---
 
 # OPSX Jira Bug-Fix Workflow
@@ -301,7 +302,7 @@ Must cover:
 5. Side-effect check: are related modules and platforms affected; the verification report must disclose `Node (declared vX) ✅/⚠️ not aligned`
 6. Debug-verify loop: if stage 2 used a debug skill to locate the root cause, verify the fix using that **same** skill per `analysis-core` §4 (not tests alone)
 
-> Label each result per `pdca-review-orchestration`'s verification-report honesty rule.
+> Label each result per `pdca-review-orchestration`'s verification-report honesty rule and `completion-evidence-discipline` (no pass claims without fresh current-turn evidence).
 
 Output format: see [reference.md](reference.md)「Stage 7 Verification Results」.
 
