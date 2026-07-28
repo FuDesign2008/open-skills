@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.9.0"
+version: "1.10.0"
 user-invocable: true
 description: 当用户说"opsx-jira-fix"、"OpenSpec Jira 修复"、"规范化修复 Jira"、"opsx修复Jira"、"Jira OpenSpec 修复"、"opsx自动修复Jira"、"用OpenSpec修复Jira"或"opsx-jira-fix-workflow"时触发。适用于从 Jira issue 出发，并需要将根因、行为变更、修复计划、验证和归档沉淀到 OpenSpec artifacts 的端到端 Bug 修复。
 dependencies:
@@ -14,7 +14,6 @@ dependencies:
   - clarifying-question-discipline
   - known-issue-research
   - analysis-core
-  - env-capability-discovery
   - ensure-tests
   - merge-discipline
   - pdca-review-orchestration
@@ -24,7 +23,7 @@ dependencies:
 
 # OPSX Jira Bug 修复工作流
 
-> Jira 修复的规范化版本：保留 `jira-fix-workflow` 的端到端修复能力，引入 OpenSpec 作为行为事实源，并用 Superpowers 作为可选工程增强。
+> Jira 修复的规范化版本：保留 `jira-fix-workflow` 的端到端修复能力，引入 OpenSpec 作为行为事实源。
 >
 > **输出格式参考**：各阶段输出模板见 [reference.md](reference.md)。
 
@@ -37,7 +36,6 @@ dependencies:
 - **Jira**：问题来源、业务上下文、状态流转和修复评论。
 - **`openspec/changes/<change-name>/`**：Jira 上下文、根因、行为契约、方案、任务、验证和最终 archive。
 - **PR/MR**：代码交付、验证证据、风险说明和 Review 入口。
-- **Superpowers**：可选增强，用于头脑风暴、计划细化、TDD、系统调试、审查和完成前验证。
 
 不替代普通 `jira-fix-workflow`：
 
@@ -51,13 +49,12 @@ dependencies:
 - **强制模式**：触发词含“强制”或 `--force` 时可跳过难度终止，但仍不得跳过验证和归档检查。
 - **继续修复**：触发词含“继续修复”“再次修复”“从上次继续”或 `--retry` 时，先定位现有 OpenSpec change，再从 `design.md`、`tasks.md` checkbox、当前 Git 分支和 PR/MR 状态恢复上下文。
 
-**强依赖 skill**（frontmatter `dependencies`，共 16 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
+**强依赖 skill**（frontmatter `dependencies`；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
 - `pdca-review-orchestration`（阶段 4 审查编排；依赖 `solution-review` 与 `code-design-review`）
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`（经 `analysis-core` 委托；阶段 2 + 阶段 7）
 - `analysis-core`（阶段 2 分析方法论单源：临时改动门控 / 打点调试 / 分析步骤骨架 / 调试-验证闭环）
 - `node-version-discipline`（阶段 6 执行验证前 Node 版本对齐）
 - `workflow-mode-lifecycle`（自动/手动模式生命周期）、`clarifying-question-discipline`（主动提问硬纪律与调查优先）、`known-issue-research`（阶段 2 调研路由 / 已知问题快搜 / 行业通病评估）
-- `env-capability-discovery`（环境能力探索：启动时一次扫描可用增强能力）
 - `ensure-tests`（阶段 6.2.5 测试确保：有测试基建时补全并运行；无基建经用户确认后搭建）
 - `merge-discipline`（阶段 8 合并纪律）
 - `openspec-workspace-gates`（阶段 0 OpenSpec 工程与原生 skill 门禁）
@@ -65,12 +62,7 @@ dependencies:
 
 ## 前置 skill 检查
 
-> 本 skill 通过 frontmatter `dependencies` 声明对 16 个 skill 的强依赖。启动时（阶段 0 前置检查之前）必须执行本检查。
-
-1. 扫描可用 skill（查 `<available_items>` 或用 `skill` 工具）
-2. 核对 16 个 dependencies 是否都在可用列表中
-3. 全部存在 → 继续阶段 0 前置检查
-4. 任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`）
+> 启动时（阶段 0 前置检查之前）核对 frontmatter `dependencies`：任一缺失 → 结构化提示并**立即中止**（格式见 `solve-workflow/reference.md`）。
 
 > **不降级原则**：强依赖缺失即中止，不得用简化审查/调试降级运行。
 
@@ -85,21 +77,6 @@ dependencies:
 - `--resume`（断点恢复）：沿用断点时的模式
 - OpenSpec archive 失败视为流程中断，恢复手动
 
-## 环境能力探索（跨平台自适应）
-
-> 探索时机、扫描方法、能力类型关键词表与调用原则由强依赖 skill `env-capability-discovery` 承载（前置检查已保证可用；其他工作流默认弱引用、不可用时静默跳过）。启动时执行一次扫描（阶段 0 步骤 8 的 Superpowers 类增强能力扫描即按该 skill 方法论执行），结果记录在会话上下文中，后续阶段直接引用，无需重复扫描；frontmatter `dependencies` 声明的强依赖 skill 不走环境探索（由「前置 skill 检查」保证可用）。
-
-### 能力 → 阶段映射（opsx-jira-fix-workflow）
-
-| 能力类型 | 对应阶段 | 用途 |
-|---------|---------|------|
-| 🔍 调试分析 | 阶段2（分析问题） | 辅助根因定位、假设驱动调查 |
-| 🌐 Web 调研 | 阶段2（1.5 调研路由 / 打点逃生出口） | 经 `known-issue-research` 统一委托 `effective-web-research` |
-| 💡 方案设计 | 阶段4（探索与审查方案） | 辅助多方案生成与对比 |
-| 📝 计划制定 | 阶段5（制定计划） | 辅助生成结构化 tasks.md |
-| ⚡ 代码执行 / 🧪 测试驱动 / 🔧 构建修复 | 阶段6（执行修复） | 批量编排 / 先写测试 / 构建错误修复 |
-| ✅ 完成验证 | 阶段7（检查验证） | 执行后独立验证 |
-
 ## 阶段 0：前置检查
 
 任一关键检查失败则暂停，不进入修复：
@@ -109,10 +86,7 @@ dependencies:
 3. 检查 Git 状态：自动模式可 stash；手动模式提示用户处理。
 4. **OpenSpec 工程与原生 skill 门禁**：加载 `openspec-workspace-gates`，执行工程定位、`openspec/` 检查和精确原生 OPSX skill 门禁；通过后继续本工作流。
 5. 检查 OpenSpec 命令（在工程根下执行）：优先使用 `openspec list`、`openspec status`、`openspec validate`。
-7. 继续修复时，先定位 OpenSpec change：优先从当前分支名推断；其次搜索 `openspec/changes/*/{proposal.md,design.md,tasks.md}` 中的 Jira ID；再次查看 PR/MR 描述中的 OpenSpec change 路径；仍无法唯一确定时只问用户 1 个问题确认 change 名称。定位后使用 `openspec status --change <name>`、`openspec show <change-name>`、`design.md`、`tasks.md` checkbox 和当前 Git 分支恢复进度。
-8. 扫描 Superpowers 类增强能力（扫描方法论见上文「环境能力探索」）；发现则记录，未发现则静默降级。
-
-   **Superpowers 增强能力调用原则**：调用增强 skill/agent 前，必须先读取其当前 SKILL.md 或说明文件，不得凭记忆调用。Skill 定义可能随版本更新变化，凭记忆调用容易使用过期规则。
+6. 继续修复时，先定位 OpenSpec change：优先从当前分支名推断；其次搜索 `openspec/changes/*/{proposal.md,design.md,tasks.md}` 中的 Jira ID；再次查看 PR/MR 描述中的 OpenSpec change 路径；仍无法唯一确定时只问用户 1 个问题确认 change 名称。定位后使用 `openspec status --change <name>`、`openspec show <change-name>`、`design.md`、`tasks.md` checkbox 和当前 Git 分支恢复进度。
 
 ## OpenSpec 记录模型
 
@@ -219,7 +193,7 @@ dependencies:
 |------|------|------|
 | 容易 | 精简路径 | proposal/delta specs 可精简，不跳过验证 |
 | 中等 | 增量路径 | proposal/specs/design/tasks 全部产出 |
-| 困难/极难 | 完整路径 | 阶段 1-8 全执行，可用 `brainstorming` |
+| 困难/极难 | 完整路径 | 阶段 1-8 全执行 |
 
 > 🚩 **Red Flags**：未做存在性验证；根因过浅；结论未入 design.md；模糊却不触发打点（`analysis-core` §3）；未升级路径；违反 `analysis-core` / `known-issue-research` 门控
 
@@ -267,7 +241,6 @@ dependencies:
 - 包含必要测试、验证、回滚、OpenSpec archive 和合并后 Jira 回写步骤。
 - 禁止 `TBD`、`TODO`、`适当处理`、`类似上面` 这类不可执行描述。
 
-若检测到 `writing-plans`，借鉴其粒度：目标文件、测试命令、预期输出、失败时处理。
 
 手动模式输出计划后暂停；自动模式普通情况自动进入阶段 6。困难或极难继续场景必须暂停确认。
 
@@ -313,20 +286,6 @@ fix/jira-fix-<JIRA-ID>
 
 读取并调用 `ensure-tests`，声明 `mode=mandatory`，作用域为本次修复的逻辑文件；其失败或拒绝必要脚手架时阻断进入阶段 7。
 
-### 6.3 Superpowers 增强
-
-检测到对应能力时使用：
-
-- `test-driven-development`：有可测试行为时先写失败测试。
-- `systematic-debugging`：测试、构建、类型或行为失败时先定位根因。
-- `subagent-driven-development`：独立任务可一任务一上下文执行。
-- `requesting-code-review`：高风险任务完成后做代码质量和 spec 合规审查。
-- `verification-before-completion`：完成前必须有刚运行过的验证证据。
-
-> 🚩 **Red Flags（阶段 6）**：
-> - ❌ 单元测试失败仍进入阶段 7 验证
-> - ❌ 实现中发现设计错误却继续硬做，未回写 artifacts
-> - ❌ 偏离计划时未说明原因，或影响行为契约却未回到阶段 3/4
 
 ## 阶段 7：检查验证
 
@@ -394,13 +353,7 @@ PR/MR 描述必须包含：
 默认：验证通过后先 archive，确认 `openspec/specs/` 更新和 `openspec/changes/archive/` 迁移进入 diff，再完成 PR/合并。
 ### 8.3 分支收尾
 
-若检测到 `finishing-a-development-branch`，在验证和 archive 检查完成后，再借鉴其流程做：
-
-- 保留分支
-- 创建 / 更新 PR
-- 合并
-- 清理本地和远程分支
-- 同步主分支
+归档与 diff 检查完成后，与用户确认分支收尾：保留当前分支、创建 PR/MR、合并、或继续开发。不得在验证未通过或 archive 未完成时宣布完成。
 
 > **顺序约束**：archive（8.2）→ 分支收尾决策（8.3）→ 合并纪律 `merge-discipline`（8.3.1）→ 执行合并 → Jira 回写（8.4）。选择「保留分支」「继续开发」不触发合并纪律，也跳过 Jira 回写。
 
@@ -441,7 +394,7 @@ OpenSpec artifacts 正常归档。`AGENTS.md` / 规则 / skill 等 AI 工程知�
 
 ## 常见错误
 
-> 只记本 skill 非直觉陷阱。合并/覆盖率/archive → `merge-discipline`；工程根/`openspec/`/原生 skill → `openspec-workspace-gates`；增强能力 → `env-capability-discovery`；Jira 回写 SOP → `jira-status-writeback`。不复述阶段正文已写明的规则。
+> 只记本 skill 非直觉陷阱。合并/覆盖率/archive → `merge-discipline`；工程根/`openspec/`/原生 skill → `openspec-workspace-gates`；Jira 回写 SOP → `jira-status-writeback`。不复述阶段正文已写明的规则。
 
 | 错误 | 后果 | 修正 |
 |------|------|------|

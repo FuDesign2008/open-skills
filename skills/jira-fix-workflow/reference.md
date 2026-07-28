@@ -56,14 +56,12 @@ state.json           ← 进度（mode、review_round、review_status）
   "selected_option": null,
   "review_round": 0,
   "review_status": null,
-  "enhanced_capabilities": {},
   "started_at": "ISO_TIMESTAMP",
   "last_updated": "ISO_TIMESTAMP"
 }
 ```
 
 - `review_round`：0–3；`review_status`：null | in_progress | passed | failed_max_rounds
-- `enhanced_capabilities`：阶段 0 扫描结果（能力类型 → skill 名）；`{}` = 未命中
 
 ## Commit message 格式
 

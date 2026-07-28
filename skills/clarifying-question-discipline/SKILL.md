@@ -15,7 +15,7 @@ When information is insufficient to guarantee output quality, ask the user **exa
 
 - **Priority order for picking the question**: purpose → constraints → success criteria.
 - **Multi-round by design**: when several unknowns exist (purpose, constraints, success criteria all missing), resolve them across **multiple rounds** — each round's question is refined by the previous answer. This discipline does NOT mean "only one question for the whole session"; it means one question per message, iterating until the information is sufficient.
-- **Unconditional**: this discipline does NOT depend on whether any enhancement skill (e.g. brainstorming) is detected. It applies in every environment.
+- **Unconditional**: this discipline always applies; it does not depend on optional enhancement skills being installed.
 
 **Forbidden**: asking multiple questions in one message, or listing several open points for the user to answer one by one.
 
