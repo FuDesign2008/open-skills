@@ -1,27 +1,27 @@
 ## MODIFIED Requirements
 
-### Requirement: Called skills must be declared as strong dependencies
+### Requirement: 工作流调用的 skill SHALL 声明为强依赖
 
 工作流在任一阶段中按指令调用的 skill（含 `ensure-tests`、`node-version-discipline`），MUST 声明在其 frontmatter `dependencies` 中并纳入前置 skill 检查（缺失即中止），不得「调用未声明」。
 
-#### Scenario: 工作流调用 ensure-tests 但未声明强依赖
+#### Scenario: 阶段 6 调用 ensure-tests 的工作流缺失该 skill 时中止
 
-- **WHEN** 某工作流正文要求调用 `ensure-tests`，但其 frontmatter `dependencies` 未包含该项
-- **THEN** 该工作流违反本 Requirement，合入前必须补齐声明并纳入前置检查
+- **WHEN** 某工作流在测试步骤委托 `ensure-tests`，而运行环境未安装它
+- **THEN** 该工作流前置检查不通过，启动即中止并提示安装，不做静默降级
 
 #### Scenario: 工作流不再调用 env-capability-discovery
 
 - **WHEN** 工作流已移除可选环境能力探索
 - **THEN** 其 `dependencies` MUST NOT list `env-capability-discovery`，且正文 MUST NOT instruct loading that skill
 
-### Requirement: Jira hosts thin-reference merge and writeback skills
+### Requirement: Jira fix hosts SHALL thin-reference merge and env discovery
 
 `jira-fix-workflow` and `opsx-jira-fix-workflow` MUST NOT embed full `merge-discipline` Part C/D step lists or Red Flag catalogs that duplicate that skill; they MUST keep at most a one-line load pointer plus host order constraints (e.g. writeback after merge, archive-before-merge for opsx). They MUST NOT restate optional environment-capability discovery methodology or maintain a capability-to-stage enhancement mapping table.
 
-#### Scenario: Opsx-jira merge step stays a thin pointer
+#### Scenario: merge Red Flags removed from host
 
-- **WHEN** an agent reaches the merge step in `opsx-jira-fix-workflow`
-- **THEN** the skill loads `merge-discipline` for Part A–D instead of inlining coverage preference resolution, tip pinning steps, or Part C/D Red Flags
+- **WHEN** an agent reads Red Flags near merge in either Jira host after this change
+- **THEN** coverage/tip/archive merge pitfalls are directed to `merge-discipline`, not duplicated as multi-bullet host catalogs
 
 #### Scenario: Jira host has no env enhancement mapping
 
