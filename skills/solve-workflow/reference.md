@@ -35,8 +35,9 @@
 - [skill-name]：[该 skill 的用途说明]
 
 【为什么需要它】
-solve-workflow 通过 dependencies 强依赖 13 个 skill：
-- `solution-review` / `code-design-review`：阶段 4 审查框架（4 核心维度 + 5 战略维度 / Layer A-B-C 代码设计审查）
+solve-workflow 通过 dependencies 强依赖下列 skill（以 frontmatter 为准；缺失即中止）：
+- `pdca-review-orchestration`：阶段 4 审查编排（完整 `solution-review` + 条件 `code-design-review`）
+- `solution-review` / `code-design-review`：经编排 skill 调用的审查框架
 - `analysis-core`：阶段 2 分析方法论单源（临时改动门控 / 打点调试 / 分析步骤骨架 / 调试-验证闭环）
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`：经 `analysis-core` 委托的调试 skill（阶段 2 + 阶段 7）
 - `learn-and-improve`：阶段 8 复盘改进与经验沉淀
@@ -44,7 +45,7 @@ solve-workflow 通过 dependencies 强依赖 13 个 skill：
 - `clarifying-question-discipline`：主动提问硬纪律与调查优先原则
 - `known-issue-research`：阶段 2 调研路由 / 已知问题快搜 / 行业通病评估
 - `env-capability-discovery`：环境能力探索（启动时一次扫描可用增强能力）
-- `ensure-tests`：阶段 6 测试补全（测试基建检测 / 补全生成 / 运行）
+- `ensure-tests`：阶段 6 测试补全（`mode=advisory`）
 - `node-version-discipline`：阶段 7 测试执行前 Node 版本对齐
 
 缺失时阶段 4 无法执行深度审查、阶段 2 无法加载分析核心与外部调研、环境能力探索失效、阶段 6 无法补全测试、阶段 7 测试 Node 版本不可信、模式与提问纪律失去单点契约，强行运行会产生未经审查或根因不明的方案，违背 PDCA 工作流初衷。
@@ -62,24 +63,17 @@ solve-workflow 通过 dependencies 强依赖 13 个 skill：
 
 ## 阶段 4 审查报告
 
-**[🤖 自动]** 每轮审查**必须输出**：
+审查报告正文与通过/不通过判定按强依赖 `pdca-review-orchestration` 执行（内含完整 `solution-review` / 条件 `code-design-review`、二级制结论、自动≤3 轮、设计摘要）。本文件**不**再维护「五维度/四维度」评估表。
 
-- **审查轮次**：第 N 轮（共 M 轮上限）
-- **五维度评估**：解决有效性 / 副作用与风险 / 实现可行性 / 代码规范符合度 / 架构与设计质量（各维度标注 ✅ 或 ❌ + 具体问题）
-- **问题清单**：不通过时列出所有需解决的问题（编号 + 问题描述 + 严重程度）
-- **审查结论**：✅ 通过 / ❌ 不通过
-- **[❌ 不通过时]** 优化建议：针对每个问题的具体改进方向
+**[🤖 自动]** 每轮须含：审查轮次（第 N / 上限 3）、`solution-review`（及代码方案时的 `code-design-review`）结构化结论、问题清单、✅/❌；不通过则输出优化说明后重审。
 
-**[👤 手动]** 输出格式：
+**[👤 手动]** 在共享审查报告之后，追加本工作流壳（停等用户判定）：
 
 ```
-【选定方案】方案X：...
-【方案解析】核心逻辑：... / 解决有效性：... / 涉及文件与模块：... / 关键实现点：...
-【副作用与风险】
-- 副作用/风险1：... 影响：... 缓解建议：...
-- 副作用/风险2：...
-【方案处理建议】建议 修改/完善/优化，理由：...
-请确认是否满意，或说「修改方案」「完善方案」「优化方案」进行迭代。
+请确认审查结论：
+- 说「通过」「确认」「OK」→ 进入阶段5
+- 说「修改方案」「完善方案」「优化方案」→ 按指导优化后重新审查
+- 说「重选方案」→ 回到阶段3
 ```
 
 ---

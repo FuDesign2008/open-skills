@@ -1,6 +1,6 @@
 ---
 name: ensure-tests
-version: "1.0.0"
+version: "1.0.1"
 user-invocable: true
 description: Ensure the current project has a proper test suite — detect tech stack & framework, scaffold if needed, generate unit tests (required, logic code only), and optionally generate/run E2E tests. Triggers when user says "ensure-tests", 「补全测试」「生成测试」「确保测试」「补充单元测试」「添加单元测试」「检查测试覆盖」 (complete tests / generate tests / ensure tests / add unit tests / check test coverage). Also callable by solve-workflow and opsx-solve-workflow in their execution-stage test steps.
 ---
@@ -12,8 +12,17 @@ Ensure the current project's test suite is in place: detect tech stack and frame
 ## Invocation Conventions
 
 - **Standalone trigger**: When the user says a trigger word, run the full flow on the current project
-- **Called by workflow**: When invoked by `solve-workflow` or `opsx-solve-workflow` in their execution-stage test steps, scope test generation to the logic files changed in this workflow
+- **Called by workflow**: Scope test generation to the workflow's changed logic files
 - **Read SKILL.md before calling**: Workflows must read this file before each invocation — never call from memory
+
+### Workflow modes
+
+Workflow callers MUST declare one mode:
+
+- **`mode=advisory`**: If required test scaffolding is absent and the user declines it, continue with a report reminder that logic changes lack generated tests. This is non-blocking.
+- **`mode=mandatory`**: Refused required scaffolding or a failing unit-test run blocks exit from the execution stage. Resolve the issue or wait for the user before continuing.
+
+Standalone invocation uses the full flow. The unit-test failure handling in Phase 5 still applies in both modes.
 
 ---
 
