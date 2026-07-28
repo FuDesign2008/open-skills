@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.9.0"
+version: "1.10.0"
 user-invocable: true
 description: 当用户说"opsx解决"、"OpenSpec解决"、"规范化解决"、"创建OpenSpec变更"、"创建opsx变更"、"用OpenSpec分析"、"用OpenSpec修复"、"opsx自动解决"、"OpenSpec自动解决"、"opsx-solve"或"opsx-solve-workflow"时触发。适用于需要将分析、方案、计划、实现、验证和归档沉淀到OpenSpec artifacts的功能开发、Bug修复、重构和复杂工程任务。
 dependencies:
@@ -15,7 +15,6 @@ dependencies:
   - clarifying-question-discipline
   - known-issue-research
   - analysis-core
-  - env-capability-discovery
   - ensure-tests
   - merge-discipline
   - pdca-review-orchestration
@@ -24,7 +23,7 @@ dependencies:
 
 # OPSX 八阶段问题解决工作流
 
-> 将 `solve-workflow` 的八阶段 PDCA 纪律、OpenSpec/OPSX 的 artifact 持久化、Superpowers 的工程执行纪律组合起来。目标是：既不让 AI 跳过分析、方案、审查和验证，也不让关键结论只留在聊天上下文里。
+> 将 `solve-workflow` 的八阶段 PDCA 纪律与 OpenSpec/OPSX 的 artifact 持久化组合起来。目标是：既不让 AI 跳过分析、方案、审查和验证，也不让关键结论只留在聊天上下文里。
 >
 > **输出格式参考**：各阶段输出模板见 [reference.md](reference.md)。
 
@@ -32,11 +31,10 @@ dependencies:
 
 本 skill 用于“值得沉淀”的工程变更：需求、根因、行为变化、技术取舍、任务清单和验证结果都应写入 `openspec/changes/<change-name>/`，完成后通过 archive 合并到 `openspec/specs/`。
 
-三者分工：
+二者分工：
 
 - **OpenSpec**：事实源与归档系统，回答“做什么、为什么”。
-- **solve-workflow**：阶段门禁，回答“什么时候允许进入下一步”。
-- **Superpowers**：可选工程增强，回答“怎么更可靠地执行”。
+- **solve-workflow 式门禁**：阶段门禁，回答“什么时候允许进入下一步”。
 
 不替代普通 `solve-workflow`：
 
@@ -50,7 +48,7 @@ dependencies:
 - **手动模式**：阶段 1、2、3、4、5、7、8 的关键出口必须等待用户确认。
 - **自动模式**：自动推进到验证；阶段 4 审查最多循环 3 轮，超限暂停。
 
-**强依赖 skill**（frontmatter `dependencies`，共 16 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
+**强依赖 skill**（frontmatter `dependencies`；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
 - `pdca-review-orchestration`（阶段 4 审查编排；依赖 `solution-review` 与 `code-design-review`）
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`（经 `analysis-core` 委托；阶段 2 + 阶段 7）
 - `analysis-core`（阶段 2 分析方法论单源：临时改动门控 / 打点调试 / 分析步骤骨架 / 调试-验证闭环）
@@ -59,19 +57,13 @@ dependencies:
 - `workflow-mode-lifecycle`（自动/手动模式生命周期）
 - `clarifying-question-discipline`（主动提问硬纪律与调查优先）
 - `known-issue-research`（阶段 2 调研路由 / 已知问题快搜 / 行业通病评估）
-- `env-capability-discovery`（环境能力探索：启动时一次扫描可用增强能力）
 - `ensure-tests`（阶段 6 测试确保：有测试基建时补全并运行；无基建经用户确认后搭建）
 - `merge-discipline`（阶段 8 合并纪律）
 - `openspec-workspace-gates`（阶段 0 OpenSpec 工程与原生 skill 门禁）
 
 ## 前置 skill 检查
 
-> 本 skill 通过 frontmatter `dependencies` 声明对 14 个 skill 的强依赖。启动时（阶段 0 前置检查通过后、阶段 1 之前）必须执行本检查。
-
-1. 扫描可用 skill（查 `<available_items>` 或用 `skill` 工具）
-2. 核对 14 个 dependencies 是否都在可用列表中
-3. 全部存在 → 继续后续流程
-4. 任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`「前置 skill 检查 — 缺失提示」）
+> 启动时（阶段 0 前置检查通过后、阶段 1 之前）核对 frontmatter `dependencies`：扫描可用 skill，任一缺失 → 结构化提示并**立即中止**（格式见 `solve-workflow/reference.md`「前置 skill 检查 — 缺失提示」）。
 
 > **不降级原则**：强依赖缺失即中止，不得用简化审查/调试降级运行。
 
@@ -93,39 +85,10 @@ dependencies:
 
 ### 通过后的准备步骤
 
-1. **环境能力探索**：探索时机、扫描方法、能力类型关键词表、探索结果处理与调用原则由强依赖 skill `env-capability-discovery` 承载（前置检查已保证可用；其他工作流默认弱引用、不可用时静默跳过）。在本准备步骤执行一次扫描，结果记在会话上下文中，后续阶段直接引用，无需重复扫描；frontmatter `dependencies` 声明的强依赖 skill 不走环境探索（由「前置 skill 检查」保证可用）。
-
-   **能力 → 阶段映射（opsx-solve-workflow）**：
-
-   | 能力类型 | 对应阶段 | 用途 |
-   |---------|---------|------|
-   | 🔍 调试分析 | 阶段 2（技术分析） | 辅助根因定位、假设驱动调查 |
-   | 🌐 Web 调研 | 阶段 2（步骤 2 调研路由与外部调研 / 打点逃生出口） | 经 `known-issue-research` 统一委托 `effective-web-research` |
-   | 💡 方案设计 | 阶段 3（探索方案） | 辅助多方案生成与对比 |
-   | 📝 计划制定 | 阶段 5（制定计划） | 辅助生成结构化执行计划 |
-   | ⚡ 代码执行 / 🧪 测试驱动 / 🔧 构建修复 | 阶段 6（执行计划） | 批量编排 / 先写测试 / 构建错误修复 |
-   | ✅ 完成验证 | 阶段 7（检查验证） | 执行后独立验证 |
-
-2. 扫描可用 Superpowers 类 skill；若存在则记录，后续阶段按需调用；若不存在则静默降级，不阻断。
-3. 判断使用已有 change 还是新建 change，并只准备候选名称：
+1. 判断使用已有 change 还是新建 change，并只准备候选名称：
    - 用户指定 change 名称时，优先使用该 change。
    - 未指定时，为新工作生成 kebab-case 候选名称，并在手动模式下请用户确认。
-4. 准备创建方式，但不得在阶段 1 用户确认前创建目录：通过 `openspec-new-change` skill 创建 change（读取其 SKILL.md，按其指令执行）。
-
-### Superpowers 渐进增强
-
-Superpowers 是增强能力，不是硬依赖。检测到以下 skill 时，在对应阶段使用；未检测到时按本 skill 内置流程执行：
-
-| Superpowers 能力 | 使用阶段 | 用途 |
-|------------------|----------|------|
-| `brainstorming` | 阶段 1-3 | 需求模糊时，一次一问、提出 2-3 个方案、确认设计 |
-| `writing-plans` | 阶段 5 | 将 `tasks.md` 拆到可执行工程脚本粒度 |
-| `using-git-worktrees` | 阶段 6 前 | 复杂或高风险实现前创建隔离工作区 |
-| `test-driven-development` | 阶段 6 | 有测试价值的任务先写失败测试再实现 |
-| `systematic-debugging` | 阶段 6-7 | 测试、构建或行为失败时先找根因 |
-| `requesting-code-review` | 阶段 4 / 阶段 6 | 审查 spec 覆盖、设计风险和代码质量 |
-| `verification-before-completion` | 阶段 7 | 用新鲜命令输出支撑完成判断 |
-| `finishing-a-development-branch` | 阶段 8 | 归档前辅助分支收尾和交付决策 |
+2. 准备创建方式，但不得在阶段 1 用户确认前创建目录：通过 `openspec-new-change` skill 创建 change（读取其 SKILL.md，按其指令执行）。
 
 ### 路径选择
 
@@ -133,7 +96,7 @@ Superpowers 是增强能力，不是硬依赖。检测到以下 skill 时，在�
 
 | 路径 | 适用场景 | 要求 |
 |------|----------|------|
-| 完整路径 | 全新功能、复杂模块、需求模糊 | 阶段 1-8 全部执行；优先使用 `brainstorming` |
+| 完整路径 | 全新功能、复杂模块、需求模糊 | 阶段 1-8 全部执行 |
 | 增量路径 | 存量行为修改、重构、普通 Bug | 阶段 1-8 执行，但 proposal/spec 可保持精简 |
 | 精简路径 | 热修复、小范围高确定性变更 | 保留 proposal、delta spec、tasks、验证和归档，不跳过验证 |
 
@@ -187,7 +150,6 @@ Superpowers 是增强能力，不是硬依赖。检测到以下 skill 时，在�
 
 > 分析方法论单源：`analysis-core`。本阶段不留实现变更——修复归阶段 6。
 
-🔌 若环境探索发现「🔍 调试分析」类能力，在根因分析环节调用（假设驱动调查、证据链构建）。
 
 ### 委托 `analysis-core`
 
@@ -214,7 +176,6 @@ Superpowers 是增强能力，不是硬依赖。检测到以下 skill 时，在�
 - 优点、缺点、复杂度、风险
 - 推荐方案
 
-若检测到 `brainstorming`，可用其“多方案 + 取舍 + 推荐”模式辅助阶段 3，但最终输出仍必须写入或准备写入 OpenSpec artifacts。
 
 手动模式输出方案对比表后暂停，等用户选择。
 
@@ -240,7 +201,7 @@ Delta spec 规范（由 `openspec-continue-change` skill 负责落实）：
 
 ## 阶段 4：审查方案
 
-加载 `pdca-review-orchestration` 并按其完整审查契约执行。本工作流映射：`{next-stage}` = 阶段 5「制定计划」；`{artifact-sink}` = 通过 `openspec-continue-change` 创建的 `design.md`；`{extra-dimensions}` = `requesting-code-review` 可用时执行 Spec 合规审查（proposal why、delta specs 行为、design 风险、tasks 覆盖 requirements）；`{batch-overcap-behavior}` = `N/A`。审查通过后按原生 skill 创建 `design.md`。
+加载 `pdca-review-orchestration` 并按其完整审查契约执行。本工作流映射：`{next-stage}` = 阶段 5「制定计划」；`{artifact-sink}` = 通过 `openspec-continue-change` 创建的 `design.md`；`{extra-dimensions}` = Spec 合规（proposal why、delta specs 行为、design 风险、tasks 覆盖 requirements）；`{batch-overcap-behavior}` = `N/A`。审查通过后按原生 skill 创建 `design.md`。
 
 **非阻断问题**（可标注为建议，但不阻止通过；**不得**把「有更优架构但近端可维护」当作非阻断）：
 
@@ -260,7 +221,7 @@ Delta spec 规范（由 `openspec-continue-change` skill 负责落实）：
 
 ## 阶段 5：制定计划
 
-🔌 **OPSX Skills 集成**：通过 `openspec-continue-change` skill 生成 `tasks.md`（先读取其 SKILL.md，再按其指令执行；specs + design 均完成后 tasks 变为 ready）。若同时检测到 `writing-plans` skill，先读取其 SKILL.md，将细化要求（目标文件、测试命令、预期结果、失败处理）作为上下文传递给 `openspec-continue-change` skill 执行。本 skill 不直接手写 tasks.md 内容。
+🔌 **OPSX Skills 集成**：通过 `openspec-continue-change` skill 生成 `tasks.md`（先读取其 SKILL.md，再按其指令执行；specs + design 均完成后 tasks 变为 ready）。本 skill 不直接手写 tasks.md 内容。
 
 tasks.md 规范（由 skill 负责落实）：
 
@@ -279,14 +240,6 @@ tasks.md 规范（由 skill 负责落实）：
 3. **完成任务后必须立即更新 checkbox**：使用 StrReplace 将 tasks.md 中对应的 `[ ]` 改为 `[x]`，不得延后到一批任务结束后再批量更新。若跳过此步骤，阶段 7 验证器将报 CRITICAL 虚假未完成。
 4. 如果实现发现设计或 spec 不准确，先回写对应 artifact，再继续实现。
 5. 偏离计划时说明原因；若偏离影响范围或行为契约，回到阶段 4 或阶段 5。
-
-Superpowers 增强规则：
-
-- 若检测到 `using-git-worktrees` 且任务复杂、高风险或用户要求隔离，执行前创建隔离 worktree。
-- 若检测到 `test-driven-development` 且任务有可测试行为，先写失败测试，确认失败原因正确，再写实现。
-- 若测试、构建、类型检查或行为验证失败，检测到 `systematic-debugging` 时先做根因分析，不得猜修。
-- 若检测到 `requesting-code-review`，每完成一个高风险任务或一组相关任务后做代码质量审查。
-- 若存在可并行任务且环境支持子代理，可借鉴 `subagent-driven-development`：一任务一上下文，完成后审查再合入。
 
 ### 测试套件确保（必须，在执行报告前）
 
@@ -309,7 +262,7 @@ Superpowers 增强规则：
 3. **行为对照**：逐条对照 delta spec 的 requirements 和 scenarios，确认实现覆盖。
 4. **调试-验证闭环**：若阶段 2 用了调试 skill 定位根因，按 `analysis-core` §4 用**同一 skill** 验证修复（而非只跑测试）
 
-若检测到 `verification-before-completion`，必须按其原则执行：只有刚运行过并亲自阅读过输出的命令，才能作为“通过”的证据。
+验证结论须基于本轮刚运行并亲自阅读过输出的命令；不得把「设计了场景」写成「已通过」。
 
 输出格式见 [reference.md](reference.md)「阶段 7 检查验证」。
 
@@ -340,7 +293,7 @@ Superpowers 增强规则：
 
 若 `openspec-archive-change` skill 执行失败，**不得**手动操作 `openspec/` 目录；应停止并提示用户检查 openspec 安装状态。
 
-归档后必须检查 diff，确认主 specs 更新和 archive 目录迁移都进入工程根的 git 工作区变更。若检测到 `finishing-a-development-branch`，在归档和 diff 检查完成后，再借鉴其流程做分支收尾决策：保留当前分支、创建 PR、合并或继续开发。不得在测试未通过、归档未完成或 diff 未审查时宣布完成。
+归档后必须检查 diff，确认主 specs 更新和 archive 目录迁移都进入工程根的 git 工作区变更。再做分支收尾决策：保留当前分支、创建 PR、合并或继续开发。不得在测试未通过、归档未完成或 diff 未审查时宣布完成。
 
 > **顺序约束**：归档 + diff 检查 → 分支收尾决策 → 合并纪律 `merge-discipline` → 执行合并。选择「保留当前分支」「继续开发」不触发合并纪律。
 
@@ -361,7 +314,7 @@ Superpowers 增强规则：
 
 ## 常见错误
 
-> 只记本 skill 非直觉陷阱。合并/覆盖率/tip → `merge-discipline`；工程根/`openspec/`/原生 skill 门禁 → `openspec-workspace-gates`；增强能力静默降级 → `env-capability-discovery`。不复述阶段正文已写明的规则。
+> 只记本 skill 非直觉陷阱。合并/覆盖率/tip → `merge-discipline`；工程根/`openspec/`/原生 skill 门禁 → `openspec-workspace-gates`。不复述阶段正文已写明的规则。
 
 | 错误 | 后果 | 修正 |
 |------|------|------|

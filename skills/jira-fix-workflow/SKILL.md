@@ -1,6 +1,6 @@
 ---
 name: jira-fix-workflow
-version: "3.18.0"
+version: "3.19.0"
 user-invocable: true
 description: 当用户说「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」时触发。适用于从 Jira 链接出发、对单个 bug 进行端到端修复的场景。
 dependencies:
@@ -14,7 +14,6 @@ dependencies:
   - clarifying-question-discipline
   - known-issue-research
   - analysis-core
-  - env-capability-discovery
   - ensure-tests
   - merge-discipline
   - pdca-review-orchestration
@@ -42,7 +41,7 @@ dependencies:
 
 ## 强依赖与前置检查
 
-强依赖见 frontmatter `dependencies`（15 个）。阶段 0 通过后、阶段 1 前扫描可用 skill；任一缺失 → 结构化提示并**立即中止**（格式见 `solve-workflow/reference.md`）。**不降级**。
+强依赖见 frontmatter `dependencies`。阶段 0 通过后、阶段 1 前扫描可用 skill；任一缺失 → 结构化提示并**立即中止**（格式见 `solve-workflow/reference.md`）。**不降级**。
 
 ## 模式生命周期
 
@@ -76,12 +75,6 @@ dependencies:
 - **主动提问**：`clarifying-question-discipline`（一次一问）
 - **Jira 状态边界**：研发只流转到「已修复」；关闭/验证通过由 QA
 
-## 环境能力探索
-
-方法论见 `env-capability-discovery`。阶段 0 后扫描一次，结果写入 state.json `enhanced_capabilities`；后续直接引用。强依赖不走环境探索。
-
-**本工作流映射差分**（相对 solve 类）：🔍/🌐→阶段3；💡→5；📝→6；⚡🧪🔧→7；✅→8；**📋 代码审查→9**；**🌿 分支管理→1（工作区隔离）**。命中则在对应阶段调用；未命中静默跳过。
-
 ## 路径选择
 
 阶段 4 分级后选择；可升级不可降级。
@@ -90,7 +83,7 @@ dependencies:
 |------|------|------|
 | 精简 | 🟢 容易 | 方案可 1 个+风险；计划可合并；阶段 8/9 不可跳 |
 | 标准 | 🟡 中等 | 阶段 1–10 标准执行 |
-| 完整 | 🟠 困难 / 🔴 极难选 B | 全阶段；优先 brainstorming；阶段 7 后暂停审查 |
+| 完整 | 🟠 困难 / 🔴 极难选 B | 全阶段；阶段 7 后暂停审查 |
 
 手动升级需用户确认。
 
