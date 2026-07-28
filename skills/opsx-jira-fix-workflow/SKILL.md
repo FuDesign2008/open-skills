@@ -171,7 +171,7 @@ dependencies:
 
 完成后自动进入阶段 2。
 
-> ⚠️ 加载 `clarifying-question-discipline`：Jira 信息不足时每轮只问一个关键问题，按目的 → 约束 → 成功标准逐轮收敛。
+> ⚠️ 主动提问：遵循 `clarifying-question-discipline`（一次一问、多轮问清）。
 >
 > 🚩 **Red Flag**：一次列出多个歧义点让用户回答（违反硬纪律，见 `clarifying-question-discipline`）——每次只问 1 个最关键的，得到回答后再问下一个。
 

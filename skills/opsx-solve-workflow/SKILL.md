@@ -156,7 +156,7 @@ Superpowers 是增强能力，不是硬依赖。检测到以下 skill 时，在�
 
 ## 阶段 1：明确问题
 
-**⚠️ 主动提问**：加载 `clarifying-question-discipline`；信息不足时每轮只问一个关键问题，按目的 → 约束 → 成功标准逐轮收敛。
+**⚠️ 主动提问**：遵循 `clarifying-question-discipline`（一次一问、多轮问清）。
 
 手动模式必须依次完成以下步骤：
 

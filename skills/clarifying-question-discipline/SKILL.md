@@ -1,6 +1,6 @@
 ---
 name: clarifying-question-discipline
-version: "1.0.0"
+version: "1.0.1"
 user-invocable: false
 description: "Hard discipline for asking the user clarifying questions: ask exactly ONE most critical question per round (priority: purpose → constraints → success criteria), and resolve multiple unknowns across MULTIPLE rounds — each round's question refined by the previous answer (not 'only one question for the whole session'). Also carries the investigation-first principle. Referenced via frontmatter dependencies by workflow skills (solve-workflow, opsx-solve-workflow, jira-fix-workflow, opsx-jira-fix-workflow, perf-workflow); load when a workflow delegates user-questioning guidance."
 ---
@@ -45,8 +45,8 @@ Describe intent; the agent picks its own native capability (platform-agnostic, p
 
 A referencing workflow keeps exactly three touchpoints in its own body (per spec `clarifying-question-discipline`); the full discipline text lives only here:
 
-1. **Prominent pointer** — a bold/tagged one-line declaration (e.g. "⚠️ Ask one question at a time — see `clarifying-question-discipline`"), not buried in a plain paragraph.
-2. **Entry-point quantity constraint** — at each user-questioning step (e.g. "list open questions"), explicitly state "if asking the user, ask only ONE most critical question; ask the next only after the answer".
+1. **Prominent pointer** — a bold/tagged one-line declaration that names this skill and the dual intent **one-per-turn + multi-round OK**. Prefer: `⚠️ 主动提问：遵循 clarifying-question-discipline（一次一问、多轮问清）。` / `⚠️ Follow clarifying-question-discipline (one question per turn; multi-round OK).` Do **not** restate the purpose→constraints→success priority chain or invent shorter paraphrases that can be read as "only one question for the whole session".
+2. **Entry-point quantity constraint** — at each user-questioning step (e.g. "list open questions"), explicitly state "if asking the user, ask only ONE most critical question this turn; ask the next only after the answer".
 3. **Red Flags entry** — "dumping multiple questions/open points on the user at once" listed as forbidden, with the one-at-a-time fix.
 
 Skills that do NOT declare the dependency (e.g. standalone English skills) instead inline the full form themselves (prominent declaration + entry constraint + Red Flags + platform-agnostic phrasing).
