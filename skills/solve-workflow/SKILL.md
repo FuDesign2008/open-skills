@@ -259,7 +259,7 @@ dependencies:
 | ✅ **通过** | 各项审查维度均无阻断问题，仅存在可接受的低风险 | 进入阶段5 |
 | ❌ **不通过** | 任一维度存在需解决的问题或不可接受的风险 | 进入优化→重新审查循环 |
 
-**阻断/非阻断判定**：完整的 blocking/non-blocking 标准由 `solution-review`（决策级）和 `code-design-review`（代码设计级）skill 提供。审查时加载对应 skill，按其标准判定每个维度的通过/不通过。本工作流只负责汇总各维度结论，按二级制给出整体审查结论。
+**阻断/非阻断判定**：完整的 blocking/non-blocking 标准由 `solution-review`（决策级）和 `code-design-review`（代码设计级）skill 提供。审查时加载对应 skill，按其标准判定；本工作流只负责汇总。
 
 ### 循环流程
 

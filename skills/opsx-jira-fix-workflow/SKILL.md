@@ -342,7 +342,7 @@ Delta spec 必须使用：
 
 **决策级审查**（加载 `solution-review` skill 按其 9 维度框架执行）：4 核心维度（解决有效性 / 副作用与风险 / 实现可行性 / 规范符合度）+ 5 战略维度（可逆性校准 / 失效模式分析 / 可运维性 / 成本 vs 价值 / 团队认知适配）。
 
-**代码设计审查**（方案涉及代码时，加载 `code-design-review` skill）：Layer A 代码级指标 + Layer B 架构级属性 + Layer C 安全审查。
+**代码设计审查**（方案涉及代码时，加载 `code-design-review` skill）：Layer A 代码级指标 + Layer B 架构级属性 + Layer C 安全审查。阻断/非阻断以两 review skill 为准。
 
 **OPSX 特化维度**（本工作流独有，solution-review 不覆盖）：
 1. **Spec 覆盖**：方案是否覆盖 delta specs 中的 requirements 和 scenarios。

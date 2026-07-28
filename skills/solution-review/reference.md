@@ -92,9 +92,9 @@ These five dimensions catch decision-level failures. They are mandatory for one-
 - **Framework**: CBAM — Cost Benefit Analysis Method (SEI/CMU, 2003); and WSJF — Weighted Shortest Job First (Don Reinertsen, *The Principles of Product Development Flow*, 2009; adopted by SAFe).
 - **What it evaluates**: Whether the effort is worth the outcome, and whether delay loses economic value.
 - **Method**:
-  1. **CBAM**: Estimate the cost (engineering effort, infrastructure, maintenance) and the benefit (quality-attribute improvement, revenue, risk reduction) of the solution. Compare against alternatives. If cost > benefit and no cheaper alternative achieves ~80% of the value, flag for reconsideration.
-  2. **WSJF / Cost of Delay**: If this solution is delayed, what is the economic cost? (business value + time criticality + risk reduction). High cost-of-delay items warrant prioritization; low cost-of-delay items can wait for a better approach.
-- **Blocking**: For one-way doors, if cost clearly exceeds value and no alternative was considered, block. For two-way doors, note as non-blocking.
+  1. **CBAM**: Estimate the cost (engineering effort, infrastructure, **ongoing maintenance / change amplification**) and the benefit (quality-attribute improvement, revenue, risk reduction) of the solution. Compare against alternatives. If cost > benefit and no cheaper alternative achieves ~80% of the value, flag for reconsideration. **Do not treat low implementation cost (including AI-assisted coding) as sufficient justification for a structurally weaker design when a better feasible alternative exists.**
+  2. **WSJF / Cost of Delay**: If this solution is delayed, what is the economic cost? (business value + time criticality + risk reduction). High cost-of-delay items warrant prioritization; low cost-of-delay items can wait for a better approach — but "wait" is not an excuse to ship a worse architecture when the better one is feasible *now* at similar build cost.
+- **Blocking**: For one-way doors, if cost clearly exceeds value and no alternative was considered, block. For two-way doors, note as non-blocking **unless** the gap is a feasible structural/architecture improvement with material long-term maintainability benefit (then treat as blocking without Prudent-Deliberate acceptance; align with `code-design-review` when code is involved).
 - **Sources**:
   - [SEI/CMU — CBAM (02tn023)](https://resources.sei.cmu.edu/library/asset-view.cfm?assetid=30753)
   - [SAFe — WSJF](https://www.scaledagileframework.com/wsjf/)
@@ -124,20 +124,21 @@ These five dimensions catch decision-level failures. They are mandatory for one-
 - The solution conflicts with existing design patterns or coding conventions.
 - A likely side-effect could introduce new bugs or break existing functionality, unhandled.
 
-**Strategic dimensions (one-way doors only):**
+**Strategic dimensions (one-way doors only, plus architecture-weight rule below):**
 - A failure mode with Severity ≥ 8 (FMEA) has no mitigation.
 - The solution is irreversible and has no rollback path.
 - The solution is irreversible and has no monitoring / alerting for its failure modes.
 - The cost clearly exceeds the value and no cheaper alternative was considered.
+- A structural / architectural alternative is clearly superior for long-term maintainability, is feasible in scope, and would be rejected only because the weaker option is faster to implement — without Prudent-Deliberate debt acceptance (also applies to high-impact two-way doors when code-affecting; align with `code-design-review`).
 
 ### Non-blocking (note as recommendation, do not block)
 
 - Low-risk items that already have mitigation.
-- Style preferences that do not affect correctness.
-- Performance improvements deferrable to a later iteration.
-- A more elegant approach exists, but the current one is correct and maintainable.
-- Deliberate, documented technical debt with a repayment plan.
-- A two-way-door solution with a quick strategic pass — speed is favored over exhaustive analysis.
+- Style preferences that do not affect correctness or structure.
+- Performance improvements deferrable to a later iteration (when not structural).
+- Style-level elegance without structural / change-amplification impact.
+- Deliberate, documented technical debt with a repayment plan (including explicitly accepted weaker architecture).
+- A two-way-door solution with a quick strategic pass — speed is favored over exhaustive analysis **only when** no material structural architecture gap was identified.
 
 ---
 
