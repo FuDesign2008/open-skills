@@ -36,7 +36,15 @@
 
 ## 安装与更新
 
-一行命令安装所有 skill（全局，适用于支持 `npx skills` 的编码助手）：
+非交互全局安装（推荐；避免 PromptScript ✗ 噪音）：
+
+```bash
+git clone https://github.com/FuDesign2008/open-skills.git
+cd open-skills
+node scripts/install-skills.mjs
+```
+
+或底层 CLI 交互式安装：
 
 ```bash
 npx skills add FuDesign2008/open-skills -g

@@ -5,7 +5,9 @@
     "prepare": "husky || true",
     "gen:skills-index": "node scripts/gen-skill-docs.mjs",
     "lint:skill-description": "node scripts/lint-skill-description.mjs",
-    "mark:openspec-internal": "node scripts/mark-openspec-internal.mjs"
+    "mark:openspec-internal": "node scripts/mark-openspec-internal.mjs",
+    "install:skills": "node scripts/install-skills.mjs",
+    "test": "node --test scripts/*.test.mjs"
   },
   "devDependencies": {
     "husky": "^9.1.7"

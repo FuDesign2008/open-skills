@@ -91,7 +91,7 @@ dependencies:
 
 ### ⚠️ 主动提问
 
-> ⚠️ 主动提问：遵循 `clarifying-question-discipline`（一次一问、多轮问清）。
+> ⚠️ 主动提问：遵循 `clarifying-question-discipline`（一次一问、多轮问清；问清优先，不急着答）。
 
 ---
 

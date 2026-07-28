@@ -29,15 +29,20 @@
 ### 安装与列表
 
 ```bash
-# 全部 skill，全局（推荐）
-npx skills add FuDesign2008/open-skills -g
+# 非交互全局全量（推荐；零 PromptScript ✗）
+node scripts/install-skills.mjs
 
 # 仅安装某个 skill
-npx skills add FuDesign2008/open-skills --skill solve-workflow -g
+node scripts/install-skills.mjs --skill solve-workflow
+
+# 交互式 / 指定 agent 的底层命令（可能出现 PromptScript 噪音，见下方说明）
+npx skills add FuDesign2008/open-skills -g
 
 # 查看本仓库可安装的 skill 列表
 npx skills add FuDesign2008/open-skills --list
 ```
+
+`scripts/install-skills.mjs` 会向支持全局安装的 agent（默认 `claude-code`、`cursor`、`opencode`）执行 `npx skills add`，并排除 PromptScript/Eve（其 `globalSkillsDir` 为空）。上游问题：[vercel-labs/skills#1352](https://github.com/vercel-labs/skills/issues/1352)。扩展 agent：`OPEN_SKILLS_AGENTS="claude-code cursor opencode codex" node scripts/install-skills.mjs`。
 
 ### 更新
 
