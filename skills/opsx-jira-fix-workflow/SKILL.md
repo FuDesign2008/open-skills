@@ -456,16 +456,4 @@ OpenSpec artifacts 正常归档。`AGENTS.md` / 规则 / skill 等 AI 工程知�
 
 ## 最小成功标准
 
-一次完整执行至少产生或更新：
-
-- `openspec/changes/<change-name>/proposal.md`
-- `openspec/changes/<change-name>/specs/<capability>/spec.md`
-- `openspec/changes/<change-name>/design.md`
-- `openspec/changes/<change-name>/tasks.md`
-
-完成后：
-
-- PR/MR 已创建或更新。
-- Jira 已评论并流转到“已修复”（如有权限）。
-- OpenSpec 已 archive，或 PR 明确说明归档策略和责任人。
-- 验证证据已记录。
+一次完整执行：OpenSpec change 经原生 skill 具备 proposal / delta specs / design / tasks；PR/MR 已创建或更新；Jira 已评论并流转到「已修复」（如有权限）；OpenSpec 已 archive（或 PR 写明归档策略与责任人）；验证证据已记录。
