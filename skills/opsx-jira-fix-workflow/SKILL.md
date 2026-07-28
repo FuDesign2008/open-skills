@@ -56,7 +56,7 @@ dependencies:
 - `workflow-mode-lifecycle`（自动/手动模式生命周期）、`clarifying-question-discipline`（主动提问硬纪律与调查优先）、`known-issue-research`（阶段 2 调研路由 / 已知问题快搜 / 行业通病评估）
 - `env-capability-discovery`（环境能力探索：启动时一次扫描可用增强能力）
 - `ensure-tests`（阶段 6.2.5 测试确保：有测试基建时补全并运行；无基建经用户确认后搭建）
-- `merge-discipline`（阶段 8 合并纪律：rebase 预检 + 覆盖率门控 + tip 钉死，合并前加载）
+- `merge-discipline`（阶段 8 合并纪律：OpenSpec archive 关联门控 + rebase 预检 + 覆盖率门控 + tip 钉死，合并前加载）
 
 ## 前置 skill 检查
 
@@ -507,13 +507,12 @@ PR/MR 描述必须包含：
 
 若 `openspec-archive-change` skill 执行失败，**不得**手动操作 `openspec/` 目录；应停止并提示用户检查 openspec 安装状态。
 
-合并或准备合并前，必须确认 archive 策略：
+合并或准备合并前，必须确认 archive 已完成（与 `merge-discipline` Part A 一致）：
 
-- 若本次 PR 应包含最终 specs 更新：先执行 `openspec archive <change-name>`，检查 diff 后再提交/更新 PR。
-- 若团队要求合并后归档：PR 描述必须写明 active change 路径和归档责任人，不得声称 specs 已更新。
+- 关联 active OpenSpec change 时：**必须**先 archive（同步主 specs + 迁入 `openspec/changes/archive/`），确认 diff 后再合并；**不得**以「合并后再归档」作为正常路径。
+- 无关联 change 的 PR：Part A 放行，不要求 archive。
 
-默认推荐：验证通过后先 archive，确认 `openspec/specs/` 更新和 `openspec/changes/archive/` 迁移进入 diff，再完成 PR。
-
+默认：验证通过后先 archive，确认 `openspec/specs/` 更新和 `openspec/changes/archive/` 迁移进入 diff，再完成 PR/合并。
 ### 8.3 分支收尾
 
 若检测到 `finishing-a-development-branch`，在验证和 archive 检查完成后，再借鉴其流程做：
@@ -528,12 +527,11 @@ PR/MR 描述必须包含：
 
 #### 8.3.1 合并纪律（merge-discipline skill）
 
-> 合并动作执行前加载强依赖 skill `merge-discipline`（前置检查已保证可用），执行三部分（顺序 Part A → Part B → Part C）：
-> - **Part A rebase/冲突预检**：fetch + rev-list + merge-tree 检测目标分支领先量与冲突；需 rebase 时报告并等用户确认，rebase + force-with-lease push 后结束本轮（不管 CI，用户等 CI 绿后重新进入合并）；干净则放行 Part B（完整规范见 skill Part A）
-> - **Part B 覆盖率门控**：test-coverage-analyzer 触发判定 + 判定矩阵 + 留痕（完整规范见 skill Part B；合并前快查表见 [reference.md](reference.md)「合并前检查清单」）
-> - **Part C tip 钉死**：archive/docs push 后钉死 revision（`--sha`）+ Pipeline succeeded 语义核对 + 合入后祖先校验 + 双策略降级（完整规范见 skill Part C）
->
-> 判定矩阵概要：Part A 需 rebase→等用户确认后 rebase + push，结束本轮；Part A 干净→继续 Part B；门控达标→继续 Part C tip 钉死与合并；不达标/崩溃/无报告/无测试→暂停；隐式漏跑→补跑或留痕。
+> 合并动作执行前加载强依赖 skill `merge-discipline`（前置检查已保证可用），执行四部分（顺序 Part A → B → C → D）；**用户直接说 merge 也必须加载，不得隐式跳过**：
+> - **Part A OpenSpec archive 关联门控**：关联 active change 且未 archive → 阻断；无关联则放行（完整规范见 skill Part A）
+> - **Part B rebase/冲突预检**：见 skill Part B
+> - **Part C 覆盖率门控**：见 skill Part C；快查表见 `merge-discipline/reference.md`「合并前检查清单」
+> - **Part D tip 钉死**：见 skill Part D（Strategy B 仅事故恢复）
 
 ### 8.4 Jira 回写（合并完成后）
 
@@ -585,8 +583,8 @@ Jira 评论必须包含：
 > - ❌ 覆盖率不达标自动模式强行合并（须暂停等用户决策）
 > - ❌ 用户显式跳过门控但未在 PR 描述和 design.md 留痕
 > - ❌ archive（8.2）未完成就触发合并纪律（顺序：8.2 archive → 8.3 分支收尾 → 8.3.1 合并纪律 merge-discipline → 合并 → 8.4 Jira 回写）
-> - ❌ archive/docs push 后裸 merge（无 `--sha`、无合入后祖先校验）→ archive 未入目标分支（见 `merge-discipline` Part C）
-> - ❌ 把刚 push 后立即出现的「Pipeline succeeded」当当前 tip 已绿 → 多半是旧 tip 结果（见 `merge-discipline` Part C step 2）
+> - ❌ archive/docs push 后裸 merge（无 `--sha`、无合入后祖先校验）→ archive 未入目标分支（见 `merge-discipline` Part D）
+> - ❌ 把刚 push 后立即出现的「Pipeline succeeded」当当前 tip 已绿 → 多半是旧 tip 结果（见 `merge-discipline` Part D step 2）
 
 ## 批量 OPSX Jira 修复
 
@@ -600,7 +598,7 @@ Jira 评论必须包含：
 | 只写 OpenSpec，不回写 Jira | Jira 流程断裂，QA 无法跟进 | 阶段 8.4 合并完成后必须写 Jira 评论并流转到“已修复” |
 | 未做存在性验证 | 修复不存在或已变化的问题 | 阶段 2 第一项必须验证 |
 | `MODIFIED` 只写片段 | archive 时丢失 requirement 细节 | 复制完整 requirement block 再修改 |
-| 先 PR/合并再 archive | specs 或 archive 目录可能不在最终 diff | 默认先 archive 并检查 diff，再完成 PR |
+| 先 PR/合并再 archive | specs 或 archive 目录可能不在最终 diff；违反 merge-discipline Part A | 关联 active change 时必须先 archive 再合并；不得以合并后归档作正常路径 |
 | Jira 状态越权 | 研发误关闭 issue | 只允许流转到“已修复” |
 | 通过 `jira_transition_issue` 的 `comment` 参数传评论 | 评论被静默丢弃 | 独立调用 `jira_add_comment`，transition 的 comment 参数不可靠 |
 | Superpowers 缺失就中断 | 降低跨平台可用性 | Superpowers 只做渐进增强，探索失败静默跳过（见 `env-capability-discovery`） |

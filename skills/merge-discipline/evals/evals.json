@@ -4,9 +4,10 @@
     {
       "id": 1,
       "name": "rebase-needed-clean",
-      "prompt": "我在用 jira-fix-workflow 修 YNOTR-12167，已到阶段10「Review 与合并」。修复分支 fix/jira-fix-YNOTR-12167 准备合入 release/8.2.80。但我开发期间 release/8.2.80 被同事推进了 3 个 commit（不冲突，rebase 应干净完成）。我是用户，刚对你说「合并」。请加载 merge-discipline skill，说明你会按什么流程处理（dry-run 说明题）。",
-      "expected_output": "Part A: fetch + rev-list + merge-tree 检测 → 报告目标领先、rebase 可干净完成 → 等用户确认 → rebase + force-with-lease push → 结束本轮（不管 CI），控制权交回工作流",
+      "prompt": "我在用 jira-fix-workflow 修 YNOTR-12167，已到阶段10「Review 与合并」。修复分支 fix/jira-fix-YNOTR-12167 准备合入 release/8.2.80。但我开发期间 release/8.2.80 被同事推进了 3 个 commit（不冲突，rebase 应干净完成）。本 PR 不含 openspec/changes/，会话也无 active OpenSpec change。我是用户，刚对你说「合并」。请加载 merge-discipline skill，说明你会按什么流程处理（dry-run 说明题）。",
+      "expected_output": "Part A: 无关联 → 放行；Part B: fetch + rev-list + merge-tree 检测 → 报告目标领先、rebase 可干净完成 → 等用户确认 → rebase + force-with-lease push → 结束本轮（不管 CI），控制权交回工作流",
       "expectations": [
+        "先跑 Part A archive 关联门控（或说明无关联后放行）",
         "提议 fetch 目标 + 检测领先量（rev-list --count）",
         "提议检测冲突（merge-tree 或平台 mergeable）",
         "检测到领先时报告并等用户确认，不自动 rebase",
@@ -18,15 +19,40 @@
     {
       "id": 2,
       "name": "conflict-present",
-      "prompt": "我在用 jira-fix-workflow 修 YNOTR-12167，已到阶段10。修复分支 fix/jira-fix-YNOTR-12167 → release/8.2.80。release/8.2.80 期间被推进 3 个 commit，其中 2 个文件和我的改动重叠，预计 rebase 会冲突。我是用户，刚对你说「合并」。请加载 merge-discipline skill，说明你会按什么流程处理（dry-run 说明题）。",
-      "expected_output": "Part A: 检测出领先 + 冲突 → 报告冲突情况、等用户确认 → rebase + 委托 git-conflict-resolve 解冲突 → force-with-lease push → 结束本轮（不管 CI）",
+      "prompt": "我在用 jira-fix-workflow 修 YNOTR-12167，已到阶段10。修复分支 fix/jira-fix-YNOTR-12167 → release/8.2.80。release/8.2.80 期间被推进 3 个 commit，其中 2 个文件和我的改动重叠，预计 rebase 会冲突。本 PR 不含 openspec/changes/。我是用户，刚对你说「合并」。请加载 merge-discipline skill，说明你会按什么流程处理（dry-run 说明题）。",
+      "expected_output": "Part A 放行；Part B: 检测出领先 + 冲突 → 报告冲突情况、等用户确认 → rebase + 委托 git-conflict-resolve 解冲突 → force-with-lease push → 结束本轮（不管 CI）",
       "expectations": [
+        "先跑 Part A 或说明无关联后放行",
         "提议 fetch + 检测领先量（rev-list）",
         "提议检测冲突（merge-tree/平台 conflict），判定存在冲突",
         "检测到冲突时报告并等用户确认，不自动 rebase",
         "用户确认后 rebase，遇冲突委托 git-conflict-resolve（rebase mode）",
         "force-with-lease push 个人分支，不 force push 目标分支",
         "rebase+push 后结束本轮、不管 CI"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "archive-gate-blocks-direct-merge",
+      "prompt": "我刚完成 opsx-solve-workflow 的实现，PR 仍含 openspec/changes/archive-before-merge/（未进 archive）。用户直接说「merge MR」，没有走阶段 8。请加载 merge-discipline，说明你会怎么做（dry-run）。",
+      "expected_output": "Part A: 关联命中且 change 仍 active → 阻断合并，要求先在同一 tip 上 archive；不得隐式跳过；不进入 Part B/C/D 或 gh pr merge；不得推荐先合再开 docs archive PR 作为主路径",
+      "expectations": [
+        "识别用户直接 merge 仍必须跑 Part A",
+        "判定 PR diff 含 active openspec/changes/<name>/ 为关联",
+        "阻断合并并点名 active change",
+        "不运行 Part B/C/D 或 merge 命令",
+        "不把 Strategy B 后补 archive PR 当推荐主路径"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "unassociated-passthrough",
+      "prompt": "纯文档 typo PR，diff 无 openspec/changes/，会话无 OpenSpec change。用户说「合并」。说明 Part A 如何处理后再接 Part B（dry-run）。",
+      "expected_output": "Part A 无关联 → 放行 Part B；不要求 archive",
+      "expectations": [
+        "判定无关联",
+        "放行到 Part B",
+        "不要求 openspec archive"
       ]
     }
   ]
