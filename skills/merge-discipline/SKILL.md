@@ -214,4 +214,4 @@ Asking the user under `ask`, or running the analyzer after opt-in, does not by i
 
 - **Keep in your own body:** your stage ordering line (e.g. `archive → branch-closeout → merge-discipline(A→B→C→D) → merge → writeback`), a one-line pointer to this skill, and 1-2 key red-flags. Do **not** copy the Part steps inline.
 - **Delegate to this skill:** all four Parts — A (archive gate), B (rebase), C (coverage), D (tip pinning).
-- **Pre-merge checklist (single source):** [reference.md](reference.md)「合并前检查清单」. Referencing workflows keep **one pointer sentence** only — do **not** paste the checklist into workflow `reference.md`.
+- **Pre-merge checklist (single source):** [reference.md](reference.md)「合并前检查清单」/ "Pre-merge checklist". Referencing workflows keep **one pointer sentence** only — do **not** paste the checklist into workflow `reference.md`.

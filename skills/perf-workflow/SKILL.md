@@ -2,274 +2,274 @@
 name: perf-workflow
 version: '2.3.0'
 user-invocable: true
-description: 性能问题分析与优化工作流，共六阶段。触发词均以「性能」开头：性能分析、性能证据、性能定位、性能假设、性能监控、性能优化、性能验证、性能深入。当用户说上述词或使用「触发词： 具体描述」形式时，进入本工作流或对应阶段。
+description: "Performance issue analysis and optimization workflow, six stages. All triggers start with 性能 (\"performance\"): 性能分析, 性能证据, 性能定位, 性能假设, 性能监控, 性能优化, 性能验证, 性能深入. Saying one of these words alone, or using the 「trigger: description」 form, enters this workflow or the corresponding stage."
 dependencies:
   - clarifying-question-discipline
   - known-issue-research
 ---
 
-# 性能问题分析工作流
+# Performance Issue Analysis Workflow
 
-> 强依赖 skill：`clarifying-question-discipline`（主动提问硬纪律）、`known-issue-research`（已知性能模式快搜 §2.1）；缺失即中止并提示安装（`npx skills add FuDesign2008/open-skills -g --skill '*' --yes`）。
+> Strong dependencies: `clarifying-question-discipline` (hard active-questioning discipline) and `known-issue-research` (known performance-pattern quick search, §2.1). If either is missing, abort and print the install command (`npx skills add FuDesign2008/open-skills -g --skill '*' --yes`).
 
-## 职责范围
+## Scope
 
-本工作流负责**找到性能瓶颈的根因**：谁、在什么条件下、触发了什么昂贵操作；根因确认后，可据此制定修复方案、实施代码/配置优化并验证效果。
-仅「如何发布、灰度、上线」等落地方式不在此工作流内规定，由项目自行决定。
+This workflow is responsible for **finding the root cause of a performance bottleneck**: who triggered what expensive operation, and under what conditions. Once the root cause is confirmed, it can be used to design a fix, implement code/config optimizations, and verify the result.
+How to release, roll out, or ship the fix is out of scope — that is decided by the project itself.
 
-## 触发词识别
+## Trigger Recognition
 
-所有触发词均以**「性能」开头**，便于识别与记忆。当用户**单独说触发词**或使用**「触发词 + 冒号 + 空格 + 具体描述」**形式时，进入本工作流或对应阶段。带冒号时，冒号、空格不限制中英文。
+All triggers **start with 「性能」** (performance), which makes them easy to recognize and remember. Saying a trigger word **alone**, or using the **「trigger + colon + space + description」** form, enters this workflow or the corresponding stage. When a colon is used, both the colon and the space are language-agnostic (Chinese or English punctuation both work).
 
-- **「性能分析」** 或 **「性能分析： xxx」** → 进入本工作流，从阶段 1（性能证据）开始
-- **「性能证据」** 或 **「性能证据： xxx」** → 阶段 1：性能证据
-- **「性能定位」** 或 **「性能定位： xxx」** → 阶段 2：性能定位
-- **「性能假设」** 或 **「性能假设： xxx」** → 阶段 3：性能假设
-- **「性能监控」** 或 **「性能监控： xxx」** → 阶段 4：性能监控
-- **「性能优化」** 或 **「性能优化： xxx」** → 阶段 5：性能优化
-- **「性能验证」** 或 **「性能验证： xxx」** → 阶段 6：性能验证
-- **「性能深入」** 或 **「性能深入： xxx」** → 在阶段 2（性能定位）内继续或深化分析
+- **「性能分析」** or **「性能分析: xxx」** → enter this workflow, starting at Stage 1 (Gather Evidence)
+- **「性能证据」** or **「性能证据: xxx」** → Stage 1: Gather Evidence
+- **「性能定位」** or **「性能定位: xxx」** → Stage 2: Locate the Bottleneck
+- **「性能假设」** or **「性能假设: xxx」** → Stage 3: Hypothesize the Root Cause
+- **「性能监控」** or **「性能监控: xxx」** → Stage 4: Build Monitoring
+- **「性能优化」** or **「性能优化: xxx」** → Stage 5: Implement Optimization
+- **「性能验证」** or **「性能验证: xxx」** → Stage 6: Verify
+- **「性能深入」** or **「性能深入: xxx」** → continue or deepen the analysis within Stage 2 (Locate the Bottleneck)
 
-用户说「性能问题」「卡顿」「很慢」等时，也可视为进入本工作流，从阶段 1（性能证据）开始。
-用户提供性能相关日志或 profile 并希望分析时，视为进入本工作流，从阶段 1（性能证据）或阶段 2（性能定位）开始。
-
----
-
-## 通用原则
-
-**「先定问题拆链路，再采数据筛瓶颈，下钻推导提假设，控制变量验根因，优化固化成闭环。」**
-
-1. **数据驱动**：先拿数据再推导结论，禁止先假设问题再找佐证；没有复现路径或可分析数据时，先协助用户收集（复现步骤、日志、profile、录屏等）。
-2. **自上而下**：从用户感知的全链路入手，先宏观后微观；先识别「哪里慢」（耗时/阻塞/渲染量等），再追溯「谁触发」「在什么条件下触发」。
-3. **单一变量、可复现**：根因假设要能通过现有数据或少量定向打点得到是/否结论；验证时尽量只改变一个变量，可复现、可证伪，禁止把相关性当因果性。
-4. **全链路覆盖**：分析从问题起点到终点的完整执行链路，不只看局部数据，避免盲人摸象。
-5. **可开关的正式监控**：性能观测应设计为**正规的性能监控能力**，常驻代码库，通过开关（环境变量、配置项、feature flag 等）控制是否启用。关闭时不输出、不采样，不影响正式产品；需要分析时打开开关即可采集数据，无需临时加码再删。
-6. **禁止提前优化**：只优化「已被数据证实、影响用户体验、超出阈值」的性能问题；没有测量数据支撑的「未来可能的性能问题」，不做预防性优化，避免引入不必要的代码复杂度和维护成本。
-
-- **⚠️ 主动提问**：遵循 `clarifying-question-discipline`（一次一问、多轮问清；问清优先，不急着答；强依赖，缺失即中止）。
-- 🚩 **Red Flag**：一次抛出多个问题/疑问点让用户逐个回答（违反硬纪律）——每次只问 1 个最关键的，得到回答后再问下一个。
+When the user says「性能问题」("performance issue"),「卡顿」("stutter/jank"),「很慢」("it's slow"), etc., this may also be treated as entering the workflow, starting at Stage 1 (Gather Evidence).
+When the user provides performance-related logs or a profile and wants it analyzed, treat this as entering the workflow, starting at Stage 1 (Gather Evidence) or Stage 2 (Locate the Bottleneck).
 
 ---
 
-## 阶段流转
+## General Principles
 
-正向流程：证据 → 定位 → 假设 → 监控 → 优化 → 验证。
+**「先定问题拆链路，再采数据筛瓶颈，下钻推导提假设，控制变量验根因，优化固化成闭环。」** (Pin down the problem and break down the chain first; then gather data to filter bottlenecks; drill down to derive a hypothesis; control variables to verify the root cause; and consolidate the optimization into a closed loop.)
 
-常见跳转：
-- 阶段 1 发现缺数据且需建设监控 → 可直接进入阶段 4（性能监控）补充后回到阶段 2。
-- 阶段 2 数据充足、瓶颈明确 → 可跳过阶段 3 直接进入阶段 4 或 5。
-- 阶段 6 假设被否定 → 回到阶段 2 或 3 重新分析。
-- 阶段 6 优化未达标 → 回到阶段 3 重新提假设或阶段 5 调整优化方案。
-- 偶现问题在阶段 1 难以采集数据 → 优先进入阶段 4 建设长期监控，等待复现后回到阶段 2。
+1. **Data-driven**: get the data before drawing a conclusion — never hypothesize a problem first and then hunt for supporting evidence. When there is no reproduction path or analyzable data, help the user collect it first (repro steps, logs, profiles, screen recordings, etc.).
+2. **Top-down**: start from the full chain as perceived by the user, macro before micro. First identify **where** it's slow (time spent / blocking / render volume, etc.), then trace back to **who** triggered it and **under what conditions**.
+3. **Single variable, reproducible**: a root-cause hypothesis must be resolvable to a yes/no verdict using existing data or a small amount of targeted instrumentation. When verifying, change only one variable at a time; the result must be reproducible and falsifiable — never treat correlation as causation.
+4. **Full-chain coverage**: analyze the complete execution chain from the problem's start to its end, not just local data — avoid the blind-men-and-the-elephant trap.
+5. **Toggleable, production-grade monitoring**: performance observability should be designed as a **proper, production-grade monitoring capability** that lives permanently in the codebase, gated by a toggle (environment variable, config item, feature flag, etc.). When off, it emits nothing and samples nothing, with no impact on the live product; when analysis is needed, flip the toggle to collect data — no need to bolt on temporary instrumentation and rip it out later.
+6. **No premature optimization**: only optimize performance problems that are **backed by data, affect user experience, and exceed a threshold**. Do not perform preventive optimization for "performance issues that might happen someday" without measurement data behind them — it only adds unnecessary code complexity and maintenance cost.
+
+- **⚠️ Ask proactively**: follow `clarifying-question-discipline` (one question per turn; multi-round until clear; clarify first, don't rush to answer; strong dependency — abort if missing).
+- 🚩 **Red Flag**: dumping multiple questions/open points on the user to answer one by one at once (violates the hard discipline) — ask only the single most critical question each time, and ask the next only after getting an answer.
 
 ---
 
-## 阶段 1：性能证据（收集证据）
+## Stage Flow
 
-### 目标
+Forward flow: evidence → locate → hypothesize → monitor → optimize → verify.
 
-拿到可复现、可分析的性能数据，而不是仅凭描述猜测；并把模糊的「卡、慢」转化为可量化指标与性能基线，明确优化目标与不可突破的红线。
+Common jumps:
+- Stage 1 finds data is missing and monitoring needs to be built → go directly to Stage 4 (Build Monitoring) to add it, then return to Stage 2.
+- Stage 2 has enough data and the bottleneck is clear → skip Stage 3 and go directly to Stage 4 or 5.
+- Stage 6 refutes the hypothesis → go back to Stage 2 or 3 to re-analyze.
+- Stage 6 shows the optimization fell short → go back to Stage 3 to re-hypothesize, or Stage 5 to adjust the optimization.
+- An intermittent issue is hard to capture data for in Stage 1 → prioritize Stage 4 to build long-term monitoring, then return to Stage 2 once it reproduces.
 
-### 要澄清的信息
+---
 
-- **现象**：什么操作下变慢（点击、滚动、输入、拖拽、接口请求等）？慢的表现是什么（卡顿、白屏、转圈、无响应）？尽量**量化**（如某接口 P99 多少 ms、某操作帧率/耗时），并明确**分析边界**（问题的起点与终点，避免范围无限扩大）。
-- **数据形式**：是否已有日志、Performance/CPU profile、网络抓包、自定义打点？若无，需要先确定「在什么环境、用什么方式」能采到数据。
-- **复现条件**：必现还是偶现？数据量/并发/设备是否有要求？
+## Stage 1: Gather Evidence (性能证据)
 
-### 常见数据来源（按场景选用）
+### Goal
 
-| 场景                  | 可选数据来源                                                       |
+Obtain reproducible, analyzable performance data instead of just guessing from a description — and turn a vague "it's laggy/slow" into a quantified metric and performance baseline, with a clear optimization target and a hard red line.
+
+### Information to Clarify
+
+- **Symptom**: which action triggers the slowdown (click, scroll, typing, drag, an API request, etc.)? What does "slow" look like (jank, blank screen, spinner, unresponsive)? **Quantify** wherever possible (e.g. a given endpoint's P99 in ms, an action's frame rate/latency), and pin down the **analysis boundary** (the problem's start and end point, to avoid unbounded scope).
+- **Data available**: are there existing logs, a Performance/CPU profile, a network capture, or custom instrumentation? If not, first determine "in what environment, with what method" data can be captured.
+- **Reproduction conditions**: always reproducible or intermittent? Are there requirements on data volume/concurrency/device?
+
+### Common Data Sources (pick by scenario)
+
+| Scenario | Candidate data sources |
 | --------------------- | ------------------------------------------------------------------ |
-| 前端卡顿 / 主线程阻塞 | 控制台日志、Chrome Performance 录制、Long Task / 自定义性能监控    |
-| 渲染过多 / 重绘贵     | 框架的渲染统计、React DevTools Profiler、自定义 commit/render 打点 |
-| 接口/后端慢           | 网络面板、服务端日志、APM、trace                                   |
-| 内存/泄漏             | Heap snapshot、内存趋势图                                          |
+| Frontend jank / main-thread blocking | Console logs, Chrome Performance recording, Long Task / custom performance monitoring |
+| Excessive rendering / expensive repaint | Framework render stats, React DevTools Profiler, custom commit/render instrumentation |
+| Slow API / backend | Network panel, server-side logs, APM, traces |
+| Memory / leak | Heap snapshot, memory trend graph |
 
-不限定具体技术栈；根据项目实际有的监控和工具选择。
+Not tied to any specific tech stack — choose based on whatever monitoring and tools the project actually has.
 
-### 输出
+### Output
 
-- 明确「当前已有的数据」和「还缺什么」。
-- 若缺数据：给出「用户需要执行的操作」和「需要采集的内容」（例如：复现步骤、打开某开关后复现并导出 console/ profile）。
-- **建议输出包含**：现象（含量化指标）、复现条件、分析边界、当前性能基线、目标阈值或红线；可整理为结构化的「性能问题定义单」便于后续对标。
-
----
-
-## 阶段 2：性能定位（分析定位）
-
-### 目标
-
-从原始数据里找出**异常点**（谁在什么时候花了多少时间/资源），并**追溯触发链**（事件/调用栈/数据流）；建立从起点到终点的全链路拓扑，通过双维度数据（时间 + 资源）做瓶颈初筛，把分析范围缩小到 1～2 个核心环节。
-
-### 分析思路（通用）
-
-- **全链路拓扑**：按执行顺序把从用户操作到问题终点的所有环节拆解（代码执行、系统调用、网络/存储等），形成无重叠、全覆盖的拓扑；每个环节可独立计时、有明确输入输出。
-- **双维度采集**：时间维度（各环节耗时、占全链路比例）+ 资源维度（CPU/内存/IO/网络等），两者缺一不可。
-- **瓶颈初筛**：按耗时占比排序锁定高耗时环节（如占比 >20%）；按资源异常（饱和、持续升、错误率）锁定异常环节；耗时低且资源正常的环节先排除。资源利用率 >70% 是常用的告警线，超过此阈值响应时间往往呈非线性上升，即使绝对值不高也应优先排查。
-
-1. **找异常**
-   在时间轴或聚合统计里，找出明显偏大的指标，例如：
-   - 单次耗时超过阈值的任务/请求（如主线程任务 >50ms、>200ms）；
-   - 单次处理量异常大（如一次更新影响大量节点、一次请求返回巨大 payload）；
-   - 频率异常高（如某事件触发次数远高于预期）。
-
-2. **定位置**
-   对每个异常点，确定：
-   - 发生在哪一层（前端/后端/网络/存储）；
-   - 对应代码或模块（文件、函数、组件、接口）；
-   - 调用栈或事件链（从用户操作或入口到该耗时/耗量点）。
-
-3. **建因果链**
-   用「用户操作 → 事件/请求 → 处理函数 → 昂贵操作 → 观测到的指标」串起来，避免只看到现象看不到触发条件。
-
-### 操作方式
-
-- 对**文本日志**：用搜索（grep/ripgrep 等）按关键字、耗时、错误码等过滤，再读关键片段和调用栈。
-- 对 **profile**：先看时间线或火焰图上的「宽条」或「高占比」，再定位到具体函数/组件。
-- 对**代码**：用读码、搜索调用关系，配合日志里的栈信息，把「谁在什么条件下调用了谁」理清。
-
-### 输出
-
-- **异常摘要**：哪些地方慢/量大/频率高，对应的大致位置。
-- **因果链**：用一两句话或简图描述「操作 → … → 瓶颈」。
-- **待验证假设**（初步方向）：列出 1～3 个「可能是根因」的假设方向，并说明每个假设需要什么证据才能成立或否定。精炼与归类在阶段 3（性能假设）完成。
-- **核心瓶颈环节清单**：1～2 个环节，附耗时占比或资源异常摘要。
-
-### 已知性能模式快搜（可选，定位受阻时触发）
-
-满足 `known-issue-research` §2.1 的触发条件时，加载该 skill 并按 §2.1（Performance-pattern variant）执行；本工作流的「常见模式」表与阶段编排仍留在本文件。
+- State clearly what data is **already available** and what is **still missing**.
+- If data is missing: specify the **action the user needs to take** and **what needs to be captured** (e.g. repro steps, flip a given toggle, reproduce, and export console/profile output).
+- **Recommended output includes**: the symptom (with quantified metrics), reproduction conditions, analysis boundary, current performance baseline, and target threshold or red line; this can be organized into a structured "performance problem definition sheet" for later comparison.
 
 ---
 
-## 阶段 3：性能假设（根因假设）
+## Stage 2: Locate the Bottleneck (性能定位)
 
-### 目标
+### Goal
 
-把「异常点 + 触发链」归纳成可验证的**根因假设**，并归类到常见性能问题模式，便于后续打点和修复。假设须可验证、可证伪，禁止模糊猜测；可结合业界方法做归类（见下）。
+Find the **anomalies** in the raw data (who spent how much time/resources, and when), and **trace the trigger chain** (event / call stack / data flow); build a full-chain topology from start to end, and use two data dimensions (time + resources) to do an initial bottleneck screen, narrowing the analysis scope to 1-2 core segments.
 
-### 根因推导参考
+### Analysis Approach (general)
 
-- **USE 方法**（资源类瓶颈）：从使用率、饱和度、错误率三个维度判断是否为资源饱和导致（如 CPU/内存/IO/网络）。
-- **RED 方法**（执行/请求类瓶颈）：从请求率、错误率、耗时三个维度判断是否为执行逻辑或调用链问题。
+- **Full-chain topology**: break down every segment from the user action to the end of the problem, in execution order (code execution, system calls, network/storage, etc.), forming a topology with no gaps and no overlap; each segment should be independently timeable with clear inputs/outputs.
+- **Two-dimensional capture**: time dimension (time spent per segment, share of the total chain) + resource dimension (CPU/memory/IO/network, etc.) — neither can be skipped.
+- **Initial bottleneck screen**: rank segments by time-share to pin down the high-cost ones (e.g. share >20%); pin down abnormal segments by resource anomaly (saturation, sustained rise, error rate); rule out segments that are both low-cost and resource-normal. Resource utilization >70% is a common alert line — beyond this threshold, response time tends to rise non-linearly, so it deserves priority investigation even when the absolute value looks modest.
 
-与下文的「常见模式」表配合使用，不展开具体步骤。
+1. **Find the anomaly**
+   In the timeline or aggregated stats, find metrics that stand out, e.g.:
+   - a single task/request whose time exceeds a threshold (e.g. a main-thread task >50ms, >200ms);
+   - an abnormally large single-operation volume (e.g. one update touching a huge number of nodes, one request returning a huge payload);
+   - an abnormally high frequency (e.g. an event firing far more often than expected).
 
-### 常见模式（技术无关表述）
+2. **Locate it**
+   For each anomaly, determine:
+   - which layer it occurs in (frontend/backend/network/storage);
+   - the corresponding code or module (file, function, component, endpoint);
+   - the call stack or event chain (from the user action or entry point to that time/resource sink).
 
-| 模式                | 特征                                       | 典型触发方式                                                      |
+3. **Build the causal chain**
+   Chain it together as "user action → event/request → handler function → expensive operation → observed metric", so you don't end up seeing only the symptom without the trigger condition.
+
+### Working Method
+
+- For **text logs**: filter with search (grep/ripgrep, etc.) by keyword, duration, error code, etc., then read the relevant snippets and call stacks.
+- For **profiles**: first look at the "wide bars" or "high-share" areas on the timeline or flame graph, then drill down to the specific function/component.
+- For **code**: read the code and search call relationships, cross-referencing stack info from the logs, to work out "who called whom under what condition".
+
+### Output
+
+- **Anomaly summary**: what's slow / high-volume / high-frequency, and its approximate location.
+- **Causal chain**: describe "action → ... → bottleneck" in a sentence or two, or a simple diagram.
+- **Hypotheses to verify** (preliminary direction): list 1-3 "possible root cause" directions, and for each, state what evidence would confirm or refute it. Refinement and categorization happen in Stage 3 (Hypothesize the Root Cause).
+- **Core bottleneck segment list**: 1-2 segments, with time-share or resource-anomaly summary attached.
+
+### Known Performance-Pattern Quick Search (optional, use when locating stalls)
+
+When `known-issue-research` §2.1's trigger conditions are met, load that skill and follow §2.1 (Performance-pattern variant). This workflow's own pattern table and stage orchestration stay in this file.
+
+---
+
+## Stage 3: Hypothesize the Root Cause (性能假设)
+
+### Goal
+
+Distill the anomalies and trigger chain into a verifiable **root-cause hypothesis**, and classify it against common performance-problem patterns to guide later instrumentation and fixes. Hypotheses must be verifiable and falsifiable — no vague guessing; industry methods can help classify them (see below).
+
+### Root-Cause Reasoning References
+
+- **USE method** (resource-type bottlenecks): judge resource saturation (CPU/memory/IO/network) along three dimensions — utilization, saturation, errors.
+- **RED method** (execution/request-type bottlenecks): judge execution-logic or call-chain problems along three dimensions — rate, errors, duration.
+
+Use these alongside the "Common Patterns" table below; the specific steps aren't expanded further here.
+
+### Common Patterns (tech-agnostic description)
+
+| Pattern | Characteristic | Typical trigger |
 | ------------------- | ------------------------------------------ | ----------------------------------------------------------------- |
-| **响应范围过大**    | 本应局部更新，却触发全局或大量重算/重渲染  | 粗粒度事件（如「任何变更」）驱动大范围更新；缺少细粒度订阅或 diff |
-| **更新未合并/级联** | 一次操作导致多次独立的重计算或重渲染       | 连续多次状态更新未批处理；异步回调中各自触发更新                  |
-| **高频触发**        | 高频率事件每次都会执行昂贵逻辑             | scroll/resize/mousemove 等未节流/防抖；每帧或每次事件都做重算     |
-| **积压集中执行**    | 主线程忙或队列堆积后，多个延迟任务集中执行 | 多个 throttle/debounce 在同一时刻 fire；定时器/微任务堆积           |
-| **资源泄漏**        | 内存/连接/句柄持续增长不释放           | 未关闭的连接、未清理的缓存/定时器、未解绑的监听器                   |
-| **同步阻塞**        | 主线程或关键路径被同步操作长时间占用    | 同步 I/O、锁竞争、长事务、大量同步计算                              |
-| **重复/冗余计算**   | 同一结果被反复计算而未缓存             | 缺少 memo/缓存、N+1 查询、重复序列化/反序列化                       |
+| **Response scope too broad** | An update that should be local instead triggers a global or large-scale recompute/re-render | A coarse-grained event (e.g. "any change") drives a broad update; missing fine-grained subscription or diffing |
+| **Updates not batched/coalesced** | One operation causes multiple independent recomputes or re-renders | Multiple consecutive state updates aren't batched; async callbacks each trigger their own update |
+| **High-frequency triggering** | A high-frequency event runs expensive logic every time | scroll/resize/mousemove etc. not throttled/debounced; heavy recompute on every frame or every event |
+| **Backlog fires all at once** | When the main thread is busy or a queue backs up, many delayed tasks fire together | Multiple throttle/debounce timers fire at the same instant; timers/microtasks pile up |
+| **Resource leak** | Memory/connections/handles keep growing and are never released | Unclosed connections, uncleared caches/timers, unremoved listeners |
+| **Synchronous blocking** | The main thread or a critical path is held by a synchronous operation for a long time | Synchronous I/O, lock contention, long transactions, heavy synchronous computation |
+| **Repeated/redundant computation** | The same result is recomputed repeatedly without caching | Missing memoization/caching, N+1 queries, repeated serialize/deserialize |
 
-具体项目里可能是「某框架的 setState」「某总线的 emit」「某 RPC」等，但抽象层面都是上述几类。
+In a specific project this might show up as "some framework's `setState`", "some event bus's `emit`", "some RPC call", etc. — but at the abstract level they all fall into the categories above.
 
-### 输出
+### Output
 
-- 当前最可能的 **1～2 个根因假设**；每个假设需**可验证、可证伪**（例如能通过「是否全表扫描」「某变量取值」等得到是/否结论），避免「查询慢是因为 SQL 写得不好」这类不可验证表述。
-- 若有多个假设，按「用户感知影响最大 + 验证成本最低」排序，优先验证排名靠前的假设。
-- 每个假设对应的**验证方式**：现有日志能否判断？若不能，需要在哪条路径上增加哪些可开关监控（见阶段 4（性能监控））。根因确认后，可进入阶段 5（性能优化）实施修改，再在阶段 6（性能验证）验证假设及优化效果。
-
----
-
-## 阶段 4：性能监控（建设/补充可开关监控）
-
-### 目标
-
-在现有数据无法验证假设时，在关键路径上增加**可开关的、正规的**性能观测。监控逻辑作为正式代码入库，通过开关控制是否启用；关闭时不影响正式产品，需要分析时打开开关即可做性能监控。
-
-### 何时需要补充监控
-
-- 现有日志/profile 里看不到「谁触发」「在什么条件下触发」或「某变量在当时的取值」。
-- 需要对比「假设成立时」与「不成立时」的差异（例如某标志位为 true/false 时的行为）。
-- 项目尚未具备针对该路径的开关式性能监控，需要设计并落地。
-
-### 监控设计原则（通用）
-
-1. **开关控制**
-   用运行时开关（环境变量、配置中心、feature flag、本地调试开关等）控制是否启用。生产或正式环境默认关闭，或仅对特定用户/会话开启；分析问题时再打开，避免对正常用户产生开销或噪音。
-
-2. **常驻代码、非临时**
-   监控代码是正式能力的一部分，不采用「加完验证再删」的方式。逻辑长期保留，行为完全由开关决定：关则无输出、无采样、无额外开销（或仅极低开销），开则按约定格式输出或上报，便于与现有日志、profile 对齐。
-
-3. **可对齐**
-   输出稳定的时间戳（如 `performance.now()` 或服务端纳秒时间）和位置标识，便于和已有日志、profile 对齐到同一时间轴，做因果与顺序分析。
-
-4. **信息够用**
-   每条记录至少包含：位置标识、时间戳、以及能验证/否定假设的少量关键变量（如：是否命中某分支、ID、数量、错误码）。格式可复用项目既有性能日志规范，便于统一分析。
-
-### 监控点位置选择
-
-- **优先**：怀疑的「直接触发点」（例如更新状态的调用、发起请求的调用、执行重算的函数入口）。
-- **其次**：触发链上的中间节点（例如事件处理入口、回调入口），用于确认调用顺序和频率。
-- **再次**：昂贵计算的入口/出口，用于确认单次耗时和调用次数。
-
-### 输出
-
-- 监控点列表（文件:行号或函数/接口名）及每处监控的用途与建议的开关名。
-- 用户需要做的操作：如何开启开关、如何复现、如何采集并提供新日志/新 profile。
-- 若根因已确认或将在阶段 6 验证，可进入阶段 5（性能优化）实施修改。
+- The **1-2 most likely root-cause hypotheses** right now; each hypothesis must be **verifiable and falsifiable** (e.g. resolvable via "is it a full table scan?" or "what value does this variable have?" into a yes/no verdict) — avoid unverifiable statements like "the query is slow because the SQL is poorly written".
+- If there are multiple hypotheses, rank them by "highest user-perceived impact + lowest verification cost", and verify the top-ranked one first.
+- The **verification method** for each hypothesis: can existing logs answer it? If not, which points on which path need toggleable monitoring added (see Stage 4: Build Monitoring)? Once the root cause is confirmed, proceed to Stage 5 (Implement Optimization) to make the change, then verify the hypothesis and the optimization's effect in Stage 6 (Verify).
 
 ---
 
-## 阶段 5：性能优化（实施优化）
+## Stage 4: Build Monitoring (性能监控)
 
-### 目标
+### Goal
 
-根据阶段 3 的根因结论（及阶段 4 的监控；若已先在阶段 6 验证过假设，可一并参考），实施代码或配置层面的优化，消除或缓解瓶颈。本阶段只做「针对根因的修改」与修改清单，不在此展开多方案评估或详细任务拆解。
+When existing data can't verify the hypothesis, add **toggleable, production-grade** performance observability on the critical path. The monitoring logic ships as real code and is gated by a toggle; when off it has no effect on the live product, and flipping it on enables performance monitoring for analysis.
 
-### 原则
+### When Additional Monitoring Is Needed
 
-- **针对根因改**：改动应对应阶段 3 归纳的根因模式（如缩小响应范围、合并更新、节流/防抖等），避免泛泛优化。
-- **利用监控做对比**：优先利用阶段 4 的可开关监控，在阶段 6 用相同复现场景做优化前后对比，确认改动生效。
-- **控制变量验证**：用单一变量实验验证根因后再改；每次优化尽量只动一个根因对应点，便于在阶段 6 验证单个方案收益。
-- **分层与性价比**：按业务逻辑 → 应用代码 → 框架/依赖 → 系统/硬件从高到低考虑，优先上层；优先「改造成本低、收益高」的方案（如逻辑简化、缓存复用）。
-- **耗时占比优先**：优先优化耗时占比高的环节；耗时占比 <10% 的环节即便优化 100 倍，整体收益也极为有限，应直接跳过，聚焦真正的主瓶颈。
-- **稳定性**：不改变业务语义、不引入功能 bug、不产生新的性能副作用。
+- Existing logs/profiles don't show "who triggered it", "under what condition it was triggered", or "what a given variable's value was at the time".
+- You need to compare behavior between "hypothesis true" and "hypothesis false" cases (e.g. behavior when some flag is true vs. false).
+- The project doesn't yet have toggleable performance monitoring for this path, and it needs to be designed and shipped.
 
-### 输出
+### Monitoring Design Principles (general)
 
-- **修改清单**：文件、位置（函数/模块）、改动要点。
-- **建议的验证方式**：用何种复现场景、观察哪些指标（与阶段 4 监控对齐），便于阶段 6 做优化效果验证。
+1. **Toggle-controlled**
+   Use a runtime toggle (environment variable, config center, feature flag, local debug switch, etc.) to control whether it's enabled. Default off in production, or enabled only for specific users/sessions; turn it on when investigating an issue, to avoid overhead or noise for normal users.
 
----
+2. **Permanent, not temporary**
+   The monitoring code is a permanent capability, not "add it to verify, then delete it". The logic stays long-term, and behavior is entirely controlled by the toggle: off means no output, no sampling, no extra overhead (or only a negligible one); on means it emits output or reports in an agreed format, aligned with existing logs/profiles.
 
-## 阶段 6：性能验证（验证假设与优化效果）
+3. **Alignable**
+   Emit stable timestamps (e.g. `performance.now()` or server-side nanosecond time) and location identifiers, so output can be aligned with existing logs/profiles on the same timeline for causal and sequence analysis.
 
-### 目标
+4. **Just enough information**
+   Each record should include at least: a location identifier, a timestamp, and the small number of key variables needed to confirm or refute the hypothesis (e.g. which branch was hit, an ID, a count, an error code). Reuse the project's existing performance-log format where possible, to keep analysis consistent.
 
-1. 用新数据对阶段 3（性能假设）的假设做**是/否**判断，必要时修正假设或回到阶段 2（性能定位）。
-2. 若已完成阶段 5（性能优化），则用相同复现场景与阶段 4 的监控数据做**前后对比**，验证优化是否生效、指标是否达标。
+### Choosing Monitoring Points
 
-### 验证方式
+- **Priority**: the suspected **direct trigger point** (e.g. the call that updates state, the call that fires the request, the entry point of the function doing the recompute).
+- **Next**: intermediate nodes on the trigger chain (e.g. an event-handler entry point, a callback entry point), to confirm call order and frequency.
+- **Then**: the entry/exit of the expensive computation, to confirm per-call duration and call count.
 
-- 对每个假设，明确「若成立，日志/profile 里应看到什么」「若不成立，应看到什么」。
-- 在新日志中搜索或定位对应模式，看是否符合「成立」的预期。
-- 若有时间戳，将不同模块/层的打点对齐到同一时间轴，确认先后顺序和是否在同一任务/请求内。
-- 完成优化后，在同一复现路径下对比优化前后关键指标（耗时、调用次数、渲染量等），并说明达标标准。
-- **效果验证**（完成阶段 5 时适用）：
-  - 基准复测：与优化前相同的复现条件与环境下对比全维度指标。
-  - 功能回归：确认正常、边界、极限负载场景下功能正常。
-  - 副作用检查：确认无次生性能问题（如用缓存优化响应时间却导致内存上升）。
-  - 若有条件：可做线上/灰度验证，用真实流量确认效果。
+### Output
 
-### 输出
-
-- 每个假设的结论：**成立 / 不成立 / 仍不确定**。
-- 若仍不确定：说明还缺什么信息，以及下一步是补充可开关监控再采数还是换角度分析。
-- 若成立：用一两句话总结根因（谁、在什么条件下、触发了什么），作为后续制定修复方案和实施的输入。
-- 若已做阶段 5（性能优化）：输出优化前后对比结论与是否达标。
-- **闭环固化（可选延伸）**：验证通过后，建议将关键指标纳入常态化监控与告警；若有 CI/CD，可将性能基准或门禁纳入流水线，防止回退；将本次优化中的指标与最佳实践沉淀到团队规范，形成持续迭代。
-- **终止条件**：若所有假设已验证、关键指标已达标，或剩余瓶颈的优化性价比过低（改造成本远高于收益），则可结束本轮优化。
+- A list of monitoring points (file:line or function/endpoint name), each with its purpose and a suggested toggle name.
+- The action the user needs to take: how to enable the toggle, how to reproduce, and how to capture and provide the new logs/profile.
+- If the root cause is already confirmed, or will be verified in Stage 6, proceed to Stage 5 (Implement Optimization) to make the change.
 
 ---
 
-## 输出详细度控制（自适应）
+## Stage 5: Implement Optimization (性能优化)
 
-- 问题简单、数据充足：可压缩为「异常点 + 因果链 + 根因结论」。
-- 问题复杂、多模块：每个阶段给出简短输出（收集了什么、主要异常、假设、监控点列表、优化要点、验证结论与优化效果结论），必要时附关键日志片段或调用栈摘要。
-- 涉及具体技术栈时，在当次对话中结合项目说明即可，不在本 SKILL 中写死具体标签或命令。
+### Goal
+
+Based on Stage 3's root-cause conclusion (and Stage 4's monitoring; if the hypothesis was already verified in Stage 6, that can also inform this), implement a code- or config-level optimization that eliminates or mitigates the bottleneck. This stage only produces "changes targeting the root cause" and a change list — a multi-option evaluation or detailed task breakdown is out of scope here.
+
+### Principles
+
+- **Fix the root cause, not the symptom**: the change should map to the root-cause pattern identified in Stage 3 (e.g. narrow the response scope, batch updates, throttle/debounce), not a generic optimization.
+- **Use monitoring for comparison**: prefer using Stage 4's toggleable monitoring to compare before/after under the same repro scenario in Stage 6, confirming the change actually worked.
+- **Control-variable verification**: verify the root cause with a single-variable experiment before changing anything; each optimization should touch only one root-cause point at a time, so Stage 6 can attribute the benefit to a single change.
+- **Layering and cost-effectiveness**: consider layers from high to low — business logic → application code → framework/dependency → system/hardware — preferring the upper layers; prefer solutions with "low change cost, high payoff" (e.g. simplifying logic, reusing a cache).
+- **Prioritize by time-share**: optimize the segments with the highest time-share first; a segment with <10% time-share isn't worth optimizing even a 100x improvement in it barely moves the overall number, so skip it and focus on the real primary bottleneck.
+- **Stability**: don't change business semantics, don't introduce functional bugs, and don't introduce new performance side effects.
+
+### Output
+
+- **Change list**: file, location (function/module), summary of the change.
+- **Suggested verification method**: which repro scenario to use and which metrics to watch (aligned with Stage 4's monitoring), so Stage 6 can verify the optimization's effect.
+
+---
+
+## Stage 6: Verify (性能验证)
+
+### Goal
+
+1. Use new data to render a **yes/no** verdict on the hypothesis from Stage 3 (Hypothesize the Root Cause), revising the hypothesis or returning to Stage 2 (Locate the Bottleneck) if needed.
+2. If Stage 5 (Implement Optimization) has been completed, use the same repro scenario and Stage 4's monitoring data to do a **before/after comparison**, confirming whether the optimization worked and whether the metrics hit the target.
+
+### Verification Method
+
+- For each hypothesis, state clearly "what the logs/profile should show if it's true" and "what they should show if it's false".
+- Search the new logs for the corresponding pattern and check whether it matches the "true" expectation.
+- If timestamps are available, align instrumentation points from different modules/layers onto the same timeline to confirm order and whether they occurred within the same task/request.
+- After the optimization, compare key metrics (duration, call count, render volume, etc.) before and after under the same repro path, and state the pass criteria.
+- **Effectiveness verification** (when Stage 5 has been completed):
+  - **Baseline re-test**: compare full-dimension metrics under the same repro conditions and environment as before the optimization.
+  - **Functional regression**: confirm normal, edge-case, and peak-load scenarios still work correctly.
+  - **Side-effect check**: confirm no secondary performance issues were introduced (e.g. optimizing response time with a cache but causing memory to rise).
+  - **If feasible**: do a production/canary rollout verification with real traffic to confirm the effect.
+
+### Output
+
+- The verdict for each hypothesis: **confirmed / refuted / still uncertain**.
+- If still uncertain: state what information is still missing, and whether the next step is adding toggleable monitoring to gather more data, or re-analyzing from a different angle.
+- If confirmed: summarize the root cause in a sentence or two (who, under what condition, triggered what), as input for designing and implementing the fix.
+- If Stage 5 (Implement Optimization) was completed: report the before/after comparison and whether the target was met.
+- **Close the loop (optional follow-up)**: once verification passes, consider folding the key metrics into standing monitoring and alerting; if there's CI/CD, consider adding a performance baseline or gate to the pipeline to prevent regression; and feed the metrics and best practices from this optimization into team conventions for continuous improvement.
+- **Stop condition**: once every hypothesis has been verified and key metrics hit the target — or the cost-effectiveness of optimizing the remaining bottleneck is too low (change cost far exceeds the payoff) — this round of optimization can conclude.
+
+---
+
+## Output Detail Level (adaptive)
+
+- Simple problem, ample data: can be condensed to "anomaly + causal chain + root-cause conclusion".
+- Complex problem, many modules: give a brief output per stage (what was collected, main anomalies, hypotheses, monitoring-point list, optimization highlights, verification conclusion and effectiveness conclusion), attaching key log snippets or call-stack excerpts where necessary.
+- When a specific tech stack is involved, fold it in conversationally for that session — don't hardcode specific tags or commands into this SKILL file.

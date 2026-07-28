@@ -104,28 +104,28 @@ These evaluate the solution's impact on system-level quality attributes. Run ful
 A code design review report with this structure:
 
 ```
-【代码设计审查报告】
-- 审查对象：[solution name / code area]
-- 路径：[quick / full] + [security pass: yes/no]
-- Layer A 代码级设计指标：
-  1. 偶然复杂度：✅/❌ [reasoning]
-  2. 耦合类型：✅/❌ [type identified + risk level]
-  3. 内聚度：✅/❌ [cohesion level + trend]
-  4. 变更传播半径：✅/❌ [shotgun surgery check]
-  5. 技术债分类：✅/❌ [quadrant identified]
-  6. 复杂度度量：✅/❌ [cyclomatic / cognitive estimate]
-  7. Law of Demeter：✅/❌ [train-wreck check]
-- Layer B 架构级质量属性（full path）：
-  8. 可测试性：✅/❌/N/A
-  9. 模块性：✅/❌/N/A
-  10. 可靠性/韧性：✅/❌/N/A
-  11. 可扩展性：✅/❌/N/A
-  12. 依赖方向：✅/❌/N/A
-- Layer C 安全审查（trust boundary）：
-  13. OWASP 轻量审查：✅/❌/N/A
-- 问题清单：[#] [description] [severity: blocking/non-blocking]
-- 审查结论：✅ 通过 / ❌ 不通过
-- [❌ 不通过时] 优化建议：[per-issue improvement direction]
+【Code design review report】
+- Subject: [solution name / code area]
+- Path: [quick / full] + [security pass: yes/no]
+- Layer A code-level design metrics:
+  1. Accidental complexity: ✅/❌ [reasoning]
+  2. Coupling type: ✅/❌ [type identified + risk level]
+  3. Cohesion: ✅/❌ [cohesion level + trend]
+  4. Change amplification: ✅/❌ [shotgun surgery check]
+  5. Tech-debt classification: ✅/❌ [quadrant identified]
+  6. Complexity measures: ✅/❌ [cyclomatic / cognitive estimate]
+  7. Law of Demeter: ✅/❌ [train-wreck check]
+- Layer B architecture quality attributes (full path):
+  8. Testability: ✅/❌/N/A
+  9. Modularity: ✅/❌/N/A
+  10. Reliability / resilience: ✅/❌/N/A
+  11. Scalability: ✅/❌/N/A
+  12. Dependency direction: ✅/❌/N/A
+- Layer C security pass (trust boundary):
+  13. OWASP lightweight pass: ✅/❌/N/A
+- Issue list: [#] [description] [severity: blocking/non-blocking]
+- Verdict: ✅ pass / ❌ fail
+- [On ❌] Optimization guidance: [per-issue improvement direction]
 ```
 
 ## Anti-patterns (forbidden moves)

@@ -7,13 +7,13 @@ This file holds the per-stage output-format templates for the `solve-workflow` s
 ## Stage 1 — Clarify the Problem
 
 ```
-【问题复述】我理解您的问题是：...
+【Problem restatement】I understand the problem as: ...
 (describe only the user's intent and symptoms — no root-cause judgment or fix suggestion; technical conclusions belong to stage 2)
-【关键要素】目标：... / 约束：... / 背景：... / 期望结果：...
-【Scope 拆解】(if applicable) modules, dependencies, order, first sub-problem: ...
-【需要确认的点】(if any, one question at a time)
+【Key elements】Goal: ... / Constraints: ... / Background: ... / Expected outcome: ...
+【Scope breakdown】(if applicable) modules, dependencies, order, first sub-problem: ...
+【Points to confirm】(if any, one question at a time)
 [question] A [...] B [...]
-请确认我的理解是否正确。
+Please confirm whether my understanding is correct.
 ```
 
 ---
@@ -69,10 +69,10 @@ The review report body and pass/fail verdict follow the strong dependency `pdca-
 **[👤 Manual]** After the shared review report, append this workflow's shell (pause for the user's verdict):
 
 ```
-请确认审查结论：
-- 说「通过」「确认」「OK」→ 进入阶段5
-- 说「修改方案」「完善方案」「优化方案」→ 按指导优化后重新审查
-- 说「重选方案」→ 回到阶段3
+Please confirm the review verdict:
+- Say「通过」「确认」「OK」/ "pass" / "confirm" → enter stage 5
+- Say「修改方案」「完善方案」「优化方案」/ "revise solution" → optimize per guidance and re-review
+- Say「重选方案」/ "reselect solution" → return to stage 3
 ```
 
 ---
@@ -80,12 +80,12 @@ The review report body and pass/fail verdict follow the strong dependency `pdca-
 ## Stage 5 — Make a Plan
 
 ```
-【目标方案回顾】采用方案X：...
-【文件修改清单】
-1. 文件：xxx/yyy/zzz.js，位置：function abc()，改动：...
-2. 文件：xxx/yyy/aaa.js，位置：class DEF.methodXYZ()，改动：...
-【修改顺序】1. xxx/yyy/zzz.js（依赖项）→ 2. xxx/yyy/aaa.js（调用方）
-【预期影响】范围：... / 风险点：...
+【Chosen solution】Adopt solution X: ...
+【File change list】
+1. File: xxx/yyy/zzz.js, location: function abc(), change: ...
+2. File: xxx/yyy/aaa.js, location: class DEF.methodXYZ(), change: ...
+【Change order】1. xxx/yyy/zzz.js (dependency) → 2. xxx/yyy/aaa.js (caller)
+【Expected impact】Scope: ... / Risk points: ...
 ```
 
 ---
@@ -93,12 +93,12 @@ The review report body and pass/fail verdict follow the strong dependency `pdca-
 ## Stage 7 — Verification Results
 
 ```
-【检查结果】
-- 阶段 1 明确问题的期望结果达成情况：...
-- 与阶段 5 计划对比：已做到 ... / 未做到 ...，原因 ...
-- 验证要点/测试结论：...（若已执行测试，附上结果；若未执行，附上需人工测试的提醒）
-- 副作用验证：改动是否在其他模块引入了新问题（功能副作用），是否带来性能/安全/可维护性等预期外影响（非功能副作用）
-- 逻辑与整体流程审查：...
+【Check results】
+- Stage 1 expected outcome achievement: ...
+- Vs stage 5 plan: done ... / not done ..., reason ...
+- Verification points / test conclusions: ... (if tests ran, attach results; if not, attach the manual-test reminder)
+- Side-effect check: did the change introduce new issues in other modules (functional), or unexpected performance/security/maintainability impact (non-functional)
+- Logic and end-to-end flow review: ...
 ```
 
 ---
@@ -106,13 +106,13 @@ The review report body and pass/fail verdict follow the strong dependency `pdca-
 ## Stage 8 — Improvement Suggestions
 
 ```
-【改进建议】
-- 可固化做法：...
-- 不建议固化的内容：...
-- 推荐沉淀载体：AGENTS.md / CLAUDE.md / .cursor/rules/ / 项目内 skill / 总结文档 / 暂不沉淀，理由：...
-- 建议：进入下一轮 / 收尾。若收尾，遗留与后续改进：...
-- 是否需要用户确认写入：需要 / 不需要；若需要，等待用户明确要求后再进入「制定计划 → 执行计划」
-- [模式状态] 自动模式已完成本轮，已恢复为手动模式。如需下一轮继续自动，请显式说「自动 xxx」。
+【Improvement suggestions】
+- Practices worth solidifying: ...
+- Content not recommended to solidify: ...
+- Recommended sediment carrier: AGENTS.md / CLAUDE.md / .cursor/rules/ / in-repo skill / summary doc / none for now; rationale: ...
+- Recommendation: start another round / close out. If closing: leftovers and follow-ups: ...
+- User confirm before write: needed / not needed; if needed, wait for an explicit user request before entering「制定计划 → 执行计划」/ "make plan → execute"
+- [Mode] Auto mode finished this round and reverted to manual. To auto-run the next round, explicitly say「自动 xxx」/ "auto xxx".
 ```
 
 ---
@@ -128,10 +128,10 @@ The review report body and pass/fail verdict follow the strong dependency `pdca-
 **Behavior**: append one non-blocking reminder line to the improvement suggestions:
 
 ```
-💡 如本变更将通过 MR/PR 合并，建议合并前运行 test-coverage-analyzer
-   （带 --base <目标分支>，避免源分支已推送导致默认检测误判为 0 变更）。
-   本提示为建议性，solve-workflow 不执行合并，门控由实际执行合并的工作流
-   （如 jira-fix-workflow / opsx-* 系列）在合并步骤前强制执行。
+💡 If this change will merge via MR/PR, run test-coverage-analyzer before merge
+   (with --base <target branch>, so a already-pushed source tip is not misread as 0 diff).
+   Advisory only: solve-workflow does not merge; the mandatory gate belongs to workflows
+   that own a merge step (e.g. jira-fix-workflow / opsx-*), run immediately before merge.
 ```
 
 **Does not trigger when**:

@@ -318,7 +318,7 @@ Load `learn-and-improve` and run its framework; the full methodology lives in th
 
 Output format is in [reference.md](reference.md) § Stage 8 — Improvement Suggestions.
 
-After the output, proactively ask: "是否需要生成总结文档？"
+After the output, proactively ask: "是否需要生成总结文档？" / "Do you want a summary document?"
 
 ### Pre-merge coverage reminder (conditional, non-gating)
 
