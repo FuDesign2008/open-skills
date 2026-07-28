@@ -136,7 +136,7 @@ dependencies:
 | 5 制定计划 | Read、Write（仅 tasks.md） | Edit 业务代码 |
 | 6 执行验证 | 全部（Edit、Write、Bash、Git、测试）；运行构建/lint/tsc/test 前须按 `node-version-discipline` 对齐项目声明的 Node 版本（探测链见该 skill SOP） | 跳过验证、跳过 checkbox 更新 |
 | 7 检查验证 | Read、Bash（仅测试命令）、OPSX skills（openspec-verify-change） | Edit、Write 业务代码 |
-| 8 提交收尾 | Git、Jira API、OPSX skills、Bash（合并前覆盖率门控步骤额外允许 test-coverage-analyzer 脚本） | 跳过 archive、跳过 Jira 回写 |
+| 8 提交收尾 | Git、Jira API、OPSX skills、Bash（若 Part C 决定运行覆盖率，额外允许 test-coverage-analyzer 脚本） | 跳过 archive、跳过 Jira 回写 |
 
 ### 模式差异速查表
 
@@ -512,11 +512,12 @@ Jira 评论必须包含：
 > - ❌ archive 失败后手动操作 `openspec/` 目录
 > - ❌ PR 描述缺少 OpenSpec change 路径或验证证据
 > - ❌ 分支收尾决策为「保留分支/继续开发」却触发了覆盖率门控（门控仅「合并」决策触发）
-> - ❌ 覆盖率门控脚本崩溃/无报告/退出码1 却继续合并（崩溃视为未通过，须暂停）
-> - ❌ 覆盖率不达标自动模式强行合并（须暂停等用户决策）
+> - ❌ `ask` 偏好下未询问用户就默认跑 analyzer（见 `merge-discipline` Part C）
+> - ❌ 在应跑条件下脚本崩溃/无报告/退出码1 却继续合并（崩溃视为未通过，须暂停）
+> - ❌ 在应跑条件下覆盖率不达标却自动强行合并（须暂停等用户决策）
 > - ❌ 用户显式跳过门控但未在 PR 描述和 design.md 留痕
 > - ❌ archive（8.2）未完成就触发合并纪律（顺序：8.2 archive → 8.3 分支收尾 → 8.3.1 合并纪律 merge-discipline → 合并 → 8.4 Jira 回写）
-> - ❌ archive/docs push 后裸 merge（无 `--sha`、无合入后祖先校验）→ archive 未入目标分支（见 `merge-discipline` Part D）
+> - ❌ archive/docs push 后裸 merge（无 tip pin、无合入后祖先校验）→ archive 未入目标分支（见 `merge-discipline` Part D）
 > - ❌ 把刚 push 后立即出现的「Pipeline succeeded」当当前 tip 已绿 → 多半是旧 tip 结果（见 `merge-discipline` Part D step 2）
 
 ## 批量 OPSX Jira 修复

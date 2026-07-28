@@ -1,6 +1,6 @@
 ---
 name: merge-discipline
-version: "1.2.1"
+version: "1.3.0"
 user-invocable: true
 description: "合并纪律：合并动作（glab/gh mr/pr merge）前必须加载——OpenSpec archive 关联门控（Part A，最先）+ rebase/冲突预检（Part B）+ 覆盖率门控（Part C）+ tip 钉死（Part D）。关联 active OpenSpec change 时未 archive 不得 merge；用户直接说 merge 也不得隐式跳过。触发词：「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, post-push merge check. 被 opsx-jira-fix-workflow / opsx-solve-workflow / jira-fix-workflow frontmatter dependencies 强依赖。"
 ---
@@ -121,11 +121,28 @@ Each merge attempt triggers at most one rebase. If the target moves again while 
 
 ## Part C — Coverage gate
 
-### Pre-detection
+Part C starts on merge intent. It does **not** auto-run the analyzer by default.
 
-If the environment has `test-coverage-analyzer` skill, run the gate steps below. If not found, output "gate unavailable: test-coverage-analyzer not detected", write an environment-gap留痕, and let the user decide whether to proceed.
+### 1. Resolve project preference
 
-### Gate steps (independent Bash permission — runs the analyzer script)
+Scan `AGENTS.md` then `CLAUDE.md` (first match wins) for a line matching (case-insensitive key):
+
+`coverage-gate:\s*(always|never|ask)\b`
+
+| Value | Behavior |
+|---|---|
+| *(unset)* | Treat as `ask` |
+| `ask` | On **every** merge, ask the user: run coverage for this merge, or skip? **MUST NOT** auto-run |
+| `always` | Run gate steps without asking (subject to analyzer availability) |
+| `never` | Skip analyzer; write project-preference 留痕; proceed to Part D |
+
+### 2. Pre-detection (only if decision is **run**)
+
+If `test-coverage-analyzer` is available, continue to gate steps. If not found, output "gate unavailable: test-coverage-analyzer not detected", write an environment-gap留痕, and let the user decide whether to proceed with merge.
+
+### 3. Gate steps (only if decision is **run**)
+
+Independent Bash permission — runs the analyzer script:
 
 1. **Construct `--base`** (try in order, stop on first hit):
    - MR/PR: `gh pr view --json baseRefName -q .baseRefName` / `glab mr view <iid> -F json | jq .target_branch` → `--base <target>` (bare branch name; the script's `validate_ref` adds `origin/`)
@@ -143,7 +160,9 @@ If the environment has `test-coverage-analyzer` skill, run the gate steps below.
    | ⚠️ Coverage below threshold | Pause, output report, await user (force/add-tests/abort) | same |
    | 💥 Crash / no report / exit 1 | Treat as gate-fail, pause | same |
    | 📭 No test code / 0% pass | Present report, pause for user judgment | same |
-   | 🕳️ Gate not run but merge happened (implicit miss) | Pause merge, rerun gate; if already merged, write miss留痕 | same |
+   | 🕳️ **Should-run** but gate not run and merge happened (implicit miss) | Pause merge, rerun gate; if already merged, write miss留痕 | same |
+
+**Should-run** = preference `always`, or preference `ask` after the user chose run. Preference `never` or user-explicit skip under `ask` are **not** implicit misses.
 
 ### 留痕 templates
 
@@ -152,8 +171,9 @@ Location: PR description and `design.md` Verification Notes.
 | Case | Template |
 |------|----------|
 | User explicit skip | `【覆盖率门控跳过】用户显式跳过，未运行 test-coverage-analyzer。时间：<ISO>。决策人：用户。` |
+| Project preference never | `【覆盖率门控跳过】工程偏好 coverage-gate: never。时间：<ISO>。决策人：项目配置。` |
 | Env gap (skill not found) | `【覆盖率门控跳过】未检测到 test-coverage-analyzer skill，门控不可用。时间：<ISO>。决策人：系统（环境缺漏）。` |
-| Implicit miss | `【覆盖率门控漏跑】合并已发生但门控未运行。时间：<ISO>。漏跑阶段：<合并前/合并后>。` |
+| Implicit miss | `【覆盖率门控漏跑】合并已发生但门控未运行（应跑未跑）。时间：<ISO>。漏跑阶段：<合并前/合并后>。` |
 
 ---
 
@@ -186,7 +206,7 @@ Prevents the **stale-tip merge race**: archive/fix commits pushed seconds before
 
 ## Mode lifecycle
 
-Gate auto-running test-coverage-analyzer does not trigger "auto reverts to manual" (it's a sub-step of the merge flow). Gate pause (Part A block / below-threshold / crash / implicit miss) = merge flow interrupted, reverts to manual per existing rules. Part B rebase execution follows the same rule: a user-confirmed rebase is a sub-step of the merge flow (does not itself revert to manual); an unresolved conflict or aborted rebase interrupts the merge flow and reverts to manual.
+Asking the user under `ask`, or running the analyzer after opt-in, does not by itself trigger "auto reverts to manual" (sub-step of the merge flow). Gate pause (Part A block / below-threshold / crash / should-run implicit miss / wait for ask answer) = merge flow interrupted, reverts to manual per existing rules. Part B rebase execution follows the same rule: a user-confirmed rebase is a sub-step of the merge flow (does not itself revert to manual); an unresolved conflict or aborted rebase interrupts the merge flow and reverts to manual.
 
 ---
 
