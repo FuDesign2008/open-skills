@@ -361,42 +361,19 @@ Superpowers 增强规则：
 
 ## 常见错误
 
-> 只记非直觉陷阱；复述阶段 Red Flags / 正文已写明规则的行不收录。
+> 只记本 skill 非直觉陷阱。合并/覆盖率/tip → `merge-discipline`；工程根/`openspec/`/原生 skill 门禁 → `openspec-workspace-gates`；增强能力静默降级 → `env-capability-discovery`。不复述阶段正文已写明的规则。
 
 | 错误 | 后果 | 修正 |
 |------|------|------|
-| 只走 solve 流程，不写 artifacts | 下次会话丢失上下文 | 关键结论必须进入 `openspec/changes/<name>/` |
-| 只写 OpenSpec 文件，不做阶段审查 | 规格看似完整但方案有风险 | 阶段 3、4 必须输出方案和审查结论 |
 | 手动模式确认前创建 change | 破坏阶段 1 门禁，可能生成错误目录 | 阶段 0 只准备候选名称，确认后才创建 |
-| 把 Superpowers 当硬依赖 | 非 Superpowers 环境无法使用 | Superpowers 只做渐进增强，缺失时降级 |
-| 检测到 Superpowers 却凭记忆使用 | 规则可能过期 | 必须读取对应 skill 的当前说明后执行 |
-| spec 写实现细节 | 行为契约污染，后续维护困难 | 实现细节放 `design.md` 和 `tasks.md` |
-| `MODIFIED` 只写片段 | archive 时可能丢失原 requirement | 复制完整 requirement block 再修改 |
-| 未验证就 archive | 主 specs 记录了未实现或错误行为 | 阶段 7 未通过不得归档 |
-| 分支收尾早于 archive | 归档产生的 specs 或 archive 目录可能遗漏出最终 diff | 先 archive 并检查 diff，再做 PR/合并/保留决策 |
-| 分支收尾决策为「保留/继续开发」却触发覆盖率门控 | 门控误触发，干扰非合并场景 | 门控仅「合并」决策触发；保留/继续开发不触发 |
-| 覆盖率门控脚本崩溃却继续合并 | 崩溃被误判为「覆盖率通过」，未验证代码进入主分支 | 崩溃/无报告/退出码1 一律视为门控未通过，暂停等用户 |
-| 覆盖率不达标自动模式强行合并 | 绕过用户决策强制合并不达标代码 | 不达标必须暂停等用户决策（强制合并/补测试/放弃） |
-| 显式跳过门控未留痕 | 事后无法追溯门控被跳过、责任不清 | 跳过必须在 PR 描述和 design.md 写入留痕（时间+决策人） |
-| `--base` 获取失败未输出降级警告 | MR 场景误判为 0 变更，门控形同虚设 | 降级时必须显式警告「未指定 base，MR 可能误判为 0 变更」 |
-| 用户直接 merge 跳过 OpenSpec archive 核对 | 先合后 archive，主 specs 短时分叉或漏合 | 合并入口一律走 merge-discipline Part A；关联 active 则阻断 |
-| 关联 active change 时推荐 Strategy B 后补 archive PR | 把门控降级成可选建议 | Part A 阻断；Strategy B 仅事故恢复 |
-| 把刚 push 后立即出现的「Pipeline succeeded」当当前 tip 已绿 | 误信旧 tip 的绿结果，合入旧 tip | 必须核对结果 sha == 刚 push 的 tip（见 `merge-discipline` Part D） |
-| archive 未完成或 diff 未审查就触发覆盖率门控 | 顺序错乱，门控基于不完整状态 | 顺序：archive+diff → 收尾决策 → 门控 → 合并 |
-| 实现中发现设计错误却继续硬做 | artifacts 与代码分叉 | 回写 proposal/specs/design/tasks 后再继续 |
-| `openspec/` 不存在却强行推进 | 无 schema/context，artifacts 结构混乱 | 阶段 0 门禁 1 未通过时必须停止，要求用户运行 `openspec init` |
-| workspace 多工程下未先定位工程根 | 门禁检查在 workspace 根执行而非工程目录，artifact 写入错误位置 | 阶段 0 必须先执行门禁 0 工程定位，确定工程根后再执行门禁 1/2 |
-| 检测到原生 OPSX skills 却直接调 CLI 或手写 artifacts | 绕过 schema 模板和 context injection，artifacts 不符规范 | 委托原生 skill（先读 SKILL.md）；CLI 仅允许作为工具命令（`openspec validate`、`openspec status` 等） |
-| Phase 2 创建 proposal（根因未与方案结合） | proposal 的 Why 和 What 割裂，artifact 需重写 | proposal 在阶段 3 方案选定后才创建，通过 `openspec-continue-change` 一次性写完整 |
-| 使用不存在的 skill 名称（如 `openspec-apply`、`openspec-archive`） | 读不到 SKILL.md，委托失败 | 正确名称：`openspec-apply-change`、`openspec-archive-change`、`openspec-verify-change` |
-| 阶段8默认将可复用经验写入 AGENTS.md / CLAUDE.md / skill（OpenSpec artifacts 除外） | 长期规则被一次性经验污染 | 阶段8只输出沉淀建议；必须等用户明确要求后才落盘 |
-| 门禁 2 找到旧版 skill（如 `openspec-propose`）就判断通过 | 以旧版 schema 手写 artifacts，validate 多次失败 | 门禁 2 只接受精确的四个名称，其他名称的 openspec skill 不算通过 |
-| 阶段 5 执行完一批任务后才批量勾选 tasks.md checkbox | 阶段 6 验证器报 CRITICAL 虚假未完成，需额外修复轮次 | 每个任务完成后立即用 StrReplace 将对应 `[ ]` 改为 `[x]` |
-| 阶段 6 验证报告将"设计了场景"写成"验证已通过" | 用户接受虚假的通过结论 | 报告中每项必须标注"已执行（命令+输出摘要）"或"待执行（操作指引）" |
-| delta spec requirement 不包含 SHALL/MUST | `openspec validate` 报错，需多轮修复 | requirement 描述必须含 SHALL 或 MUST；使用 `#### Scenario:` 添加场景 |
-| 浏览器断言条件基于猜测而非观察实际 DOM | waitForFunction 超时，测试失败 | 先 evaluate 目标元素的真实值，再决定断言写法 |
-| 增强能力调用失败或未命中时阻断流程 | 不必要的中断 | 增强能力必须静默跳过不阻断（见 `env-capability-discovery`） |
-| 增强能力突破阶段工具约束 | 只读阶段被写入 | 增强能力不改变阶段工具约束 |
+| 根因分析后立刻创建 proposal（方案未定） | Why/What 割裂，artifact 需重写 | proposal 在阶段 3 方案选定后才创建，经 `openspec-continue-change` 一次写完整 |
+| 门禁把旧名/短名当通过（如 `openspec-propose`、`openspec-apply`） | 旧 schema 手写或读不到 SKILL.md | 只接受精确四名：`openspec-new-change` / `openspec-continue-change` / `openspec-apply-change` / `openspec-archive-change`（verify 可选） |
+| `MODIFIED` 只写片段 | archive 时丢失原 requirement | 复制完整 requirement block 再改 |
+| 分支收尾选「保留/继续开发」却跑覆盖率门控 | 非合并场景误触发门控 | 门控仅「合并」决策触发 |
+| 一批任务做完才批量勾 `tasks.md` checkbox | 验证器报 CRITICAL 虚假未完成 | 每完成一项立刻把对应 `[ ]` 改为 `[x]` |
+| 验证报告把「设计了场景」写成「验证已通过」 | 用户接受虚假通过 | 每项标注「已执行（命令+输出摘要）」或「待执行（操作指引）」 |
+| delta requirement 无 SHALL/MUST 或无 Scenario | `openspec validate` 反复失败 | 描述含 SHALL/MUST；用 `#### Scenario:` 补场景 |
+| 浏览器断言基于猜测 DOM 而非实察 | waitForFunction 超时 | 先 evaluate 真实值再写断言 |
 
 ## 最小成功标准
 

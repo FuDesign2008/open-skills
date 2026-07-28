@@ -525,29 +525,19 @@ Jira 评论必须包含：
 
 ## 常见错误
 
+> 只记本 skill 非直觉陷阱。合并/覆盖率/archive → `merge-discipline`；工程根/`openspec/`/原生 skill → `openspec-workspace-gates`；增强能力 → `env-capability-discovery`。不复述阶段正文已写明的规则。
+
 | 错误 | 后果 | 修正 |
 |------|------|------|
-| 创建额外本地运行态目录 | 形成 OpenSpec 之外的第二套记录 | 统一记录到 OpenSpec artifacts、PR/MR 和 Jira 评论 |
-| 只写 OpenSpec，不回写 Jira | Jira 流程断裂，QA 无法跟进 | 阶段 8.4 合并完成后必须写 Jira 评论并流转到“已修复” |
-| 未做存在性验证 | 修复不存在或已变化的问题 | 阶段 2 第一项必须验证 |
-| `MODIFIED` 只写片段 | archive 时丢失 requirement 细节 | 复制完整 requirement block 再修改 |
-| 先 PR/合并再 archive | specs 或 archive 目录可能不在最终 diff；违反 merge-discipline Part A | 关联 active change 时必须先 archive 再合并；不得以合并后归档作正常路径 |
-| Jira 状态越权 | 研发误关闭 issue | 只允许流转到“已修复” |
-| 通过 `jira_transition_issue` 的 `comment` 参数传评论 | 评论被静默丢弃 | 独立调用 `jira_add_comment`，transition 的 comment 参数不可靠 |
-| Superpowers 缺失就中断 | 降低跨平台可用性 | Superpowers 只做渐进增强，探索失败静默跳过（见 `env-capability-discovery`） |
-| 验证失败仍提交 PR | 把未闭环修复交给 QA | 阶段 7 未通过不得提交 |
-| OpenSpec artifacts 写得过薄 | 后续无法复盘根因和验证 | `design.md` 必须包含 Jira Context、Root Cause、Options、Risk 和 Verification Notes |
-| 批量修复只按列表机械执行 | 重复修复、依赖丢失或行为冲突 | 执行前后识别 issue 关系，并写入 Related Issues / Risk / Dependencies |
-| 检测到原生 OPSX skills 却直接调 CLI 或手写 artifacts | 绕过 schema 模板，artifacts 不符规范 | 委托原生 skill（先读 SKILL.md）；CLI 仅允许作为工具命令（`openspec validate`、`openspec status` 等） |
-| 阶段 2 分析后就创建 proposal（根因未与方案结合） | proposal 的 Why 和 What 割裂，artifact 需重写 | proposal 在阶段 4 方案选定后才创建，一次性写完整 |
-| 使用不存在的 skill 名称（如 `openspec-apply`） | 读不到 SKILL.md，委托失败 | 正确名称：`openspec-apply-change`、`openspec-archive-change`、`openspec-verify-change` |
-| 实现中发现设计错误却继续硬做 | artifacts 与代码分叉 | 回写 proposal/specs/design/tasks 后再继续 |
-| 快速修复走了 OPSX 路径 | 流程过重，浪费时间 | 只需快速修复无需规范沉淀时，使用 `jira-fix-workflow` |
-| workspace 多工程下未先定位工程根 | 门禁检查在 workspace 根执行而非工程目录，artifact 写入错误位置 | 阶段 0 第 4 步必须先做工程定位，确定工程根后再检查 openspec/ 和 OPSX skills |
-| 覆盖率门控脚本崩溃却继续合并 | 崩溃被误判为「覆盖率通过」，未验证的修复进入主分支 | 崩溃/无报告/退出码1 一律视为门控未通过，暂停等用户 |
-| 覆盖率不达标自动模式强行合并 | 绕过用户决策强制合并不达标代码 | 不达标必须暂停等用户决策（强制合并/补测试/放弃） |
-| 显式跳过门控未留痕 | 事后无法追溯门控被跳过、责任不清 | 跳过必须在 PR 描述和 design.md 写入留痕（时间+决策人） |
-| `--base` 获取失败未输出降级警告 | MR 场景误判为 0 变更，门控形同虚设 | 降级时必须显式警告「未指定 base，MR 可能误判为 0 变更」 |
+| 创建额外本地运行态目录 | OpenSpec 之外第二套记录 | 统一记到 OpenSpec artifacts、PR/MR 与 Jira 评论 |
+| 只写 OpenSpec，不回写 Jira | Jira 流程断裂，QA 无法跟进 | 合并完成后必须 `jira_add_comment` 并流转到「已修复」 |
+| Jira 状态越权（研发直接关单等） | 误关闭 issue，流程越权 | 只允许流转到「已修复」 |
+| 用 `jira_transition_issue` 的 `comment` 传评论 | 评论被静默丢弃 | 独立调用 `jira_add_comment` |
+| 快速修复误走 OPSX 路径 | 流程过重 | 无需规范沉淀时用 `jira-fix-workflow` |
+| 批量修复只按列表机械执行 | 重复修、丢依赖或行为冲突 | 执行前后识别 issue 关系，写入 Related Issues / Risk / Dependencies |
+| 阶段 2 分析后立刻创建 proposal | Why/What 割裂，artifact 重写 | proposal 在阶段 4 方案选定后一次写完整 |
+| `design.md` 缺 Jira Context / Root Cause / Options / Risk / Verification Notes | 无法按单复盘 | 上述五块为 Jira×OPSX 最低完整度 |
+| `MODIFIED` 只写片段或 skill 短名错误 | archive 丢 requirement / 读不到 SKILL | 整块复制再改；用 `openspec-*-change` 精确名 |
 
 ## 最小成功标准
 
