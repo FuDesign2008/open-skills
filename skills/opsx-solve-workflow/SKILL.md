@@ -370,6 +370,7 @@ Superpowers 增强规则：
 | 门禁把旧名/短名当通过（如 `openspec-propose`、`openspec-apply`） | 旧 schema 手写或读不到 SKILL.md | 只接受精确四名：`openspec-new-change` / `openspec-continue-change` / `openspec-apply-change` / `openspec-archive-change`（verify 可选） |
 | `MODIFIED` 只写片段 | archive 时丢失原 requirement | 复制完整 requirement block 再改 |
 | 分支收尾选「保留/继续开发」却跑覆盖率门控 | 非合并场景误触发门控 | 门控仅「合并」决策触发 |
+| `ask`/未配置时未询问就默认跑 analyzer | 强迫无覆盖率需求的工程跑门控 | 见 `merge-discipline` Part C：先解析偏好，`ask` 必须询问 |
 | 一批任务做完才批量勾 `tasks.md` checkbox | 验证器报 CRITICAL 虚假未完成 | 每完成一项立刻把对应 `[ ]` 改为 `[x]` |
 | 验证报告把「设计了场景」写成「验证已通过」 | 用户接受虚假通过 | 每项标注「已执行（命令+输出摘要）」或「待执行（操作指引）」 |
 | delta requirement 无 SHALL/MUST 或无 Scenario | `openspec validate` 反复失败 | 描述含 SHALL/MUST；用 `#### Scenario:` 补场景 |
