@@ -1,8 +1,8 @@
 ---
 name: solve-workflow
-version: "1.16.0"
+version: "1.17.0"
 user-invocable: true
-description: 当用户说"明确问题"、"分析问题"、"探索方案"、"审查方案"、"制定计划"、"执行计划"、"检查验证"、"复盘改进"、"回顾总结"，或"继续分析"、"深入分析"、"修改方案"、"完善方案"、"优化方案"、"更新计划"、"修订计划"、"修改计划"，或"自动模式"、"自动分析"、"自动解决"时触发。适用于 bug 修复、代码重构、功能开发等需系统性分析的复杂任务。
+description: "Eight-stage PDCA workflow for systematically solving bugs, refactors, and feature-development tasks: clarify → analyze → explore solutions → review → plan → execute → verify → retrospect. Manual mode (default) pauses for user confirmation at each stage exit; auto mode runs end-to-end. Triggers — 「明确问题」「分析问题」「探索方案」「审查方案」「制定计划」「执行计划」「检查验证」「复盘改进」(alias「回顾总结」)；「继续分析」「深入分析」「修改方案」「完善方案」「优化方案」「更新计划」「修订计划」「修改计划」；「自动模式」「自动分析」「自动解决」 / clarify problem, analyze problem, explore solutions, review solution, make plan, execute plan, verify, retrospective, auto mode."
 dependencies:
   - solution-review
   - code-design-review
@@ -19,328 +19,323 @@ dependencies:
   - pdca-review-orchestration
 ---
 
-# 八阶段问题解决工作流
+# Eight-Stage Problem-Solving Workflow
 
-> 八阶段 PDCA 流程，阶段 1、3、4、5 只读不写；阶段 2 分析方法论见 `analysis-core`（含临时改动门控）。默认手动模式，说「自动模式」或「自动分析」进入全流程自动执行。执行完成后进入阶段 7；若阶段 8 结论为「未达标需再改」，可回到「分析问题」、「探索方案」或「审查方案」开启下一轮循环。
-> **输出格式参考**：各阶段输出模板见 [reference.md](reference.md)。
+> An eight-stage PDCA flow. Stages 1, 3, 4, 5 are read-only. Stage 2's analysis methodology lives in `analysis-core` (including the temporary-change gate). Default is manual mode; say "自动模式" or "自动分析" to run the full flow automatically. On completion, enter stage 7; if stage 8 concludes the goal is not met, loop back to "分析问题" / "探索方案" / "审查方案" for another cycle.
+> **Output templates**: each stage's output format is in [reference.md](reference.md).
 
-## 调用约定
+## Invocation Conventions
 
-- **触发词**（以 description 为准）：明确问题、分析问题、探索方案、审查方案、制定计划、执行计划、检查验证、复盘改进（别名：回顾总结）；继续分析、深入分析、修改方案、完善方案、优化方案、更新计划、修订计划、修改计划；自动模式、自动分析、自动解决
-- **命令形式**：`/solve-workflow xxx`、`/solve xxx` 等，`xxx` 为后续内容
-- **默认行为**：当 `xxx` 不包含上述任一触发词时，默认进入阶段 1（明确问题），将 `xxx` 视为待分析的问题描述
-- **匹配规则**：`xxx` 中包含触发词即视为命中，无需精确匹配
-- **不适用场景**：单步修改（如改一个变量名）、用户仅需快速建议而非完整执行流程时，可跳过本工作流直接处理。
+- **Trigger words** (per `description`): 明确问题, 分析问题, 探索方案, 审查方案, 制定计划, 执行计划, 检查验证, 复盘改进 (alias 回顾总结); 继续分析, 深入分析, 修改方案, 完善方案, 优化方案, 更新计划, 修订计划, 修改计划; 自动模式, 自动分析, 自动解决
+- **Command form**: `/solve-workflow xxx`, `/solve xxx`, where `xxx` is the follow-up content
+- **Default behavior**: when `xxx` contains none of the above triggers, default to stage 1 (clarify the problem), treating `xxx` as the problem description to analyze
+- **Matching rule**: a trigger word appearing anywhere in `xxx` counts as a match — exact phrasing is not required
+- **Not applicable**: single-step edits (e.g. renaming one variable) or when the user only wants a quick suggestion rather than the full flow — skip this workflow and handle directly
 
-**强依赖 skill**（frontmatter `dependencies`；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
-- `pdca-review-orchestration`（阶段 4 审查编排；依赖 `solution-review` 与 `code-design-review`）
-- `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`（经 `analysis-core` 委托的调试 skill；阶段 2 + 阶段 7）
-- `analysis-core`（阶段 2 分析方法论单源：临时改动门控 / 打点调试 / 分析步骤骨架 / 调试-验证闭环）
-- `learn-and-improve`（阶段 8 复盘改进与经验沉淀）
-- `workflow-mode-lifecycle`（自动/手动模式生命周期）、`clarifying-question-discipline`（主动提问硬纪律与调查优先）、`known-issue-research`（阶段 2 调研路由 / 已知问题快搜 / 行业通病评估）
-- `ensure-tests`（阶段 6 测试补全：项目有测试基建时补全并运行；无基建经用户确认后搭建）
-- `node-version-discipline`（阶段 7 测试执行前 Node 版本对齐）
+**Strong dependencies** (frontmatter `dependencies`; the prerequisite skill check below must pass at startup, or the flow aborts):
+- `pdca-review-orchestration` (stage 4 review orchestration; depends on `solution-review` and `code-design-review`)
+- `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit` (debug skills delegated to via `analysis-core`; stage 2 + stage 7)
+- `analysis-core` (single source of truth for stage 2's methodology: temporary-change gate / instrumentation debug / analysis step skeleton / debug-verify loop)
+- `learn-and-improve` (stage 8 retrospective and knowledge sediment)
+- `workflow-mode-lifecycle` (manual/auto mode lifecycle), `clarifying-question-discipline` (hard clarifying-question discipline and investigation-first), `known-issue-research` (stage 2 research routing / known-issue quick search / industry-wide evaluation)
+- `ensure-tests` (stage 6 test completion: generate and run tests when test infrastructure exists; scaffold with user confirmation when it doesn't)
+- `node-version-discipline` (Node-version alignment before running tests in stage 7)
 
-**相关 skill**（信息性引用，非强依赖）：`perf-workflow`（性能专项分析）、`jira-fix-workflow`（Jira 端到端修复，内置本工作流）
+**Related skills** (informational, not a strong dependency): `perf-workflow` (dedicated performance analysis), `jira-fix-workflow` (end-to-end Jira fix flow that embeds this workflow)
 
-## 前置 skill 检查
+## Prerequisite Skill Check
 
-> 启动时（进入阶段 1 之前）必须执行本检查，核对 frontmatter `dependencies` 声明的全部强依赖 skill。
+> Run this check at startup, before entering stage 1, against every strong dependency declared in frontmatter `dependencies`.
 
-1. 扫描可用 skill（查 `<available_items>` 或用 `skill` 工具）
-2. 全部存在 → 继续后续流程
-3. 任一缺失 → 按缺失提示格式（见 [reference.md](reference.md)「前置 skill 检查 — 缺失提示」）输出并**立即中止流程**
+1. Scan available skills (check `<available_items>` or use the `skill` tool)
+2. All present → continue
+3. Any missing → print the missing-dependency notice (format in [reference.md](reference.md) § Prerequisite Skill Check — Missing Notice) and **abort immediately**
 
-> **不降级原则**：强依赖缺失即中止，不得用简化审查降级运行，保证 solve-workflow 在任何环境下的审查深度一致。
+> **No-downgrade principle**: a missing strong dependency aborts the flow — never fall back to a simplified review. This keeps solve-workflow's review depth consistent across every environment.
 
 ---
 
-## 触发词与模式
+## Triggers and Modes
 
-| 说法示例 | 模式 | 说明 |
+| Phrasing | Mode | Note |
 |---------|------|------|
-| 「分析问题」「探索方案」`/solve xxx` | 👤 手动 | 默认，阶段间需用户确认 |
-| 「自动分析 xxx」「自动解决 xxx」「自动模式」 | 🤖 自动 | 全流程自动执行，无需确认 |
+| "分析问题", "探索方案", `/solve xxx` | 👤 Manual | Default; pauses for confirmation between stages |
+| "自动分析 xxx", "自动解决 xxx", "自动模式" | 🤖 Auto | Runs the full flow with no confirmation |
 
-**模式识别规则**：触发词中含「自动」→ 自动模式；其余默认手动模式。运行中可随时说「切换自动模式」或「切换手动模式」切换。👤 手动各阶段停等用户确认；🤖 自动全程推进，仅阶段4超3轮时暂停。各阶段差异详见各阶段内的 [👤]/[🤖] 说明。
+**Mode detection**: a trigger containing "自动" (auto) selects auto mode; anything else defaults to manual. Say "切换自动模式" / "切换手动模式" to switch mid-run. 👤 Manual pauses at every stage exit for confirmation; 🤖 Auto proceeds throughout, pausing only when stage 4's review loop exceeds 3 rounds. Per-stage [👤]/[🤖] notes cover the differences.
 
-## 模式生命周期
+## Mode Lifecycle
 
-> 核心规则（自动恢复手动 / 显式重进 / 隐式延续不激活 / 批量场景）由强依赖 skill `workflow-mode-lifecycle` 承载（前置检查已保证可用），本节不再内联重复。solve-workflow 特有说明：「全流程完成」= 正常完成阶段 8（含进入下一轮 PDCA 循环回到阶段 3/4，新一轮默认手动）；失败终止、用户主动停止、审查超限暂停后终止均视为流程中断，恢复手动。
+> The core rules (auto always reverts to manual / explicit re-entry only / implicit continuation never re-activates it / batch scenarios) live in the strong dependency `workflow-mode-lifecycle` (guaranteed available by the prerequisite check) and are not repeated here. solve-workflow-specific: "full flow completes" means stage 8 finishes normally (including looping back into a new PDCA cycle at stage 3/4, which defaults to manual). Failure abort, user-initiated stop, and termination after a review-cap pause all count as interruption and revert to manual.
 
 ---
 
-## ⚡ 快速参考（执行前必读，修改阶段时同步更新）
+## ⚡ Quick Reference (read before executing; update alongside any stage change)
 
-> 本表为门控速览；规则细节以各阶段正文为准。
+> This table is a gate overview; the per-stage body is authoritative for rule details.
 
-| 阶段 | 工具权限 | 👤 手动停止点 | 必须输出 |
+| Stage | Tool permissions | 👤 Manual stop point | Required output |
 |------|---------|-------------|--------|
-| 1 明确问题 | ❌ Read/Grep（例外见阶段1正文） | ⛔ 输出后停止，等用户确认 | 问题复述／要素／疑问点 |
-| 2 分析问题 | 见 `analysis-core`（Read/Grep/WebSearch；受限 Edit/Write 仅分析辅助） | 继续进入阶段3 | 存在性／根因／影响／临时改动回滚验证（格式见 `analysis-core`） |
-| 3 探索方案 | ✅ Read；❌ Edit/Write | ⛔ 输出方案表后停止，等用户选择 | 方案对比表（≥2个） |
-| 4 审查方案 | ✅ Read；❌ Edit/Write | ⛔ 审查报告输出后停止，等用户判定 | 审查报告＋通过/不通过 |
-| 5 制定计划 | ✅ Read；❌ Edit/Write/Bash | ⛔ 输出计划后停止，等用户确认 | 文件修改清单＋顺序 |
-| 6 执行计划 | ✅ 全部 | 无坑时自动进入阶段7 | 执行报告 |
-| 7 检查验证 | ✅ Bash；❌ Edit/Write | ⛔ 输出结果后停止，等用户确认 | 检查结果 |
-| 8 复盘改进 | ❌ Edit/Write（除非用户确认写入或进入下一轮） | 结束 / 或循环回阶段3/4 | 改进建议＋沉淀载体 |
+| 1 Clarify the problem | ❌ Read/Grep (exceptions in the stage 1 body) | ⛔ Stop after output, wait for confirmation | Restatement / key elements / open questions |
+| 2 Analyze the problem | Per `analysis-core` (Read/Grep/WebSearch; Edit/Write limited to analysis-assist) | Continue to stage 3 | Existence / root cause / impact / temporary-change rollback verification (format per `analysis-core`) |
+| 3 Explore solutions | ✅ Read; ❌ Edit/Write | ⛔ Stop after the comparison table, wait for the user's choice | Solution comparison table (≥2 options) |
+| 4 Review the solution | ✅ Read; ❌ Edit/Write | ⛔ Stop after the review report, wait for the user's verdict | Review report + pass/fail |
+| 5 Make a plan | ✅ Read; ❌ Edit/Write/Bash | ⛔ Stop after the plan, wait for confirmation | File change list + order |
+| 6 Execute the plan | ✅ Everything | Auto-advance to stage 7 when clean | Execution report |
+| 7 Verify | ✅ Bash; ❌ Edit/Write | ⛔ Stop after the results, wait for confirmation | Verification results |
+| 8 Retrospective | ❌ Edit/Write (unless the user confirms writing, or a new cycle starts) | End / or loop back to stage 3/4 | Improvement suggestions + sediment carrier |
 
 ---
 
-## 通用原则
+## General Principles
 
-### ⚠️ 主动提问
+### ⚠️ Clarifying Questions
 
-> ⚠️ 主动提问：遵循 `clarifying-question-discipline`（一次一问、多轮问清；问清优先，不急着答）。
+> ⚠️ Follow `clarifying-question-discipline` (one question per turn; multi-round until clear; clarify first, do not rush to answer).
 
 ---
 
-## 路径选择
+## Path Selection
 
-根据任务复杂度选择路径，并在阶段 1 确认问题时声明：
+Choose a path by task complexity, and declare it when confirming the problem in stage 1:
 
-| 路径 | 适用场景 | 要求 |
+| Path | When to use | Requirement |
 |------|----------|------|
-| 完整路径 | 新功能开发、多模块联动、需求模糊 | 阶段 1～8 全部执行 |
-| 增量路径 | 存量行为修改、重构、普通 Bug | 阶段 1～8 执行，但方案和计划可保持精简 |
-| 精简路径 | 热修复、单文件高确定性变更 | 精简输出；方案可 1 个 + 风险说明，计划可合并为描述。不跳过阶段 7/8 |
+| Full | New feature development, multi-module coordination, ambiguous requirements | Run stages 1–8 in full |
+| Incremental | Behavior changes to existing code, refactors, ordinary bugs | Run stages 1–8, but solutions and plans may stay lean |
+| Lean | Hotfixes, single-file high-certainty changes | Lean output; 1 solution + a risk note is enough, and the plan can fold into the solution description. Stages 7/8 are never skipped |
 
-执行中发现范围扩大时必须升级路径：精简 → 增量，增量 → 完整。手动模式下升级需用户确认。
+If scope grows mid-execution, upgrade the path: lean → incremental, incremental → full. In manual mode, upgrading requires user confirmation.
 
-精简路径下，阶段 3（探索方案）可只输出 1 个方案 + 风险说明，阶段 5（制定计划）可合并到方案描述中。但阶段 7（检查验证）和阶段 8（复盘改进）不可跳过。
+On the lean path, stage 3 (explore solutions) may output just 1 solution + a risk note, and stage 5 (make a plan) may fold into the solution description. Stage 7 (verify) and stage 8 (retrospective) are never skipped.
 
 ---
 
-## 阶段1：明确问题
+## Stage 1: Clarify the Problem
 
-> ⚠️ 本阶段禁止 Edit/Write。仅输出对问题的理解，不修改任何文件。
+> ⚠️ Edit/Write are forbidden in this stage. Only output your understanding of the problem — do not modify any file.
 
-> 原则：先明确问题再技术分析；本阶段只做问题对齐，不修改实现逻辑
+> Principle: clarify the problem before technical analysis; this stage only aligns on the problem, it does not touch implementation logic.
 
-> **[🤖 自动]** 跳过本阶段，直接进入阶段 2 分析问题，将用户输入视为已确认的问题描述。
+> **[🤖 Auto]** Skip this stage and go straight to stage 2, treating the user's input as an already-confirmed problem description.
 >
-> **[👤 手动]** 必须先完成本阶段并获用户确认后，才能进入阶段 2 分析问题。
+> **[👤 Manual]** This stage must complete and be confirmed by the user before entering stage 2.
 
-1. **问题复述** - 用自己的话重新描述用户的问题
-2. **关键要素提取** - 目标、约束、背景、期望结果
-3. **疑问点列出** - 列出需要进一步确认的地方；**若向用户提问，一次只问 1 个最关键的**（见「通用原则」硬纪律），得到回答后再问下一个
-4. **Scope 拆解**（若适用）- 若问题涉及多个独立子系统（如「聊天 + 文件存储 + 计费」），先协助拆解：独立模块、依赖关系、建议处理顺序，再对首个子问题进行分析。**本步骤仍在本阶段内，禁止主动探索代码；用户已引用的内容可读取**，拆解主要依据用户描述。
-5. **等待用户确认**
+1. **Restate the problem** — describe the user's problem in your own words
+2. **Extract key elements** — goal, constraints, background, expected outcome
+3. **List open questions** — points that need confirmation; **if asking the user, ask exactly ONE most critical question at a time** (see "General Principles" hard discipline), then ask the next only after getting an answer
+4. **Scope breakdown** (if applicable) — when the problem spans multiple independent subsystems (e.g. "chat + file storage + billing"), help break it down first: independent modules, dependencies, suggested order — then analyze the first sub-problem. **This step still belongs to stage 1: no proactive code exploration; content the user already referenced may be read**, and the breakdown is based mainly on the user's description.
+5. **Wait for user confirmation**
 
-**工具限制**：禁止 Read/Grep/SemanticSearch，以下情况**例外**：
-- 用户消息中含 `@文件路径`（含可选行号，如 `@SKILL.md:83-89`）
-- 用户消息中粘贴了代码片段
-- 用户明确指出了「函数/类名 + 所在文件」的组合
+**Tool restrictions**: Read/Grep/SemanticSearch are forbidden, **except**:
+- The user's message contains `@file-path` (optionally with line numbers, e.g. `@SKILL.md:83-89`)
+- The user pasted a code snippet
+- The user explicitly named a "function/class + containing file" combination
 
-例外时：**仅读取用户直接引用的文件与行号**，不得扩展到其他文件。
-读取结果仅用于辅助理解问题，**本阶段输出中不得出现技术分析结论**。
+When an exception applies: **read only the file and lines the user directly referenced** — do not expand to other files.
+Use the read result only to understand the problem — **no technical-analysis conclusions may appear in this stage's output**.
 
-### 输出格式
+### Output Format
 
-输出格式见 [reference.md](reference.md)「阶段 1 明确问题」。
+Output format is in [reference.md](reference.md) § Stage 1 — Clarify the Problem.
 
-> ⛔ **[手动模式 — 阶段 1 出口]** 输出以上内容后**立即停止**，等用户明确确认理解正确后，才能进入阶段 2 分析问题。
-> 🤖 **[自动模式]** 跳过阶段 1，直接从阶段 2 开始执行。
+> ⛔ **[Manual mode — stage 1 exit]** **Stop immediately** after this output and wait for the user to explicitly confirm the understanding is correct before entering stage 2.
+> 🤖 **[Auto mode]** Skip stage 1 and start directly from stage 2.
 
-### Red Flags - 禁止行为
+### Red Flags
 
-- 用户未引用代码，却在阶段 1 未完成时主动使用 Read/Grep 探索代码
-- 以「用户已经说得很清楚」为由跳过阶段 1
-- 以「边分析边澄清」为由在阶段 1 未完成时主动探索代码
-- 以「先看看代码再确认」为由在阶段 1 未完成时主动探索代码
-- 在阶段 1 的「问题复述」或「疑问点」中混入技术分析结论（如根因判断、修复建议）
-- 阶段 1 一次抛出多个疑问点让用户回答（违反「主动提问」硬纪律）——每次只问 1 个最关键的，得到回答后再问下一个
+- Using Read/Grep to explore code before stage 1 completes, when the user has referenced nothing
+- Skipping stage 1 because "the user was already clear enough"
+- Exploring code before stage 1 completes under the guise of "clarify while analyzing"
+- Exploring code before stage 1 completes under the guise of "look at the code first, then confirm"
+- Mixing technical-analysis conclusions (root-cause judgment, fix suggestions) into stage 1's "restatement" or "open questions"
+- Dumping multiple open questions on the user at once in stage 1 (violates the "Clarifying Questions" hard discipline) — ask exactly one most critical question at a time, then the next after an answer
 
-**违反即违反原则。[👤 手动模式] 必须先完成阶段 1 明确问题并获确认，再进入阶段 2。[🤖 自动模式] 跳过阶段 1 不受此限制。**
-
----
-
-## 阶段2：分析问题
-
-> 分析方法论单源：`analysis-core`。本阶段不留实现变更——修复归阶段 6。
-
-
-### 委托 `analysis-core`
-
-加载强依赖 `analysis-core`，按其 §§1–3 执行。本工作流映射（号+名）：
-
-- `{next-stage}` = 阶段 3「探索方案」
-- `{root-cause step}` = 步骤 5「问题根因分析」；`{impact-assessment step}` = 步骤 7「影响范围评估」；`{upstream-eval step}` = 步骤 6「上游依赖修复评估」
-
-输出按 `analysis-core` 与 `known-issue-research/reference.md`；有临时改动则附「临时改动清单 + 回滚验证」。
+**Any of the above violates the stage's contract. [👤 Manual] Stage 1 must complete and be confirmed before entering stage 2. [🤖 Auto] Skipping stage 1 is not subject to this restriction.**
 
 ---
 
-## 阶段3：探索方案
+## Stage 2: Analyze the Problem
 
-> 原则：基于阶段2的分析，提供2-5个解决方案；方案中剔除非必要功能与过度设计（YAGNI）
+> Single source of truth for the methodology: `analysis-core`. This stage leaves no implementation changes behind — fixes belong to stage 6.
 
+### Delegate to `analysis-core`
 
-### [🤖 自动模式] 方案选择
+Load the strong dependency `analysis-core` and run its §§1–3. This workflow's mapping (number + name):
 
-自动生成 2-5 个方案，AI 自动推荐并选择最优方案（优先：更彻底解决 > 符合最佳实践 > 改善代码质量 > 改动较少），直接进入阶段4审查。
+- `{next-stage}` = stage 3 "Explore Solutions"
+- `{root-cause step}` = step 5 "Root cause"; `{impact-assessment step}` = step 7 "Impact"; `{upstream-eval step}` = step 6 "Upstream dependency fix evaluation"
 
-### [👤 手动模式] 方案选择
+Output format per `analysis-core` and `known-issue-research/reference.md`; if any temporary change was made, attach the "temporary-change list + rollback verification".
 
-输出方案对比表，等用户选择后进入阶段4审查。
+---
 
-### 输出格式
+## Stage 3: Explore Solutions
 
-1. **开头**：方案清单（各方案编号+名称）
-2. **中间**：每个方案详细展开（见下方「每个方案包含」）
-3. **结尾**：方案对比表（全文仅此一次，紧邻决策点）
+> Principle: based on stage 2's analysis, offer 2–5 solutions; strip non-essential features and over-engineering (YAGNI).
 
-| 方案 | 描述 | 优点 | 缺点 | 复杂度 | 推荐度 |
+### [🤖 Auto mode] Solution selection
+
+Generate 2–5 solutions automatically; the AI recommends and selects the best one (priority: more thorough fix > best-practice alignment > code-quality improvement > smallest change), then proceeds directly to stage 4.
+
+### [👤 Manual mode] Solution selection
+
+Output the solution comparison table and wait for the user to choose before entering stage 4.
+
+### Output Format
+
+1. **Opening**: solution list (number + name for each)
+2. **Middle**: each solution expanded in detail (see "Each solution includes" below)
+3. **Closing**: solution comparison table (appears exactly once, right at the decision point)
+
+| Solution | Description | Pros | Cons | Complexity | Recommendation |
 |------|------|------|------|--------|--------|
-| 方案1 | ... | ... | ... | 低/中/高 | ⭐⭐⭐⭐⭐ |
-| 方案2 | ... | ... | ... | 低/中/高 | ⭐⭐⭐ |
+| Solution 1 | ... | ... | ... | Low/Med/High | ⭐⭐⭐⭐⭐ |
+| Solution 2 | ... | ... | ... | Low/Med/High | ⭐⭐⭐ |
 
-### 每个方案包含
+### Each solution includes
 
-- 核心思路（1-2句话）
-- 需要修改的文件/模块
-- 实施难度评估、潜在风险、适用场景
+- Core idea (1–2 sentences)
+- Files/modules to change
+- Implementation difficulty, potential risks, applicable scenarios
 
-**工具限制**：禁止使用 Edit/Write；可使用 Read 查看代码细节
+**Tool restrictions**: Edit/Write are forbidden; Read is allowed to inspect code details
 
-> ⛔ **[手动模式 — 阶段3 出口]** 输出方案对比表后**立即停止**，等用户选择方案编号后进入阶段4审查。
-> 🤖 **[自动模式]** 自动选定最优方案，直接进入阶段4审查。
+> ⛔ **[Manual mode — stage 3 exit]** **Stop immediately** after the comparison table and wait for the user to pick a solution number before entering stage 4.
+> 🤖 **[Auto mode]** Auto-select the best solution and proceed directly to stage 4.
 
-### Red Flags — 禁止行为
+### Red Flags
 
-- 只生成 1 个方案，以「方向已明确」为由跳过方案对比
-- **[👤 手动]** 用户未选方案时自行推进到审查阶段
-
----
-
-## 阶段4：审查方案
-
-加载 `pdca-review-orchestration` 并按其完整审查契约执行。本工作流映射：`{next-stage}` = 阶段 5「制定计划」；`{artifact-sink}` = 阶段 4 审查报告（格式见 [reference.md](reference.md)）；`{extra-dimensions}` = 无；`{batch-overcap-behavior}` = `N/A`。工具限制：禁止 Edit/Write；可使用 Read 查看代码细节。
+- Producing only 1 solution and skipping the comparison because "the direction is already clear"
+- **[👤 Manual]** Advancing to review before the user has chosen a solution
 
 ---
 
-## 阶段5：制定计划
+## Stage 4: Review the Solution
 
-> 原则：详细的、可执行的修改计划，只输出计划文本，不执行代码修改
-
-
-1. **目标方案回顾** - 经审查确认的方案核心思路
-2. **文件修改清单** - 文件路径、修改位置、具体改动描述
-3. **修改顺序** - 考虑依赖关系的执行顺序
-
-### 输出格式
-
-输出格式见 [reference.md](reference.md)「阶段 5 制定计划」。
-
-**工具限制**：禁止使用 Edit/Write/Bash 修改代码；可使用 Read 确认细节
-
-> ⛔ **[手动模式 — 阶段5 出口]** 输出计划后**立即停止**，等用户确认计划无误后进入阶段6执行。
-> 🤖 **[自动模式]** 自动确认，直接进入阶段6。
-
-### 更新计划（子阶段）
-
-当用户说「更新计划」「修订计划」「修改计划」时，按本阶段执行，额外标注**变更对比**和**变更原因**。
+Load `pdca-review-orchestration` and run its full review contract. This workflow's mapping: `{next-stage}` = stage 5 "Make a Plan"; `{artifact-sink}` = the stage 4 review report (format in [reference.md](reference.md)); `{extra-dimensions}` = none; `{batch-overcap-behavior}` = `N/A`. Tool restrictions: Edit/Write forbidden; Read allowed to inspect code details.
 
 ---
 
-## 阶段6：执行计划
+## Stage 5: Make a Plan
 
-> 原则：严格按计划执行，完成后确认
+> Principle: a detailed, executable modification plan — output plan text only, do not execute any code change.
 
+1. **Target solution recap** — the core idea of the reviewed, confirmed solution
+2. **File change list** — file path, location, and specific change description
+3. **Change order** — execution order accounting for dependencies
 
-### 执行流程
+### Output Format
 
-1. 按计划顺序修改文件
-2. 每次修改后说明完成内容
-3. 若阶段 5 计划使用了 checkbox 格式（`- [ ]` / `- [x]`），**每完成一项后立即将对应 `[ ]` 改为 `[x]`**，不得延后到一批任务结束后再批量更新
-4. 全部完成后输出执行报告
-5. **自动进入阶段 7**：执行顺利、无坑无阻塞时，报告输出后立即进入阶段 7；遇问题或需决策时，先与用户确认
+Output format is in [reference.md](reference.md) § Stage 5 — Make a Plan.
 
-### 执行报告
+**Tool restrictions**: Edit/Write/Bash are forbidden; Read is allowed to confirm details
 
-- 已修改文件列表、关键改动说明
-- 建议的测试步骤
-- 是否有偏离计划的调整（如有，说明原因）
-- 验证要点/自查清单（便于阶段7使用）
+> ⛔ **[Manual mode — stage 5 exit]** **Stop immediately** after the plan and wait for the user to confirm it before entering stage 6.
+> 🤖 **[Auto mode]** Auto-confirm and proceed directly to stage 6.
 
-### 测试套件建议（执行报告前）
+### Update the plan (sub-stage)
 
-对涉及业务逻辑且缺少测试覆盖的变更，读取并调用 `ensure-tests`，声明 `mode=advisory`，作用域为本次变更的逻辑文件；用户拒绝脚手架时在执行报告中提醒，且不阻断流程。
-
-**工具权限**：✅ 允许使用 Edit/Write/Bash；使用 TodoWrite 跟踪进度
+When the user says "更新计划" / "修订计划" / "修改计划" (update/revise/modify the plan), run this stage again, additionally noting the **change comparison** and **reason for change**.
 
 ---
 
-## 阶段7：检查验证（Check）
+## Stage 6: Execute the Plan
 
-> 原则：只输出检查结果，不输出改进建议；改进建议在阶段 8（复盘改进）
+> Principle: execute strictly per the plan, confirm on completion.
 
+### Execution flow
 
-1. **目标达成情况** - 是否达成阶段 1 明确问题的期望结果
-2. **与计划对比** - 与阶段 5 的计划对比
-3. **验证与测试** - 可引用阶段 6 执行报告；**若有测试相关内容，需执行测试**
-4. **副作用验证** - 检查改动是否在其他模块引发了新问题或预期外的行为变化（功能副作用），以及是否带来性能/安全/可维护性方面的预期外影响（非功能副作用）
-5. **逻辑与流程审查** - 检查是否存在漏洞或遗漏
-6. **调试-验证闭环** - 若阶段 2 用了调试 skill 定位根因，按 `analysis-core` §4 用**同一 skill** 验证修复（而非只跑测试）
+1. Modify files in the plan's order
+2. State what was completed after each change
+3. If stage 5's plan used checkbox format (`- [ ]` / `- [x]`), **flip the corresponding `[ ]` to `[x]` immediately after finishing each item** — do not batch the updates until the end
+4. Output an execution report once everything is done
+5. **Auto-advance to stage 7**: when execution goes smoothly with no blockers, enter stage 7 immediately after the report; if a problem or decision arises, confirm with the user first
 
-### 测试执行
+### Execution report
 
-若阶段 5 计划或阶段 6 执行报告涉及测试（如单元测试、集成测试、手动验证步骤）：
+- List of modified files, key changes
+- Suggested test steps
+- Any deviation from the plan (with reason, if applicable)
+- Verification checklist (for stage 7 to use)
 
-> Node / JavaScript / TypeScript 工程运行测试前，调用 `node-version-discipline` 对齐项目声明的 Node 版本。
+### Test-suite recommendation (before the execution report)
 
-- **AI 可执行**：使用 Bash 运行测试命令（如 `npm test`、`pytest`、`go test`），将结果纳入检查结论
-- **AI 无法执行**（无 Bash、环境限制、测试需人工操作）：**明确提醒用户**：「本次修改涉及测试，请自行执行 [具体测试命令/步骤] 验证，确认通过后再收尾」
+For changes touching business logic that lack test coverage, load and call `ensure-tests` with `mode=advisory`, scoped to this change's logic files. If the user declines scaffolding, note it in the execution report as a non-blocking reminder.
 
-### 验证报告诚实原则
-
-按 `pdca-review-orchestration` 的验证报告诚实规则标注每项结果。
-
-### 输出格式
-
-输出格式见 [reference.md](reference.md)「阶段 7 检查结果」。
-
-**工具限制**：禁止 Edit/Write；✅ 允许 Bash 执行测试命令
-
-> ⛔ **[阶段7 出口]** 输出检查结果后**立即停止**，等用户确认后进入阶段8（或根据结论决定是否需要新一轮修复循环）。
+**Tool permissions**: ✅ Edit/Write/Bash allowed; use TodoWrite to track progress
 
 ---
 
-## 阶段8：复盘改进（Act）
+## Stage 7: Verify (Check)
 
-> 调用 `learn-and-improve` 执行复盘与经验沉淀；本阶段仅保留 solve-workflow 的循环决策、收尾/总结文档与覆盖率提示。默认不写入文件；用户明确要求写入或进入下一轮修改时，再进入「制定计划 → 执行计划」。
+> Principle: output only the verification results — improvement suggestions belong to stage 8.
 
-### 调用 learn-and-improve（委托复盘改进）
+1. **Goal achievement** — whether stage 1's expected outcome was met
+2. **Comparison with the plan** — compare against stage 5's plan
+3. **Verification and tests** — may cite stage 6's execution report; **run tests if anything test-related applies**
+4. **Side-effect verification** — check whether the change introduced new problems or unexpected behavior changes elsewhere (functional side effects), and any unexpected performance/security/maintainability impact (non-functional side effects)
+5. **Logic and process review** — check for gaps or omissions
+6. **Debug-verify loop** — if stage 2 used a debug skill to locate the root cause, verify the fix with **that same skill** per `analysis-core` §4 (not tests alone)
 
-加载 `learn-and-improve` 并按其框架执行；完整方法论由该 skill 承载。
+### Running tests
 
-### solve-workflow 特有编排
+If stage 5's plan or stage 6's execution report involves testing (unit tests, integration tests, manual verification steps):
 
-- **未达标时的下一步**：若 learn-and-improve 的改进闭环结论为目标未达成，决定回到「分析问题」「探索方案」或「审查方案」开启下一轮 PDCA 循环。
-- **收尾与可选总结文档**：输出【改进建议】后，主动询问「是否需要生成总结文档」；若用户需要，则生成总结文档（路径由用户指定或 AI 建议），内容包含：问题复述、方案选择、执行结果、遗留与改进点。
+> For Node / JavaScript / TypeScript projects, invoke `node-version-discipline` to align the Node version before running tests.
 
-### 输出格式
+- **AI can execute**: run the test command via Bash (e.g. `npm test`, `pytest`, `go test`) and fold the result into the verification conclusion
+- **AI cannot execute** (no Bash, environment limits, tests require manual action): **explicitly tell the user**: "This change involves tests — please run [specific test command/steps] yourself and confirm they pass before wrapping up."
 
-输出格式见 [reference.md](reference.md)「阶段 8 改进建议」。
+### Verification-report honesty
 
-输出后主动询问：「是否需要生成总结文档？」
+Follow `pdca-review-orchestration`'s verification-report honesty rule to label each result.
 
-### 合并前覆盖率提示（条件性，非门控）
+### Output Format
 
-> ⚠️ solve-workflow **不执行任何 git 合并操作**（8 阶段均为分析/审查/执行/验证/回顾，无合并步骤）。本提示是**建议性提醒，非强制门控**——不运行脚本、不阻断流程、不进能力探索表。完整触发条件与提示文本见 [reference.md](reference.md)「阶段 8 合并前覆盖率提示（非门控）」。
+Output format is in [reference.md](reference.md) § Stage 7 — Verification Results.
 
-**与强制门控的边界**：solve-workflow 只提示「建议合并前运行」，不运行脚本、不判定通过与否。强制门控（运行脚本 + 判定矩阵 + 留痕）由带合并阶段的技能（jira-fix-workflow / opsx-* 系列）在合并步骤前执行。
+**Tool restrictions**: Edit/Write forbidden; ✅ Bash allowed to run test commands
 
-**工具限制**：禁止使用 Edit/Write；除非用户明确要求「写入规则」「创建 skill」「更新文档」或进入下一轮修改，否则不得落盘修改文件
+> ⛔ **[Stage 7 exit]** **Stop immediately** after the verification results and wait for the user to confirm before entering stage 8 (or decide, based on the conclusion, whether another fix cycle is needed).
 
 ---
 
-## 常见错误
+## Stage 8: Retrospective (Act)
 
-| 错误 | 后果 | 修正 |
+> Load `learn-and-improve` for the retrospective and knowledge sediment; this stage keeps only solve-workflow's cycle decision, optional wrap-up summary doc, and coverage-gate reminder. Do not write files by default; only proceed to "make a plan → execute the plan" when the user explicitly requests writing or a new cycle.
+
+### Delegate to `learn-and-improve` (retrospective)
+
+Load `learn-and-improve` and run its framework; the full methodology lives in that skill.
+
+### solve-workflow-specific orchestration
+
+- **Next step when the goal isn't met**: if `learn-and-improve`'s improvement loop concludes the goal wasn't achieved, decide whether to loop back to "分析问题" / "探索方案" / "审查方案" for another PDCA cycle.
+- **Wrap-up and optional summary doc**: after the improvement suggestions, proactively ask "是否需要生成总结文档？" (want a summary doc?). If yes, generate one (path chosen by the user or suggested by the AI) covering: problem restatement, solution choice, execution result, open items and improvements.
+
+### Output Format
+
+Output format is in [reference.md](reference.md) § Stage 8 — Improvement Suggestions.
+
+After the output, proactively ask: "是否需要生成总结文档？"
+
+### Pre-merge coverage reminder (conditional, non-gating)
+
+> ⚠️ solve-workflow **never performs any git merge operation** (all 8 stages are analysis/review/execution/verification/retrospective — there is no merge step). This reminder is **advisory, not a mandatory gate** — it does not run a script, does not block the flow, and is not a capability-discovery table entry. Full trigger conditions and reminder text are in [reference.md](reference.md) § Stage 8 — Pre-Merge Coverage Reminder (Non-Gating).
+
+**Boundary with mandatory gates**: solve-workflow only suggests "run this before merging" — it never runs the script or judges pass/fail. The mandatory gate (script run + decision matrix + audit trail) belongs to skills that own a merge step (`jira-fix-workflow` / the `opsx-*` family), executed right before their merge step.
+
+**Tool restrictions**: Edit/Write forbidden; do not write files unless the user explicitly asks to "write to rules" / "create a skill" / "update docs", or a new cycle begins.
+
+---
+
+## Common Mistakes
+
+| Mistake | Consequence | Fix |
 |------|------|------|
-| 存在性验证结论为「不存在/描述不符」但继续分析 | 方向全错 | 立即停止并报告，等待用户确认 |
-| 阶段8默认写入规则文件或创建 skill | 污染长期规则、破坏只总结不强制修改的边界 | 阶段8只输出沉淀建议；必须等用户明确要求后才进入「制定计划 → 执行计划」 |
-| 阶段8把覆盖率提示当作强制门控执行（运行脚本/阻断流程） | solve-workflow 无合并阶段，强行运行脚本越权且无合并决策可挂靠 | 提示仅建议性：只输出提示文本，不运行 test-coverage-analyzer 脚本、不阻断；强制门控由带合并阶段的技能执行 |
+| Continuing analysis after the existence check concludes "doesn't exist / description mismatch" | Wrong direction from the start | Stop immediately, report, wait for user confirmation |
+| Stage 8 writes to rule files or creates a skill by default | Pollutes long-term rules; breaks the summarize-only boundary | Stage 8 only outputs sediment suggestions; only proceed to "make a plan → execute the plan" after the user explicitly asks |
+| Stage 8 treats the coverage reminder as a mandatory gate (runs a script / blocks the flow) | solve-workflow has no merge stage — forcing the script run overreaches with no merge decision to attach to | The reminder is advisory only: print the text, never run `test-coverage-analyzer`, never block; the mandatory gate belongs to skills that own a merge step |
 
 ---

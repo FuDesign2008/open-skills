@@ -1,54 +1,54 @@
-# OPSX Solve Workflow — 输出格式参考
+# OPSX Solve Workflow — Output Format Reference
 
-本文件为 `opsx-solve-workflow` skill 的各阶段输出格式模板，供 AI 格式化输出时参考。
+Output templates for each stage of the `opsx-solve-workflow` skill, for the AI to follow when formatting output.
 
-阶段 2 分析方法论见 `analysis-core`（本文件不重复门控/步骤骨架）。
+Stage-2 analysis methodology lives in `analysis-core` (not repeated here).
 
 ---
 
-## 阶段 1 明确问题
+## Stage 1 Clarify the Problem
 
 ```text
-【问题复述】...
-（只描述用户的意图与现象，不得出现根因判断或修复建议——技术结论留给阶段 2）
-【关键要素】目标：... / 约束：... / 背景：... / 期望结果：...
-【OpenSpec 变更】建议 change 名称：...
-【需要确认】是否按该 change 继续？
+【Problem restatement】...
+(describe only the user's intent and symptoms — no root-cause judgment or fix suggestion; technical conclusions belong to stage 2)
+【Key elements】Goal: ... / Constraints: ... / Background: ... / Expected outcome: ...
+【OpenSpec change】Suggested change name: ...
+【Confirmation needed】Proceed with this change?
 ```
 
 ---
 
-## 阶段 7 检查验证
+## Stage 7 Check & Verify
 
 ```text
-【验证结果】
-- OpenSpec 校验：已执行（openspec validate <name>，输出：...）/ 失败（原因：...）
-- 工程验证：已执行（命令：...，结果：...）/ 待执行（需用户手动操作：...）
-- 行为对照：已执行（逐条对比结果：...）/ 待执行（人工验证项：...）
-- 与 tasks.md 对比：...
-- 副作用检查（功能副作用：在其他模块引发新问题；非功能副作用：性能/安全/可维护性预期外影响）：...
-- 是否可归档：是 / 否
+【Verification results】
+- OpenSpec validation: executed (openspec validate <name>, output: ...) / failed (reason: ...)
+- Engineering verification: executed (command: ..., result: ...) / pending (manual action needed: ...)
+- Behavior cross-check: executed (per-item comparison: ...) / pending (manual verification items: ...)
+- Comparison against tasks.md: ...
+- Side-effect check (functional: new issues introduced in other modules; non-functional: unexpected impact on performance/security/maintainability): ...
+- Ready to archive: yes / no
 ```
 
 ---
 
-## 阶段 8 回顾归档
+## Stage 8 Review & Archive
 
 ```text
-【复盘改进】
-- 已完成变更：...
-- 更新的 specs：...
-- 归档位置：...
-- 可复用经验：...
-- 不建议固化的内容：...（一次性经验、未验证判断等，不写入长期规则）
-- 推荐沉淀载体：AGENTS.md / CLAUDE.md / .cursor/rules/ / 项目内 skill / 总结文档 / 暂不沉淀，理由：...
-- 是否需要用户确认写入：需要 / 不需要；若需要，等待用户明确要求后再落盘
-- 后续建议：...
-- [模式状态] 自动模式已完成本轮，已恢复为手动模式。如需下一轮继续自动，请显式说「opsx 自动解决 xxx」。
+【Retrospective】
+- Completed change: ...
+- Specs updated: ...
+- Archive location: ...
+- Reusable lessons: ...
+- Not worth solidifying: ... (one-off lessons, unverified judgments, etc. — never write these into long-term rules)
+- Recommended carrier: AGENTS.md / CLAUDE.md / .cursor/rules/ / project-local skill / summary doc / not solidifying now, reason: ...
+- Needs user confirmation to write: yes / no; if yes, wait for an explicit user request before writing
+- Next steps: ...
+- [Mode status] Auto mode completed this round and has reverted to manual. To continue auto mode next round, explicitly say "opsx 自动解决 xxx".
 ```
 
 ---
 
-## 合并前检查清单
+## Pre-merge checklist
 
-见强依赖 `merge-discipline` 的 [reference.md](../merge-discipline/reference.md)「合并前检查清单」（Part A–D 单源；勿在本文件复制正文）。
+See the strong dependency `merge-discipline`'s [reference.md](../merge-discipline/reference.md)「合并前检查清单」(single source, Parts A-D — do not copy its body into this file).

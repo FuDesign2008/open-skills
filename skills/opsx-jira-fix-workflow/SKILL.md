@@ -1,8 +1,8 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.10.0"
+version: "1.11.0"
 user-invocable: true
-description: 当用户说"opsx-jira-fix"、"OpenSpec Jira 修复"、"规范化修复 Jira"、"opsx修复Jira"、"Jira OpenSpec 修复"、"opsx自动修复Jira"、"用OpenSpec修复Jira"或"opsx-jira-fix-workflow"时触发。适用于从 Jira issue 出发，并需要将根因、行为变更、修复计划、验证和归档沉淀到 OpenSpec artifacts 的端到端 Bug 修复。
+description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」 / opsx jira fix, OpenSpec Jira fix workflow."
 dependencies:
   - solution-review
   - code-design-review
@@ -21,392 +21,390 @@ dependencies:
   - jira-status-writeback
 ---
 
-# OPSX Jira Bug 修复工作流
+# OPSX Jira Bug-Fix Workflow
 
-> Jira 修复的规范化版本：保留 `jira-fix-workflow` 的端到端修复能力，引入 OpenSpec 作为行为事实源。
+> The OpenSpec-flavored version of Jira fixing: keeps `jira-fix-workflow`'s end-to-end fix capability while making OpenSpec the source of behavioral truth.
 >
-> **输出格式参考**：各阶段输出模板见 [reference.md](reference.md)。
+> **Output templates**: see [reference.md](reference.md) for each stage's format.
 
-## 核心定位
+## Positioning
 
-本 skill 适用于“值得追溯”的 Jira Bug 修复：不仅要修代码，还要把问题根因、行为变更、设计取舍、任务清单、验证证据和归档结果沉淀下来。
+Use this skill for Jira bug fixes **worth persisting**: not just fixing the code, but also recording root cause, behavior changes, design trade-offs, task lists, verification evidence, and archive results.
 
-职责分工：
+Division of labor:
 
-- **Jira**：问题来源、业务上下文、状态流转和修复评论。
-- **`openspec/changes/<change-name>/`**：Jira 上下文、根因、行为契约、方案、任务、验证和最终 archive。
-- **PR/MR**：代码交付、验证证据、风险说明和 Review 入口。
+- **Jira**: problem source, business context, status transitions, and fix comments.
+- **`openspec/changes/<change-name>/`**: Jira context, root cause, behavioral contract, solution, tasks, verification, and the final archive.
+- **PR/MR**: code delivery, verification evidence, risk notes, and the review entry point.
 
-不替代普通 `jira-fix-workflow`：
+Not a replacement for plain `jira-fix-workflow`:
 
-- 只需快速修复且无需长期规范沉淀时，使用 `jira-fix-workflow`。
-- 需要行为契约、审计、团队协作、跨模块影响或长期追溯时，使用本 skill。
+- Quick fixes with no long-term traceability need — use `jira-fix-workflow`.
+- Behavioral contracts, audits, team collaboration, cross-module impact, or long-term traceability — use this skill.
 
-## 调用约定
+## Invocation conventions
 
-- **触发词**：opsx-jira-fix、OpenSpec Jira 修复、规范化修复 Jira、opsx修复Jira、Jira OpenSpec 修复、opsx自动修复Jira、用OpenSpec修复Jira、opsx-jira-fix-workflow
-- **自动模式**：触发词含“自动”或 `--auto` 时进入自动模式。
-- **强制模式**：触发词含“强制”或 `--force` 时可跳过难度终止，但仍不得跳过验证和归档检查。
-- **继续修复**：触发词含“继续修复”“再次修复”“从上次继续”或 `--retry` 时，先定位现有 OpenSpec change，再从 `design.md`、`tasks.md` checkbox、当前 Git 分支和 PR/MR 状态恢复上下文。
+- **Triggers**: opsx-jira-fix, OpenSpec Jira 修复, 规范化修复 Jira, opsx修复Jira, Jira OpenSpec 修复, opsx自动修复Jira, 用OpenSpec修复Jira, opsx-jira-fix-workflow
+- **Auto mode**: a trigger containing "自动" or `--auto` enters auto mode.
+- **Force mode**: a trigger containing "强制" or `--force` may skip the difficulty-based stop, but never skips verification or archive checks.
+- **Continue fixing**: a trigger containing "继续修复", "再次修复", "从上次继续", or `--retry` first locates the existing OpenSpec change, then recovers context from `design.md`, `tasks.md` checkboxes, the current Git branch, and PR/MR status.
 
-**强依赖 skill**（frontmatter `dependencies`；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
-- `pdca-review-orchestration`（阶段 4 审查编排；依赖 `solution-review` 与 `code-design-review`）
-- `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`（经 `analysis-core` 委托；阶段 2 + 阶段 7）
-- `analysis-core`（阶段 2 分析方法论单源：临时改动门控 / 打点调试 / 分析步骤骨架 / 调试-验证闭环）
-- `node-version-discipline`（阶段 6 执行验证前 Node 版本对齐）
-- `workflow-mode-lifecycle`（自动/手动模式生命周期）、`clarifying-question-discipline`（主动提问硬纪律与调查优先）、`known-issue-research`（阶段 2 调研路由 / 已知问题快搜 / 行业通病评估）
-- `ensure-tests`（阶段 6.2.5 测试确保：有测试基建时补全并运行；无基建经用户确认后搭建）
-- `merge-discipline`（阶段 8 合并纪律）
-- `openspec-workspace-gates`（阶段 0 OpenSpec 工程与原生 skill 门禁）
-- `jira-status-writeback`（阶段 8 合并后回写：状态流转 + 修复评论单源 SOP）
+**Strong-dependency skills** (frontmatter `dependencies`; must pass the "Prerequisite skill check" at startup — abort if any is missing):
+- `pdca-review-orchestration` (stage 4 review orchestration; depends on `solution-review` and `code-design-review`)
+- `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit` (delegated via `analysis-core`; stage 2 + stage 7)
+- `analysis-core` (single source for stage-2 analysis methodology: temporary-change gate / instrumentation debug / analysis step skeleton / debug-verify loop)
+- `node-version-discipline` (Node version alignment before stage 6 execution verification)
+- `workflow-mode-lifecycle` (auto/manual mode lifecycle), `clarifying-question-discipline` (hard active-questioning discipline and investigation-first), `known-issue-research` (stage 2 research routing / known-issue quick search / industry-wide evaluation)
+- `ensure-tests` (stage 6.2.5 test-suite ensure: complete and run tests when infra exists; scaffold with user confirmation when it doesn't)
+- `merge-discipline` (stage 8 merge discipline)
+- `openspec-workspace-gates` (stage 0 OpenSpec workspace and native-skill gate)
+- `jira-status-writeback` (stage 8 post-merge writeback: status transition + fix-comment SOP, single source)
 
-## 前置 skill 检查
+## Prerequisite skill check
 
-> 启动时（阶段 0 前置检查之前）核对 frontmatter `dependencies`：任一缺失 → 结构化提示并**立即中止**（格式见 `solve-workflow/reference.md`）。
+> At startup (before stage 0's prerequisite check), check frontmatter `dependencies`: any missing → print a structured prompt and **abort immediately** (format: `solve-workflow/reference.md`).
 
-> **不降级原则**：强依赖缺失即中止，不得用简化审查/调试降级运行。
+> **No-degradation principle**: a missing strong dependency means abort — never fall back to a simplified review or debug flow.
 
-## 模式生命周期
+## Mode lifecycle
 
-> 自动模式的进入、持续与退出规则，避免模式粘滞导致用户未察觉的自动决策。核心规则（自动恢复手动 / 显式重进 / 隐式延续不激活 / 批量场景）由强依赖 skill `workflow-mode-lifecycle` 承载（前置检查已保证可用），本节不再内联重复。本工作流的「全流程完成」= 正常完成阶段 0-8 全流程（以阶段 8 归档完成收尾）；失败终止、用户主动停止、审查超限暂停后终止均视为流程中断，恢复手动。
+> Entry, persistence, and exit rules for auto mode, preventing mode stickiness where the user is unaware the AI is still making automatic decisions. The core rules (revert-to-manual / explicit re-entry / implicit continuation never re-activates / batch scenarios) live in the strong-dependency skill `workflow-mode-lifecycle` (already guaranteed available by the prerequisite check) — not restated here. This workflow's "full-flow completion" = a normal run through stages 0-8 (closing out at stage 8's archive); a failed termination, user-initiated stop, or a review-cap pause all count as flow interruptions and revert to manual.
 
-### 特有说明
+### OpenSpec-specific notes
 
-- 阶段 8 归档完成后，模式自动恢复手动
-- `--retry`（继续修复）：重置为手动模式
-- `--resume`（断点恢复）：沿用断点时的模式
-- OpenSpec archive 失败视为流程中断，恢复手动
+- After stage 8 archiving completes, mode auto-reverts to manual.
+- `--retry` (continue fixing): resets to manual mode.
+- `--resume` (checkpoint recovery): keeps the mode from the checkpoint.
+- An OpenSpec archive failure counts as a flow interruption — revert to manual.
 
-## 阶段 0：前置检查
+## Stage 0: Prerequisite check
 
-任一关键检查失败则暂停，不进入修复：
+Any key check failing pauses the flow — do not enter the fix:
 
-1. 解析 Jira URL / Jira ID，识别模式（manual / auto / force / retry）。
-2. 检查 Jira 数据可读：优先 `jira-read {JIRA-ID} --live` 或 mcp-atlassian；失败则读本地缓存；仍失败则终止。
-3. 检查 Git 状态：自动模式可 stash；手动模式提示用户处理。
-4. **OpenSpec 工程与原生 skill 门禁**：加载 `openspec-workspace-gates`，执行工程定位、`openspec/` 检查和精确原生 OPSX skill 门禁；通过后继续本工作流。
-5. 检查 OpenSpec 命令（在工程根下执行）：优先使用 `openspec list`、`openspec status`、`openspec validate`。
-6. 继续修复时，先定位 OpenSpec change：优先从当前分支名推断；其次搜索 `openspec/changes/*/{proposal.md,design.md,tasks.md}` 中的 Jira ID；再次查看 PR/MR 描述中的 OpenSpec change 路径；仍无法唯一确定时只问用户 1 个问题确认 change 名称。定位后使用 `openspec status --change <name>`、`openspec show <change-name>`、`design.md`、`tasks.md` checkbox 和当前 Git 分支恢复进度。
+1. Parse the Jira URL / Jira ID; detect mode (manual / auto / force / retry).
+2. Check Jira data is readable: prefer `jira-read {JIRA-ID} --live` or mcp-atlassian; fall back to local cache; abort if both fail.
+3. Check Git status: auto mode may stash; manual mode prompts the user to handle it.
+4. **OpenSpec workspace and native-skill gate**: load `openspec-workspace-gates` and run its project-root location, `openspec/` check, and exact native-OPSX-skill gate; continue this workflow once it passes.
+5. Check OpenSpec commands (run from the project root): prefer `openspec list`, `openspec status`, `openspec validate`.
+6. When continuing a fix, locate the OpenSpec change first: prefer inferring it from the current branch name; then search `openspec/changes/*/{proposal.md,design.md,tasks.md}` for the Jira ID; then check the PR/MR description for an OpenSpec change path; if still not uniquely determined, ask the user exactly 1 question to confirm the change name. Once located, recover progress from `openspec status --change <name>`, `openspec show <change-name>`, `design.md`, `tasks.md` checkboxes, and the current Git branch.
 
-## OpenSpec 记录模型
+## OpenSpec record model
 
-本 skill 不创建额外运行态目录。单个 Jira Bug 的修复周期应保持短暂清晰，工程记录统一进入 OpenSpec artifacts：
+This skill creates no extra runtime directory. A single Jira bug-fix cycle should stay short and clear; engineering records all land in OpenSpec artifacts:
 
-| 目录 | 作用 | 是否长期事实源 |
+| Directory | Purpose | Long-term source of truth |
 |------|------|----------------|
-| Jira issue | 问题来源、评论和状态流转 | 否，外部流程源 |
-| `openspec/changes/<change-name>/` | proposal、delta specs、design、tasks、archive 前变更事实 | 是，归档后进入 `openspec/specs/` |
-| PR/MR | 交付说明、验证证据、风险与回滚 | 否，交付沟通载体 |
+| Jira issue | Problem source, comments, status transitions | No — external process source |
+| `openspec/changes/<change-name>/` | proposal, delta specs, design, tasks, pre-archive change facts | Yes — merged into `openspec/specs/` after archiving |
+| PR/MR | Delivery notes, verification evidence, risk & rollback | No — delivery communication carrier |
 
-不得再为 OPSX Jira 修复创建额外本地运行态目录。若需要继续修复，从 OpenSpec change、`tasks.md` checkbox、Git 分支和 PR/MR 状态恢复。
+Never create an extra local runtime directory for an OPSX Jira fix. To continue a fix, recover state from the OpenSpec change, `tasks.md` checkboxes, the Git branch, and PR/MR status.
 
-### 阶段工具约束表
+### Stage tool-constraint table
 
-| 阶段 | ✅ 允许 | ❌ 禁止 |
+| Stage | ✅ Allowed | ❌ Forbidden |
 |------|---------|---------|
-| 0 前置检查 | Read、Grep、Glob、Bash（只读检查）、Jira API（只读） | Edit、Write、Git 写操作 |
-| 1 读取 Jira | Jira API、jira-read、Read、OPSX skills（创建 change） | Edit 业务代码、Write 业务代码、改变实现的 Bash |
-| 2 分析问题 | Read、Grep、WebSearch；分析辅助 Edit/Write 按 `analysis-core` §1（须登记回滚） | 以实现修复为目的的业务代码改动 |
-| 3 创建 Change | OPSX 原生 skills、Write（artifacts） | Edit 业务代码 |
-| 4 探索方案 | Read、Grep | Edit、Write 业务代码 |
-| 5 制定计划 | Read、Write（仅 tasks.md） | Edit 业务代码 |
-| 6 执行验证 | 全部（Edit、Write、Bash、Git、测试）；运行构建/lint/tsc/test 前须按 `node-version-discipline` 对齐项目声明的 Node 版本（探测链见该 skill SOP） | 跳过验证、跳过 checkbox 更新 |
-| 7 检查验证 | Read、Bash（仅测试命令）、OPSX skills（openspec-verify-change） | Edit、Write 业务代码 |
-| 8 提交收尾 | Git、Jira API、OPSX skills、Bash（若 Part C 决定运行覆盖率，额外允许 test-coverage-analyzer 脚本） | 跳过 archive、跳过 Jira 回写 |
+| 0 Prerequisite check | Read, Grep, Glob, Bash (read-only checks), Jira API (read-only) | Edit, Write, Git write operations |
+| 1 Read Jira | Jira API, jira-read, Read, OPSX skills (create change) | Edit/Write business code; Bash that changes the implementation |
+| 2 Analyze the problem | Read, Grep, WebSearch; analysis-assist Edit/Write per `analysis-core` §1 (must be registered for rollback) | Business-code changes made to implement the fix |
+| 3 Create the change | Native OPSX skills, Write (artifacts) | Edit business code |
+| 4 Explore solutions | Read, Grep | Edit/Write business code |
+| 5 Make the plan | Read, Write (`tasks.md` only) | Edit business code |
+| 6 Execute & verify | Everything (Edit, Write, Bash, Git, tests); before running build/lint/tsc/test, align to the project's declared Node version per `node-version-discipline` (probe chain in that skill's SOP) | Skipping verification; skipping checkbox updates |
+| 7 Check verification | Read, Bash (test commands only), OPSX skills (`openspec-verify-change`) | Edit/Write business code |
+| 8 Submit & close out | Git, Jira API, OPSX skills, Bash (plus the `test-coverage-analyzer` script if Part C decides to run coverage) | Skipping archive; skipping the Jira writeback |
 
-### 模式差异速查表
+### Mode-difference quick table
 
-| 阶段 | 手动模式 | 自动模式 |
+| Stage | Manual mode | Auto mode |
 |------|---------|---------|
-| 0 前置检查 | Git 不干净→提示用户处理 | Git 不干净→自动 stash |
-| 1 读取 Jira | 输出候选 change 名称，等用户确认 | 自动创建 draft change |
-| 2 分析问题 | 同自动模式 | 同手动模式 |
-| 3 创建 Change | 等用户确认 change 名称后创建 | 自动生成并创建 |
-| 4 探索方案 | 输出方案表后暂停，等用户选择 | 自动选择最优方案 |
-| 5 制定计划 | 输出计划后暂停确认 | 普通：自动进入阶段 6；困难/极难：暂停 |
-| 6 执行验证 | 同自动模式 | 同手动模式 |
-| 7 检查验证 | 输出验证结果后暂停，等用户确认 | 自动判定通过/未达标；未达标自动回退（最多 2 次，超限暂停） |
-| 8 提交收尾 | 同自动模式 | 同手动模式 |
+| 0 Prerequisite check | Git not clean → prompt the user | Git not clean → auto-stash |
+| 1 Read Jira | Output a candidate change name, wait for confirmation | Auto-create a draft change |
+| 2 Analyze the problem | Same as auto mode | Same as manual mode |
+| 3 Create the change | Create after the user confirms the name | Auto-generate and create |
+| 4 Explore solutions | Output the solution table and pause for the user's pick | Auto-pick the best solution |
+| 5 Make the plan | Output the plan and pause for confirmation | Normal: auto-advance to stage 6; difficult/very-difficult: pause |
+| 6 Execute & verify | Same as auto mode | Same as manual mode |
+| 7 Check verification | Output results and pause for confirmation | Auto-judge pass/fail; on fail, auto-retry (max 2 rounds, then pause) |
+| 8 Submit & close out | Same as auto mode | Same as manual mode |
 
-## 阶段 1：读取 Jira
+## Stage 1: Read Jira
 
-读取最新 Jira 数据，并尽早写入 OpenSpec artifacts；不得只保留在对话上下文中。
+Read the latest Jira data and write it into OpenSpec artifacts as early as possible — never leave it only in chat context.
 
-- Jira ID、标题、优先级、状态
-- 描述、复现步骤、期望结果、实际结果
-- 附件、评论、历史补充信息
-- 数据来源（live / cache / user-provided）
+- Jira ID, title, priority, status
+- Description, repro steps, expected result, actual result
+- Attachments, comments, historical context
+- Data source (live / cache / user-provided)
 
-阶段 1 完成后必须确定或创建 OpenSpec change：
+Once stage 1 completes, an OpenSpec change must be determined or created:
 
-- 自动模式：按阶段 3 的命名规则创建 draft change，并将 Jira Context 写入 `design.md`。
-- 手动模式：输出候选 change 名称并等待用户确认；确认前不得进入深度分析。
-- 继续修复：使用阶段 0 的定位规则复用现有 change，并将最新 Jira Context 合并到 `design.md`。
+- Auto mode: create a draft change per stage 3's naming rule, and write the Jira context into `design.md`.
+- Manual mode: output a candidate change name and wait for confirmation; do not enter deep analysis before confirmation.
+- Continue fixing: reuse the existing change located in stage 0, and merge the latest Jira context into `design.md`.
 
-工具限制：允许 Jira API / jira-read；禁止 Edit/Write 业务代码；禁止执行会改变实现的 Bash 命令。
+Tool limits: Jira API / jira-read allowed; Edit/Write of business code forbidden; Bash commands that change the implementation forbidden.
 
-完成后自动进入阶段 2。
+Auto-advance to stage 2 on completion.
 
-> ⚠️ 主动提问：遵循 `clarifying-question-discipline`（一次一问、多轮问清；问清优先，不急着答）。
+> ⚠️ Active questioning: follow `clarifying-question-discipline` (one question per round, multi-round until clear; clarify first, don't rush to answer).
 >
-> 🚩 **Red Flag**：一次列出多个歧义点让用户回答（违反硬纪律，见 `clarifying-question-discipline`）——每次只问 1 个最关键的，得到回答后再问下一个。
+> 🚩 **Red Flag**: dumping several ambiguous points on the user in one message (violates the hard discipline, see `clarifying-question-discipline`) — ask only the single most critical question each time, then ask the next only after getting an answer.
 
-### Scope 拆解（可选，多子系统时触发）
+### Scope breakdown (optional, when multiple subsystems are involved)
 
-若 Jira issue 涉及 2 个以上子系统或模块（如前端 + 后端 + 数据库），在进入阶段 2 前先拆解：
+If the Jira issue spans 2+ subsystems or modules (e.g. frontend + backend + database), break it down before entering stage 2:
 
-1. 列出涉及的子系统 / 模块。
-2. 为每个子系统标注：是否有独立根因、是否需独立 change、是否与主 change 有依赖。
-3. 若子系统间有强依赖→合并为一个 change；若相互独立→可考虑拆分为多个 change，每个走独立的修复流程。
+1. List the subsystems / modules involved.
+2. For each, note: does it have an independent root cause; does it need an independent change; does it depend on the main change.
+3. Strongly dependent subsystems → merge into one change; independent subsystems → consider splitting into multiple changes, each running its own fix flow.
 
-拆解结论写入 `design.md` 的 Scope 小节。
+Write the breakdown conclusion into `design.md`'s Scope section.
 
-## 阶段 2：分析问题
+## Stage 2: Analyze the problem
 
-> 分析方法论单源：`analysis-core`。修复实现归执行阶段。
+> Single source for analysis methodology: `analysis-core`. Fix implementation belongs to the execution stage.
 
-### 委托 `analysis-core`
+### Delegate to `analysis-core`
 
-加载强依赖 `analysis-core`，按其 §§1–3 执行。本工作流映射（号+名）：
+Load the strong dependency `analysis-core` and execute its §§1-3. This workflow's mapping (number + name):
 
-- `{next-stage}` = 阶段 3「创建 OpenSpec Change」
-- `{root-cause step}` = 步骤 4；`{impact-assessment step}` = 步骤 5；`{upstream-eval step}` = 步骤 4.5
+- `{next-stage}` = Stage 3 "Create the OpenSpec change"
+- `{root-cause step}` = step 5; `{impact-assessment step}` = step 7; `{upstream-eval step}` = step 6
 
-### 本工作流编排（保留）
+### This workflow's orchestration (kept)
 
-在 `analysis-core` 骨架之上额外完成：
+On top of the `analysis-core` skeleton, this stage also completes:
 
-- **难度分级**（容易/中等/困难/极难）与**路径选择**（精简/增量/完整）；Scope 扩大时升级路径
-- **产物落点**：写入 `design.md` 的 Problem Analysis / Root Cause / Impact（须已有 change；否则先回阶段 1）
-- **存在性 ❌ / 描述不符**：暂停；写 Jira 评论前需用户确认
+- **Difficulty grading** (easy / medium / hard / very hard) and **path selection** (lean / incremental / full); upgrade the path if scope expands
+- **Artifact landing spot**: write into `design.md`'s Problem Analysis / Root Cause / Impact (a change must already exist — otherwise go back to stage 1)
+- **Existence ❌ / description mismatch**: pause; get user confirmation before writing a Jira comment
 
-分级与路径表：
+Grading and path table:
 
-| 等级 | 触发条件 | 行为 |
+| Level | Trigger | Behavior |
 |------|----------|------|
-| 容易 | ≤3 个文件，根因清晰 | 可走精简路径 |
-| 中等 | 4-10 个文件，根因基本清晰 | 走增量路径 |
-| 困难 | 风险较高或影响范围较广 | 阶段 5 后暂停审查 |
-| 极难 | 根因未知、架构变更、数据迁移、API 协议变更、跨仓库 | 自动模式终止；手动模式二次确认 |
+| Easy | ≤3 files, root cause clear | May use the lean path |
+| Medium | 4-10 files, root cause mostly clear | Use the incremental path |
+| Hard | Higher risk or broad impact | Pause for review after stage 5 |
+| Very hard | Unknown root cause, architecture change, data migration, API contract change, cross-repo | Auto mode aborts; manual mode requires a second confirmation |
 
-| 难度 | 路径 | 要求 |
+| Difficulty | Path | Requirement |
 |------|------|------|
-| 容易 | 精简路径 | proposal/delta specs 可精简，不跳过验证 |
-| 中等 | 增量路径 | proposal/specs/design/tasks 全部产出 |
-| 困难/极难 | 完整路径 | 阶段 1-8 全执行 |
+| Easy | Lean | proposal/delta specs may be lean, but verification is never skipped |
+| Medium | Incremental | Full proposal/specs/design/tasks |
+| Hard/very hard | Full | Run stages 1-8 in full |
 
-> 🚩 **Red Flags**：未做存在性验证；根因过浅；结论未入 design.md；模糊却不触发打点（`analysis-core` §3）；未升级路径；违反 `analysis-core` / `known-issue-research` 门控
+> 🚩 **Red Flags**: skipped existence check; too-shallow root cause; conclusion not written into `design.md`; ambiguity present but instrumentation not triggered (`analysis-core` §3); path not upgraded; violates `analysis-core` / `known-issue-research` gates
 
 ---
 
-## 阶段 3：创建 OpenSpec Change
+## Stage 3: Create the OpenSpec change
 
-🔌 **OPSX Skills 调用纪律**：本阶段及后续各阶段委托原生 OPSX skill 前，必须先读取对应 skill 的 SKILL.md，不得凭记忆调用。
+🔌 **OPSX skills invocation discipline**: before delegating to any native OPSX skill in this or later stages, read that skill's SKILL.md first — never call from memory.
 
-确认或创建 Jira 对应的 OpenSpec change。若阶段 1 已创建或复用 change，本阶段只校验并补全 artifacts；手动模式必须先确认 change 名称；自动模式可生成后继续。
+Confirm or create the Jira issue's OpenSpec change. If stage 1 already created or reused a change, this stage only validates and completes the artifacts; manual mode must confirm the change name first; auto mode may generate and continue.
 
-- **命名**：`fix-<jira-id-lower>-<short-topic>`（例：`fix-ynotr-12167-ai-summary-button`）
-- **创建**：委托 `openspec-new-change`（读其 SKILL.md；`/opsx:new` 为入口别名）
-- **Jira 完整度**：`design.md` 至少含 Jira Context / Root Cause / Options / Risk / Verification Notes；proposal / delta spec / 字段细节见 [reference.md](reference.md)「阶段 3 Artifacts 字段清单」
+- **Naming**: `fix-<jira-id-lower>-<short-topic>` (e.g. `fix-ynotr-12167-ai-summary-button`)
+- **Creation**: delegate to `openspec-new-change` (read its SKILL.md; `/opsx:new` is an entry alias)
+- **Jira completeness**: `design.md` must include at least Jira Context / Root Cause / Options / Risk / Verification Notes; proposal / delta-spec field details are in [reference.md](reference.md)「Stage 3 Artifact Field Checklist」
 
-## 阶段 4：探索与审查方案
+## Stage 4: Explore & review solutions
 
-基于阶段 2 根因和阶段 3 artifacts，输出 2-3 个方案：
+Based on stage 2's root cause and stage 3's artifacts, output 2-3 solutions:
 
-- 核心思路
-- 涉及文件 / 模块
-- 对 OpenSpec requirement 的覆盖关系
-- 优点、缺点、复杂度、风险
-- 推荐方案
+- Core idea
+- Files / modules involved
+- Coverage of the OpenSpec requirement
+- Pros, cons, complexity, risk
+- Recommended solution
 
-**YAGNI 原则**：方案必须严格聚焦于修复 Jira 根因和覆盖 delta specs，剔除非必要功能与过度设计。每增加一个超出根因范围的改动，必须显式标注为「额外优化」并说明为什么值得承担风险。
+**YAGNI**: solutions must stay strictly focused on fixing the Jira root cause and covering the delta specs, stripping non-essential features and over-engineering. Any addition beyond the root-cause scope must be explicitly labeled "extra optimization" with a stated reason for taking on the risk.
 
-手动模式输出方案表后暂停，等待用户选择；自动模式自动选择最优方案。
+In manual mode, output the solution table and pause for the user's pick; auto mode picks the best solution automatically.
 
-加载 `pdca-review-orchestration` 并按其完整审查契约执行。本工作流映射：`{next-stage}` = 阶段 5「制定计划」；`{artifact-sink}` = `openspec/changes/<change-name>/design.md`；`{extra-dimensions}` = Spec 覆盖（requirements/scenarios）和 Jira 状态边界（仅流转至“已修复”）；`{batch-overcap-behavior}` = `N/A`。
+Load `pdca-review-orchestration` and execute its full review contract. This workflow's mapping: `{next-stage}` = Stage 5 "Make the plan"; `{artifact-sink}` = `openspec/changes/<change-name>/design.md`; `{extra-dimensions}` = spec coverage (requirements/scenarios) and Jira status boundary (transition only to "fixed"); `{batch-overcap-behavior}` = `N/A`.
 
-> 🚩 **Red Flags（阶段 4）**：
-> - ❌ 审查只覆盖根因，未检查 spec 覆盖和副作用
-> - ❌ 只有 1 个方案就跳过对比和审查
+> 🚩 **Red Flags (stage 4)**:
+> - Review covers only the root cause, without checking spec coverage or side effects
+> - Skipping comparison and review just because only 1 solution exists
 
-## 阶段 5：制定计划
+## Stage 5: Make the plan
 
-以 `openspec/changes/<change-name>/tasks.md` 为唯一任务清单。
+Use `openspec/changes/<change-name>/tasks.md` as the single task list.
 
-任务要求：
+Task requirements:
 
-- 使用 checkbox：`- [ ] 1.1 ...`
-- 每项足够小，可独立验证。
-- 覆盖所有 delta spec requirements 和 scenarios。
-- 包含必要测试、验证、回滚、OpenSpec archive 和合并后 Jira 回写步骤。
-- 禁止 `TBD`、`TODO`、`适当处理`、`类似上面` 这类不可执行描述。
+- Use checkboxes: `- [ ] 1.1 ...`
+- Each item small enough to verify independently.
+- Cover every delta-spec requirement and scenario.
+- Include necessary test, verification, rollback, OpenSpec archive, and post-merge Jira-writeback steps.
+- No `TBD`, `TODO`, "handle appropriately", "similar to above", or other non-actionable descriptions.
 
+In manual mode, output the plan and pause; in auto mode, the normal case auto-advances to stage 6 — difficult or very-difficult cases must pause for confirmation.
 
-手动模式输出计划后暂停；自动模式普通情况自动进入阶段 6。困难或极难继续场景必须暂停确认。
+> 🚩 **Red Flags (stage 5)**:
+> - A task item contains `TBD`, `TODO`, "handle appropriately", "similar to above", or other non-actionable text
+> - Tasks don't cover every delta-spec requirement and scenario
+> - Missing test, verification, rollback, archive, or post-merge Jira-writeback steps
+> - A task's granularity is too large to verify independently
 
-> 🚩 **Red Flags（阶段 5）**：
-> - ❌ 任务项包含 `TBD`、`TODO`、`适当处理`、`类似上面` 等不可执行描述
-> - ❌ 任务未覆盖所有 delta spec requirements 和 scenarios
-> - ❌ 缺少测试、验证、回滚、archive 或合并后 Jira 回写步骤
-> - ❌ 任务粒度过大，无法独立验证
+## Stage 6: Execute the fix & verify
 
-## 阶段 6：执行修复与验证
+### 6.1 Create the fix branch
 
-### 6.1 创建修复分支
-
-分支命名：
+Branch naming:
 
 ```text
 fix/jira-fix-<JIRA-ID>
 ```
 
-多仓库场景需为每个仓库创建对应分支，并在 PR/MR 描述中列出仓库、分支和对应 OpenSpec change。
+A multi-repo scenario needs a branch per repo, listing each repo, branch, and corresponding OpenSpec change in the PR/MR description.
 
-### 6.2 执行任务
+### 6.2 Execute tasks
 
-按 `tasks.md` 顺序执行：
+Work through `tasks.md` in order:
 
-1. 每次只处理当前任务。
-2. 修改业务代码前确认 proposal、specs、design、tasks 已存在。
-3. **完成任务后必须立即更新 checkbox**：使用 StrReplace 将 `tasks.md` 中对应的 `[ ]` 改为 `[x]`，不得延后到一批任务结束后再批量更新。若跳过此步骤，阶段 7 验证器将报 CRITICAL 虚假未完成。
-4. 如发现 spec 或 design 错误，先回写 artifacts，再继续实现。
-5. 偏离计划时说明原因；若影响行为契约，回到阶段 3 或 4。
+1. Handle only the current task at a time.
+2. Before touching business code, confirm the proposal, specs, design, and tasks already exist.
+3. **Update the checkbox immediately after finishing a task**: use StrReplace to flip the corresponding `[ ]` to `[x]` in `tasks.md` — do not batch this until after a group of tasks. Skipping this makes the stage-7 verifier report a CRITICAL false-incomplete.
+4. If a spec or design error is found, update that artifact first, then continue implementing.
+5. State the reason for any deviation from the plan; if it affects the behavioral contract, return to stage 3 or 4.
 
-可选追踪注释：
+Optional tracking comment:
 
 ```text
 // fix <JIRA-ID>
 ```
 
-若项目规范不接受修复注释，不强制添加，但必须在执行报告中列出修复点。
+If the project's convention doesn't accept fix comments, don't force it — but list the fix points in the execution report.
 
-### 6.2.5 测试套件确保（必须，在进入阶段 7 验证前）
+### 6.2.5 Test-suite ensure (mandatory, before entering stage 7)
 
-所有 `tasks.md` checkbox 全部勾选后，在进入阶段 7 验证前，强制执行以下步骤：
+Once every `tasks.md` checkbox is checked, before entering stage 7 verification, this step is mandatory:
 
-读取并调用 `ensure-tests`，声明 `mode=mandatory`，作用域为本次修复的逻辑文件；其失败或拒绝必要脚手架时阻断进入阶段 7。
+Load and call `ensure-tests`, declaring `mode=mandatory`, scoped to this fix's logic files; a failure or a declined necessary-scaffolding request blocks entry to stage 7.
 
+## Stage 7: Check verification
 
-## 阶段 7：检查验证
+Must cover:
 
-必须覆盖：
+1. OpenSpec validation:
+   - If the `openspec-verify-change` skill is detected → read its SKILL.md and delegate verification to it.
+   - If absent → run `openspec validate <change-name>` or `openspec validate --changes` directly (a CLI tool call, not a degradation).
 
-1. OpenSpec 校验：
-   - 若检测到 `openspec-verify-change` skill → 读取其 SKILL.md，委托执行验证。
-   - 若不存在 → 直接运行 `openspec validate <change-name>` 或 `openspec validate --changes`（CLI 工具调用，非降级）。
-**Node 版本对齐（前置）**：调用 `node-version-discipline` 对齐项目声明的 Node 版本后，再运行下方验证命令。
+**Node version alignment (prerequisite)**: call `node-version-discipline` to align to the project's declared Node version before running the verification commands below.
 
-2. 工程验证：测试、lint、类型检查、构建（对齐版本下执行）
-3. 行为对照：逐条核对 delta spec requirements 和 scenarios
-4. Jira 对照：复现步骤、期望/实际是否已闭环
-5. 副作用检查：相关模块和平台是否受影响；验证报告须披露 `Node(声明版本 vX) ✅/⚠️ 未对齐`
-6. 调试-验证闭环：若阶段 2 用了调试 skill 定位根因，按 `analysis-core` §4 用**同一 skill** 验证修复（而非只跑测试）
+2. Engineering verification: tests, lint, type check, build (under the aligned version)
+3. Behavior cross-check: confirm every delta-spec requirement and scenario, one by one
+4. Jira cross-check: are the repro steps and expected/actual results closed out
+5. Side-effect check: are related modules and platforms affected; the verification report must disclose `Node (declared vX) ✅/⚠️ not aligned`
+6. Debug-verify loop: if stage 2 used a debug skill to locate the root cause, verify the fix using that **same** skill per `analysis-core` §4 (not tests alone)
 
-> 按 `pdca-review-orchestration` 的验证报告诚实规则标注每项结果。
+> Label each result per `pdca-review-orchestration`'s verification-report honesty rule.
 
-验证输出格式：
+Output format: see [reference.md](reference.md)「Stage 7 Verification Results」.
 
-输出格式见 [reference.md](reference.md)「阶段 7 验证结果」。
+Do not submit a PR on failed verification. The execution record is `tasks.md` checkboxes, the PR/MR description, and `design.md`'s Verification Notes.
 
-验证失败不得提交 PR。执行记录以 `tasks.md` checkbox、PR/MR 描述和 `design.md` 的 Verification Notes 为准。
+## Stage 8: Submit the PR, archive, merge & close out
 
-## 阶段 8：提交 PR、Archive、合并与收尾
+### 8.1 Commit & PR
 
-### 8.1 提交与 PR
+Before submitting, confirm:
 
-提交前必须确认：
+- All relevant `tasks.md` checkboxes are complete.
+- OpenSpec artifacts, code changes, and necessary verification notes are all in the diff or PR/MR description.
+- Verification passed, or manual-verification items are explicitly listed.
 
-- 所有相关 `tasks.md` checkbox 已完成。
-- OpenSpec artifacts、代码修改和必要验证说明都在 diff 或 PR/MR 描述中。
-- 验证通过或明确列出人工验证项。
-
-Commit message：
+Commit message:
 
 ```text
 fix(<scope>): <JIRA-ID> <subject>
 ```
 
-PR/MR 描述必须包含：
+PR/MR description must include:
 
-- Jira 链接
-- 根因
-- 修复方案
-- OpenSpec change 路径
-- 修改文件清单
-- 验证证据
-- 风险与回滚
+- Jira link
+- Root cause
+- Fix approach
+- OpenSpec change path
+- Changed-file list
+- Verification evidence
+- Risk & rollback
 
-### 8.2 OpenSpec Archive
+### 8.2 OpenSpec archive
 
-归档前同步步骤：
+Pre-archive sync steps:
 
-1. **若存在 delta specs**：调用 `openspec-sync-specs` skill（若已安装）将 delta specs 合并到主 `specs/<capability>/spec.md`，或让 `openspec-archive-change` 在归档过程中提示并处理同步。
-2. **执行归档**：调用 `openspec-archive-change` skill（先读取其 SKILL.md，再按其指令执行）。
+1. **If delta specs exist**: call the `openspec-sync-specs` skill (if installed) to merge delta specs into the main `specs/<capability>/spec.md`, or let `openspec-archive-change` prompt for and handle the sync during archiving.
+2. **Execute the archive**: call the `openspec-archive-change` skill (read its SKILL.md first, then follow its instructions).
 
-若 `openspec-archive-change` skill 执行失败，**不得**手动操作 `openspec/` 目录；应停止并提示用户检查 openspec 安装状态。
+If `openspec-archive-change` fails, do **not** manually manipulate the `openspec/` directory — stop and tell the user to check the OpenSpec installation.
 
-合并或准备合并前，必须确认 archive 已完成（与 `merge-discipline` Part A 一致）：
+Before merging or preparing to merge, confirm archiving is complete (consistent with `merge-discipline` Part A):
 
-- 关联 active OpenSpec change 时：**必须**先 archive（同步主 specs + 迁入 `openspec/changes/archive/`），确认 diff 后再合并；**不得**以「合并后再归档」作为正常路径。
-- 无关联 change 的 PR：Part A 放行，不要求 archive。
+- When an active OpenSpec change is associated: **must** archive first (sync main specs + move into `openspec/changes/archive/`), confirm the diff, then merge; "archive after merge" is **never** a normal path.
+- A PR with no associated change: Part A passes through, archiving not required.
 
-默认：验证通过后先 archive，确认 `openspec/specs/` 更新和 `openspec/changes/archive/` 迁移进入 diff，再完成 PR/合并。
-### 8.3 分支收尾
+Default: after verification passes, archive first, confirm the `openspec/specs/` update and the `openspec/changes/archive/` move are in the diff, then complete the PR/merge.
 
-归档与 diff 检查完成后，与用户确认分支收尾：保留当前分支、创建 PR/MR、合并、或继续开发。不得在验证未通过或 archive 未完成时宣布完成。
+### 8.3 Branch closeout
 
-> **顺序约束**：archive（8.2）→ 分支收尾决策（8.3）→ 合并纪律 `merge-discipline`（8.3.1）→ 执行合并 → Jira 回写（8.4）。选择「保留分支」「继续开发」不触发合并纪律，也跳过 Jira 回写。
+Once archiving and the diff check are complete, confirm branch closeout with the user: keep the current branch, open a PR/MR, merge, or continue development. Never declare completion while verification hasn't passed or archiving isn't complete.
 
-#### 8.3.1 合并纪律（merge-discipline skill）
+> **Order constraint**: archive (8.2) → branch-closeout decision (8.3) → merge discipline `merge-discipline` (8.3.1) → execute the merge → Jira writeback (8.4). Choosing "keep the branch" or "continue development" skips both merge discipline and Jira writeback.
 
-> 合并动作执行前加载 `merge-discipline`，按 Part A → B → C → D 执行；合并前检查清单见 `merge-discipline/reference.md`。用户直接说 merge 也必须加载，不得隐式跳过。
+#### 8.3.1 Merge discipline (`merge-discipline` skill)
 
-### 8.4 Jira 回写（合并完成后）
+> Load `merge-discipline` before executing any merge action and run Part A → B → C → D; the pre-merge checklist is in `merge-discipline/reference.md`. Even when the user directly says "merge", it must still be loaded — never implicitly skipped.
 
-PR/MR 已成功合并，代码已进入主分支，此时回写 Jira 状态准确反映修复已合入。加载强依赖 `jira-status-writeback`，按其 SOP 执行状态流转与修复评论，本工作流提供以下字段映射：
+### 8.4 Jira writeback (after the merge completes)
 
-| jira-status-writeback 字段 | 取值 |
+Once the PR/MR has merged and the code is on the main branch, write back the Jira status to reflect that the fix has landed. Load the strong dependency `jira-status-writeback` and follow its SOP for the status transition and fix comment; this workflow supplies the following field map:
+
+| `jira-status-writeback` field | Value |
 |------|------|
-| Fix branch / Commit / PR/MR URL | 修复分支名 / 合并后主干 SHA / PR/MR 链接 |
-| Root cause | 阶段 2 根因摘要 |
-| Fix summary | 修复方案 |
-| Changed files | 修改文件清单 |
-| Verification | 阶段 7 验证场景 |
-| Extra | OpenSpec change 路径、风险或待 QA 关注点 |
+| Fix branch / Commit / PR/MR URL | Fix branch name / merged tip SHA / PR/MR link |
+| Root cause | Stage 2 root-cause summary |
+| Fix summary | Fix approach |
+| Changed files | Changed-file list |
+| Verification | Stage 7 verification scenarios |
+| Extra | OpenSpec change path, risk, or QA follow-up items |
 
-收尾记录以 PR/MR、Jira 评论和 OpenSpec archive 结果为准。
+The closeout record is authoritative via the PR/MR, Jira comment, and OpenSpec archive result.
 
-### 8.5 AI 工程沉淀
+### 8.5 AI engineering sediment
 
-OpenSpec artifacts 正常归档。`AGENTS.md` / 规则 / skill 等 AI 工程知识：**写入前须用户明确要求**；一次性/未验证经验不建议固化。
+OpenSpec artifacts are archived through the normal flow. `AGENTS.md` / rules / skills and other AI engineering knowledge: writing requires an **explicit user request first**; one-off or unverified lessons should not be solidified.
 
-> 🚩 **Red Flags（阶段 8）**：
-> - ❌ 验证未通过就提交 PR
-> - ❌ Jira 评论通过 `jira_transition_issue` 的 `comment` 参数传递，或状态越权流转到「关闭」「验证通过」等（SOP 见 `jira-status-writeback`）
-> - ❌ archive 失败后手动操作 `openspec/` 目录
-> - ❌ PR 描述缺少 OpenSpec change 路径或验证证据
-> - ❌ `ask` 偏好下未询问用户就默认跑 analyzer（见 `merge-discipline` Part C）
-> - ❌ archive（8.2）未完成就触发合并纪律（顺序：8.2 archive → 8.3 分支收尾 → 8.3.1 合并纪律 merge-discipline → 合并 → 8.4 Jira 回写）
+> 🚩 **Red Flags (stage 8)**:
+> - Submitting a PR before verification passes
+> - Passing the Jira comment through `jira_transition_issue`'s `comment` parameter, or transitioning status beyond authority to "closed" / "verified" (SOP: `jira-status-writeback`)
+> - Manually manipulating the `openspec/` directory after an archive failure
+> - PR description missing the OpenSpec change path or verification evidence
+> - Running the analyzer by default under an `ask` preference without asking the user (see `merge-discipline` Part C)
+> - Triggering merge discipline before archive (8.2) completes (order: 8.2 archive → 8.3 branch closeout → 8.3.1 merge discipline `merge-discipline` → merge → 8.4 Jira writeback)
 
-## 批量 OPSX Jira 修复
+## Batch OPSX Jira fixes
 
-批量修复场景请使用 `opsx-jira-fix-batch` skill。
+For batch fixes, use the `opsx-jira-fix-batch` skill.
 
-## 常见错误
+## Common mistakes
 
-> 只记本 skill 非直觉陷阱。合并/覆盖率/archive → `merge-discipline`；工程根/`openspec/`/原生 skill → `openspec-workspace-gates`；Jira 回写 SOP → `jira-status-writeback`。不复述阶段正文已写明的规则。
+> Only this skill's non-obvious pitfalls are listed here. Merge/coverage/archive → `merge-discipline`; project-root/`openspec/`/native-skill gates → `openspec-workspace-gates`; Jira-writeback SOP → `jira-status-writeback`. Rules already stated in the stage body are not repeated.
 
-| 错误 | 后果 | 修正 |
+| Mistake | Consequence | Fix |
 |------|------|------|
-| 创建额外本地运行态目录 | OpenSpec 之外第二套记录 | 统一记到 OpenSpec artifacts、PR/MR 与 Jira 评论 |
-| 只写 OpenSpec，不回写 Jira | Jira 流程断裂，QA 无法跟进 | 阶段 8.4 合并完成后必须加载 `jira-status-writeback` 完成回写 |
-| Jira 回写复述两步 API 细节或状态越权判断 | 与 `jira-status-writeback` 漂移，评论丢失或误关单 | 阶段 8.4 只传字段映射，SOP 细节以 `jira-status-writeback` 为准 |
-| 快速修复误走 OPSX 路径 | 流程过重 | 无需规范沉淀时用 `jira-fix-workflow` |
-| 批量修复只按列表机械执行 | 重复修、丢依赖或行为冲突 | 执行前后识别 issue 关系，写入 Related Issues / Risk / Dependencies |
-| 阶段 2 分析后立刻创建 proposal | Why/What 割裂，artifact 重写 | proposal 在阶段 4 方案选定后一次写完整 |
-| `design.md` 缺 Jira Context / Root Cause / Options / Risk / Verification Notes | 无法按单复盘 | 上述五块为 Jira×OPSX 最低完整度 |
-| `MODIFIED` 只写片段或 skill 短名错误 | archive 丢 requirement / 读不到 SKILL | 整块复制再改；用 `openspec-*-change` 精确名 |
+| Creating an extra local runtime directory | A second record system outside OpenSpec | Record everything in OpenSpec artifacts, the PR/MR, and Jira comments |
+| Writing only to OpenSpec, never back to Jira | Jira process breaks, QA can't follow up | Load `jira-status-writeback` after the stage-8.4 merge to complete the writeback |
+| Restating `jira-status-writeback`'s two-step API detail or status-authority logic in stage 8.4 | Drifts from `jira-status-writeback`, loses the comment or mis-closes the issue | Stage 8.4 passes only the field map; SOP detail is owned by `jira-status-writeback` |
+| Taking the OPSX path for a quick fix | Flow becomes too heavy | Use `jira-fix-workflow` when no traceability sediment is needed |
+| Executing a batch mechanically off a list | Duplicate fixes, dropped dependencies, or conflicting behavior | Identify issue relationships before/after execution; record them in Related Issues / Risk / Dependencies |
+| Creating the proposal right after stage-2 analysis | Why/What are disconnected, the artifact needs a rewrite | Write the proposal in one pass once stage 4 picks a solution |
+| `design.md` missing Jira Context / Root Cause / Options / Risk / Verification Notes | Can't retrospect per-issue | These five sections are the Jira×OPSX minimum completeness bar |
+| `MODIFIED` writing only a fragment, or a wrong skill short name | Archive loses a requirement / can't find the SKILL.md | Copy the full block then edit; use exact `openspec-*-change` names |
 
-## 最小成功标准
+## Minimum success criteria
 
-一次完整执行：OpenSpec change 经原生 skill 具备 proposal / delta specs / design / tasks；PR/MR 已创建或更新；Jira 已评论并流转到「已修复」（如有权限）；OpenSpec 已 archive（或 PR 写明归档策略与责任人）；验证证据已记录。
+One complete run: the OpenSpec change has proposal / delta specs / design / tasks via native skills; the PR/MR is created or updated; Jira has a comment and transitioned to "fixed" (if permitted); OpenSpec has been archived (or the PR states the archive strategy and owner); verification evidence is recorded.

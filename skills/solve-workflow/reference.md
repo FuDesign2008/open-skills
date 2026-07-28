@@ -1,72 +1,72 @@
-# Solve Workflow — 输出格式参考
+# Solve Workflow — Output Format Reference
 
-本文件为 `solve-workflow` skill 的各阶段输出格式模板，供 AI 格式化输出时参考。
+This file holds the per-stage output-format templates for the `solve-workflow` skill, for the AI to follow when formatting output.
 
 ---
 
-## 阶段 1 明确问题
+## Stage 1 — Clarify the Problem
 
 ```
 【问题复述】我理解您的问题是：...
-（只描述用户的意图与现象，不得出现根因判断或修复建议——技术结论留给阶段 2）
+(describe only the user's intent and symptoms — no root-cause judgment or fix suggestion; technical conclusions belong to stage 2)
 【关键要素】目标：... / 约束：... / 背景：... / 期望结果：...
-【Scope 拆解】（若适用）模块、依赖、顺序、首个子问题：...
-【需要确认的点】（若有，每次只问一个）
-[题干] A [...] B [...]
+【Scope 拆解】(if applicable) modules, dependencies, order, first sub-problem: ...
+【需要确认的点】(if any, one question at a time)
+[question] A [...] B [...]
 请确认我的理解是否正确。
 ```
 
 ---
 
-## 阶段 2 调研输出模板
+## Stage 2 — Research Output Template
 
-分析方法论见 `analysis-core`（临时改动门控 / 分析步骤 / 打点调试）。「行业通病评估报告」与「上游依赖修复评估」模板见 `known-issue-research/reference.md`，本文件不再重复。
+Analysis methodology lives in `analysis-core` (temporary-change gate / analysis steps / instrumentation debug). The "industry-wide issue evaluation report" and "upstream dependency fix evaluation" templates are in `known-issue-research/reference.md` — not duplicated here.
 
 ---
 
-## 前置 skill 检查 — 缺失提示
+## Prerequisite Skill Check — Missing Notice
 
-当 frontmatter `dependencies` 中声明的 skill 缺失时，按以下格式输出并立即中止流程：
+When a skill declared in frontmatter `dependencies` is missing, print the following and abort immediately:
 
 ```
-⚠️ solve-workflow 缺少强依赖 skill，无法完整运行
+⚠️ solve-workflow is missing a strong dependency and cannot run in full
 
-【缺失的 skill】
-- [skill-name]：[该 skill 的用途说明]
+【Missing skill(s)】
+- [skill-name]: [what it is for]
 
-【为什么需要它】
-solve-workflow 通过 dependencies 强依赖下列 skill（以 frontmatter 为准；缺失即中止）：
-- `pdca-review-orchestration`：阶段 4 审查编排（完整 `solution-review` + 条件 `code-design-review`）
-- `solution-review` / `code-design-review`：经编排 skill 调用的审查框架
-- `analysis-core`：阶段 2 分析方法论单源（临时改动门控 / 打点调试 / 分析步骤骨架 / 调试-验证闭环）
-- `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`：经 `analysis-core` 委托的调试 skill（阶段 2 + 阶段 7）
-- `learn-and-improve`：阶段 8 复盘改进与经验沉淀
-- `workflow-mode-lifecycle`：自动/手动模式生命周期核心规则
-- `clarifying-question-discipline`：主动提问硬纪律与调查优先原则
-- `known-issue-research`：阶段 2 调研路由 / 已知问题快搜 / 行业通病评估
-- `ensure-tests`：阶段 6 测试补全（`mode=advisory`）
-- `node-version-discipline`：阶段 7 测试执行前 Node 版本对齐
+【Why it's needed】
+solve-workflow strongly depends on the following skills via frontmatter dependencies (missing = abort):
+- `pdca-review-orchestration`: stage 4 review orchestration (full `solution-review` + conditional `code-design-review`)
+- `solution-review` / `code-design-review`: review frameworks invoked by the orchestration skill
+- `analysis-core`: single source of truth for stage 2's methodology (temporary-change gate / instrumentation debug / analysis step skeleton / debug-verify loop)
+- `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`: debug skills delegated to via `analysis-core` (stage 2 + stage 7)
+- `learn-and-improve`: stage 8 retrospective and knowledge sediment
+- `workflow-mode-lifecycle`: core manual/auto mode lifecycle rules
+- `clarifying-question-discipline`: hard clarifying-question discipline and investigation-first principle
+- `known-issue-research`: stage 2 research routing / known-issue quick search / industry-wide evaluation
+- `ensure-tests`: stage 6 test completion (`mode=advisory`)
+- `node-version-discipline`: Node-version alignment before running tests in stage 7
 
-缺失时阶段 4 无法执行深度审查、阶段 2 无法加载分析核心与外部调研、阶段 6 无法补全测试、阶段 7 测试 Node 版本不可信、模式与提问纪律失去单点契约，强行运行会产生未经审查或根因不明的方案，违背 PDCA 工作流初衷。
+Without them, stage 4 cannot run a deep review, stage 2 cannot load its analysis core and external research, stage 6 cannot complete test coverage, stage 7's test results are untrustworthy, and mode/questioning discipline loses its single source of truth — running anyway would produce unreviewed solutions with unclear root causes, defeating the point of a PDCA workflow.
 
-【安装方式】
-- 通用安装（推荐，全量装所有 skill）：
+【Install】
+- Universal install (recommended, installs every skill):
   npx skills add FuDesign2008/open-skills -g --skill '*' --yes
-- 全能力安装（含 Hooks/Commands/平台集成）：
-  见 docs/INSTALL.md
+- Full-capability install (Hooks/Commands/platform integration):
+  see docs/INSTALL.md
 
-安装完成后重新触发本工作流。
+Re-trigger this workflow after installing.
 ```
 
 ---
 
-## 阶段 4 审查报告
+## Stage 4 — Review Report
 
-审查报告正文与通过/不通过判定按强依赖 `pdca-review-orchestration` 执行（内含完整 `solution-review` / 条件 `code-design-review`、二级制结论、自动≤3 轮、设计摘要）。本文件**不**再维护「五维度/四维度」评估表。
+The review report body and pass/fail verdict follow the strong dependency `pdca-review-orchestration` (full `solution-review` / conditional `code-design-review`, binary verdict, auto-mode ≤3 rounds, design summary). This file no longer maintains a "five-dimension / four-dimension" scoring table.
 
-**[🤖 自动]** 每轮须含：审查轮次（第 N / 上限 3）、`solution-review`（及代码方案时的 `code-design-review`）结构化结论、问题清单、✅/❌；不通过则输出优化说明后重审。
+**[🤖 Auto]** Each round must include: review round (N of max 3), the structured conclusion from `solution-review` (and `code-design-review` for code-affecting solutions), issue list, ✅/❌. On fail, output the optimization notes and re-review.
 
-**[👤 手动]** 在共享审查报告之后，追加本工作流壳（停等用户判定）：
+**[👤 Manual]** After the shared review report, append this workflow's shell (pause for the user's verdict):
 
 ```
 请确认审查结论：
@@ -77,7 +77,7 @@ solve-workflow 通过 dependencies 强依赖下列 skill（以 frontmatter 为�
 
 ---
 
-## 阶段 5 制定计划
+## Stage 5 — Make a Plan
 
 ```
 【目标方案回顾】采用方案X：...
@@ -90,7 +90,7 @@ solve-workflow 通过 dependencies 强依赖下列 skill（以 frontmatter 为�
 
 ---
 
-## 阶段 7 检查结果
+## Stage 7 — Verification Results
 
 ```
 【检查结果】
@@ -103,7 +103,7 @@ solve-workflow 通过 dependencies 强依赖下列 skill（以 frontmatter 为�
 
 ---
 
-## 阶段 8 改进建议
+## Stage 8 — Improvement Suggestions
 
 ```
 【改进建议】
@@ -117,15 +117,15 @@ solve-workflow 通过 dependencies 强依赖下列 skill（以 frontmatter 为�
 
 ---
 
-## 阶段 8 合并前覆盖率提示（非门控）
+## Stage 8 — Pre-Merge Coverage Reminder (Non-Gating)
 
-> ⚠️ solve-workflow **不执行任何 git 合并操作**（8 阶段均为分析/审查/执行/验证/回顾，无合并步骤）。本提示是**建议性提醒，非强制门控**——不运行脚本、不阻断流程、不进能力探索表。
+> ⚠️ solve-workflow **never performs any git merge operation** (all 8 stages are analysis/review/execution/verification/retrospective — there is no merge step). This reminder is **advisory, not a mandatory gate** — it does not run a script, does not block the flow, and is not a capability-discovery table entry.
 
-**触发条件**（同时满足）：
-1. 环境探索发现 `test-coverage-analyzer` skill 可用
-2. 阶段 6 执行的变更涉及代码（非纯配置/样式/文档）
+**Trigger conditions** (all must hold):
+1. Environment discovery finds the `test-coverage-analyzer` skill available
+2. Stage 6's executed change touches code (not purely config/style/docs)
 
-**行为**：在【改进建议】中追加一条非阻断提示文本：
+**Behavior**: append one non-blocking reminder line to the improvement suggestions:
 
 ```
 💡 如本变更将通过 MR/PR 合并，建议合并前运行 test-coverage-analyzer
@@ -134,9 +134,9 @@ solve-workflow 通过 dependencies 强依赖下列 skill（以 frontmatter 为�
    （如 jira-fix-workflow / opsx-* 系列）在合并步骤前强制执行。
 ```
 
-**不触发的情况**：
-- 未发现 `test-coverage-analyzer` → 静默跳过，不提示
-- 变更仅为配置/样式/文档 → 不提示
-- 用户已明确表示不走 MR/PR → 不提示
+**Does not trigger when**:
+- `test-coverage-analyzer` is not found → skip silently, no reminder
+- The change is purely config/style/docs → no reminder
+- The user has already stated they won't go through an MR/PR → no reminder
 
-> **与强制门控的边界**：solve-workflow 只提示「建议合并前运行」，不运行脚本、不判定通过与否。强制门控（运行脚本 + 判定矩阵 + 留痕）由带合并阶段的技能在其合并步骤前执行。
+> **Boundary with mandatory gates**: solve-workflow only suggests "run this before merging" — it never runs the script or judges pass/fail. The mandatory gate (script run + decision matrix + audit trail) belongs to skills that own a merge step, executed right before their merge step.

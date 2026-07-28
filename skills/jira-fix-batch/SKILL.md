@@ -1,96 +1,90 @@
 ---
 name: jira-fix-batch
-version: "1.1.0"
+version: "1.2.0"
 user-invocable: true
 category: development
 tags: [jira, batch, workflow]
-description: 当用户说「批量修复」「批量 jira-fix」「jira-fix-batch」「批量修复多个 Jira」「批量修复以下 bug」时触发。适用于需要对多个 Jira issue 进行批量端到端修复的编排场景。
+description: "Triggers when the user says「批量修复」「批量 jira-fix」「jira-fix-batch」「批量修复多个 Jira」「批量修复以下 bug」/ batch fix, batch jira-fix. Orchestrates end-to-end fixes across multiple Jira issues."
 ---
 
-# Jira Bug 批量修复
+# Jira Bug Batch Fix
 
-> 本 skill 负责多 issue 批量修复的编排规则。单个 issue 的端到端修复流程（阶段 0～10）由 `jira-fix-workflow` skill 承担；本 skill 的职责是：将多个 issue 拆分为独立任务、识别 issue 间关系、依次调用 `jira-fix-workflow`、跟踪批量进度。
+> This skill owns **batch orchestration** rules. Per-issue end-to-end fix (stages 0–10) lives in `jira-fix-workflow`. Responsibilities here: split issues into tasks, detect relationships, invoke `jira-fix-workflow` in order, track batch progress.
 >
-> **本 skill 内容仅在用户明确请求批量修复时生效，不在 skill 加载时自动触发任何编排行为。**
+> **Activate only when the user explicitly requests a batch fix.** Loading this skill MUST NOT start orchestration by itself.
 
-## 编排工具选择
+## Orchestrator selection
 
-若用户**明确请求批量修复**，由外部编排工具按以下优先级选择：
+When the user **explicitly requests batch fix**, the outer orchestrator picks a loop runner by platform-native capability (describe intent: “sequential loop over issues”). Do **not** hardcode platform-specific command names as required; prefer whatever loop/batch runner the current agent already has.
 
-- OpenCode + oh-my-opencode：优先选择 `ulw-loop` 类循环编排命令
-- Claude Code + oh-my-claudecode：选择 `ralph`、`ultrawork` 等等效命令
-- 其他平台：按当前可用的循环编排能力选择
+The orchestrator invokes `jira-fix [URL]` per issue. This skill does **not** run an internal loop itself.
 
-编排工具负责对每个 issue 依次调用 `jira-fix [URL]`，本 skill 不在内部自行循环执行。
+## Orchestrator duties
 
-## 编排工具职责
+1. Split input Jira IDs/URLs into independent issue tasks.
+2. Before execution, detect duplicate / dependency / overlap / conflict relationships.
+3. Invoke `jira-fix [URL]` for each issue in order.
+4. After each issue completes, re-evaluate remaining issues against the latest code state.
+5. One issue failing MUST NOT block later issues.
+6. Track overall progress; emit a batch summary when done.
 
-1. 将输入的 Jira ID / URL 拆分为独立 issue 任务
-2. 执行前识别 issue 间的重复、依赖、重叠、冲突等关系
-3. 对每个 issue 依次调用 `jira-fix [URL]`
-4. 每个 issue 完成后，基于最新代码状态重新评估剩余 issue
-5. 单个 issue 失败不阻断后续 issue
-6. 跟踪整体进度，处理完成后输出批量汇总
+## Batch mode propagation
 
-## 批量模式传播
+Per-issue mode is set **explicitly** from the user’s **batch-level** intent. The child skill’s “auto reverts to manual” rule MUST NOT break batch continuity.
 
-批量场景下，每个 issue 的模式由编排工具根据**用户在批量层面的意图**显式设置，子 skill（jira-fix-workflow）的「自动恢复手动」规则不影响批量连续性。
+### Propagation rules
 
-### 传播规则
+| Batch trigger | Orchestrator behavior | Child mode |
+|---------------|----------------------|------------|
+| Contains「自动」/ "auto" (e.g.「批量自动修复」) | Attach `--auto` or use auto-mode triggers on each child call | Auto |
+| No「自动」/ "auto" (e.g.「批量修复」) | Do not attach `--auto`; use default triggers | Manual |
 
-| 批量触发词 | 编排工具行为 | 子调用模式 |
-|-----------|------------|----------|
-| 含「自动」（如「批量自动修复 xxx」） | 每个子调用附加 `--auto` 或使用自动模式触发词 | 🤖 自动 |
-| 不含「自动」（如「批量修复 xxx」） | 每个子调用不附加 `--auto`，使用默认触发词 | 👤 手动 |
+### Why
 
-### 设计理由
+- **Separation of concerns**: `jira-fix-workflow` need not know about batch context; “revert to manual after one round” stays consistent.
+- **Explicit over implicit**: the orchestrator passes mode; do not rely on ambient inheritance.
+- **User expectation**: “batch auto” means every child run is auto until the batch ends.
 
-- **关注点分离**：子 skill（jira-fix-workflow）不需要感知批量上下文，「完成一轮恢复手动」规则在所有场景下一致
-- **显式优于隐式**：编排工具显式传递模式参数，比让子 skill 隐式继承上下文更可靠
-- **用户视角一致**：用户设置「批量自动」后，所有子调用都是自动模式，不会因单 issue 完成而中断
+## Issue relationship detection
 
-## Issue 关系识别
+Before serial execution, run a light relationship pass; after each issue, re-check remaining issues. Do not treat every issue as fully independent by default.
 
-批量编排工具在逐个执行前，应先做一次轻量关系识别；每个 issue 执行完成后，也应根据最新代码状态重新评估剩余 issue。不得机械地把所有 issue 都视为完全独立。
+1. **Duplicate / equivalent** — If B shares A’s symptom, root cause, or fix point and A’s fix already covers B, mark B **skipped (covered by duplicate)** with note “covered by A”; do not re-fix.
+2. **Dependency** — If B requires A’s code/behavior change, mark B **waiting on dependency**; run only after A completes and verifies; when running B, read A’s fix summary, PR URL, and relevant diff.
+3. **Overlap but not equivalent** — Same module, different root causes → analyze separately; note potential conflict; prefer serial handling.
+4. **Conflict** — Contradictory expected behaviors, or one fix would break the other → pause, mark **conflict pending confirmation**, ask humans for product/tech direction.
+5. **Derived** — Fixing A reveals B as follow-on impact or deeper root cause → record relationship; decide merge, depend, or split to a new Jira/PR.
 
-需要识别的关系包括：
+Record judgments in the batch progress doc (at least in notes: related issue, type, rationale).
 
-1. **重复 / 等价问题**：若 B 与 A 的现象、根因或修复点相同，且 A 修复后已覆盖 B，则 B 标记为「已跳过（重复覆盖）」，备注写明"已由 A 覆盖"，无需重复修复。
-2. **依赖关系**：若 B 的修复必须建立在 A 的代码改动或行为变更基础上，则 B 标记为「等待依赖」，必须在 A 完成并通过验证后再执行；执行 B 时需显式读取 A 的修复摘要、PR URL 和相关 diff。
-3. **重叠但不等价**：若 A 与 B 影响同一模块但根因不同，仍需分别分析；编排工具应在备注中标记潜在冲突，并优先串行处理。
-4. **冲突关系**：若两个 issue 的预期行为互相矛盾，或一个修复会破坏另一个 issue 的期望结果，暂停相关 issue，标记为「冲突待确认」，要求人工确认产品/技术口径。
-5. **派生问题**：若修复 A 时发现 B 实际是 A 的后续影响或更深层根因，应记录关系并决定是合并处理、依赖处理，还是拆分为新的 Jira / PR。
+## Batch progress document
 
-关系判断必须记录到批量进度文档中，至少在「备注」中写明关联 issue、关系类型和处理原因。
+At batch start, create a progress file (suggested: `.jira-fix/batch-[YYYYMMDD-HHMM]/progress.md`). Update on every status change; emit a final summary at the end.
 
-## 批量进度文档
+Minimum fields:
 
-批量开始时必须创建一个进度跟踪文档，建议保存为 `.jira-fix/batch-[YYYYMMDD-HHMM]/progress.md`。每个 issue 状态变化后更新该文档，批量结束时输出最终汇总。
+| Field | Meaning |
+|-------|---------|
+| Issue | Jira ID or URL |
+| Mode | Auto / Manual |
+| Status | pending / in progress / done / skipped (duplicate) / waiting dependency / conflict pending / review failed (cap) / failed |
+| Current stage | Stages 0–9, or not started / skipped |
+| Result summary | Fix result, failure reason, or review summary |
+| PR URL | When a PR exists |
+| Notes | Related issues, relationship type, blockers, human asks |
 
-进度文档至少包含以下字段：
+## Review over-cap handling
 
-| 字段 | 说明 |
-|------|------|
-| Issue | Jira ID 或 URL |
-| 模式 | 🤖 自动 / 👤 手动（记录该 issue 使用的执行模式） |
-| 状态 | 待处理 / 处理中 / 已完成 / 已跳过（重复覆盖） / 等待依赖 / 冲突待确认 / 审查未通过（超限） / 失败 |
-| 当前阶段 | 阶段0～9，或「未开始」「已跳过」 |
-| 结果摘要 | 修复结果、失败原因或审查摘要 |
-| PR URL | 已创建 PR 时记录 |
-| 备注 | 关联 issue、关系类型、阻塞点、人工介入要求或其他补充 |
+If an issue’s solution-review loop hits the 3-round cap without pass: mark **review failed (cap)**, skip later stages (do not enter stages 6/8/9), record the three-round review summary in the progress doc and final report, continue with the next issue.
 
-## 审查超限处理
+## Call shape (illustrative)
 
-当某个 issue 的方案审查循环达到 3 轮上限仍未通过时，标记该 issue 为「审查未通过（超限）」，跳过后续阶段（不进入阶段6/8/9），在批量进度文档与最终报告中记录该 issue 的 3 轮审查摘要，继续处理下一个 issue。
+```text
+Orchestrator start
+└── Detect relationships (PROJ-001, PROJ-002, PROJ-003)
+    ├── PROJ-001: jira-fix-workflow → done → update progress
+    ├── PROJ-002: evaluate deps → jira-fix-workflow → done → update progress
+    └── PROJ-003: jira-fix-workflow → done → batch summary
+```
 
-## 调用示意
-
-以下为编排调用结构示意（非可执行命令，具体命令由编排工具和平台决定）：
-
-    编排工具启动
-    └── 识别 issue 关系（PROJ-001、PROJ-002、PROJ-003）
-        ├── PROJ-001：调用 jira-fix-workflow → 完成 → 更新进度文档
-        ├── PROJ-002：评估依赖 → 调用 jira-fix-workflow → 完成 → 更新进度文档
-        └── PROJ-003：调用 jira-fix-workflow → 完成 → 输出批量汇总
-
-执行过程中，编排工具应持续更新批量进度文档；执行结束后，输出进度文档路径与最终汇总。
+Keep the progress doc updated throughout; when finished, print its path and the final summary.

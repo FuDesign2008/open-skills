@@ -1,89 +1,89 @@
-# OPSX Jira Fix Workflow — 输出格式参考
+# OPSX Jira Fix Workflow — Output Format Reference
 
-本文件为 `opsx-jira-fix-workflow` skill 的各阶段输出格式模板，供 AI 格式化输出时参考。
+Output templates for each stage of the `opsx-jira-fix-workflow` skill, for the AI to follow when formatting output.
 
-阶段 2 分析方法论见 `analysis-core`；难度/路径/design 落点仍以 SKILL.md 编排为准。
-
----
-
-## 阶段 3 Artifacts 字段清单
-
-`proposal.md` 必须包含：
-
-- Why：Jira 链接、问题摘要、用户影响、为什么现在修
-- What Changes：行为变化，而不是实现细节
-- Capabilities：新增或修改的 capability
-- Impact：代码、API、平台、风险
-
-`design.md` 完整字段（SKILL.md 最低完整度只要求其中 5 块，见正文）：
-
-- Jira Context：Jira 标题、关键描述、复现路径、期望和实际结果
-- Problem Analysis：存在性验证、根因、影响范围、难度分级
-- Goals / Non-Goals：修复目标和明确排除的范围
-- Options：候选方案、取舍、推荐方案
-- Risk：副作用、回滚策略、QA 关注点
-- Migration Plan：（涉及数据库/API/配置变更时必填）迁移步骤和回滚方案
-- Verification Notes：验证场景、测试命令、人工验证项
-
-Delta spec 常见格式错误（会导致 `openspec validate` 失败）：
-
-- `### REQ-001:` → 格式错，标题必须是 `### Requirement: <描述>`
-- `### Requirement: 初始化` → 缺 SHALL/MUST，描述必须包含 SHALL 或 MUST
-- 无 `#### Scenario:` 块 → 每个 requirement 至少需要一个场景
+Stage-2 analysis methodology lives in `analysis-core`; difficulty/path/design landing spot are still owned by SKILL.md orchestration.
 
 ---
 
-## 阶段 7 验证结果
+## Stage 3 Artifact Field Checklist
+
+`proposal.md` must include:
+
+- Why: Jira link, problem summary, user impact, why fix it now
+- What Changes: the behavior change, not implementation detail
+- Capabilities: new or modified capabilities
+- Impact: code, API, platform, risk
+
+`design.md` full field set (SKILL.md's minimum completeness bar requires only 5 of these — see the main body):
+
+- Jira Context: Jira title, key description, repro path, expected and actual results
+- Problem Analysis: existence check, root cause, impact scope, difficulty grading
+- Goals / Non-Goals: fix goals and explicitly excluded scope
+- Options: candidate solutions, trade-offs, recommended solution
+- Risk: side effects, rollback strategy, QA follow-up items
+- Migration Plan: (required when a database/API/config change is involved) migration steps and rollback
+- Verification Notes: verification scenarios, test commands, manual-verification items
+
+Common delta-spec format mistakes (cause `openspec validate` to fail):
+
+- `### REQ-001:` → wrong format, the heading must be `### Requirement: <description>`
+- `### Requirement: Initialize` → missing SHALL/MUST, the description must contain SHALL or MUST
+- No `#### Scenario:` block → every requirement needs at least one scenario
+
+---
+
+## Stage 7 Verification Results
 
 ```text
-【验证结果】
-- OpenSpec 校验：已执行（openspec validate <name>，输出：...）/ 失败（原因：...）
-- 工程验证：已执行（命令：...，结果：...）/ 待执行（需用户手动操作：...）
-- 行为对照：已执行（逐条对比结果：...）/ 待执行（人工验证项：...）
-- Jira 对照：已执行（...）/ 待执行（...）
-- 副作用检查：...
-- 是否可提交 PR：是 / 否
+【Verification Results】
+- OpenSpec validation: executed (openspec validate <name>, output: ...) / failed (reason: ...)
+- Engineering verification: executed (command: ..., result: ...) / pending (manual action needed: ...)
+- Behavior cross-check: executed (per-item comparison: ...) / pending (manual verification items: ...)
+- Jira cross-check: executed (...) / pending (...)
+- Side-effect check: ...
+- Ready to submit the PR: yes / no
 ```
 
 ---
 
-## 阶段 8.1 Commit Message
+## Stage 8.1 Commit Message
 
 ```text
 fix(<scope>): <JIRA-ID> <subject>
 ```
 
-示例：`fix(ai-summary): YNOTR-12167 修复分享链接中AI摘要按钮显示问题`
+Example: `fix(ai-summary): YNOTR-12167 fix AI summary button display in shared links`
 
 ---
 
-## 阶段 8.1 PR/MR 描述
+## Stage 8.1 PR/MR Description
 
-PR/MR 描述必须包含：
+PR/MR description must include:
 
-- Jira 链接
-- 根因
-- 修复方案
-- OpenSpec change 路径
-- 修改文件清单
-- 验证证据
-- 风险与回滚
-
----
-
-## 阶段 8.4 Jira 评论（合并完成后）
-
-Jira 评论必须包含：
-
-- 修复分支 / PR URL / Commit
-- 根因摘要
-- 修复方案
-- OpenSpec change 路径
-- 验证场景
-- 风险或待 QA 关注点
+- Jira link
+- Root cause
+- Fix approach
+- OpenSpec change path
+- Changed-file list
+- Verification evidence
+- Risk & rollback
 
 ---
 
-## 合并前检查清单
+## Stage 8.4 Jira Comment (after the merge completes)
 
-见强依赖 `merge-discipline` 的 [reference.md](../merge-discipline/reference.md)「合并前检查清单」（Part A–D 单源；勿在本文件复制正文）。
+The Jira comment must include:
+
+- Fix branch / PR URL / commit
+- Root-cause summary
+- Fix approach
+- OpenSpec change path
+- Verification scenarios
+- Risk or QA follow-up items
+
+---
+
+## Pre-merge checklist
+
+See the strong dependency `merge-discipline`'s [reference.md](../merge-discipline/reference.md)「合并前检查清单」(single source, Parts A-D — do not copy its body into this file).
