@@ -232,7 +232,7 @@ dependencies:
 确认或创建 Jira 对应的 OpenSpec change。若阶段 1 已创建或复用 change，本阶段只校验并补全 artifacts；手动模式必须先确认 change 名称；自动模式可生成后继续。
 
 - **命名**：`fix-<jira-id-lower>-<short-topic>`（例：`fix-ynotr-12167-ai-summary-button`）
-- **创建**：委托 `openspec-new-change`（读其 SKILL.md；`/opsx:new` 为入口别名）。**不得**手写 `openspec/changes/` 绕过原生 skill（缺失时按 `openspec-workspace-gates` 停止并安装）
+- **创建**：委托 `openspec-new-change`（读其 SKILL.md；`/opsx:new` 为入口别名）
 - **Jira 完整度**：`design.md` 至少含 Jira Context / Root Cause / Options / Risk / Verification Notes；proposal / delta spec / 字段细节见 [reference.md](reference.md)「阶段 3 Artifacts 字段清单」
 
 ## 阶段 4：探索与审查方案
