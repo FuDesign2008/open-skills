@@ -1,6 +1,6 @@
 ---
 name: known-issue-research
-version: "1.0.0"
+version: "1.1.0"
 user-invocable: false
 description: "External-research routing for confirmed code problems: triage whether the root cause is internal / external / hybrid, run a known-issue quick search before deep root-causing (platform silent failures, nested host runtimes, no code-level suspects), and evaluate industry-wide hard limits. Delegates all WebSearch discipline to effective-web-research. Referenced via frontmatter dependencies by workflow skills (solve-workflow, opsx-solve-workflow, jira-fix-workflow, opsx-jira-fix-workflow); load during the technical-analysis stage."
 dependencies:
@@ -49,6 +49,23 @@ When unsure, default to **🟢 internal-first** (these workflows exist to change
 | ✅ Upstream fix version found | Output the lead; proceed to the `{upstream-eval step}` to assess upgrade feasibility (a fixed-upstream lead is not yet a solution) |
 | ⚠️ Related discussion, root cause partly clear | Feed findings into the `{root-cause step}` as reference |
 | ❌ Nothing found | Skip silently; continue to the `{root-cause step}` |
+
+### 2.1 Performance-pattern variant (for perf-workflow)
+
+When the referring workflow is performance analysis (`perf-workflow`), treat §2 as a **known performance-pattern quick search** with these extra triggers (any one, before entering that workflow's hypothesis stage):
+
+- Anomaly located but **cannot be classified** into the workflow's known performance-pattern table
+- Suspected **framework/library performance bug or limit** (named framework + version)
+
+**Execute** the same WebSearch discipline as §2, with query shape: `symptom + framework/lib + version + year`, preferring GitHub Issues, official changelog, StackOverflow.
+
+| Outcome | Action |
+|---------|--------|
+| ✅ Known case / version bug | List the known fix as a candidate solution; focus later hypothesis validation on that direction |
+| ⚠️ Related discussion, inconclusive | Feed into hypothesis directions |
+| ❌ Nothing found | Skip silently; continue the workflow's next stage |
+
+`perf-workflow` keeps its pattern table and stage orchestration; this subsection only owns the search methodology.
 
 ## 3. Industry-wide issue evaluation
 

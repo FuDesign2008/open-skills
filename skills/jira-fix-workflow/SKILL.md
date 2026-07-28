@@ -1,6 +1,6 @@
 ---
 name: jira-fix-workflow
-version: "3.14.2"
+version: "3.15.2"
 user-invocable: true
 description: 当用户说「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」时触发。适用于从 Jira 链接出发、对单个 bug 进行端到端修复的场景。
 dependencies:
@@ -13,6 +13,7 @@ dependencies:
   - workflow-mode-lifecycle
   - clarifying-question-discipline
   - known-issue-research
+  - analysis-core
   - env-capability-discovery
   - ensure-tests
   - merge-discipline
@@ -55,12 +56,11 @@ dependencies:
 
 ## 强依赖与前置检查
 
-**强依赖 skill**（frontmatter `dependencies`，共 12 个）：
+**强依赖 skill**（frontmatter `dependencies`，共 13 个）：
 - `solution-review`（阶段 5 决策级审查）
 - `code-design-review`（阶段 5 代码设计审查）
-- `hybrid-debug`（阶段 3 Hybrid 全栈调试）
-- `runtime-evidence-debug`（阶段 3 运行时证据调试）
-- `browser-debug-toolkit`（阶段 3 + 阶段 8 浏览器 DevTools 调试）
+- `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`（经 `analysis-core` 委托；阶段 3 + 阶段 8）
+- `analysis-core`（阶段 3 分析方法论单源：临时改动门控 / 打点调试 / 分析步骤骨架 / 调试-验证闭环）
 - `node-version-discipline`（阶段 7/8 Node 版本对齐）
 - `workflow-mode-lifecycle`（自动/手动模式生命周期）
 - `clarifying-question-discipline`（主动提问硬纪律与调查优先）
@@ -69,7 +69,7 @@ dependencies:
 - `ensure-tests`（阶段 7 测试补全：有测试基建时补全并运行；无基建经用户确认后搭建）
 - `merge-discipline`（阶段 10 合并纪律：rebase 预检 + 覆盖率门控 + tip 钉死，合并前加载）
 
-> 启动时（阶段 0 前置检查通过后、阶段 1 之前）必须执行 skill 依赖检查：扫描可用 skill（查 `<available_items>` 或用 `skill` 工具），核对 12 个 dependencies 是否都在。任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`）。**不降级**。
+> 启动时（阶段 0 前置检查通过后、阶段 1 之前）必须执行 skill 依赖检查：扫描可用 skill（查 `<available_items>` 或用 `skill` 工具），核对 13 个 dependencies 是否都在。任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`）。**不降级**。
 
 ## 模式生命周期
 
@@ -309,90 +309,36 @@ Jira ID、标题、优先级、状态、数据来源、问题描述、复现步�
 
 ## 阶段3：分析问题
 
-> 只读分析，不修改代码
+> 分析方法论单源：`analysis-core`。修复实现归执行阶段。
 
-**🔌 增强能力集成**：若环境探索发现了「🔍 调试分析」类能力（如 `systematic-debugging`、`debug-workflow`、OMC `debugger` agent 等），在根因分析环节加载并遵循其方法论（如假设驱动调查、证据链构建）。未发现则按下述原有流程执行。
+**🔌 增强能力**：若环境探索发现「🔍 调试分析」类能力，在根因分析环节按其方法论执行。
 
-### 原则
+### 委托 `analysis-core`
 
-- 深度分析，追问「为什么」至少 3 次
-- 结构化输出，中文描述
-- **[👤 手动]** 信息不足时主动提问，格式见「通用原则 → 主动提问」
-- **工具限制**：✅ Read/Grep/SemanticSearch；❌ Edit/Write/Bash
+加载强依赖 `analysis-core`，按其 §§1–3 执行。本工作流映射（号+名）：
 
-### 分析维度
+- `{next-stage}` = 阶段 4「难度分级 + 模式决策网关」
+- `{root-cause step}` = 「根因分析」；`{impact-assessment step}` = 「影响范围」；`{upstream-eval step}` = 「上游依赖修复评估」
 
-**第一步：存在性验证**（门控，必须最先执行）
+### 本工作流差异（相对 `analysis-core` / `known-issue-research`）
 
-用 Read/Grep/SemanticSearch 搜索与 Jira 描述相关的代码，判断：
+1. **行业通病评估是门控**（非可选）：根因后必须给明确结论（含 ✅ 非通病）
+2. **🚫 无可行解**：输出【行业通病评估报告】，**停止、不进阶段5，并写 Jira 评论**（非仅暂停）
+3. 报告模板见本 skill [reference.md](reference.md)「行业通病评估报告」
+4. **存在性 ❌**：停止分析外，**更新 Jira 评论并等用户确认**
+5. **难度预判** + **产物**：`.jira-fix/{JIRA-ID}/02-analysis.md`（字段：存在性、路由、现象、定位、根因、通病、上游评估、影响、难度）
 
-| 结论 | 处理方式 |
-|------|---------|
-| ✅ 问题存在 | 继续执行「调研路由与外部调研」→ 后续分析维度 |
-| ❌ 问题已不存在 | 报告「当前代码库中未发现该问题，可能已被修复或逻辑已变更」，附相关代码位置，**停止分析，更新 Jira 评论并等待用户确认** |
-| ⚠️ Jira 描述与代码不符 | 报告「代码行为与 Jira 描述存在出入」，列出实际发现，**等待用户重新确认问题描述** |
-
-**存在性验证通过后立即执行：调研路由与外部调研**（决定后续步骤侧重）
-
-加载 `known-issue-research` skill 执行（三态判断 + 已知问题快搜 + 行业通病评估，方法论见该 skill；本工作流默认 🟢 内部为主）。步骤映射：root-cause=下方「根因分析」, impact=下方「影响范围」, upstream-eval=下方「上游依赖修复评估」。
-
-**本工作流与 `known-issue-research` 的差异（必须遵守）**：
-
-1. **行业通病评估是门控**（非可选悲观分支）：根因分析后必须执行并给出明确结论（含 ✅ 非通病的判断），不得跳过
-2. **🚫 结论为「行业公认难题，无可行解」时**：输出【行业通病评估报告】，**停止流程，不进入阶段5，并在 Jira 写评论说明结论**（非仅暂停等用户决定）
-3. **行业通病评估报告模板留在本 skill 的 [reference.md](reference.md)**（见「行业通病评估报告」一节）
-
-- **问题现象**：复现步骤、期望 vs 实际结果
-- **代码定位**：Grep/Glob/SemanticSearch 组合搜索关键代码
-- **根因分析**：数据流（操作→组件→函数→状态→渲染）+ 调用链，区分直接原因与根本原因
-
-**根因分析后执行：上游依赖修复评估**（可选，与行业通病评估对仗的乐观分支）
-
-> 与上方「行业通病评估」的区分：行业通病评估是「无可行解」的悲观分支（根因触及平台/协议固有限制）；本步骤是「上游已修复」的乐观分支（根因在上游依赖，且已有修复版本）。
-
-**触发条件**（满足任一即执行）：根因明确为上游依赖 bug；或已知问题快搜找到上游已修复版本。
-
-**执行**：加载 `upstream-dependency-debug` skill 执行（方法论见该 skill）。结果：升级低风险→进阶段 5 推荐升级为首选；有风险→升级与 workaround 并列；未修复→workaround 注明临时性及追踪的上游 issue。
-
-> 注：`upstream-dependency-debug` 为可选增强 skill，未在 frontmatter `dependencies` 中声明。若环境中不可用，静默跳过本步骤，继续后续分析。
-
-**行业通病评估报告**：输出模板见 [reference.md](reference.md)「行业通病评估报告」。
-
-- **影响范围**：功能、平台（Web/Mobile）、模块、连带影响
-- **难度预判**：预估改动文件数 + 根因清晰度（清晰/基本清晰/模糊/未知，供阶段4使用）
-
-### 🔬 打点调试（静态分析受阻时，主动升级为运行时调试）
-
-**触发条件**（满足任一即触发，优先于进入阶段 4）：
-- 根因置信度为「模糊」或「未知」——能定位到大概模块，但无法确定具体逻辑或触发路径
-- 当前是 `--retry` 重试场景——已基于静态分析修复过一次，但问题仍然存在
-
-**加载强依赖 skill**（前置检查已保证可用，各自方法论见其 SKILL.md）：`runtime-evidence-debug`（运行时证据采集 + 逃生出口）、`browser-debug-toolkit`（浏览器 DevTools）、`hybrid-debug`（Hybrid 四层分析）。
-
-**工具限制**：✅ Read/Grep 辅助确定打点位置；打点代码、临时日志、复现脚本及验证性临时改动由 AI 直接添加并纳入登记（文件+位置+原内容+目的），进入下一阶段前按登记回滚并输出「临时改动清单 + 回滚验证」，未回滚不得进入；修复实现的正式改动仍归执行阶段；❌ 未经用户确认不得自行运行复现步骤
-
----
-
-### 输出字段
-
-存在性验证结论、调研路由判断（🟢/🔵/🟣）、问题现象（复现/期望/实际）、代码定位（路径:行号+说明）、根因（直接+根本+调用链）、行业通病评估结论、上游依赖修复评估结论、影响范围（模块/平台/连带）、难度预判。保存到 `.jira-fix/{JIRA-ID}/02-analysis.md`
-
-**[👤 手动]** 立即连续执行**阶段4：难度分级**，将分级结果追加到本输出末尾，然后附上：
-「⏸️ 问题分析 + 难度分级完成（等级：X）。进入**阶段5：探索与审查方案**，回复「确认」继续。」
-**[🤖 自动]** 自动进入阶段4，无需用户确认。
+**[👤 手动]** 立即连续执行阶段4，将分级追加到输出末，再附确认提示进阶段5。  
+**[🤖 自动]** 自动进入阶段4。
 
 ### Red Flags — 禁止行为
 
-- 跳过存在性验证，直接进入问题现象分析
-- 存在性验证结论为「不存在/描述不符」但仍继续分析
-- 以「Jira 描述已经很清楚」为由跳过代码定位，直接进入方案评估
-- 以「这是常见 bug」为由跳过根因分析，直接复用历史方案
-- **路由判定为 🔵外部/🟣hybrid 却跳过已知问题快搜（见 known-issue-research）**（此时快搜为首要动作，违反路由判定）；或 **🟢内部路由下快搜触发条件命中，却以「先看代码」「先打点」为由跳过 WebSearch**（平台静默失败类问题应先搜再分析）
-- 根因分析后跳过行业通病评估（本工作流中为门控，非可选——见 known-issue-research 与本阶段差异说明），直接进入影响范围
-- 行业通病评估结论为「无可行解」但仍进入阶段5（本工作流中应停止流程并在 Jira 写评论，见 known-issue-research）
-- 根因涉及具名第三方库却未查上游 Changelog/Release Notes 就堆 workaround（应先加载 `upstream-dependency-debug` skill 走 4 步决策顺序）
-- **多轮打点后根因仍不明确，继续增加打点而不转向 `runtime-evidence-debug` 的逃生出口（Phase 6）**
-- 分析阶段修改代码（本阶段严格只读，违反阶段工具约束）
+- 跳过存在性验证，或存在性为「不存在/不符」仍继续分析
+- 以「Jira 已清楚 / 常见 bug」跳过定位或根因
+- 违反 `analysis-core` / `known-issue-research` 的路由、临时改动门控、上游 Changelog 优先原则
+- 行业通病门控未执行，或 🚫 仍进阶段5
+- 多轮打点后仍模糊却不走 `runtime-evidence-debug` 逃生出口
+- 以修复为目的改业务代码（分析辅助改动须按 `analysis-core` §1 登记回滚）
 
 ---
 
@@ -482,11 +428,9 @@ Jira ID、标题、优先级、状态、数据来源、问题描述、复现步�
 
 #### 审查维度（每轮必须覆盖）
 
-1. **解决有效性**：是否完整覆盖根因、能否高效高质量解决问题、核心逻辑与关键实现点
-2. **副作用与风险**：改动是否在其他模块引发新问题（功能副作用）、是否带来性能/安全/可维护性问题（非功能副作用）、已识别问题有无缓解措施
-3. **实现可行性**：改动范围、依赖关系、涉及文件/模块是否明确可执行
-4. **代码规范符合度**：是否符合项目现有模式和最佳实践
-5. **架构与设计质量**（若方案涉及代码修改）：加载 `code-design-review` skill，按其完整代码设计审查框架执行（Layer A 代码级指标 + Layer B 架构级属性 + Layer C 安全审查）。
+**决策级审查**（加载 `solution-review` skill 按其框架执行）：4 核心维度（解决有效性 / 副作用与风险 / 实现可行性 / 规范符合度）+ 5 战略维度（可逆性校准 / 失效模式分析 / 可运维性 / 成本 vs 价值 / 团队认知适配）。
+
+**代码设计审查**（方案涉及代码时，加载 `code-design-review` skill）：Layer A 代码级指标 + Layer B 架构级属性 + Layer C 安全审查。
 
 #### 审查结论（二级制）
 
@@ -722,10 +666,7 @@ Jira ID、标题、优先级、状态、数据来源、问题描述、复现步�
    - **无自动化测试**：按 Jira 复现步骤描述手动验证路径，列出验证要点提示用户
 4. **副作用检查**：确认 Node 版本已按项目声明对齐（见 `node-version-discipline`）、Linter 和 TypeScript 检查均通过（补充确认阶段7结果），检查改动是否在其他模块引发新问题
 5. **逻辑完整性**：修复点是否完整覆盖根因，有无遗漏边界条件
-6. **调试-验证闭环**：若阶段 3 用了调试 skill 定位根因，本阶段须用**同一 skill** 验证修复（而非只跑测试）：
-   - 浏览器可复现问题（用了 `browser-debug-toolkit` 复现）→ 用同一 skill 验证解决方案是否生效：before/after 运行时状态对比（DOM 树/计算样式/盒模型/控制台/网络等），确认异常消失
-   - 运行时证据问题（用了 `runtime-evidence-debug` 打点）→ 用同一 skill 复验原打点位置，before/after 证据对比确认异常行为消失
-   - Hybrid 跨端问题（用了 `hybrid-debug` 四层分析）→ 验证受影响各层（L1-L4）行为均正确，无新跨层副作用
+6. **调试-验证闭环**：若阶段 3 用了调试 skill 定位根因，按 `analysis-core` §4 用**同一 skill** 验证修复（而非只跑测试）
 
 ### 验证结论（二级制）
 

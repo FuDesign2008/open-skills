@@ -2,6 +2,8 @@
 
 本文件为 `opsx-jira-fix-workflow` skill 的各阶段输出格式模板，供 AI 格式化输出时参考。
 
+阶段 2 分析方法论见 `analysis-core`；难度/路径/design 落点仍以 SKILL.md 编排为准。
+
 ---
 
 ## 阶段 7 验证结果

@@ -20,7 +20,7 @@
 
 ## 阶段 2 调研输出模板
 
-「行业通病评估报告」与「上游依赖修复评估」模板已迁移至 `known-issue-research/reference.md`，由该 skill 统一承载，本文件不再重复。
+分析方法论见 `analysis-core`（临时改动门控 / 分析步骤 / 打点调试）。「行业通病评估报告」与「上游依赖修复评估」模板见 `known-issue-research/reference.md`，本文件不再重复。
 
 ---
 
@@ -35,9 +35,10 @@
 - [skill-name]：[该 skill 的用途说明]
 
 【为什么需要它】
-solve-workflow 通过 dependencies 强依赖 12 个 skill：
+solve-workflow 通过 dependencies 强依赖 13 个 skill：
 - `solution-review` / `code-design-review`：阶段 4 审查框架（4 核心维度 + 5 战略维度 / Layer A-B-C 代码设计审查）
-- `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`：阶段 2 调试方法论（Hybrid 全栈 / 运行时证据 / 浏览器 DevTools）
+- `analysis-core`：阶段 2 分析方法论单源（临时改动门控 / 打点调试 / 分析步骤骨架 / 调试-验证闭环）
+- `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`：经 `analysis-core` 委托的调试 skill（阶段 2 + 阶段 7）
 - `learn-and-improve`：阶段 8 复盘改进与经验沉淀
 - `workflow-mode-lifecycle`：自动/手动模式生命周期核心规则
 - `clarifying-question-discipline`：主动提问硬纪律与调查优先原则
@@ -46,11 +47,11 @@ solve-workflow 通过 dependencies 强依赖 12 个 skill：
 - `ensure-tests`：阶段 6 测试补全（测试基建检测 / 补全生成 / 运行）
 - `node-version-discipline`：阶段 7 测试执行前 Node 版本对齐
 
-缺失时阶段 4 无法执行深度审查、阶段 2 无法升级到运行时调试与外部调研、环境能力探索失效、阶段 6 无法补全测试、阶段 7 测试 Node 版本不可信、模式与提问纪律失去单点契约，强行运行会产生未经审查或根因不明的方案，违背 PDCA 工作流初衷。
+缺失时阶段 4 无法执行深度审查、阶段 2 无法加载分析核心与外部调研、环境能力探索失效、阶段 6 无法补全测试、阶段 7 测试 Node 版本不可信、模式与提问纪律失去单点契约，强行运行会产生未经审查或根因不明的方案，违背 PDCA 工作流初衷。
 
 【安装方式】
 - 通用安装（推荐，全量装所有 skill）：
-  npx skills add FuDesign2008/open-skills -g
+  npx skills add FuDesign2008/open-skills -g --skill '*' --yes
 - 全能力安装（含 Hooks/Commands/平台集成）：
   见 docs/INSTALL.md
 

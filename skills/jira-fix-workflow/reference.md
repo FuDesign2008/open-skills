@@ -2,6 +2,8 @@
 
 本文件为 `jira-fix-workflow` skill 的各阶段输出格式示例，供 AI 格式化输出时参考。
 
+阶段 3 分析方法论见 `analysis-core`；行业通病门控模板见下文「行业通病评估报告」。
+
 ---
 
 ## 阶段0：前置检查完成
@@ -427,7 +429,7 @@ AI 自动优化方案中...
 
 ## 行业通病评估报告
 
-> 阶段3「调研路由与外部调研」中行业通病评估结论为 🚫「行业公认难题，无可行解」时输出。评估方法论见 `known-issue-research` skill（jira-fix-workflow 特有差异：该评估在本工作流为门控，且无可行解时停止流程并写 Jira 评论）。
+> 阶段3 经 `analysis-core` → `known-issue-research` 做行业通病评估；结论为 🚫「行业公认难题，无可行解」时输出本模板。评估方法论见 `known-issue-research`；jira-fix 特有差异：该评估为门控，无可行解时停止流程并写 Jira 评论。
 
 ```
 【行业通病评估】

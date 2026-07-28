@@ -1,15 +1,16 @@
 ---
 name: perf-workflow
-version: '2.2.0'
+version: '2.3.0'
 user-invocable: true
 description: 性能问题分析与优化工作流，共六阶段。触发词均以「性能」开头：性能分析、性能证据、性能定位、性能假设、性能监控、性能优化、性能验证、性能深入。当用户说上述词或使用「触发词： 具体描述」形式时，进入本工作流或对应阶段。
 dependencies:
   - clarifying-question-discipline
+  - known-issue-research
 ---
 
 # 性能问题分析工作流
 
-> 强依赖 skill：clarifying-question-discipline（主动提问硬纪律），缺失即中止并提示安装（npx skills add FuDesign2008/open-skills -g）。
+> 强依赖 skill：`clarifying-question-discipline`（主动提问硬纪律）、`known-issue-research`（已知性能模式快搜 §2.1）；缺失即中止并提示安装（`npx skills add FuDesign2008/open-skills -g --skill '*' --yes`）。
 
 ## 职责范围
 
@@ -136,19 +137,7 @@ dependencies:
 
 ### 已知性能模式快搜（可选，定位受阻时触发）
 
-满足以下任一条件时，在进入阶段 3 之前用 WebSearch 搜索已知案例：
-- 异常点已定位，但**无法归类到已知模式**（排除了上方「常见模式」表中所有条目，仍找不到根因方向）
-- 涉及**特定框架/库的性能行为**（如某版本 React、特定数据库驱动、特定 ORM），怀疑是该框架的已知 bug 或限制
-
-> 🔌 若 `effective-web-research` skill 可用，本步骤的 WebSearch 应用其调研纪律——先 Step 0 分流（确认是外部问题、非内部代码可解），再按 4 口诀执行（官方优先 / 查时效 / 非平凡双源印证 / 避内容农场）；用户要严格调研时转其严格模式出报告。skill 不可用时按原 WebSearch 流程执行。
-
-执行：以「症状描述 + 框架/库名 + 版本 + 年份」搜索，优先查 GitHub Issues、官方 changelog、StackOverflow。
-
-| 搜索结论 | 处理方式 |
-|---------|---------|
-| ✅ 找到已知案例或版本 bug | 直接将已知解法列为阶段 5 候选方案，阶段 3 重点围绕该方向验证 |
-| ⚠️ 找到相关讨论但无定论 | 纳入阶段 3 的假设方向 |
-| ❌ 未找到 | 静默跳过，正常进入阶段 3 |
+满足 `known-issue-research` §2.1 的触发条件时，加载该 skill 并按 §2.1（Performance-pattern variant）执行；本工作流的「常见模式」表与阶段编排仍留在本文件。
 
 ---
 

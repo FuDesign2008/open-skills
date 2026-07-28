@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.6.2"
+version: "1.7.1"
 user-invocable: true
 description: 当用户说"opsx-jira-fix"、"OpenSpec Jira 修复"、"规范化修复 Jira"、"opsx修复Jira"、"Jira OpenSpec 修复"、"opsx自动修复Jira"、"用OpenSpec修复Jira"或"opsx-jira-fix-workflow"时触发。适用于从 Jira issue 出发，并需要将根因、行为变更、修复计划、验证和归档沉淀到 OpenSpec artifacts 的端到端 Bug 修复。
 dependencies:
@@ -13,6 +13,7 @@ dependencies:
   - workflow-mode-lifecycle
   - clarifying-question-discipline
   - known-issue-research
+  - analysis-core
   - env-capability-discovery
   - ensure-tests
   - merge-discipline
@@ -47,9 +48,10 @@ dependencies:
 - **强制模式**：触发词含“强制”或 `--force` 时可跳过难度终止，但仍不得跳过验证和归档检查。
 - **继续修复**：触发词含“继续修复”“再次修复”“从上次继续”或 `--retry` 时，先定位现有 OpenSpec change，再从 `design.md`、`tasks.md` checkbox、当前 Git 分支和 PR/MR 状态恢复上下文。
 
-**强依赖 skill**（frontmatter `dependencies`，共 12 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
+**强依赖 skill**（frontmatter `dependencies`，共 13 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
 - `solution-review`（阶段 4 决策级审查）、`code-design-review`（阶段 4 代码设计审查）
-- `hybrid-debug`（阶段 2 Hybrid 全栈调试）、`runtime-evidence-debug`（阶段 2 运行时证据调试）、`browser-debug-toolkit`（阶段 2 + 阶段 7 浏览器 DevTools 调试）
+- `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`（经 `analysis-core` 委托；阶段 2 + 阶段 7）
+- `analysis-core`（阶段 2 分析方法论单源：临时改动门控 / 打点调试 / 分析步骤骨架 / 调试-验证闭环）
 - `node-version-discipline`（阶段 6 执行验证前 Node 版本对齐）
 - `workflow-mode-lifecycle`（自动/手动模式生命周期）、`clarifying-question-discipline`（主动提问硬纪律与调查优先）、`known-issue-research`（阶段 2 调研路由 / 已知问题快搜 / 行业通病评估）
 - `env-capability-discovery`（环境能力探索：启动时一次扫描可用增强能力）
@@ -58,10 +60,10 @@ dependencies:
 
 ## 前置 skill 检查
 
-> 本 skill 通过 frontmatter `dependencies` 声明对 12 个 skill 的强依赖。启动时（阶段 0 前置检查之前）必须执行本检查。
+> 本 skill 通过 frontmatter `dependencies` 声明对 13 个 skill 的强依赖。启动时（阶段 0 前置检查之前）必须执行本检查。
 
 1. 扫描可用 skill（查 `<available_items>` 或用 `skill` 工具）
-2. 核对 12 个 dependencies 是否都在可用列表中
+2. 核对 13 个 dependencies 是否都在可用列表中
 3. 全部存在 → 继续阶段 0 前置检查
 4. 任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`）
 
@@ -159,7 +161,7 @@ dependencies:
 |------|---------|---------|
 | 0 前置检查 | Read、Grep、Glob、Bash（只读检查）、Jira API（只读） | Edit、Write、Git 写操作 |
 | 1 读取 Jira | Jira API、jira-read、Read、OPSX skills（创建 change） | Edit 业务代码、Write 业务代码、改变实现的 Bash |
-| 2 分析问题 | Read、Grep、WebSearch（1.5 调研路由 / 4.5 上游评估专用；打点调试：用户添加打点，AI 只读分析） | Edit、Write 业务代码 |
+| 2 分析问题 | Read、Grep、WebSearch；分析辅助 Edit/Write 按 `analysis-core` §1（须登记回滚） | 以实现修复为目的的业务代码改动 |
 | 3 创建 Change | OPSX 原生 skills、Write（artifacts） | Edit 业务代码 |
 | 4 探索方案 | Read、Grep | Edit、Write 业务代码 |
 | 5 制定计划 | Read、Write（仅 tasks.md） | Edit 业务代码 |
@@ -216,20 +218,24 @@ dependencies:
 
 ## 阶段 2：分析问题
 
-只读分析，不修改业务代码。
+> 分析方法论单源：`analysis-core`。修复实现归执行阶段。
 
-必须执行：
+### 委托 `analysis-core`
 
-1. **存在性验证**：搜索相关代码，判断 Jira 描述的问题在当前代码库是否仍存在。
-1.5 **调研路由**：加载 `known-issue-research` skill 执行（三态判断 + 已知问题快搜 + 行业通病评估，方法论见该 skill）。步骤映射：root-cause=步骤 4, impact=步骤 5, upstream-eval=步骤 4.5。
-2. **现象对齐**：复现条件、期望 vs 实际。
-3. **代码定位**：文件路径、关键函数、调用链、状态流。
-4. **根因分析**：区分直接原因和根本原因；必要时追问“为什么”至少 3 次。
-4.5 **上游依赖修复评估**（可选）：根因疑似上游依赖 bug 或快搜找到上游已修复版本时，加载 `upstream-dependency-debug` skill 执行（方法论见该 skill）。
-5. **影响范围**：模块、平台、调用方、兼容性、风险面。
-6. **难度分级**：容易 / 中等 / 困难 / 极难。
+加载强依赖 `analysis-core`，按其 §§1–3 执行。本工作流映射（号+名）：
 
-分级建议：
+- `{next-stage}` = 阶段 3「创建 OpenSpec Change」
+- `{root-cause step}` = 步骤 4；`{impact-assessment step}` = 步骤 5；`{upstream-eval step}` = 步骤 4.5
+
+### 本工作流编排（保留）
+
+在 `analysis-core` 骨架之上额外完成：
+
+- **难度分级**（容易/中等/困难/极难）与**路径选择**（精简/增量/完整）；Scope 扩大时升级路径
+- **产物落点**：写入 `design.md` 的 Problem Analysis / Root Cause / Impact（须已有 change；否则先回阶段 1）
+- **存在性 ❌ / 描述不符**：暂停；写 Jira 评论前需用户确认
+
+分级与路径表：
 
 | 等级 | 触发条件 | 行为 |
 |------|----------|------|
@@ -238,38 +244,13 @@ dependencies:
 | 困难 | 风险较高或影响范围较广 | 阶段 5 后暂停审查 |
 | 极难 | 根因未知、架构变更、数据迁移、API 协议变更、跨仓库 | 自动模式终止；手动模式二次确认 |
 
-路径选择（与难度分级关联）：
-
 | 难度 | 路径 | 要求 |
 |------|------|------|
-| 容易 | 精简路径 | proposal 和 delta specs 可保持精简，不跳过验证 |
+| 容易 | 精简路径 | proposal/delta specs 可精简，不跳过验证 |
 | 中等 | 增量路径 | proposal/specs/design/tasks 全部产出 |
-| 困难/极难 | 完整路径 | 阶段 1-8 全部执行，`brainstorming` 辅助分析 |
+| 困难/极难 | 完整路径 | 阶段 1-8 全执行，可用 `brainstorming` |
 
-执行中发现范围扩大时必须升级路径：精简 → 增量，增量 → 完整。手动模式下升级需用户确认。
-
-输出进入 `openspec/changes/<change-name>/design.md` 的 Problem Analysis / Root Cause / Impact 小节。阶段 2 开始前必须已有已确认或已创建的 change；若没有，先回到阶段 1 的 change 确认/创建规则，不得只在对话中保留分析结论。
-
-若问题不存在或 Jira 描述与代码不符，暂停，向 Jira 写评论前需用户确认。
-
-> 🚩 **Red Flags（阶段 2）**：
-> - ❌ 未做存在性验证就假设问题仍存在
-> - ❌ 根因分析停在表面，未追问「为什么」至少 3 次
-> - ❌ 分析结论只保留在对话中，未写入 design.md
-> - ❌ 根因置信度模糊却不触发打点调试
-> - ❌ Scope 扩大时未升级路径（精简→增量→完整）
-> - ❌ 1.5 路由判定为 🔵外部/🟣hybrid 却跳过已知问题快搜（此时快搜为首要动作，见 `known-issue-research`）；或 🟢内部路由下快搜触发条件命中，却以「先看代码」「先打点」为由跳过 WebSearch
-> - ❌ 根因涉及具名第三方库/框架，却未查上游 Changelog/Release Notes 就直接堆 workaround（应先走步骤 4.5 上游依赖修复评估）
-
-### 🔬 打点调试（静态分析受阻时，主动升级为运行时调试）
-
-**触发条件**（满足任一即触发，优先于进入阶段 3）：
-- 根因置信度为「模糊」或「未知」——能定位到大概模块，但无法确定具体逻辑或触发路径
-- 当前是重试场景（含「继续修复」`--retry`）——已基于静态分析修复过一次，但问题仍然存在
-
-**加载强依赖 skill**（前置检查已保证可用，各自方法论见其 SKILL.md）：`runtime-evidence-debug`（运行时证据采集 + 逃生出口）、`browser-debug-toolkit`（浏览器 DevTools）、`hybrid-debug`（Hybrid 四层分析）。
-
-**工具限制**：✅ Read/Grep 辅助确定打点位置；打点代码、临时日志、复现脚本及验证性临时改动由 AI 直接添加并纳入登记（文件+位置+原内容+目的），进入下一阶段前按登记回滚并输出「临时改动清单 + 回滚验证」，未回滚不得进入；修复实现的正式改动仍归执行阶段；❌ 未经用户确认不得自行运行复现步骤
+> 🚩 **Red Flags**：未做存在性验证；根因过浅；结论未入 design.md；模糊却不触发打点（`analysis-core` §3）；未升级路径；违反 `analysis-core` / `known-issue-research` 门控
 
 ---
 
@@ -481,10 +462,7 @@ fix/jira-fix-<JIRA-ID>
 3. 行为对照：逐条核对 delta spec requirements 和 scenarios
 4. Jira 对照：复现步骤、期望/实际是否已闭环
 5. 副作用检查：相关模块和平台是否受影响；验证报告须披露 `Node(声明版本 vX) ✅/⚠️ 未对齐`
-6. 调试-验证闭环：若阶段 2 用了调试 skill 定位根因，本阶段须用**同一 skill** 验证修复（而非只跑测试）：
-   - 浏览器可复现问题（用了 `browser-debug-toolkit` 复现）→ 用同一 skill 验证解决方案是否生效：before/after 运行时状态对比（DOM 树/计算样式/盒模型/控制台/网络等），确认异常消失
-   - 运行时证据问题（用了 `runtime-evidence-debug` 打点）→ 用同一 skill 复验原打点位置，before/after 证据对比确认异常行为消失
-   - Hybrid 跨端问题（用了 `hybrid-debug` 四层分析）→ 验证受影响各层（L1-L4）行为均正确，无新跨层副作用
+6. 调试-验证闭环：若阶段 2 用了调试 skill 定位根因，按 `analysis-core` §4 用**同一 skill** 验证修复（而非只跑测试）
 
 > ⚠️ **验证报告诚实原则**：每一项必须在括号中明确标注"已执行（命令+输出摘要）"或"待执行（需人工操作的具体步骤）"，不得将"设计了验证场景"误写为"验证已通过"。AI 不能直接执行浏览器交互的步骤，必须诚实标注为"待执行"并给出具体操作指引。
 
