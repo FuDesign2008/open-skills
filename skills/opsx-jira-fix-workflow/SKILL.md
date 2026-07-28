@@ -243,17 +243,7 @@ fix-<jira-id-lower>-<short-topic>
 fix-ynotr-12167-ai-summary-button
 ```
 
-推荐创建方式：
-
-```text
-/opsx:new <change-name>
-```
-
-若当前环境没有 `/opsx:new`，可手动创建：
-
-```text
-openspec/changes/<change-name>/
-```
+创建方式：读取并委托 `openspec-new-change` skill（按其 SKILL.md 执行；`/opsx:new` 为同能力入口别名）。阶段 0 门禁已保证该 skill 可用；若仍缺失，按 `openspec-workspace-gates` 停止并指导 `openspec init` / `openspec update`，**不得**手写 `openspec/changes/` 绕过原生 skill。
 
 必须写入：
 
