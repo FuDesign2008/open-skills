@@ -68,7 +68,7 @@ dependencies:
 
 阶段 7：先建分支；构建/lint/tsc 前调用 `node-version-discipline`。阶段 10 Part C 按偏好/询问决定是否跑覆盖率 analyzer。
 
-**模式差异摘要**：阶段0 自动 stash vs 提示处理；阶段2 自动跳过；阶段4 极难自动终止 vs 手动 A/B；阶段5 自动循环审查≤3；阶段7 多工程手动先确认分支；阶段8 自动回退≤2；阶段9 自动直接 PR；阶段10 **两种模式均须确认后合并**；中断恢复自动直接续 vs 手动询问。
+自动/手动阶段差异见 [reference.md](reference.md)「模式差异速查」。
 
 ## 通用原则
 
