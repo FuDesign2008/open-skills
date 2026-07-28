@@ -35,7 +35,7 @@
 - [skill-name]：[该 skill 的用途说明]
 
 【为什么需要它】
-solve-workflow 通过 dependencies 强依赖 12 个 skill：
+solve-workflow 通过 dependencies 强依赖 13 个 skill：
 - `solution-review` / `code-design-review`：阶段 4 审查框架（4 核心维度 + 5 战略维度 / Layer A-B-C 代码设计审查）
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`：阶段 2 调试方法论（Hybrid 全栈 / 运行时证据 / 浏览器 DevTools）
 - `learn-and-improve`：阶段 8 复盘改进与经验沉淀

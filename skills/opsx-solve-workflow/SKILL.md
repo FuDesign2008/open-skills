@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.7.1"
+version: "1.8.0"
 user-invocable: true
 description: 当用户说"opsx解决"、"OpenSpec解决"、"规范化解决"、"创建OpenSpec变更"、"创建opsx变更"、"用OpenSpec分析"、"用OpenSpec修复"、"opsx自动解决"、"OpenSpec自动解决"、"opsx-solve"或"opsx-solve-workflow"时触发。适用于需要将分析、方案、计划、实现、验证和归档沉淀到OpenSpec artifacts的功能开发、Bug修复、重构和复杂工程任务。
 dependencies:
@@ -14,6 +14,7 @@ dependencies:
   - workflow-mode-lifecycle
   - clarifying-question-discipline
   - known-issue-research
+  - analysis-core
   - env-capability-discovery
   - ensure-tests
   - merge-discipline
@@ -47,12 +48,11 @@ dependencies:
 - **手动模式**：阶段 1、2、3、4、5、7、8 的关键出口必须等待用户确认。
 - **自动模式**：自动推进到验证；阶段 4 审查最多循环 3 轮，超限暂停。
 
-**强依赖 skill**（frontmatter `dependencies`，共 13 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
+**强依赖 skill**（frontmatter `dependencies`，共 14 个；启动时须先通过「前置 skill 检查」，缺失即中止流程）：
 - `solution-review`（阶段 4 决策级审查）
 - `code-design-review`（阶段 4 代码设计审查）
-- `hybrid-debug`（阶段 2 Hybrid 全栈调试）
-- `runtime-evidence-debug`（阶段 2 运行时证据调试）
-- `browser-debug-toolkit`（阶段 2 + 阶段 7 浏览器 DevTools 调试）
+- `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`（经 `analysis-core` 委托；阶段 2 + 阶段 7）
+- `analysis-core`（阶段 2 分析方法论单源：临时改动门控 / 打点调试 / 分析步骤骨架 / 调试-验证闭环）
 - `node-version-discipline`（阶段 7 Node 版本对齐）
 - `learn-and-improve`（阶段 8 复盘改进与经验沉淀）
 - `workflow-mode-lifecycle`（自动/手动模式生命周期）
@@ -64,10 +64,10 @@ dependencies:
 
 ## 前置 skill 检查
 
-> 本 skill 通过 frontmatter `dependencies` 声明对 13 个 skill 的强依赖。启动时（阶段 0 前置检查通过后、阶段 1 之前）必须执行本检查。
+> 本 skill 通过 frontmatter `dependencies` 声明对 14 个 skill 的强依赖。启动时（阶段 0 前置检查通过后、阶段 1 之前）必须执行本检查。
 
 1. 扫描可用 skill（查 `<available_items>` 或用 `skill` 工具）
-2. 核对 13 个 dependencies 是否都在可用列表中
+2. 核对 14 个 dependencies 是否都在可用列表中
 3. 全部存在 → 继续后续流程
 4. 任一缺失 → 输出结构化提示并**立即中止流程**（格式同 `solve-workflow` 的前置检查缺失提示，见 `solve-workflow/reference.md`「前置 skill 检查 — 缺失提示」）
 
@@ -270,67 +270,16 @@ Superpowers 是增强能力，不是硬依赖。检测到以下 skill 时，在�
 
 🔌 若环境探索发现「🔍 调试分析」类能力，在根因分析环节调用（假设驱动调查、证据链构建）。
 
-### 🛠️ 临时改动权限与回滚门控（本阶段特有）
+### 分析方法论（委托 `analysis-core`）
 
-**允许的改动（仅限分析辅助目的）**：
-- 打点代码、临时日志、复现脚本
-- 验证性临时改动：为验证假设临时修改实现代码（如改条件观察行为变化），验证后必须恢复
+加载强依赖 skill `analysis-core` 并按其 §§1–3 执行（临时改动门控、分析步骤骨架、打点调试）。本工作流映射：
 
-**禁止**：以实现修复为目的的改动——修复实现归阶段 6（执行计划）。
-
-**登记（强制）**：每处临时改动立即记录「文件 + 位置 + 原内容 + 目的」，作为回滚依据。
-
-**出口门控（进入阶段 3 前必须完成）**：
-1. 按登记逐条恢复原内容（**以登记为准**；`git diff` 仅辅助核对登记项已清零——工作区可能已有用户改动，git diff 不能作为回滚依据）
-2. 输出「临时改动清单 + 回滚验证」
-3. 存在未回滚项时不得进入阶段 3；确需保留的，须经用户明确确认
-
-**工具限制**：✅ Read/Grep/SemanticSearch；✅ WebSearch（调研路由与快搜、上游依赖修复评估、`runtime-evidence-debug` 的逃生出口专用）；✅ Edit/Write 限上述分析辅助改动；✅ Bash 运行只读验证类命令——运行被调试应用/复现步骤仍需用户确认（见「打点调试」小节）
-
-### 分析步骤
-
-1. **存在性验证**（门控，必须最先执行）
-   - 用 Read/Grep/SemanticSearch 定位问题相关代码
-   - 判断结论并按下表处理：
-
-   | 结论 | 处理方式 |
-   |------|---------|
-   | ✅ 问题存在 | 继续执行步骤 2（调研路由与外部调研）→ 3～7 |
-   | ❌ 问题已不存在 | 报告「在当前代码库中未发现该问题，可能已被修复或逻辑已变更」，附相关代码位置，**停止分析，等待用户确认** |
-   | ⚠️ 描述与代码不符 | 报告「代码行为与描述存在出入」，列出实际发现，**回到阶段 1 重新对齐问题描述** |
-
-2. **调研路由**：加载 `known-issue-research` skill 执行（三态判断 + 已知问题快搜 + 行业通病评估，方法论见该 skill）。步骤映射：root-cause=步骤 5, impact=步骤 7, upstream-eval=步骤 6。
-
-3. **问题现象描述** - 复现条件和步骤；**问题可在浏览器中复现时，优先用 `browser-debug-toolkit` 复现问题并观察运行时状态**（不限于 UI/CSS/DOM；无浏览器自动化能力时按该 skill 的既有降级路径处理）
-4. **相关代码定位** - 文件路径+行号、关键函数/类
-5. **问题根因分析** - 数据流和调用链分析
-6. **上游依赖修复评估**（可选，根因明确为上游依赖 bug 时触发）
-   - 触发条件：根因明确为上游依赖 bug；或步骤 2 已知问题快搜找到上游已修复版本。
-   - **加载 `upstream-dependency-debug` skill 执行**（方法论见该 skill）。
-   - 结果：升级低风险→进阶段 3 推荐升级方案；有风险→升级与 workaround 并列；未修复→workaround 注明临时性。
-
-7. **影响范围评估** - 受影响的模块/功能
+- `{next-stage}` = 阶段 3「探索方案」
+- `{root-cause step}` = 步骤 5；`{impact-assessment step}` = 步骤 7；`{upstream-eval step}` = 步骤 6
 
 🔌 **OPSX Skills 集成**：技术分析阶段**不创建任何 artifact**。根因分析结论（Why / Impact）会在阶段 3 方案选定后，作为上下文一并写入 `proposal.md`。
 
 若发现问题不存在或描述与代码不符，暂停并让用户重新确认，不进入方案阶段。
-
-### Red Flags — 阶段 2 禁止行为
-
-- **「调研路由」判定为 🔵外部/🟣hybrid 却跳过已知问题快搜**（此时快搜为首要动作，跳过即违反路由判定）；或 **🟢内部路由下快搜触发条件命中，却以「先看代码」「先打点」为由跳过 WebSearch**（违反早搜原则，允许在代码层无可疑点前先搜索已知案例）
-- **根因涉及具名第三方库/框架，却未查上游 Changelog/Release Notes 就直接堆 workaround**（违反「优先评估升级依赖」原则，导致 magic number 时序、UX 降级、平台强制行为 CSS 无解等技术债累积）
-- 以分析为名行修复之实——临时改动超出「验证假设」目的，或验证后未回滚即流入阶段 3
-- 临时改动未登记，或进入阶段 3 前未输出「临时改动清单 + 回滚验证」
-
-### 🔬 打点调试（静态分析受阻时，主动升级为运行时调试）
-
-**触发条件**（满足任一即触发，优先于进入阶段 3 前）：
-- 根因置信度为「模糊」或「未知」——能定位到大概模块，但无法确定具体逻辑或触发路径
-- 当前是重试/继续场景——已基于静态分析处理过一次，但问题仍然存在
-
-**加载强依赖 skill**（前置检查已保证可用，各自方法论见其 SKILL.md）：`runtime-evidence-debug`（运行时证据采集 + 逃生出口）、`browser-debug-toolkit`（浏览器 DevTools）、`hybrid-debug`（Hybrid 四层分析）。
-
-**工具限制**：✅ Read/Grep 辅助确定打点位置；打点与验证性改动按「临时改动权限与回滚门控」执行（AI 可直接添加打点，纳入登记）；❌ 未经用户确认不得自行运行复现步骤
 
 ---
 
@@ -475,10 +424,7 @@ Superpowers 增强规则：
 
 2. **工程验证**：运行项目相关测试、类型检查、lint 或构建（对齐版本下执行）。
 3. **行为对照**：逐条对照 delta spec 的 requirements 和 scenarios，确认实现覆盖。
-4. **调试-验证闭环**：若阶段 2 用了调试 skill 定位根因，本阶段须用**同一 skill** 验证修复（而非只跑测试）：
-   - 浏览器可复现问题（用了 `browser-debug-toolkit` 复现）→ 用同一 skill 验证解决方案是否生效：before/after 运行时状态对比（DOM 树/计算样式/盒模型/控制台/网络等），确认异常消失
-   - 运行时证据问题（用了 `runtime-evidence-debug` 打点）→ 用同一 skill 复验原打点位置，before/after 证据对比确认异常行为消失
-   - Hybrid 跨端问题（用了 `hybrid-debug` 四层分析）→ 验证受影响各层（L1-L4）行为均正确，无新跨层副作用
+4. **调试-验证闭环**：若阶段 2 用了调试 skill 定位根因，按 `analysis-core` §4 用**同一 skill** 验证修复（而非只跑测试）
 
 若检测到 `verification-before-completion`，必须按其原则执行：只有刚运行过并亲自阅读过输出的命令，才能作为“通过”的证据。
 
