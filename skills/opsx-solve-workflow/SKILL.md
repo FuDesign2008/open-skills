@@ -468,7 +468,7 @@ Superpowers 增强规则：
 > 合并动作执行前加载强依赖 skill `merge-discipline`（前置检查已保证可用），执行四部分（顺序 Part A → B → C → D）；**用户直接说 merge 也必须加载，不得隐式跳过**：
 > - **Part A OpenSpec archive 关联门控**：关联 active change（diff 含 `openspec/changes/<name>/` 或会话绑定名仍在 `openspec list`）且未 archive → 阻断合并；无关联则放行（完整规范见 skill Part A）
 > - **Part B rebase/冲突预检**：fetch + rev-list + merge-tree；需 rebase 时报告并等确认（完整规范见 skill Part B）
-> - **Part C 覆盖率门控**：见 skill Part C；快查表见 [reference.md](reference.md)「合并前检查清单」
+> - **Part C 覆盖率门控**：见 skill Part C；快查表见 `merge-discipline/reference.md`「合并前检查清单」
 > - **Part D tip 钉死**：见 skill Part D（Strategy B 仅事故恢复，不得作为关联 active change 时的推荐主路径）
 
 ### 复盘改进（委托 learn-and-improve）

@@ -57,30 +57,6 @@ Jira 评论必须包含：
 
 ---
 
-## 合并前检查清单（门控 + tip 钉死）
+## 合并前检查清单
 
-> 完整规范见强依赖 skill `merge-discipline`（Part A archive 门控 + Part B rebase + Part C 覆盖率 + Part D tip 钉死）。本清单为合并前自检快查表。
-
-**OpenSpec archive 关联门控（Part A，最先）**：
-- [ ] 是否判定关联？（diff 含 active `openspec/changes/<name>/` 或会话绑定名仍在 `openspec list`）→ Part A
-- [ ] 关联且仍 active 时是否已阻断合并并要求同 tip archive？（不得隐式跳过直接 merge）→ Part A
-- [ ] 无关联时是否放行 Part B？→ Part A
-
-**rebase 预检（Part B）**：
-- [ ] 是否检测目标分支领先量？→ Part B
-- [ ] 是否检测冲突？→ Part B
-- [ ] 需 rebase 时是否报告并等用户确认（不自动）？rebase + push 后是否结束本轮、不管 CI？→ Part B
-
-**覆盖率门控（Part C）**：
-
-- [ ] 合并意图已确认？（分支收尾决策选定合并 / 用户直接合并指令 / AI 即将调用合并命令）
-- [ ] test-coverage-analyzer 是否可用？→ 不可用则环境缺漏留痕，等用户决策
-- [ ] 门控是否已运行？→ 未运行则先跑（除非用户显式跳过并留痕）
-- [ ] 门控结果如何？→ 达标继续 Part D；不达标/崩溃/无报告/无测试 → 暂停等用户；漏跑 → 按漏跑规则
-- [ ] 留痕是否写入？（显式跳过 / 环境缺漏 / 隐式漏跑）
-
-**合并 tip 钉死（Part D）**：
-
-- [ ] merge 是否钉死合入 revision？（`gh`：`--match-head-commit` 或平台等价；裸 merge 禁止）→ Part D step 1
-- [ ] 刚 push 后的「Pipeline succeeded」是否核对过 sha？→ Part D step 2
-- [ ] 合入后祖先校验是否 OK？（MISSING 则开补齐 MR，不得宣称收尾）→ Part D step 3
+见强依赖 `merge-discipline` 的 [reference.md](../merge-discipline/reference.md)「合并前检查清单」（Part A–D 单源；勿在本文件复制正文）。

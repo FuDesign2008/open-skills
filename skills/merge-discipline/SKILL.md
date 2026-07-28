@@ -1,6 +1,6 @@
 ---
 name: merge-discipline
-version: "1.2.0"
+version: "1.2.1"
 user-invocable: true
 description: "合并纪律：合并动作（glab/gh mr/pr merge）前必须加载——OpenSpec archive 关联门控（Part A，最先）+ rebase/冲突预检（Part B）+ 覆盖率门控（Part C）+ tip 钉死（Part D）。关联 active OpenSpec change 时未 archive 不得 merge；用户直接说 merge 也不得隐式跳过。触发词：「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, post-push merge check. 被 opsx-jira-fix-workflow / opsx-solve-workflow / jira-fix-workflow frontmatter dependencies 强依赖。"
 ---
@@ -194,4 +194,4 @@ Gate auto-running test-coverage-analyzer does not trigger "auto reverts to manua
 
 - **Keep in your own body:** your stage ordering line (e.g. `archive → branch-closeout → merge-discipline(A→B→C→D) → merge → writeback`), a one-line pointer to this skill, and 1-2 key red-flags. Do **not** copy the Part steps inline.
 - **Delegate to this skill:** all four Parts — A (archive gate), B (rebase), C (coverage), D (tip pinning).
-- **Quick-check table in your reference.md:** keep a compact checklist (archive 2–3 items + rebase 3 + gate 5 + tip 3, each pointing to this skill's Part/step). It reminds; this skill defines.
+- **Pre-merge checklist (single source):** [reference.md](reference.md)「合并前检查清单」. Referencing workflows keep **one pointer sentence** only — do **not** paste the checklist into workflow `reference.md`.
