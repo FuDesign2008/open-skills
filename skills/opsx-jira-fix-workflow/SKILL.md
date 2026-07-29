@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.13.0"
+version: "1.14.0"
 user-invocable: true
 description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」 / opsx jira fix, OpenSpec Jira fix workflow."
 dependencies:
@@ -24,6 +24,8 @@ dependencies:
   - test-first-discipline
   - design-approval-gate
   - feature-branch-closeout
+  - decision-fog-discipline
+  - workspace-isolation-discipline
 ---
 
 # OPSX Jira Bug-Fix Workflow
@@ -64,6 +66,8 @@ Not a replacement for plain `jira-fix-workflow`:
 - `test-first-discipline` (execution: failing-test-first for behavior changes; distinct from ensure-tests)
 - `design-approval-gate` (before execution: no production impl without approval; named auto/hotfix escapes)
 - `feature-branch-closeout` (stage 8: closeout menu; merge delegates to merge-discipline)
+- `decision-fog-discipline` (before explore solutions: graduate fog / decision tickets first)
+- `workspace-isolation-discipline` (before execution: optional isolated workspace)
 - `domain-language-discipline` (clarify/analyze: project glossary / CONTEXT.md when domain terms matter)
 - `merge-discipline` (stage 8 merge discipline — after closeout selects merge)
 - `openspec-workspace-gates` (stage 0 OpenSpec workspace and native-skill gate)
@@ -220,7 +224,7 @@ Confirm or create the Jira issue's OpenSpec change. If stage 1 already created o
 
 ## Stage 4: Explore & review solutions
 
-Based on stage 2's root cause and stage 3's artifacts, output 2-3 solutions:
+If the path is still foggy, follow `decision-fog-discipline` before the solution table / proposal. Based on stage 2's root cause and stage 3's artifacts, output 2-3 solutions:
 
 - Core idea
 - Files / modules involved
@@ -290,7 +294,7 @@ If the project's convention doesn't accept fix comments, don't force it — but 
 
 ### 6.2.5 Test-first then test-suite ensure (mandatory, before entering stage 7)
 
-Before production edits, follow `design-approval-gate` (manual: user pass; auto/force/lean: named escape + 留痕). For behavior-changing work, follow `test-first-discipline` during implementation. Once every `tasks.md` checkbox is checked, before entering stage 7 verification, this step is mandatory:
+Before production edits, follow `design-approval-gate` (manual: user pass; auto/force/lean: named escape + 留痕). Optionally follow `workspace-isolation-discipline` before non-trivial edits. For behavior-changing work, follow `test-first-discipline` during implementation. Once every `tasks.md` checkbox is checked, before entering stage 7 verification, this step is mandatory:
 
 Load and call `ensure-tests`, declaring `mode=mandatory`, scoped to this fix's logic files; a failure or a declined necessary-scaffolding request blocks entry to stage 7. ensure-tests does not satisfy test-first.
 

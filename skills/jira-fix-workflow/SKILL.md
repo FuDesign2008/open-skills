@@ -1,6 +1,6 @@
 ---
 name: jira-fix-workflow
-version: "3.22.0"
+version: "3.23.0"
 user-invocable: true
 description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」 / fix this bug, jira-fix, auto fix, force fix, resume fix. Do NOT use for batch fixes across multiple issues — use jira-fix-batch instead."
 dependencies:
@@ -23,6 +23,8 @@ dependencies:
   - test-first-discipline
   - design-approval-gate
   - feature-branch-closeout
+  - decision-fog-discipline
+  - workspace-isolation-discipline
 ---
 
 # Jira Bug-Fix Workflow
@@ -161,7 +163,7 @@ Write the grade to `04-grade.md` and state `grade`; declare the path. Template: 
 
 ## Stage 5: Explore & Review Solutions
 
-Offer 2-3 solutions (YAGNI). 🤖 auto-select (priority: thorough > best-practice > code quality > smallest change) → review. 👤 ask once if preference is missing, then present the comparison table.
+If the path is still foggy, follow `decision-fog-discipline` before the solution table. Offer 2-3 solutions (YAGNI). 🤖 auto-select (priority: thorough > best-practice > code quality > smallest change) → review. 👤 ask once if preference is missing, then present the comparison table.
 
 Output: list → expanded detail → **one** comparison table (see reference.md § Stage 5 Solution Comparison) → `03-options.md`. 👤 stop after the comparison table.
 
@@ -186,7 +188,7 @@ Exit script: reference.md.
 
 ## Stage 7: Execute the Plan
 
-Before production edits, follow `design-approval-gate` (manual: user pass; auto/force: named escape + 留痕).
+Before production edits, follow `design-approval-gate` (manual: user pass; auto/force: named escape + 留痕). Optionally follow `workspace-isolation-discipline` before non-trivial edits.
 
 **Branch**: naming and single-/multi-repo flow are in [reference.md](reference.md) § Stage 7 Branch-Creation Details; write `00-branch.md`.
 
