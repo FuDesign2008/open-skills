@@ -19,6 +19,7 @@ dependencies:
   - merge-discipline
   - pdca-review-orchestration
   - openspec-workspace-gates
+  - completion-evidence-discipline
 ---
 
 # OPSX Eight-Stage Problem-Solving Workflow
@@ -265,7 +266,7 @@ Verification conclusions must be based on commands you ran and personally read t
 
 Output format: see [reference.md](reference.md)「Stage 7 Check & Verify」.
 
-> Label each result per `pdca-review-orchestration`'s verification-report honesty rule.
+> Label each result per `pdca-review-orchestration`'s verification-report honesty rule and `completion-evidence-discipline` (no pass claims without fresh current-turn evidence).
 
 Manual mode pauses here to wait for user confirmation before archiving. Do not archive on a failed verification — return to stage 4, 5, or 6 instead.
 

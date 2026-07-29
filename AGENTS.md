@@ -63,14 +63,14 @@ open-skills/
 
 | Skill | 类别 | 依赖 |
 |-------|------|------|
-| solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、node-version-discipline |
-| opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、merge-discipline |
+| solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、node-version-discipline、pdca-review-orchestration、completion-evidence-discipline |
+| opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、merge-discipline、pdca-review-orchestration、openspec-workspace-gates、completion-evidence-discipline |
 | perf-workflow | 工作流 | clarifying-question-discipline、known-issue-research |
 | frontend-perf | 知识库 | perf-workflow |
 | android-webview-debug | 工具 | 无 |
 | git-commit | Git | 无 |
-| jira-fix-workflow | Jira 工作流 | git-commit、jira-read、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、merge-discipline、pdca-review-orchestration、jira-status-writeback |
-| opsx-jira-fix-workflow | Jira 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、merge-discipline、pdca-review-orchestration、openspec-workspace-gates、jira-status-writeback、openspec 原生 skills（阶段 0 检查） |
+| jira-fix-workflow | Jira 工作流 | git-commit、jira-read、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、merge-discipline、pdca-review-orchestration、jira-status-writeback、completion-evidence-discipline |
+| opsx-jira-fix-workflow | Jira 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、merge-discipline、pdca-review-orchestration、openspec-workspace-gates、jira-status-writeback、completion-evidence-discipline、openspec 原生 skills（阶段 0 检查） |
 | jira-status-writeback | Jira 工具 | 无（被 jira-fix / opsx-jira-fix 强依赖） |
 | jira-read | Jira 工具 | 无 |
 | typescript-check | 工具 | 无 |
@@ -85,9 +85,10 @@ open-skills/
 | browser-debug-toolkit | 调试方法论 | 无 |
 | workflow-mode-lifecycle | 工作流纪律 | 无 |
 | clarifying-question-discipline | 工作流纪律 | 无 |
+| completion-evidence-discipline | 工作流纪律 | 无 |
 | known-issue-research | 调研方法论 | effective-web-research |
 | analysis-core | 分析方法论 | known-issue-research、runtime-evidence-debug、browser-debug-toolkit、hybrid-debug、upstream-dependency-debug |
-| pdca-review-orchestration | 工作流编排 | solution-review、code-design-review |
+| pdca-review-orchestration | 工作流编排 | solution-review、code-design-review、completion-evidence-discipline |
 | openspec-workspace-gates | OpenSpec 门禁 | 无 |
 
 > 💕 AI 编码陪伴（coding-fangirl）已迁移至独立工程 [oh-my-fangirl](https://github.com/FuDesign2008/oh-my-fangirl)。

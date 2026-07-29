@@ -17,6 +17,7 @@ dependencies:
   - ensure-tests
   - node-version-discipline
   - pdca-review-orchestration
+  - completion-evidence-discipline
 ---
 
 # Eight-Stage Problem-Solving Workflow
@@ -289,7 +290,7 @@ If stage 5's plan or stage 6's execution report involves testing (unit tests, in
 
 ### Verification-report honesty
 
-Follow `pdca-review-orchestration`'s verification-report honesty rule to label each result.
+Follow `pdca-review-orchestration`'s verification-report honesty rule and `completion-evidence-discipline` (fresh current-turn evidence before pass claims) to label each result.
 
 ### Output Format
 

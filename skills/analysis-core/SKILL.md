@@ -1,8 +1,8 @@
 ---
 name: analysis-core
-version: "1.0.1"
+version: "1.1.0"
 user-invocable: false
-description: "Shared analysis-stage methodology for PDCA fix workflows: temporary-change permission and rollback gate, instrumentation-debug triggers with debug-skill delegation, analysis step skeleton (existence → research routing → phenomenon/locate/root-cause/upstream-eval/impact), and debug-verify loop. Parameterizes the post-analysis exit as {next-stage}. Referenced via frontmatter dependencies by solve-workflow, opsx-solve-workflow, jira-fix-workflow, opsx-jira-fix-workflow. Triggers — 「分析阶段核心」「分析核心」「临时改动门控」「打点调试门控」「调试验证闭环」「analysis-core」 / analysis stage core, temp-change gate, instrumentation debug gate, debug-verify loop."
+description: "Shared analysis-stage methodology for PDCA fix workflows: temporary-change permission and rollback gate, red-capable reproduction loop before hypothesis lists, instrumentation-debug triggers with debug-skill delegation, analysis step skeleton (existence → research routing → phenomenon/locate/root-cause/upstream-eval/impact), and debug-verify loop. Parameterizes the post-analysis exit as {next-stage}. Referenced via frontmatter dependencies by solve-workflow, opsx-solve-workflow, jira-fix-workflow, opsx-jira-fix-workflow. Triggers — 「分析阶段核心」「分析核心」「临时改动门控」「红环门控」「打点调试门控」「调试验证闭环」「analysis-core」 / analysis stage core, red-capable loop gate, temp-change gate, instrumentation debug gate, debug-verify loop."
 dependencies:
   - known-issue-research
   - runtime-evidence-debug
@@ -53,7 +53,7 @@ Analysis is read-only by default. Analysis-assist edits only are allowed; they m
 
    | Verdict | Action |
    |---------|--------|
-   | ✅ Problem exists | Continue to step 2 → 3–7 |
+   | ✅ Problem exists | Continue to step 2 → 3–8 |
    | ❌ Problem gone | Report it may already be fixed or logic changed, cite locations, **stop and wait for user** |
    | ⚠️ Description mismatches code | Report the mismatch, **return to the workflow's problem-clarification stage** |
 
@@ -63,11 +63,16 @@ Analysis is read-only by default. Analysis-assist edits only are allowed; they m
 
 4. **Locate** — file paths + line numbers, key functions/classes.
 
-5. **Root cause** — data flow and call-chain analysis.
+5. **Red-capable loop gate** (before multi-hypothesis root-cause guessing)
+   - A **red-capable loop** = a deterministic, agent-runnable failing reproduction (command, test, or equivalent observed failure) that has **already been run at least once** in this analysis stage and observed red/failing.
+   - **If missing:** do **not** emit a speculative multi-hypothesis “likely root causes” list. First establish the loop (repro steps, instrumentation per §3, or state clearly why a loop cannot be established and stop for the user).
+   - **If present:** proceed to step 6.
 
-6. **Upstream dependency fix evaluation** (optional) — when root cause is an upstream dependency bug, or step 2 found an upstream fixed version: load `upstream-dependency-debug` and follow it. Outcomes: low-risk upgrade → recommend upgrade in solution exploration; risky → list upgrade alongside workarounds; unfixed → workaround marked temporary.
+6. **Root cause** — data flow and call-chain analysis; falsifiable hypotheses only after step 5 is satisfied.
 
-7. **Impact** — affected modules/features.
+7. **Upstream dependency fix evaluation** (optional) — when root cause is an upstream dependency bug, or step 2 found an upstream fixed version: load `upstream-dependency-debug` and follow it. Outcomes: low-risk upgrade → recommend upgrade in solution exploration; risky → list upgrade alongside workarounds; unfixed → workaround marked temporary.
+
+8. **Impact** — affected modules/features.
 
 If existence fails or description mismatches, do not proceed to solution exploration.
 
@@ -77,6 +82,7 @@ If existence fails or description mismatches, do not proceed to solution explora
 - Named third-party lib/framework in the root cause without checking upstream Changelog/Release Notes before piling workarounds
 - Using “analysis” to ship a fix — temporary edits beyond hypothesis validation, or entering `{next-stage}` without rollback
 - Temporary edits not registered, or missing「临时改动清单 + 回滚验证」before `{next-stage}`
+- Emitting multi-hypothesis root-cause guesses **without** a red-capable loop (or an explicit, user-visible statement that no loop is possible)
 
 ## 3. Instrumentation debug (when static analysis stalls)
 

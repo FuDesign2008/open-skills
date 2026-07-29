@@ -18,6 +18,7 @@ dependencies:
   - merge-discipline
   - pdca-review-orchestration
   - jira-status-writeback
+  - completion-evidence-discipline
 ---
 
 # Jira Bug-Fix Workflow
@@ -191,7 +192,7 @@ After execution: 🤖 normal→8, 🟠 pause for review; 👤 normal wait for co
 
 ## Stage 8: Check & Verify
 
-Output the result only — do not change code. Compare against the Jira repro/expected result, stage 6's plan, tests, side effects, and root cause; use `analysis-core` §4 for the debug-verify loop. Verification-report honesty per `pdca-review-orchestration`. Template: reference.md § Stage 8.
+Output the result only — do not change code. Compare against the Jira repro/expected result, stage 6's plan, tests, side effects, and root cause; use `analysis-core` §4 for the debug-verify loop. Verification-report honesty per `pdca-review-orchestration` and `completion-evidence-discipline`. Template: reference.md § Stage 8.
 
 | Verdict | Next |
 |------|------|
