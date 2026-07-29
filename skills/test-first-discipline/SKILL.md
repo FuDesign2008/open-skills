@@ -2,7 +2,7 @@
 name: test-first-discipline
 version: "1.0.0"
 user-invocable: false
-description: "Hard discipline for behavior-changing work: write a failing test first, observe the failure, then write minimal production code; delete production code written before a failing test was observed. Distinct from ensure-tests (post-hoc coverage/scaffold). Referenced by PDCA execution stages. Triggers — 「测试先行」「先写失败测试」「红绿重构」「TDD 铁律」「test-first」 / test-first discipline, failing test first. Do NOT use as a name alias for tdd or test-driven-development."
+description: "Hard discipline for behavior-changing work: write a failing test first, observe the failure, then write minimal production code; delete production code written before a failing test was observed. Distinct from test-suite-ensure (post-hoc coverage/scaffold). Referenced by PDCA execution stages. Triggers — 「测试先行」「先写失败测试」「红绿重构」「TDD 铁律」「test-first」 / test-first discipline, failing test first. Do NOT use as a name alias for tdd or test-driven-development."
 ---
 
 # Test-First Discipline
@@ -35,23 +35,23 @@ If production behavior code was written before step 2: **delete it** and restart
 
 Rationalizing "skip just this once" without an exception or user skip is forbidden.
 
-## Distinct from `ensure-tests`
+## Distinct from `test-suite-ensure`
 
 | Skill | Owns |
 |-------|------|
 | `test-first-discipline` | **Order** — red before production behavior code |
-| `ensure-tests` | **Post-hoc** — stack detect, scaffold, generate/run coverage for existing logic |
+| `test-suite-ensure` | **Post-hoc** — stack detect, scaffold, generate/run coverage for existing logic |
 
-A green `ensure-tests` run **MUST NOT** be reported as compliance with this skill. Hosts that use both: follow test-first during behavior implementation; call ensure-tests afterward for gaps/scaffold (advisory or mandatory per host).
+A green `test-suite-ensure` run **MUST NOT** be reported as compliance with this skill. Hosts that use both: follow test-first during behavior implementation; call test-suite-ensure afterward for gaps/scaffold (advisory or mandatory per host).
 
 ## Forbidden
 
-- Claiming test-first compliance after only post-hoc ensure-tests
+- Claiming test-first compliance after only post-hoc test-suite-ensure
 - Renaming or aliasing this skill to `tdd` / `test-driven-development` inside this repository
 - Skipping the observed-red step for normal behavior changes without an exception or user skip
 
 ## Integration guide
 
-- Hosts: one-line pointer in the execution stage — load this skill for behavior changes; keep ensure-tests as the separate post-task ensure step.
+- Hosts: one-line pointer in the execution stage — load this skill for behavior changes; keep test-suite-ensure as the separate post-task ensure step.
 - Prefer `user-invocable: false`; users reach it through PDCA hosts.
 - Compose with `completion-evidence-discipline`: the observed failing (and later passing) run must be fresh evidence when claiming red/green.

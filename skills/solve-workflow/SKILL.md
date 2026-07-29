@@ -14,9 +14,9 @@ dependencies:
   - clarifying-question-discipline
   - known-issue-research
   - analysis-core
-  - ensure-tests
+  - test-suite-ensure
   - node-version-discipline
-  - pdca-review-orchestration
+  - staged-review-flow
   - completion-evidence-discipline
   - domain-language-discipline
   - test-first-discipline
@@ -40,13 +40,13 @@ dependencies:
 - **Not applicable**: single-step edits (e.g. renaming one variable) or when the user only wants a quick suggestion rather than the full flow — skip this workflow and handle directly
 
 **Strong dependencies** (frontmatter `dependencies`; the prerequisite skill check below must pass at startup, or the flow aborts):
-- `pdca-review-orchestration` (stage 4 review orchestration; depends on `solution-review` and `code-design-review`)
+- `staged-review-flow` (stage 4 review orchestration; depends on `solution-review` and `code-design-review`)
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit` (debug skills delegated to via `analysis-core`; stage 2 + stage 7)
 - `analysis-core` (single source of truth for stage 2's methodology: temporary-change gate / instrumentation debug / analysis step skeleton / debug-verify loop)
 - `learn-and-improve` (stage 8 retrospective and knowledge sediment)
 - `workflow-mode-lifecycle` (manual/auto mode lifecycle), `clarifying-question-discipline` (hard clarifying-question discipline and investigation-first), `known-issue-research` (stage 2 research routing / known-issue quick search / industry-wide evaluation)
-- `ensure-tests` (stage 6 test completion: generate and run tests when test infrastructure exists; scaffold with user confirmation when it doesn't)
-- `test-first-discipline` (stage 6: failing-test-first for behavior changes; distinct from ensure-tests)
+- `test-suite-ensure` (stage 6 test completion: generate and run tests when test infrastructure exists; scaffold with user confirmation when it doesn't)
+- `test-first-discipline` (stage 6: failing-test-first for behavior changes; distinct from test-suite-ensure)
 - `design-approval-gate` (before stage 6: no production impl without approval; named auto/hotfix escapes)
 - `feature-branch-closeout` (stage 8: post-verify branch menu; merge delegates to merge-discipline when used)
 - `decision-fog-discipline` (before explore solutions: graduate fog / decision tickets first)
@@ -226,7 +226,7 @@ Output the solution comparison table and wait for the user to choose before ente
 
 ## Stage 4: Review the Solution
 
-Load `pdca-review-orchestration` and run its full review contract. This workflow's mapping: `{next-stage}` = stage 5 "Make a Plan"; `{artifact-sink}` = the stage 4 review report (format in [reference.md](reference.md)); `{extra-dimensions}` = none; `{batch-overcap-behavior}` = `N/A`. Tool restrictions: Edit/Write forbidden; Read allowed to inspect code details.
+Load `staged-review-flow` and run its full review contract. This workflow's mapping: `{next-stage}` = stage 5 "Make a Plan"; `{artifact-sink}` = the stage 4 review report (format in [reference.md](reference.md)); `{extra-dimensions}` = none; `{batch-overcap-behavior}` = `N/A`. Tool restrictions: Edit/Write forbidden; Read allowed to inspect code details.
 
 ---
 
@@ -274,7 +274,7 @@ When the user says "更新计划" / "修订计划" / "修改计划" (update/revi
 
 ### Test-first then test-suite ensure (before the execution report)
 
-For behavior-changing work, follow `test-first-discipline` (failing test observed before production code). Separately, for changes touching business logic that lack test coverage, load and call `ensure-tests` with `mode=advisory`, scoped to this change's logic files. If the user declines scaffolding, note it in the execution report as a non-blocking reminder. ensure-tests does not satisfy test-first.
+For behavior-changing work, follow `test-first-discipline` (failing test observed before production code). Separately, for changes touching business logic that lack test coverage, load and call `test-suite-ensure` with `mode=advisory`, scoped to this change's logic files. If the user declines scaffolding, note it in the execution report as a non-blocking reminder. test-suite-ensure does not satisfy test-first.
 
 **Tool permissions**: ✅ Edit/Write/Bash allowed; use TodoWrite to track progress
 
@@ -302,7 +302,7 @@ If stage 5's plan or stage 6's execution report involves testing (unit tests, in
 
 ### Verification-report honesty
 
-Follow `pdca-review-orchestration`'s verification-report honesty rule and `completion-evidence-discipline` (fresh current-turn evidence before pass claims) to label each result.
+Follow `staged-review-flow`'s verification-report honesty rule and `completion-evidence-discipline` (fresh current-turn evidence before pass claims) to label each result.
 
 ### Output Format
 

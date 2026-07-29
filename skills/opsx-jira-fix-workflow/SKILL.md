@@ -14,10 +14,10 @@ dependencies:
   - clarifying-question-discipline
   - known-issue-research
   - analysis-core
-  - ensure-tests
+  - test-suite-ensure
   - merge-discipline
-  - pdca-review-orchestration
-  - openspec-workspace-gates
+  - staged-review-flow
+  - opsx-workspace-gate
   - jira-status-writeback
   - completion-evidence-discipline
   - domain-language-discipline
@@ -57,20 +57,20 @@ Not a replacement for plain `jira-fix-workflow`:
 - **Continue fixing**: a trigger containing "继续修复", "再次修复", "从上次继续", or `--retry` first locates the existing OpenSpec change, then recovers context from `design.md`, `tasks.md` checkboxes, the current Git branch, and PR/MR status.
 
 **Strong-dependency skills** (frontmatter `dependencies`; must pass the "Prerequisite skill check" at startup — abort if any is missing):
-- `pdca-review-orchestration` (stage 4 review orchestration; depends on `solution-review` and `code-design-review`)
+- `staged-review-flow` (stage 4 review orchestration; depends on `solution-review` and `code-design-review`)
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit` (delegated via `analysis-core`; stage 2 + stage 7)
 - `analysis-core` (single source for stage-2 analysis methodology: temporary-change gate / instrumentation debug / analysis step skeleton / debug-verify loop)
 - `node-version-discipline` (Node version alignment before stage 6 execution verification)
 - `workflow-mode-lifecycle` (auto/manual mode lifecycle), `clarifying-question-discipline` (hard active-questioning discipline and investigation-first), `known-issue-research` (stage 2 research routing / known-issue quick search / industry-wide evaluation)
-- `ensure-tests` (stage 6.2.5 test-suite ensure: complete and run tests when infra exists; scaffold with user confirmation when it doesn't)
-- `test-first-discipline` (execution: failing-test-first for behavior changes; distinct from ensure-tests)
+- `test-suite-ensure` (stage 6.2.5 test-suite ensure: complete and run tests when infra exists; scaffold with user confirmation when it doesn't)
+- `test-first-discipline` (execution: failing-test-first for behavior changes; distinct from test-suite-ensure)
 - `design-approval-gate` (before execution: no production impl without approval; named auto/hotfix escapes)
 - `feature-branch-closeout` (stage 8: closeout menu; merge delegates to merge-discipline)
 - `decision-fog-discipline` (before explore solutions: graduate fog / decision tickets first)
 - `workspace-isolation-discipline` (before execution: optional isolated workspace)
 - `domain-language-discipline` (clarify/analyze: project glossary / CONTEXT.md when domain terms matter)
 - `merge-discipline` (stage 8 merge discipline — after closeout selects merge)
-- `openspec-workspace-gates` (stage 0 OpenSpec workspace and native-skill gate)
+- `opsx-workspace-gate` (stage 0 OpenSpec workspace and native-skill gate)
 - `jira-status-writeback` (stage 8 post-merge writeback: status transition + fix-comment SOP, single source)
 
 ## Prerequisite skill check
@@ -97,7 +97,7 @@ Any key check failing pauses the flow — do not enter the fix:
 1. Parse the Jira URL / Jira ID; detect mode (manual / auto / force / retry).
 2. Check Jira data is readable: prefer `jira-read {JIRA-ID} --live` or mcp-atlassian; fall back to local cache; abort if both fail.
 3. Check Git status: auto mode may stash; manual mode prompts the user to handle it.
-4. **OpenSpec workspace and native-skill gate**: load `openspec-workspace-gates` and run its project-root location, `openspec/` check, and exact native-OPSX-skill gate; continue this workflow once it passes.
+4. **OpenSpec workspace and native-skill gate**: load `opsx-workspace-gate` and run its project-root location, `openspec/` check, and exact native-OPSX-skill gate; continue this workflow once it passes.
 5. Check OpenSpec commands (run from the project root): prefer `openspec list`, `openspec status`, `openspec validate`.
 6. When continuing a fix, locate the OpenSpec change first: prefer inferring it from the current branch name; then search `openspec/changes/*/{proposal.md,design.md,tasks.md}` for the Jira ID; then check the PR/MR description for an OpenSpec change path; if still not uniquely determined, ask the user exactly 1 question to confirm the change name. Once located, recover progress from `openspec status --change <name>`, `openspec show <change-name>`, `design.md`, `tasks.md` checkboxes, and the current Git branch.
 
@@ -236,7 +236,7 @@ If the path is still foggy, follow `decision-fog-discipline` before the solution
 
 In manual mode, output the solution table and pause for the user's pick; auto mode picks the best solution automatically.
 
-Load `pdca-review-orchestration` and execute its full review contract. This workflow's mapping: `{next-stage}` = Stage 5 "Make the plan"; `{artifact-sink}` = `openspec/changes/<change-name>/design.md`; `{extra-dimensions}` = spec coverage (requirements/scenarios) and Jira status boundary (transition only to "fixed"); `{batch-overcap-behavior}` = `N/A`.
+Load `staged-review-flow` and execute its full review contract. This workflow's mapping: `{next-stage}` = Stage 5 "Make the plan"; `{artifact-sink}` = `openspec/changes/<change-name>/design.md`; `{extra-dimensions}` = spec coverage (requirements/scenarios) and Jira status boundary (transition only to "fixed"); `{batch-overcap-behavior}` = `N/A`.
 
 > 🚩 **Red Flags (stage 4)**:
 > - Review covers only the root cause, without checking spec coverage or side effects
@@ -296,7 +296,7 @@ If the project's convention doesn't accept fix comments, don't force it — but 
 
 Before production edits, follow `design-approval-gate` (manual: user pass; auto/force/lean: named escape + 留痕). Optionally follow `workspace-isolation-discipline` before non-trivial edits. For behavior-changing work, follow `test-first-discipline` during implementation. Once every `tasks.md` checkbox is checked, before entering stage 7 verification, this step is mandatory:
 
-Load and call `ensure-tests`, declaring `mode=mandatory`, scoped to this fix's logic files; a failure or a declined necessary-scaffolding request blocks entry to stage 7. ensure-tests does not satisfy test-first.
+Load and call `test-suite-ensure`, declaring `mode=mandatory`, scoped to this fix's logic files; a failure or a declined necessary-scaffolding request blocks entry to stage 7. test-suite-ensure does not satisfy test-first.
 
 ## Stage 7: Check verification
 
@@ -314,7 +314,7 @@ Must cover:
 5. Side-effect check: are related modules and platforms affected; the verification report must disclose `Node (declared vX) ✅/⚠️ not aligned`
 6. Debug-verify loop: if stage 2 used a debug skill to locate the root cause, verify the fix using that **same** skill per `analysis-core` §4 (not tests alone)
 
-> Label each result per `pdca-review-orchestration`'s verification-report honesty rule and `completion-evidence-discipline` (no pass claims without fresh current-turn evidence).
+> Label each result per `staged-review-flow`'s verification-report honesty rule and `completion-evidence-discipline` (no pass claims without fresh current-turn evidence).
 
 Output format: see [reference.md](reference.md)「Stage 7 Verification Results」.
 
@@ -405,7 +405,7 @@ For batch fixes, use the `opsx-jira-fix-batch` skill.
 
 ## Common mistakes
 
-> Only this skill's non-obvious pitfalls are listed here. Merge/coverage/archive → `merge-discipline`; project-root/`openspec/`/native-skill gates → `openspec-workspace-gates`; Jira-writeback SOP → `jira-status-writeback`. Rules already stated in the stage body are not repeated.
+> Only this skill's non-obvious pitfalls are listed here. Merge/coverage/archive → `merge-discipline`; project-root/`openspec/`/native-skill gates → `opsx-workspace-gate`; Jira-writeback SOP → `jira-status-writeback`. Rules already stated in the stage body are not repeated.
 
 | Mistake | Consequence | Fix |
 |------|------|------|

@@ -1,17 +1,17 @@
 ---
-name: pdca-review-orchestration
-version: "1.1.0"
+name: staged-review-flow
+version: "1.2.0"
 user-invocable: false
-description: "Shared orchestration for PDCA solution-review stages: full decision review, code-design review for code-affecting solutions, Standards∥Spec dual-axis verdicts (no cross-axis merge rank), binary pass/fail, bounded auto optimization, design summary, and verification-report honesty composed with completion-evidence-discipline. Used by PDCA workflows. Triggers — 「PDCA 审查编排」「方案审查编排」「审查闭环」「验证报告诚实」「双轴审查」 / PDCA review orchestration, dual-axis review, verification honesty. Do NOT use as a standalone task workflow."
+description: "Shared review-stage flow for PDCA hosts: full decision review, code-design review for code-affecting solutions, Standards∥Spec dual-axis verdicts (no cross-axis merge rank), binary pass/fail, bounded auto optimization, design summary, and verification-report honesty composed with completion-evidence-discipline. Used by PDCA workflows. Triggers — 「阶段审查流程」「方案审查编排」「审查闭环」「验证报告诚实」「双轴审查」 / staged review flow, dual-axis review, verification honesty. Do NOT use as a standalone task workflow."
 dependencies:
   - solution-review
   - code-design-review
   - completion-evidence-discipline
 ---
 
-# PDCA Review Orchestration
+# Staged Review Flow
 
-> Internal shared skill. Referencing workflows keep stage numbers, artifact destinations, and intentional divergences; this skill is the single source of truth for review and verification-report orchestration.
+> Internal shared skill. Referencing workflows keep stage numbers, artifact destinations, and intentional divergences; this skill is the single source of truth for review and verification-report flow.
 >
 > **Prerequisite check:** verify each declared dependency is available when this skill is loaded. If one is missing, stop and print `npx skills add FuDesign2008/open-skills -g --skill '*' --yes`; do not silently reduce the review.
 
@@ -66,7 +66,7 @@ Do not report designed scenarios or inferred correctness as completed verificati
 
 Referencing workflows must:
 
-1. Declare `pdca-review-orchestration` in frontmatter dependencies and perform their normal dependency gate (transitively requires `completion-evidence-discipline`).
+1. Declare `staged-review-flow` in frontmatter dependencies and perform their normal dependency gate (transitively requires `completion-evidence-discipline`).
 2. At the review stage, load this skill and map all placeholders using numbers and names where applicable.
 3. Keep only host orchestration: stage exit wording, `{extra-dimensions}`, `{artifact-sink}`, and `{batch-overcap-behavior}`.
 4. Point their verification stage to this skill's honesty rule **and** `completion-evidence-discipline` in at most one or two sentences.

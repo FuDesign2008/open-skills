@@ -1,4 +1,4 @@
-# openspec-workspace-gates Specification
+# opsx-workspace-gate Specification
 
 ## Purpose
 
@@ -8,7 +8,7 @@ Behavioral contract for shared OpenSpec project-root location and OPSX native-sk
 
 ### Requirement: OPSX workflows SHALL locate OpenSpec project root before directory checks
 
-`openspec-workspace-gates` MUST define a deterministic project-root location priority (cwd with `openspec/` → walk up from current edit file → scan cwd children → fail with stop message). Opsx workflows (`opsx-solve-workflow` / `opsx-jira-fix-workflow`) MUST load this skill for that gate and MUST NOT each maintain a divergent full copy of the locate algorithm.
+`opsx-workspace-gate` MUST define a deterministic project-root location priority (cwd with `openspec/` → walk up from current edit file → scan cwd children → fail with stop message). Opsx workflows (`opsx-solve-workflow` / `opsx-jira-fix-workflow`) MUST load this skill for that gate and MUST NOT each maintain a divergent full copy of the locate algorithm.
 
 #### Scenario: Workspace multi-project locate
 
@@ -26,7 +26,7 @@ After root location, the gate MUST verify `openspec/` exists and MUST verify the
 
 ### Requirement: Hosts SHALL keep non-gate orchestration local
 
-Jira/Git/`--retry` change binding, stage ordering, and artifact sinks remain in host workflows. `openspec-workspace-gates` MUST NOT absorb those concerns.
+Jira/Git/`--retry` change binding, stage ordering, and artifact sinks remain in host workflows. `opsx-workspace-gate` MUST NOT absorb those concerns.
 
 #### Scenario: opsx-jira keeps retry binding in host
 
