@@ -1,6 +1,6 @@
 ---
 name: jira-fix-workflow
-version: "3.23.0"
+version: "3.23.1"
 user-invocable: true
 description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」 / fix this bug, jira-fix, auto fix, force fix, resume fix. Do NOT use for batch fixes across multiple issues — use jira-fix-batch instead."
 dependencies:

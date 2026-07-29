@@ -45,9 +45,16 @@ solve-workflow strongly depends on the following skills via frontmatter dependen
 - `clarifying-question-discipline`: hard clarifying-question discipline and investigation-first principle
 - `known-issue-research`: stage 2 research routing / known-issue quick search / industry-wide evaluation
 - `ensure-tests`: stage 6 test completion (`mode=advisory`)
+- `test-first-discipline`: stage 6 failing-test-first for behavior changes (distinct from ensure-tests)
+- `design-approval-gate`: before stage 6 — no production impl without approval (named auto/hotfix escapes)
+- `feature-branch-closeout`: stage 8 post-verify branch menu (merge delegates to merge-discipline when used)
+- `decision-fog-discipline`: before explore solutions — graduate fog / decision tickets first
+- `workspace-isolation-discipline`: before stage 6 — optional isolated workspace
+- `domain-language-discipline`: clarify/analyze — project glossary / CONTEXT.md when domain terms matter
+- `completion-evidence-discipline`: verification honesty — fresh current-turn evidence before pass claims
 - `node-version-discipline`: Node-version alignment before running tests in stage 7
 
-Without them, stage 4 cannot run a deep review, stage 2 cannot load its analysis core and external research, stage 6 cannot complete test coverage, stage 7's test results are untrustworthy, and mode/questioning discipline loses its single source of truth — running anyway would produce unreviewed solutions with unclear root causes, defeating the point of a PDCA workflow.
+Without them, stage gates lose their single sources of truth — running anyway would produce unreviewed solutions with unclear root causes, defeating the point of a PDCA workflow.
 
 【Install】
 - Universal install (recommended, installs every skill):
