@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.12.0"
+version: "1.13.0"
 user-invocable: true
 description: "Eight-stage PDCA problem-solving workflow that persists analysis, proposal, design review, plan, execution, and verification into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context. Use for feature work, bug fixes, refactors, and complex engineering tasks that need long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick one-off edit with no traceability need — use solve-workflow instead. Triggers：「opsx解决」「OpenSpec解决」「规范化解决」「创建OpenSpec变更」「创建opsx变更」「用OpenSpec分析」「用OpenSpec修复」「opsx自动解决」「OpenSpec自动解决」「opsx-solve」「opsx-solve-workflow」 / opsx solve, OpenSpec solve workflow, create an OpenSpec change."
 dependencies:
@@ -22,6 +22,8 @@ dependencies:
   - completion-evidence-discipline
   - domain-language-discipline
   - test-first-discipline
+  - design-approval-gate
+  - feature-branch-closeout
 ---
 
 # OPSX Eight-Stage Problem-Solving Workflow
@@ -62,8 +64,10 @@ Not a replacement for plain `solve-workflow`:
 - `known-issue-research` (stage 2 research routing / known-issue quick search / industry-wide evaluation)
 - `ensure-tests` (stage 6 test-suite ensure: complete and run tests when infra exists; scaffold with user confirmation when it doesn't)
 - `test-first-discipline` (stage 6: failing-test-first for behavior changes; distinct from ensure-tests)
+- `design-approval-gate` (before stage 6: no production impl without approval; named auto/hotfix escapes)
+- `feature-branch-closeout` (stage 8: post-archive closeout menu; merge delegates to merge-discipline)
 - `domain-language-discipline` (clarify/analyze: project glossary / CONTEXT.md when domain terms matter)
-- `merge-discipline` (stage 8 merge discipline)
+- `merge-discipline` (stage 8 merge discipline — after closeout selects merge)
 - `openspec-workspace-gates` (stage 0 OpenSpec workspace and native-skill gate)
 
 ## Prerequisite skill check
@@ -236,6 +240,8 @@ In manual mode, output the plan and pause; wait for user confirmation before ent
 
 ## Stage 6: Execute the plan
 
+Before production edits, follow `design-approval-gate` (manual: user pass; auto/lean: named escape + 留痕).
+
 Read `tasks.md` and implement in order:
 
 1. Work on the single smallest current task at a time.
@@ -297,13 +303,13 @@ If verification passed, run the pre-archive check:
 
 If `openspec-archive-change` fails, do **not** manually manipulate the `openspec/` directory — stop and tell the user to check the OpenSpec installation.
 
-After archiving, always check the diff to confirm both the main-specs update and the archive-directory move landed in the project root's git working-tree changes. Only then make the branch-closeout decision: keep the current branch, open a PR, merge, or continue development. Never declare completion while tests haven't passed, archiving isn't complete, or the diff hasn't been reviewed.
+After archiving, always check the diff to confirm both the main-specs update and the archive-directory move landed in the project root's git working-tree changes. Then load `feature-branch-closeout` for the closeout menu (PR / merge / keep / continue). Never declare completion while tests haven't passed, archiving isn't complete, or the diff hasn't been reviewed.
 
-> **Order constraint**: archive + diff check → branch-closeout decision → `merge-discipline` → execute the merge. Choosing "keep the branch" or "continue development" does not trigger merge discipline.
+> **Order constraint**: archive + diff check → `feature-branch-closeout` → on merge, `merge-discipline` A→D. Choosing keep/continue does not trigger merge discipline.
 
 #### Merge discipline (`merge-discipline` skill)
 
-> Load `merge-discipline` before executing any merge action and run Part A → B → C → D; the pre-merge checklist is in `merge-discipline/reference.md`. Even when the user directly says "merge", it must still be loaded — never implicitly skipped.
+> On merge (from closeout or a direct user merge command), load `merge-discipline` and run Part A → B → C → D; the pre-merge checklist is in `merge-discipline/reference.md`. Never implicitly skip.
 
 ### Retrospective (delegate to `learn-and-improve`)
 

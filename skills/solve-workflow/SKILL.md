@@ -1,6 +1,6 @@
 ---
 name: solve-workflow
-version: "1.18.0"
+version: "1.19.0"
 user-invocable: true
 description: "Eight-stage PDCA workflow for systematically solving bugs, refactors, and feature-development tasks: clarify → analyze → explore solutions → review → plan → execute → verify → retrospect. Manual mode (default) pauses for user confirmation at each stage exit; auto mode runs end-to-end. Triggers — 「明确问题」「分析问题」「探索方案」「审查方案」「制定计划」「执行计划」「检查验证」「复盘改进」(alias「回顾总结」)；「继续分析」「深入分析」「修改方案」「完善方案」「优化方案」「更新计划」「修订计划」「修改计划」；「自动模式」「自动分析」「自动解决」 / clarify problem, analyze problem, explore solutions, review solution, make plan, execute plan, verify, retrospective, auto mode."
 dependencies:
@@ -20,6 +20,8 @@ dependencies:
   - completion-evidence-discipline
   - domain-language-discipline
   - test-first-discipline
+  - design-approval-gate
+  - feature-branch-closeout
 ---
 
 # Eight-Stage Problem-Solving Workflow
@@ -43,6 +45,8 @@ dependencies:
 - `workflow-mode-lifecycle` (manual/auto mode lifecycle), `clarifying-question-discipline` (hard clarifying-question discipline and investigation-first), `known-issue-research` (stage 2 research routing / known-issue quick search / industry-wide evaluation)
 - `ensure-tests` (stage 6 test completion: generate and run tests when test infrastructure exists; scaffold with user confirmation when it doesn't)
 - `test-first-discipline` (stage 6: failing-test-first for behavior changes; distinct from ensure-tests)
+- `design-approval-gate` (before stage 6: no production impl without approval; named auto/hotfix escapes)
+- `feature-branch-closeout` (stage 8: post-verify branch menu; merge delegates to merge-discipline when used)
 - `domain-language-discipline` (clarify/analyze: project glossary / CONTEXT.md when domain terms matter)
 - `node-version-discipline` (Node-version alignment before running tests in stage 7)
 
@@ -247,7 +251,7 @@ When the user says "更新计划" / "修订计划" / "修改计划" (update/revi
 
 ## Stage 6: Execute the Plan
 
-> Principle: execute strictly per the plan, confirm on completion.
+> Principle: execute strictly per the plan, confirm on completion. Before production edits, follow `design-approval-gate` (manual: user pass; auto/lean: named escape + 留痕).
 
 ### Execution flow
 
@@ -308,7 +312,7 @@ Output format is in [reference.md](reference.md) § Stage 7 — Verification Res
 
 ## Stage 8: Retrospective (Act)
 
-> Load `learn-and-improve` for the retrospective and knowledge sediment; this stage keeps only solve-workflow's cycle decision, optional wrap-up summary doc, and coverage-gate reminder. Do not write files by default; only proceed to "make a plan → execute the plan" when the user explicitly requests writing or a new cycle.
+> Load `learn-and-improve` for the retrospective and knowledge sediment; this stage keeps only solve-workflow's cycle decision, optional wrap-up summary doc, and coverage-gate reminder. Do not write files by default; only proceed to "make a plan → execute the plan" when the user explicitly requests writing or a new cycle. When a feature branch needs closeout (PR / merge / keep / continue), load `feature-branch-closeout` (merge path loads `merge-discipline`).
 
 ### Delegate to `learn-and-improve` (retrospective)
 
