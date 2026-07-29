@@ -2,7 +2,7 @@
 
 Per-stage output-format examples for the `jira-fix-workflow` skill, for the AI to follow when formatting output.
 
-Stage 3 analysis methodology lives in `analysis-core`; the industry-wide-issue evaluation template is below under "Industry-Wide Issue Evaluation Report".
+Stage 3 analysis methodology lives in `analysis-core`. Industry-wide evaluation methodology/template: `known-issue-research/reference.md`; jira-fix **gate** divergence: see § Industry-Wide Issue Evaluation Report below.
 
 ---
 
@@ -155,36 +155,26 @@ Save to `.jira-fix/{JIRA-ID}/02-alignment.md`.
 
 ## Stage 3: Analysis Complete
 
+Methodology steps live in `analysis-core` (existence → phenomenon → locate → red-capable loop → root cause → upstream-eval → impact). Do **not** restate that skeleton here.
+
+**Host-only output** (save to `.jira-fix/{JIRA-ID}/02-analysis.md`):
+
 ```
 ## Stage 3: Analysis Complete
 
-### 0. Existence Verification
-**Conclusion**: ✅ Problem confirmed (verified in `path/file.js`)
+### Artifact
+Path: `.jira-fix/{JIRA-ID}/02-analysis.md`
 
-### 1. Problem Symptoms
-**Repro Steps**: 1. ... 2. ...
-**Expected Result**: [expected]
-**Actual Result**: [actual]
+### Jira-specific notes
+- Existence / industry-wide gates: follow `analysis-core` + `known-issue-research` (industry-wide is a **gate** for jira-fix — see § Industry-Wide Issue Evaluation below)
+- Difficulty pre-assessment (feeds Stage 4 grading):
+  - Estimated files changed: X
+  - Root-cause clarity: Clear / Mostly clear / Vague / Unknown
 
-### 2. Relevant Code Location
-- `path/file.js:line` - [note]
-
-### 3. Root Cause Analysis
-**Immediate Cause**: [description]
-**Root Cause**: [description]
-**Call Chain**: [flow]
-
-### 3.5 Industry-Wide Issue Evaluation
-**Conclusion**: ✅ Not an industry-wide issue; fixable
-
-### 4. Impact Scope
-**Affected Modules**: [list]
-**Platform**: Web / Mobile
-**Side Effects**: [list]
-
-### 5. Difficulty Pre-Assessment
-**Estimated Files Changed**: X
-**Root-Cause Clarity**: Clear / Mostly clear / Vague / Unknown
+### Summary (fill from analysis-core results)
+- Existence: ✅ / ❌ / ⚠️ …
+- Root cause (one paragraph): …
+- Impact: …
 
 ---
 Proceeding to Stage 4: Difficulty Grading
@@ -416,16 +406,9 @@ See the strong dependency `merge-discipline`'s [reference.md](../merge-disciplin
 
 ## Industry-Wide Issue Evaluation Report
 
-> Stage 3 delegates to `known-issue-research` via `analysis-core` for the industry-wide-issue evaluation; output this template when the conclusion is 🚫 "an industry-recognized hard problem, no viable fix". Evaluation methodology lives in `known-issue-research`; jira-fix's specific difference: this evaluation is a **gate** — a no-viable-fix conclusion stops the flow and writes a Jira comment.
-
-```
-[Industry-Wide Issue Evaluation]
-- Problem essence: ... (one-sentence root-cause summary)
-- Industry status: ... (known public records, mainstream framework stance, how major vendors handle it)
-- Research conclusion: this issue falls under [platform limitation/protocol constraint/language characteristic/standard spec]; no viable fix exists industry-wide
-- Recommendation: accept the current state / evaluate a workaround (not a fix) / align expectations with product
-Flow interrupted; not proceeding to the solution-exploration stage.
-```
+> Stage 3 delegates to `known-issue-research` via `analysis-core`. **Shared report template**: `known-issue-research/reference.md` — do not paste it here.
+>
+> **jira-fix divergence (gate):** when the conclusion is 🚫 "industry-recognized hard problem, no viable fix", this evaluation is a **gate** — stop the flow, write a Jira comment with the evaluation summary, and do **not** proceed to solution exploration (do not use a "continue anyway" path).
 
 ---
 
