@@ -22,8 +22,8 @@
 | 类型 | `user-invocable` | 典型例子 |
 |------|------------------|----------|
 | **编排入口** | `true` | `solve-workflow`、`opsx-solve-workflow`、`jira-fix-workflow`、`perf-workflow` |
-| **共享纪律 / 方法论** | 默认 `false`，经 frontmatter `dependencies` 加载 | `*-discipline`、`analysis-core`、`pdca-review-orchestration`、`design-approval-gate`、`feature-branch-closeout` |
-| **可独立触发的横切动作** | 显式 `true`（例外） | `merge-discipline`、`ensure-tests`、`solution-review`、`learn-and-improve` |
+| **共享纪律 / 方法论** | 默认 `false`，经 frontmatter `dependencies` 加载 | `*-discipline`、`analysis-core`、`staged-review-flow`、`design-approval-gate`、`feature-branch-closeout` |
+| **可独立触发的横切动作** | 显式 `true`（例外） | `merge-discipline`、`test-suite-ensure`、`solution-review`、`learn-and-improve` |
 
 `commands/*.md` 对快捷命令使用 `disable-model-invocation: true`（用户专属入口）。新增 skill 时按上表选型；`user-invocable: false` 的 skill 必须被其他 skill 引用，否则视为死 skill。
 
@@ -73,14 +73,14 @@ open-skills/
 
 | Skill | 类别 | 依赖 |
 |-------|------|------|
-| solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、node-version-discipline、pdca-review-orchestration、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline |
-| opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、merge-discipline、pdca-review-orchestration、openspec-workspace-gates、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline |
+| solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、node-version-discipline、staged-review-flow、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline |
+| opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、merge-discipline、staged-review-flow、opsx-workspace-gate、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline |
 | perf-workflow | 工作流 | clarifying-question-discipline、known-issue-research |
 | frontend-perf | 知识库 | perf-workflow |
 | android-webview-debug | 工具 | 无 |
 | git-commit | Git | 无 |
-| jira-fix-workflow | Jira 工作流 | git-commit、jira-read、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、merge-discipline、pdca-review-orchestration、jira-status-writeback、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline |
-| opsx-jira-fix-workflow | Jira 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、merge-discipline、pdca-review-orchestration、openspec-workspace-gates、jira-status-writeback、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline、openspec 原生 skills（阶段 0 检查） |
+| jira-fix-workflow | Jira 工作流 | git-commit、jira-read、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、merge-discipline、staged-review-flow、jira-status-writeback、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline |
+| opsx-jira-fix-workflow | Jira 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、merge-discipline、staged-review-flow、opsx-workspace-gate、jira-status-writeback、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline、openspec 原生 skills（阶段 0 检查） |
 | jira-status-writeback | Jira 工具 | 无（被 jira-fix / opsx-jira-fix 强依赖） |
 | jira-read | Jira 工具 | 无 |
 | typescript-check | 工具 | 无 |
@@ -104,8 +104,8 @@ open-skills/
 | workspace-isolation-discipline | 工作流纪律 | 无 |
 | known-issue-research | 调研方法论 | effective-web-research |
 | analysis-core | 分析方法论 | known-issue-research、runtime-evidence-debug、browser-debug-toolkit、hybrid-debug、upstream-dependency-debug |
-| pdca-review-orchestration | 工作流编排 | solution-review、code-design-review、completion-evidence-discipline |
-| openspec-workspace-gates | OpenSpec 门禁 | 无 |
+| staged-review-flow | 工作流编排 | solution-review、code-design-review、completion-evidence-discipline |
+| opsx-workspace-gate | OpenSpec 门禁 | 无 |
 
 > 💕 AI 编码陪伴（coding-fangirl）已迁移至独立工程 [oh-my-fangirl](https://github.com/FuDesign2008/oh-my-fangirl)。
 
@@ -201,11 +201,30 @@ Invoke the <skill-name> skill and follow it exactly
 
 | 类型 | 规则 | 示例 |
 |------|------|------|
-| Skill 目录 | kebab-case | `solve-workflow/` |
+| Skill 目录 | kebab-case；目录名 = frontmatter `name` | `solve-workflow/` |
 | Skill 文件 | 固定 `SKILL.md` | |
 | 命令文件 | kebab-case | `solve.md`、`perf.md` |
 | Hook 脚本 | kebab-case | `session-start`、`emotion-comfort` |
 | 插件导出 | PascalCase + Plugin | `OpenSkillsPlugin` |
+
+### Skill 角色命名（语义）
+
+完整契约见 `openspec/specs/skill-naming/spec.md`。摘要：
+
+| 角色 | 命名提示 | 示例 |
+|------|----------|------|
+| 主机流程 | `-workflow` | `solve-workflow` |
+| 本仓 OpenSpec 主机/门禁 | 前缀 `opsx-`（**不要**新建 `openspec-*` 项目 skill） | `opsx-solve-workflow`、`opsx-workspace-gate` |
+| 硬纪律 | `-discipline` | `merge-discipline` |
+| 硬门禁 | `-gate` | `design-approval-gate` |
+| 工具箱 | `-toolkit` | `browser-debug-toolkit` |
+| 生命周期 | `-lifecycle` | `workflow-mode-lifecycle` |
+| 知识库 | `-kb`（可选） | （按需） |
+| 审查流程 | 语义化短语，避免 `pdca-` / `orchestration` | `staged-review-flow` |
+| 单点动作 | 动词短语、无角色后缀 | `git-commit`、`jira-read` |
+
+- 原生 OpenSpec CLI skill（`.claude/skills/openspec-new-change` 等）保持 `openspec-*`，由 `opsx-workspace-gate` 校验精确名。
+- **禁止**新建 `pdca-*` 项目 skill id；改名一律硬切（无兼容别名目录）。
 
 ## Git 工作流
 

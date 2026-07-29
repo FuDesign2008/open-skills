@@ -32,13 +32,13 @@ The skill MUST list exceptions where failing-test-first does not apply unless th
 - **WHEN** the work is a normal behavior change and no exception applies
 - **THEN** the agent MUST NOT skip the failing-test-first sequence
 
-### Requirement: test-first-discipline SHALL stay distinct from ensure-tests
+### Requirement: test-first-discipline SHALL stay distinct from test-suite-ensure
 
-`test-first-discipline` owns **implementation order** (red before production code). `ensure-tests` owns **post-hoc** stack detection, scaffolding, and coverage generation/runs. Completing `ensure-tests` MUST NOT be described as satisfying test-first. Hosts that declare both MUST invoke test-first during behavior implementation and ensure-tests after (or for gaps), without collapsing the two.
+`test-first-discipline` owns **implementation order** (red before production code). `test-suite-ensure` owns **post-hoc** stack detection, scaffolding, and coverage generation/runs. Completing `test-suite-ensure` MUST NOT be described as satisfying test-first. Hosts that declare both MUST invoke test-first during behavior implementation and test-suite-ensure after (or for gaps), without collapsing the two.
 
 #### Scenario: Post-hoc green is not test-first
 
-- **WHEN** an agent only runs `ensure-tests` after implementing behavior code with no prior failing test
+- **WHEN** an agent only runs `test-suite-ensure` after implementing behavior code with no prior failing test
 - **THEN** that path MUST NOT be reported as compliance with `test-first-discipline`
 
 ### Requirement: test-first-discipline skill identity SHALL avoid external name collisions

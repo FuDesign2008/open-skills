@@ -114,4 +114,4 @@ When the analysis stage used a debug skill to find the root cause, the workflow'
 - **Keep in the workflow body:** orchestration only — exits/mode, OpenSpec/Jira sinks, intentional divergences (形似神异), difficulty/path tables.
 - **Verify stage:** one line pointing at §4 — do not paste debug-verify bullets.
 - **reference.md:** point to this skill for methodology; keep workflow-specific output templates; do not duplicate gate prose.
-- **Do not** sink intentional divergences (coverage-gate strength, ensure-tests blocking, industry-eval Jira gate, etc.) into this skill.
+- **Do not** sink intentional divergences (coverage-gate strength, test-suite-ensure blocking, industry-eval Jira gate, etc.) into this skill.

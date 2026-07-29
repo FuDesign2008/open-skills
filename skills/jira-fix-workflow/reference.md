@@ -273,7 +273,7 @@ Please select a solution number to enter solution review
 
 ## Stage 5 Review: Output Template
 
-The review report body and loop rules follow the strong dependency `pdca-review-orchestration` (full `solution-review` / conditional `code-design-review`, binary verdict, auto-mode ≤3 rounds, design summary). This file no longer maintains a full "four-dimension evaluation" example.
+The review report body and loop rules follow the strong dependency `staged-review-flow` (full `solution-review` / conditional `code-design-review`, binary verdict, auto-mode ≤3 rounds, design summary). This file no longer maintains a full "four-dimension evaluation" example.
 
 Append the review record to `.jira-fix/{JIRA-ID}/03-options.md` (`{artifact-sink}`).
 

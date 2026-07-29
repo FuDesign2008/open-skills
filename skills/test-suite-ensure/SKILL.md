@@ -1,11 +1,11 @@
 ---
-name: ensure-tests
-version: "1.0.2"
+name: test-suite-ensure
+version: "1.1.0"
 user-invocable: true
-description: Ensure the current project has a proper test suite — detect tech stack & framework, scaffold if needed, generate unit tests (required, logic code only), and optionally generate/run E2E tests. Triggers when user says "ensure-tests", 「补全测试」「生成测试」「确保测试」「补充单元测试」「添加单元测试」「检查测试覆盖」 (complete tests / generate tests / ensure tests / add unit tests / check test coverage). Also callable by solve-workflow and opsx-solve-workflow in their execution-stage test steps.
+description: "Ensure the current project has a proper test suite — detect tech stack & framework, scaffold if needed, generate unit tests (required, logic code only), and optionally generate/run E2E tests. Triggers when user says \"test-suite-ensure\", 「补全测试」「生成测试」「确保测试」「补充单元测试」「添加单元测试」「检查测试覆盖」 (complete tests / generate tests / ensure tests / add unit tests / check test coverage). Also callable by solve-workflow and opsx-solve-workflow in their execution-stage test steps."
 ---
 
-# Ensure Tests
+# Test Suite Ensure
 
 Ensure the current project's test suite is in place: detect tech stack and framework, scaffold if necessary, generate unit tests (required, logic code only), and optionally generate/run E2E tests.
 
@@ -26,7 +26,7 @@ Standalone invocation uses the full flow. The unit-test failure handling in Phas
 
 ### Boundary vs `test-first-discipline`
 
-This skill is **post-hoc**: detect stack, scaffold, generate/run tests for **existing** logic, advisory vs mandatory gating. It does **not** own failing-test-first order. Completing ensure-tests **MUST NOT** be described as satisfying `test-first-discipline`. When both are in scope, hosts run test-first during behavior implementation and ensure-tests afterward for coverage/scaffold gaps.
+This skill is **post-hoc**: detect stack, scaffold, generate/run tests for **existing** logic, advisory vs mandatory gating. It does **not** own failing-test-first order. Completing test-suite-ensure **MUST NOT** be described as satisfying `test-first-discipline`. When both are in scope, hosts run test-first during behavior implementation and test-suite-ensure afterward for coverage/scaffold gaps.
 
 ---
 
@@ -230,7 +230,7 @@ On E2E failure: output failure screenshot path (if any) and failure reason; **do
 ## Output Format
 
 ```text
-【ensure-tests Results】
+【test-suite-ensure Results】
 - Tech Stack: ... (e.g. TypeScript + Vite)
 - Test Framework: Existing <name> / Newly installed <name> (with config file path)
 - Unit Tests:

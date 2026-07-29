@@ -14,9 +14,9 @@ dependencies:
   - clarifying-question-discipline
   - known-issue-research
   - analysis-core
-  - ensure-tests
+  - test-suite-ensure
   - merge-discipline
-  - pdca-review-orchestration
+  - staged-review-flow
   - jira-status-writeback
   - completion-evidence-discipline
   - domain-language-discipline
@@ -167,7 +167,7 @@ If the path is still foggy, follow `decision-fog-discipline` before the solution
 
 Output: list → expanded detail → **one** comparison table (see reference.md § Stage 5 Solution Comparison) → `03-options.md`. 👤 stop after the comparison table.
 
-**Review**: load `pdca-review-orchestration`. Mapping: `{next-stage}` = stage 6; `{artifact-sink}` = `03-options.md`; `{extra-dimensions}` = none; `{batch-overcap-behavior}` = mark "review failed (cap)" and move to the next issue. ✅ Read; ❌ Edit/Write/Bash.
+**Review**: load `staged-review-flow`. Mapping: `{next-stage}` = stage 6; `{artifact-sink}` = `03-options.md`; `{extra-dimensions}` = none; `{batch-overcap-behavior}` = mark "review failed (cap)" and move to the next issue. ✅ Read; ❌ Edit/Write/Bash.
 
 ---
 
@@ -194,13 +194,13 @@ Before production edits, follow `design-approval-gate` (manual: user pass; auto/
 
 Execute strictly per the plan; check off `TodoWrite` / plan checkboxes item by item as completed. Tag every change `// fix [JIRA-ID]`. Quality gate: `node-version-discipline` → `ReadLints` → `typescript-check` when a tsconfig exists. 🤖 multi-repo changes and lints per repo, write `reports/[JIRA-ID]-analysis.md`.
 
-After execution: 🤖 normal→8, 🟠 pause for review; 👤 normal wait for confirmation→8, 🔴 chose B pause without auto-committing. Report → `05-execution.md`. For behavior changes follow `test-first-discipline`; when business logic lacks tests, call `ensure-tests` (`mode=advisory`) — ensure-tests does not satisfy test-first. Exit script: reference.md.
+After execution: 🤖 normal→8, 🟠 pause for review; 👤 normal wait for confirmation→8, 🔴 chose B pause without auto-committing. Report → `05-execution.md`. For behavior changes follow `test-first-discipline`; when business logic lacks tests, call `test-suite-ensure` (`mode=advisory`) — test-suite-ensure does not satisfy test-first. Exit script: reference.md.
 
 ---
 
 ## Stage 8: Check & Verify
 
-Output the result only — do not change code. Compare against the Jira repro/expected result, stage 6's plan, tests, side effects, and root cause; use `analysis-core` §4 for the debug-verify loop. Verification-report honesty per `pdca-review-orchestration` and `completion-evidence-discipline`. Template: reference.md § Stage 8.
+Output the result only — do not change code. Compare against the Jira repro/expected result, stage 6's plan, tests, side effects, and root cause; use `analysis-core` §4 for the debug-verify loop. Verification-report honesty per `staged-review-flow` and `completion-evidence-discipline`. Template: reference.md § Stage 8.
 
 | Verdict | Next |
 |------|------|

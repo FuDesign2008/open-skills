@@ -36,7 +36,7 @@ When a skill declared in frontmatter `dependencies` is missing, print the follow
 
 【Why it's needed】
 solve-workflow strongly depends on the following skills via frontmatter dependencies (missing = abort):
-- `pdca-review-orchestration`: stage 4 review orchestration (full `solution-review` + conditional `code-design-review`)
+- `staged-review-flow`: stage 4 review orchestration (full `solution-review` + conditional `code-design-review`)
 - `solution-review` / `code-design-review`: review frameworks invoked by the orchestration skill
 - `analysis-core`: single source of truth for stage 2's methodology (temporary-change gate / instrumentation debug / analysis step skeleton / debug-verify loop)
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`: debug skills delegated to via `analysis-core` (stage 2 + stage 7)
@@ -44,8 +44,8 @@ solve-workflow strongly depends on the following skills via frontmatter dependen
 - `workflow-mode-lifecycle`: core manual/auto mode lifecycle rules
 - `clarifying-question-discipline`: hard clarifying-question discipline and investigation-first principle
 - `known-issue-research`: stage 2 research routing / known-issue quick search / industry-wide evaluation
-- `ensure-tests`: stage 6 test completion (`mode=advisory`)
-- `test-first-discipline`: stage 6 failing-test-first for behavior changes (distinct from ensure-tests)
+- `test-suite-ensure`: stage 6 test completion (`mode=advisory`)
+- `test-first-discipline`: stage 6 failing-test-first for behavior changes (distinct from test-suite-ensure)
 - `design-approval-gate`: before stage 6 — no production impl without approval (named auto/hotfix escapes)
 - `feature-branch-closeout`: stage 8 post-verify branch menu (merge delegates to merge-discipline when used)
 - `decision-fog-discipline`: before explore solutions — graduate fog / decision tickets first
@@ -69,7 +69,7 @@ Re-trigger this workflow after installing.
 
 ## Stage 4 — Review Report
 
-The review report body and pass/fail verdict follow the strong dependency `pdca-review-orchestration` (full `solution-review` / conditional `code-design-review`, binary verdict, auto-mode ≤3 rounds, design summary). This file no longer maintains a "five-dimension / four-dimension" scoring table.
+The review report body and pass/fail verdict follow the strong dependency `staged-review-flow` (full `solution-review` / conditional `code-design-review`, binary verdict, auto-mode ≤3 rounds, design summary). This file no longer maintains a "five-dimension / four-dimension" scoring table.
 
 **[🤖 Auto]** Each round must include: review round (N of max 3), the structured conclusion from `solution-review` (and `code-design-review` for code-affecting solutions), issue list, ✅/❌. On fail, output the optimization notes and re-review.
 

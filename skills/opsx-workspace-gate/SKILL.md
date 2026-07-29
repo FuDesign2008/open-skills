@@ -1,11 +1,11 @@
 ---
-name: openspec-workspace-gates
-version: "1.0.0"
+name: opsx-workspace-gate
+version: "1.1.0"
 user-invocable: false
-description: "Shared OpenSpec workspace gates for OPSX workflows: locate project root, verify openspec/, and require exact native OPSX skills before delegation. Triggers — 「OpenSpec 工程门禁」「OPSX 工程定位」「OpenSpec 原生技能检查」 / OpenSpec workspace gates, OPSX project root, native skill gate. Do NOT use for Jira, Git, retry binding, or implementation orchestration."
+description: "Shared OpenSpec workspace gate for OPSX workflows: locate project root, verify openspec/, and require exact native OPSX skills before delegation. Triggers — 「OpenSpec 工程门禁」「OPSX 工程定位」「OpenSpec 原生技能检查」 / OPSX workspace gate, OpenSpec project root, native skill gate. Do NOT use for Jira, Git, retry binding, or implementation orchestration."
 ---
 
-# OpenSpec Workspace Gates
+# OPSX Workspace Gate
 
 > Internal shared skill for OPSX workflows. It establishes an OpenSpec project root and verifies native-skill prerequisites before the host starts its workflow-specific orchestration.
 
@@ -47,4 +47,4 @@ Search installed skill directories under the project root and require these exac
 
 ## Integration guide
 
-An OPSX host declares `openspec-workspace-gates` as a dependency, loads it for location plus gates, then continues with host-only setup. Do not copy this location algorithm, exact-name table, or delegation rules into the host.
+An OPSX host declares `opsx-workspace-gate` as a dependency, loads it for location plus gates, then continues with host-only setup. Do not copy this location algorithm, exact-name table, or delegation rules into the host.
