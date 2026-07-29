@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.11.0"
+version: "1.12.0"
 user-invocable: true
 description: "Eight-stage PDCA problem-solving workflow that persists analysis, proposal, design review, plan, execution, and verification into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context. Use for feature work, bug fixes, refactors, and complex engineering tasks that need long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick one-off edit with no traceability need — use solve-workflow instead. Triggers：「opsx解决」「OpenSpec解决」「规范化解决」「创建OpenSpec变更」「创建opsx变更」「用OpenSpec分析」「用OpenSpec修复」「opsx自动解决」「OpenSpec自动解决」「opsx-solve」「opsx-solve-workflow」 / opsx solve, OpenSpec solve workflow, create an OpenSpec change."
 dependencies:
@@ -20,6 +20,8 @@ dependencies:
   - pdca-review-orchestration
   - openspec-workspace-gates
   - completion-evidence-discipline
+  - domain-language-discipline
+  - test-first-discipline
 ---
 
 # OPSX Eight-Stage Problem-Solving Workflow
@@ -59,6 +61,8 @@ Not a replacement for plain `solve-workflow`:
 - `clarifying-question-discipline` (hard discipline for active questioning + investigation-first)
 - `known-issue-research` (stage 2 research routing / known-issue quick search / industry-wide evaluation)
 - `ensure-tests` (stage 6 test-suite ensure: complete and run tests when infra exists; scaffold with user confirmation when it doesn't)
+- `test-first-discipline` (stage 6: failing-test-first for behavior changes; distinct from ensure-tests)
+- `domain-language-discipline` (clarify/analyze: project glossary / CONTEXT.md when domain terms matter)
 - `merge-discipline` (stage 8 merge discipline)
 - `openspec-workspace-gates` (stage 0 OpenSpec workspace and native-skill gate)
 
@@ -120,7 +124,7 @@ Stages 1-5 forbid modifying business code but allow creating and updating OpenSp
 
 ## Stage 1: Clarify the problem
 
-**⚠️ Active questioning**: follow `clarifying-question-discipline` (one question per round, multi-round until clear; clarify first, don't rush to answer).
+**⚠️ Active questioning**: follow `clarifying-question-discipline` (one question per round, multi-round until clear; clarify first, don't rush to answer). When domain vocabulary is in play, also follow `domain-language-discipline`.
 
 Manual mode must complete the following steps in order:
 
@@ -240,11 +244,11 @@ Read `tasks.md` and implement in order:
 4. If implementation reveals the design or spec is inaccurate, update that artifact first, then continue implementing.
 5. State the reason for any deviation from the plan; if the deviation affects scope or the behavioral contract, return to stage 4 or stage 5.
 
-### Test-suite ensure (mandatory, before the execution report)
+### Test-first then test-suite ensure (mandatory, before the execution report)
 
-Once every `tasks.md` checkbox is checked, before outputting the execution report, this step is mandatory:
+For behavior-changing work, follow `test-first-discipline` (failing test observed before production code). Once every `tasks.md` checkbox is checked, before outputting the execution report, this step is mandatory:
 
-Load and call `ensure-tests`, declaring `mode=mandatory`, scoped to this change's logic files; a failure or a declined necessary-scaffolding request blocks entry to stage 7.
+Load and call `ensure-tests`, declaring `mode=mandatory`, scoped to this change's logic files; a failure or a declined necessary-scaffolding request blocks entry to stage 7. ensure-tests does not satisfy test-first.
 
 🔌 **OPSX skills integration**: call the `openspec-apply-change` skill to execute the tasks (read its SKILL.md first, then complete each task per its instructions). `openspec-apply-change` queries change status and execution instructions via the CLI internally; this skill never calls the CLI directly to drive execution.
 

@@ -1,6 +1,6 @@
 ---
 name: jira-fix-workflow
-version: "3.20.0"
+version: "3.21.0"
 user-invocable: true
 description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」 / fix this bug, jira-fix, auto fix, force fix, resume fix. Do NOT use for batch fixes across multiple issues — use jira-fix-batch instead."
 dependencies:
@@ -19,6 +19,8 @@ dependencies:
   - pdca-review-orchestration
   - jira-status-writeback
   - completion-evidence-discipline
+  - domain-language-discipline
+  - test-first-discipline
 ---
 
 # Jira Bug-Fix Workflow
@@ -73,7 +75,7 @@ Auto/manual per-stage differences: [reference.md](reference.md) § Mode Differen
 ## General Principles
 
 - **Investigate before speaking**: no verdict without code evidence
-- **Active questioning**: follow `clarifying-question-discipline` (one question per turn; multi-round until clear; clarify first, do not rush to answer)
+- **Active questioning**: follow `clarifying-question-discipline` (one question per turn; multi-round until clear; clarify first, do not rush to answer). When domain vocabulary is in play, also follow `domain-language-discipline`.
 - **Jira status boundary**: engineering only transitions the issue to "已修复" (Fixed); closing / marking verified belongs to QA
 
 ## Path Selection
@@ -186,7 +188,7 @@ Exit script: reference.md.
 
 Execute strictly per the plan; check off `TodoWrite` / plan checkboxes item by item as completed. Tag every change `// fix [JIRA-ID]`. Quality gate: `node-version-discipline` → `ReadLints` → `typescript-check` when a tsconfig exists. 🤖 multi-repo changes and lints per repo, write `reports/[JIRA-ID]-analysis.md`.
 
-After execution: 🤖 normal→8, 🟠 pause for review; 👤 normal wait for confirmation→8, 🔴 chose B pause without auto-committing. Report → `05-execution.md`. When business logic lacks tests, call `ensure-tests` (`mode=advisory`). Exit script: reference.md.
+After execution: 🤖 normal→8, 🟠 pause for review; 👤 normal wait for confirmation→8, 🔴 chose B pause without auto-committing. Report → `05-execution.md`. For behavior changes follow `test-first-discipline`; when business logic lacks tests, call `ensure-tests` (`mode=advisory`) — ensure-tests does not satisfy test-first. Exit script: reference.md.
 
 ---
 

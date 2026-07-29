@@ -1,6 +1,6 @@
 ---
 name: ensure-tests
-version: "1.0.1"
+version: "1.0.2"
 user-invocable: true
 description: Ensure the current project has a proper test suite — detect tech stack & framework, scaffold if needed, generate unit tests (required, logic code only), and optionally generate/run E2E tests. Triggers when user says "ensure-tests", 「补全测试」「生成测试」「确保测试」「补充单元测试」「添加单元测试」「检查测试覆盖」 (complete tests / generate tests / ensure tests / add unit tests / check test coverage). Also callable by solve-workflow and opsx-solve-workflow in their execution-stage test steps.
 ---
@@ -23,6 +23,10 @@ Workflow callers MUST declare one mode:
 - **`mode=mandatory`**: Refused required scaffolding or a failing unit-test run blocks exit from the execution stage. Resolve the issue or wait for the user before continuing.
 
 Standalone invocation uses the full flow. The unit-test failure handling in Phase 5 still applies in both modes.
+
+### Boundary vs `test-first-discipline`
+
+This skill is **post-hoc**: detect stack, scaffold, generate/run tests for **existing** logic, advisory vs mandatory gating. It does **not** own failing-test-first order. Completing ensure-tests **MUST NOT** be described as satisfying `test-first-discipline`. When both are in scope, hosts run test-first during behavior implementation and ensure-tests afterward for coverage/scaffold gaps.
 
 ---
 
