@@ -1,63 +1,64 @@
 ---
 name: pr-code-review
-version: "1.0.0"
+version: "1.1.0"
 user-invocable: true
-description: "Multi-perspective pull-request code review with confidence filtering (≥80) and optional GitHub review comment. Open-skills port of the Claude Code official /code-review command methodology (platform-agnostic agent dispatch). Triggers — 「PR 代码审查」「审查这个 PR」「code-review」「/code-review」「审 PR」「pull request review」 / pr code review, review this PR. Do NOT use as a name alias for mattpocock code-review (two-axis since-fixed-point) or Superpowers requesting-code-review."
+description: "Dual-axis (Standards∥Spec) multi-perspective PR review with confidence ≥80 filtering, severity calibration, plan alignment, and optional GitHub/GitLab review comment. Best-of: Claude /code-review pipeline + mattpocock dual-axis + Superpowers plan/severity habits. Triggers — 「PR 代码审查」「审查这个 PR」「code-review」「/code-review」「审 PR」「pull request review」「双轴审查 PR」 / pr code review, review this PR. Do NOT use as a name alias for mattpocock code-review or Superpowers requesting-code-review."
 ---
 
 # PR Code Review
 
-> Portable PR review skill for open-skills. Methodology adapted from Anthropic's Claude Code **code-review plugin** command (`/code-review`); rewritten so any agent host can run it without hard-coding that host's model tiers or proprietary tools.
+> Portable PR review for open-skills. Combines Anthropic Claude Code **code-review** plugin flow (eligibility, multi-perspective, ≥80 confidence, permalink comments), mattpocock **Standards∥Spec** separation + fixed-point diff, and Superpowers **plan alignment / severity / strengths-first** habits. Platform-agnostic agent dispatch (no host model-tier hardcoding).
 >
-> **Origin note:** Claude Code install path is a *plugin command*, not `npx skills`. This skill is the installable Agent Skills form: `npx skills add FuDesign2008/open-skills -g --skill pr-code-review --yes`.
+> Install: `npx skills add FuDesign2008/open-skills -g --skill pr-code-review --yes`
 
 ## When this applies
 
-- User asks to review an open PR/MR, or a host (e.g. `merge-discipline`) requires pre-merge PR review.
-- Skip (do not post a review comment) when the PR is closed, draft, trivial/automated, or already has a review comment from this skill in this session — report the skip reason and stop.
+- User asks to review an open PR/MR, or `merge-discipline` Part R requires pre-merge review.
+- **Skip** (state reason, do not comment): PR closed, draft, trivial/automated, or already reviewed by this skill this session/tip.
 
 ## Process
 
-1. **Eligibility** — Confirm the PR is open, non-draft, needs review, and has not already been reviewed by this skill this turn/session. If ineligible, stop.
-2. **Guidance paths** — List paths only (do not dump full bodies yet) for project guidance: root `AGENTS.md` / `CLAUDE.md` if present, plus any nested `CLAUDE.md` / `AGENTS.md` under directories the PR touches.
-3. **Summary** — Read the PR (title, body, diff summary) and state a short change summary.
-4. **Multi-perspective review** (run perspectives independently; prefer parallel agent dispatch when the host supports it):
-   - **Guidelines** — Diff vs listed guidance files (only flag items those files explicitly require).
-   - **Bugs** — Obvious bugs in the PR diff only; ignore likely false positives and nits.
-   - **History** — `git blame` / history on touched lines for context regressions.
-   - **Prior PR comments** — Earlier PRs on the same files; apply still-relevant review comments.
-   - **In-file comments** — Honor guidance in comments inside modified files.
-5. **Confidence filter** — For each candidate issue, score **0–100** (rubric below). **Drop scores below 80.** If none remain, either post the “no issues” comment or (when host asks silent-ok) report pass without commenting.
-6. **Re-check eligibility** — Confirm the PR is still eligible before posting.
-7. **Publish** — Post the review comment via the host’s GitHub/GitLab CLI (`gh pr comment` / equivalent). Keep the comment brief; no emoji spam; cite code with **full commit SHA** permalinks.
+1. **Eligibility** — Open, non-draft, needs review; not already reviewed this session on this tip. Else stop.
+2. **Pin fixed point** — PR/MR base ref, or user-supplied commit/branch, or `origin/<default-branch>` for merge candidates. Confirm ref resolves and three-dot diff vs tip is **non-empty**. Empty diff → abort (do not spawn perspectives).
+3. **Resolve Spec source** (first hit wins): PR/issue body + linked tickets → user path → OpenSpec change delta / related `openspec/specs` → ask user → else Spec axis = **skipped (no spec available)**.
+4. **Resolve Standards sources** — `AGENTS.md` / `CLAUDE.md` (root + dirs the PR touches), plus coding-standards docs if present. Optional smell baseline: [reference.md](reference.md) (repo docs **override**; smells are judgement calls, never sole hard violations).
+5. **Summarize** — Short change summary (title, intent, diff shape).
+6. **Dual-axis + multi-perspective review** (prefer parallel dispatch when the host supports it; **do not** merge-rank across axes):
+   - **Standards axis** — Documented guidance breaches (cite file + rule); optional smell heuristics; plus perspectives: bugs-in-diff-only, blame/history, prior PR comments on same files, in-file comment guidance.
+   - **Spec axis** — Missing/partial planned behavior; unjustified scope creep; wrong implementation of a stated requirement (quote spec/plan line). Skip entire axis if no Spec source.
+7. **Calibrate** — Each surviving candidate: severity **Critical / Important / Minor**, then confidence **0–100** (rubric below). **Drop scores below 80.** Map: Critical/Important usually land ≥75–100 if verified; Minor usually drops unless guidance-hard.
+8. **Strengths** — If any, list briefly **before** issues (accurate praise builds trust in the rest).
+9. **Re-check eligibility** — Still open / same tip before publish.
+10. **Publish** — Comment via `gh` / `glab` (or report in-session if host forbids comment). Dual-axis sections in the comment; full-SHA permalinks. Templates: [reference.md](reference.md).
 
-Comment templates and permalink rules: [reference.md](reference.md).
-
-### Confidence rubric (verbatim for scorers)
+### Confidence rubric
 
 | Score | Meaning |
 |------|---------|
-| 0 | False positive / pre-existing / does not stand scrutiny |
-| 25 | Might be real; unverified; or stylistic and not in guidance files |
-| 50 | Real but nit / rare; not important vs the rest of the PR |
-| 75 | Likely real and important; current approach insufficient; or explicitly required by guidance |
-| 100 | Definitely real and frequent; evidence confirms |
+| 0 | False positive / pre-existing / fails scrutiny |
+| 25 | Unverified / stylistic / not in guidance |
+| 50 | Real but nit or rare |
+| 75 | Likely real and important; or explicitly required by guidance/plan |
+| 100 | Definitely real; evidence confirms |
 
 ### False positives to discard
 
-Pre-existing issues; lookalike non-bugs; pedantic nits; anything a linter/typechecker/compiler would catch; generic “add more tests/docs/security” unless guidance files require it; issues on lines the PR did not change; intentional behavior changes that match the PR intent.
+Pre-existing; lookalike non-bugs; pedantic nits; linter/typechecker/compiler catchable; generic “more tests/docs/security” unless guidance/plan requires it; unchanged lines; intentional PR-scoped behavior.
 
-## Host contract (`merge-discipline`)
+## Host contract (`merge-discipline` Part R)
 
-When loaded as a strong dependency before merge:
+- Run against the **open PR/MR about to merge**.
+- **Pass** → neither axis retains ≥80 **Critical** or **Important** issues (Minor-only or all scores below 80 = pass).
+- **Fail** → block merge until fixed or user **explicit** Part R skip 留痕.
+- CI green / coverage skip is **not** a substitute.
+- Do **not** require a full receiving-code-review loop to pass Part R.
 
-- Run this skill against the **open PR/MR about to be merged**.
-- **Pass** → no remaining issues ≥80 (posted “no issues” or silent pass per host).
-- **Fail** → ≥1 issue at ≥80 posted (or ready to post) → **block merge** until fixed or the user gives an **explicit** skip 留痕.
-- Do not treat “CI green” as a substitute for this review.
+## After feedback (optional pointer)
+
+When acting on review comments (human or this skill): verify against the codebase before changing anything; no performative agreement; reasoned technical pushback when wrong; clarify unclear items before implementing. Full reception discipline is optional and **out of Part R**.
 
 ## Integration guide
 
-- Declare `pr-code-review` in frontmatter `dependencies` when merge must not proceed without PR review.
-- On missing dependency, abort and print per-skill install (see merge-discipline Missing Notice).
-- Do not rename this skill to `code-review` (collides with external two-axis review skills).
+- Strong-dep from `merge-discipline`; missing → abort with  
+  `npx skills add FuDesign2008/open-skills -g --skill pr-code-review --yes`
+- Do not rename to `code-review` (external name collision).

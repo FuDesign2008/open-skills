@@ -212,17 +212,17 @@ Location: PR description and `design.md` Verification Notes.
 
 ## Part R — PR code review (strong dependency)
 
-Prevents **merge-without-PR-review**: coverage/CI can be green while the diff still carries high-confidence defects that a multi-perspective review would catch.
+Prevents **merge-without-PR-review**: coverage/CI can be green while the diff still carries high-confidence defects that a multi-perspective, dual-axis review would catch.
 
 1. Confirm frontmatter dependency `pr-code-review` is available (prerequisite check already ran at load).
-2. Load `pr-code-review` and run it against the **open PR/MR** about to be merged (follow that skill exactly).
+2. Load `pr-code-review` and run it against the **open PR/MR** about to be merged (follow that skill exactly — Standards∥Spec, confidence ≥80).
 3. **Decision matrix:**
 
 | Result | Action |
 |---|---|
-| Pass (no issues ≥80) | Proceed to Part D |
-| Fail (one or more issues ≥80 posted or ready) | **Block merge.** Fix on the source tip, re-enter from Part A on the new tip, or user **explicit** skip with 留痕 |
-| Skill ineligible skip (closed/draft/already reviewed this session) | Treat as pass for this Part only if the PR is still the merge candidate and a prior ≥80-clean review exists on this tip; otherwise pause for user |
+| Pass — neither axis retains ≥80 Critical/Important | Proceed to Part D |
+| Fail — either axis has ≥80 Critical/Important | **Block merge.** Fix on the source tip, re-enter from Part A, or user **explicit** skip with 留痕 |
+| Skill ineligible skip (closed/draft/already reviewed this session) | Treat as pass for this Part only if the PR is still the merge candidate and a prior ≥80-clean dual-axis review exists on this tip; otherwise pause for user |
 
 ### 留痕 (explicit skip only)
 
@@ -231,7 +231,8 @@ Prevents **merge-without-PR-review**: coverage/CI can be green while the diff st
 ### Red flags
 
 - Skipping Part R because “CI is green” or “coverage-gate never”.
-- Calling Claude Code `/code-review` plugin as a substitute without loading `pr-code-review` (different install surface; this repo’s contract is the open-skills skill).
+- Calling Claude Code `/code-review` plugin as a substitute without loading `pr-code-review`.
+- Collapsing Standards and Spec into one ranked list and treating “overall look fine” as Part R pass.
 
 ---
 

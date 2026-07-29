@@ -27,8 +27,8 @@
 **PR code review (Part R):**
 
 - [ ] Strong dependency `pr-code-review` present? (else abort with per-skill `npx skills add … --skill pr-code-review --yes`)
-- [ ] `pr-code-review` run on the open PR/MR tip?
-- [ ] Pass (no issues ≥80) → Part D; fail → block (or explicit skip 留痕)
+- [ ] `pr-code-review` run on the open PR/MR tip (Standards∥Spec)?
+- [ ] Pass = neither axis has ≥80 Critical/Important → Part D; else block (or explicit skip 留痕)
 
 **Merge tip pinning (Part D):**
 
