@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.11.0"
+version: "1.12.0"
 user-invocable: true
 description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」 / opsx jira fix, OpenSpec Jira fix workflow."
 dependencies:
@@ -20,6 +20,8 @@ dependencies:
   - openspec-workspace-gates
   - jira-status-writeback
   - completion-evidence-discipline
+  - domain-language-discipline
+  - test-first-discipline
 ---
 
 # OPSX Jira Bug-Fix Workflow
@@ -57,6 +59,8 @@ Not a replacement for plain `jira-fix-workflow`:
 - `node-version-discipline` (Node version alignment before stage 6 execution verification)
 - `workflow-mode-lifecycle` (auto/manual mode lifecycle), `clarifying-question-discipline` (hard active-questioning discipline and investigation-first), `known-issue-research` (stage 2 research routing / known-issue quick search / industry-wide evaluation)
 - `ensure-tests` (stage 6.2.5 test-suite ensure: complete and run tests when infra exists; scaffold with user confirmation when it doesn't)
+- `test-first-discipline` (execution: failing-test-first for behavior changes; distinct from ensure-tests)
+- `domain-language-discipline` (clarify/analyze: project glossary / CONTEXT.md when domain terms matter)
 - `merge-discipline` (stage 8 merge discipline)
 - `openspec-workspace-gates` (stage 0 OpenSpec workspace and native-skill gate)
 - `jira-status-writeback` (stage 8 post-merge writeback: status transition + fix-comment SOP, single source)
@@ -148,7 +152,7 @@ Tool limits: Jira API / jira-read allowed; Edit/Write of business code forbidden
 
 Auto-advance to stage 2 on completion.
 
-> ⚠️ Active questioning: follow `clarifying-question-discipline` (one question per round, multi-round until clear; clarify first, don't rush to answer).
+> ⚠️ Active questioning: follow `clarifying-question-discipline` (one question per round, multi-round until clear; clarify first, don't rush to answer). When domain vocabulary is in play, also follow `domain-language-discipline`.
 >
 > 🚩 **Red Flag**: dumping several ambiguous points on the user in one message (violates the hard discipline, see `clarifying-question-discipline`) — ask only the single most critical question each time, then ask the next only after getting an answer.
 
@@ -280,11 +284,11 @@ Optional tracking comment:
 
 If the project's convention doesn't accept fix comments, don't force it — but list the fix points in the execution report.
 
-### 6.2.5 Test-suite ensure (mandatory, before entering stage 7)
+### 6.2.5 Test-first then test-suite ensure (mandatory, before entering stage 7)
 
-Once every `tasks.md` checkbox is checked, before entering stage 7 verification, this step is mandatory:
+For behavior-changing work, follow `test-first-discipline` during implementation. Once every `tasks.md` checkbox is checked, before entering stage 7 verification, this step is mandatory:
 
-Load and call `ensure-tests`, declaring `mode=mandatory`, scoped to this fix's logic files; a failure or a declined necessary-scaffolding request blocks entry to stage 7.
+Load and call `ensure-tests`, declaring `mode=mandatory`, scoped to this fix's logic files; a failure or a declined necessary-scaffolding request blocks entry to stage 7. ensure-tests does not satisfy test-first.
 
 ## Stage 7: Check verification
 

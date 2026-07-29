@@ -1,6 +1,6 @@
 ---
 name: learn-and-improve
-version: "1.0.0"
+version: "1.0.1"
 user-invocable: true
 description: "Structured retrospective and knowledge sediment for completed work (the Act phase of PDCA). Run a disciplined post-work review (Keep-Problem-Try / Stop-Start-Continue / After-Action Review by context), judge which lessons are worth solidifying, pick the right carrier, validate the sediment gets reused, and feed improvements back. Use whenever finished work needs reflection — as the review stage of solve-workflow / opsx-solve-workflow, or standalone on any completed task. Triggers — 「回顾总结」「复盘」「经验沉淀」「总结经验教训」「改进闭环」「沉淀规则」「项目复盘」 / learn and improve, lessons learned, retrospective, post-mortem, debrief."
 ---
@@ -63,6 +63,7 @@ Pick by **audience × longevity × change-frequency**, not by habit. Full decisi
 | `CLAUDE.md` | Claude Code-specific behavior or workflow preferences |
 | `.cursor/rules/` | Cursor-specific rules |
 | Project skill | Stable, reusable workflow/domain knowledge that future work can trigger on its own |
+| `CONTEXT.md` (via `domain-language-discipline`) | Project ubiquitous language / glossary only — not implementation or OpenSpec specs |
 | Summary doc | One-off retrospective, background record (not a rule) |
 
 **Before writing any long-term carrier, wait for an explicit user request** ("write to rules" / "create a skill" / "update AGENTS.md"). The default is to *recommend*, not to write — writing to shared long-term rules is a one-way door that pollutes conventions if done carelessly.
