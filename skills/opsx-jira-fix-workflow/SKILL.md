@@ -370,7 +370,7 @@ Once archiving and the diff check are complete, load `feature-branch-closeout` f
 
 #### 8.3.1 Merge discipline (`merge-discipline` skill)
 
-> On merge (from closeout or a direct user merge command), load `merge-discipline` and run Part A → B → C → D; the pre-merge checklist is in `merge-discipline/reference.md`. Never implicitly skip.
+> On merge (from closeout or a direct user merge command), load `merge-discipline` and run Part A → B → C → R → D; the pre-merge checklist is in `merge-discipline/reference.md`. Never implicitly skip.
 
 ### 8.4 Jira writeback (after the merge completes)
 

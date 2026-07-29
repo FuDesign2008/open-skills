@@ -309,11 +309,11 @@ If `openspec-archive-change` fails, do **not** manually manipulate the `openspec
 
 After archiving, always check the diff to confirm both the main-specs update and the archive-directory move landed in the project root's git working-tree changes. Then load `feature-branch-closeout` for the closeout menu (PR / merge / keep / continue). Never declare completion while tests haven't passed, archiving isn't complete, or the diff hasn't been reviewed.
 
-> **Order constraint**: archive + diff check → `feature-branch-closeout` → on merge, `merge-discipline` A→D. Choosing keep/continue does not trigger merge discipline.
+> **Order constraint**: archive + diff check → `feature-branch-closeout` → on merge, `merge-discipline` A→B→C→R→D. Choosing keep/continue does not trigger merge discipline.
 
 #### Merge discipline (`merge-discipline` skill)
 
-> On merge (from closeout or a direct user merge command), load `merge-discipline` and run Part A → B → C → D; the pre-merge checklist is in `merge-discipline/reference.md`. Never implicitly skip.
+> On merge (from closeout or a direct user merge command), load `merge-discipline` and run Part A → B → C → R → D; the pre-merge checklist is in `merge-discipline/reference.md`. Never implicitly skip.
 
 ### Retrospective (delegate to `learn-and-improve`)
 

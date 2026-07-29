@@ -23,7 +23,7 @@
 |------|------------------|----------|
 | **编排入口** | `true` | `solve-workflow`、`opsx-solve-workflow`、`jira-fix-workflow`、`perf-workflow` |
 | **共享纪律 / 方法论** | 默认 `false`，经 frontmatter `dependencies` 加载 | `*-discipline`、`analysis-core`、`staged-review-flow`、`design-approval-gate`、`feature-branch-closeout` |
-| **可独立触发的横切动作** | 显式 `true`（例外） | `merge-discipline`、`test-suite-ensure`、`solution-review`、`learn-and-improve` |
+| **可独立触发的横切动作** | 显式 `true`（例外） | `merge-discipline`、`test-suite-ensure`、`solution-review`、`learn-and-improve`、`pr-code-review` |
 
 `commands/*.md` 对快捷命令使用 `disable-model-invocation: true`（用户专属入口）。新增 skill 时按上表选型；`user-invocable: false` 的 skill 必须被其他 skill 引用，否则视为死 skill。
 
@@ -102,6 +102,8 @@ open-skills/
 | feature-branch-closeout | 工作流纪律 | merge-discipline |
 | decision-fog-discipline | 工作流纪律 | 无 |
 | workspace-isolation-discipline | 工作流纪律 | 无 |
+| merge-discipline | 合并纪律 | pr-code-review |
+| pr-code-review | 审查 | 无 |
 | known-issue-research | 调研方法论 | effective-web-research |
 | analysis-core | 分析方法论 | known-issue-research、runtime-evidence-debug、browser-debug-toolkit、hybrid-debug、upstream-dependency-debug |
 | staged-review-flow | 工作流编排 | solution-review、code-design-review、completion-evidence-discipline |
