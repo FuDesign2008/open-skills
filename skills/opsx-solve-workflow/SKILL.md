@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.13.0"
+version: "1.14.0"
 user-invocable: true
 description: "Eight-stage PDCA problem-solving workflow that persists analysis, proposal, design review, plan, execution, and verification into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context. Use for feature work, bug fixes, refactors, and complex engineering tasks that need long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick one-off edit with no traceability need — use solve-workflow instead. Triggers：「opsx解决」「OpenSpec解决」「规范化解决」「创建OpenSpec变更」「创建opsx变更」「用OpenSpec分析」「用OpenSpec修复」「opsx自动解决」「OpenSpec自动解决」「opsx-solve」「opsx-solve-workflow」 / opsx solve, OpenSpec solve workflow, create an OpenSpec change."
 dependencies:
@@ -24,6 +24,8 @@ dependencies:
   - test-first-discipline
   - design-approval-gate
   - feature-branch-closeout
+  - decision-fog-discipline
+  - workspace-isolation-discipline
 ---
 
 # OPSX Eight-Stage Problem-Solving Workflow
@@ -66,6 +68,8 @@ Not a replacement for plain `solve-workflow`:
 - `test-first-discipline` (stage 6: failing-test-first for behavior changes; distinct from ensure-tests)
 - `design-approval-gate` (before stage 6: no production impl without approval; named auto/hotfix escapes)
 - `feature-branch-closeout` (stage 8: post-archive closeout menu; merge delegates to merge-discipline)
+- `decision-fog-discipline` (before explore solutions: graduate fog / decision tickets first)
+- `workspace-isolation-discipline` (before stage 6: optional isolated workspace)
 - `domain-language-discipline` (clarify/analyze: project glossary / CONTEXT.md when domain terms matter)
 - `merge-discipline` (stage 8 merge discipline — after closeout selects merge)
 - `openspec-workspace-gates` (stage 0 OpenSpec workspace and native-skill gate)
@@ -174,7 +178,7 @@ If the existence check fails or the description mismatches the code, pause for u
 
 ## Stage 3: Explore solutions
 
-> Principle: based on the stage-2 analysis, offer 2-5 solutions; strip non-essential features and over-engineering from every solution (YAGNI).
+> Principle: based on the stage-2 analysis, offer 2-5 solutions; strip non-essential features and over-engineering from every solution (YAGNI). If the path is still foggy, follow `decision-fog-discipline` before the solution table / proposal.
 
 Produce 2-5 solutions based on stage 2, each including:
 
@@ -240,7 +244,7 @@ In manual mode, output the plan and pause; wait for user confirmation before ent
 
 ## Stage 6: Execute the plan
 
-Before production edits, follow `design-approval-gate` (manual: user pass; auto/lean: named escape + 留痕).
+Before production edits, follow `design-approval-gate` (manual: user pass; auto/lean: named escape + 留痕). Optionally follow `workspace-isolation-discipline` before non-trivial edits.
 
 Read `tasks.md` and implement in order:
 

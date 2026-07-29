@@ -1,6 +1,6 @@
 ---
 name: feature-branch-closeout
-version: "1.0.0"
+version: "1.0.1"
 user-invocable: false
 description: "Post-verification feature-branch closeout menu: after verify (and archive when applicable), present PR / merge / keep / continue options; optional worktree cleanup; selecting merge MUST load merge-discipline Parts A–D; keep/continue MUST NOT trigger merge gates. Triggers — 「分支收尾」「feature 收尾菜单」「合入或保留分支」「branch closeout」 / feature branch closeout, post-verify branch menu. Do NOT use as a name alias for finishing-a-development-branch."
 dependencies:
@@ -30,7 +30,7 @@ Present intent clearly; agent picks native structured-question capability or pro
 3. **Keep branch** — leave branch as-is; no merge
 4. **Continue development** — stay on branch for more work; no merge
 
-Optional (when applicable): detect worktree / detached HEAD and offer cleanup; **discard** only with explicit strong confirmation (user must clearly affirm discard).
+Optional (when applicable): detect worktree / detached HEAD / isolation created via `workspace-isolation-discipline` and offer cleanup; **discard** only with explicit strong confirmation (user must clearly affirm discard). Do **not** create new isolation here — create/detect lives in `workspace-isolation-discipline`.
 
 ## Merge path
 

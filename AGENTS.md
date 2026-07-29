@@ -73,14 +73,14 @@ open-skills/
 
 | Skill | 类别 | 依赖 |
 |-------|------|------|
-| solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、node-version-discipline、pdca-review-orchestration、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout |
-| opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、merge-discipline、pdca-review-orchestration、openspec-workspace-gates、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout |
+| solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、node-version-discipline、pdca-review-orchestration、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline |
+| opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、merge-discipline、pdca-review-orchestration、openspec-workspace-gates、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline |
 | perf-workflow | 工作流 | clarifying-question-discipline、known-issue-research |
 | frontend-perf | 知识库 | perf-workflow |
 | android-webview-debug | 工具 | 无 |
 | git-commit | Git | 无 |
-| jira-fix-workflow | Jira 工作流 | git-commit、jira-read、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、merge-discipline、pdca-review-orchestration、jira-status-writeback、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout |
-| opsx-jira-fix-workflow | Jira 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、merge-discipline、pdca-review-orchestration、openspec-workspace-gates、jira-status-writeback、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、openspec 原生 skills（阶段 0 检查） |
+| jira-fix-workflow | Jira 工作流 | git-commit、jira-read、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、merge-discipline、pdca-review-orchestration、jira-status-writeback、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline |
+| opsx-jira-fix-workflow | Jira 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、ensure-tests、merge-discipline、pdca-review-orchestration、openspec-workspace-gates、jira-status-writeback、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline、openspec 原生 skills（阶段 0 检查） |
 | jira-status-writeback | Jira 工具 | 无（被 jira-fix / opsx-jira-fix 强依赖） |
 | jira-read | Jira 工具 | 无 |
 | typescript-check | 工具 | 无 |
@@ -100,6 +100,8 @@ open-skills/
 | test-first-discipline | 工作流纪律 | 无 |
 | design-approval-gate | 工作流纪律 | 无 |
 | feature-branch-closeout | 工作流纪律 | merge-discipline |
+| decision-fog-discipline | 工作流纪律 | 无 |
+| workspace-isolation-discipline | 工作流纪律 | 无 |
 | known-issue-research | 调研方法论 | effective-web-research |
 | analysis-core | 分析方法论 | known-issue-research、runtime-evidence-debug、browser-debug-toolkit、hybrid-debug、upstream-dependency-debug |
 | pdca-review-orchestration | 工作流编排 | solution-review、code-design-review、completion-evidence-discipline |
