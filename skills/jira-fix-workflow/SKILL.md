@@ -1,6 +1,6 @@
 ---
 name: jira-fix-workflow
-version: "3.21.0"
+version: "3.22.0"
 user-invocable: true
 description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」 / fix this bug, jira-fix, auto fix, force fix, resume fix. Do NOT use for batch fixes across multiple issues — use jira-fix-batch instead."
 dependencies:
@@ -21,6 +21,8 @@ dependencies:
   - completion-evidence-discipline
   - domain-language-discipline
   - test-first-discipline
+  - design-approval-gate
+  - feature-branch-closeout
 ---
 
 # Jira Bug-Fix Workflow
@@ -184,6 +186,8 @@ Exit script: reference.md.
 
 ## Stage 7: Execute the Plan
 
+Before production edits, follow `design-approval-gate` (manual: user pass; auto/force: named escape + 留痕).
+
 **Branch**: naming and single-/multi-repo flow are in [reference.md](reference.md) § Stage 7 Branch-Creation Details; write `00-branch.md`.
 
 Execute strictly per the plan; check off `TodoWrite` / plan checkboxes item by item as completed. Tag every change `// fix [JIRA-ID]`. Quality gate: `node-version-discipline` → `ReadLints` → `typescript-check` when a tsconfig exists. 🤖 multi-repo changes and lints per repo, write `reports/[JIRA-ID]-analysis.md`.
@@ -217,11 +221,11 @@ Output the result only — do not change code. Compare against the Jira repro/ex
 
 ## Stage 10: Review & Merge
 
-Present the PR/MR URL and **stop immediately** (script in reference.md). **Both auto and manual require user confirmation before merging.**
+Present the PR/MR URL. Load `feature-branch-closeout` for the closeout menu (PR already open → typically merge / keep / continue). **Both auto and manual require user confirmation before merging.**
 
-Once confirmed:
+Once merge is selected:
 
-1. Load `merge-discipline` (Part A→B→C→D; checklist in that skill's reference.md)
+1. `feature-branch-closeout` loads `merge-discipline` (Part A→B→C→D; checklist in that skill's reference.md)
 2. Merge (`gh pr merge --merge` / `glab mr merge`) → delete the remote fix branch → sync the default branch → delete the local branch
 3. Load `jira-status-writeback` (field map: branch, commit, PR URL, root cause, solution, files, report, verification scenarios); a writeback failure does not block completion
 

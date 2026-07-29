@@ -1,6 +1,6 @@
 ---
 name: merge-discipline
-version: "1.3.0"
+version: "1.3.1"
 user-invocable: true
 description: "合并纪律：合并动作（glab/gh mr/pr merge）前必须加载——OpenSpec archive 关联门控（Part A，最先）+ rebase/冲突预检（Part B）+ 覆盖率门控（Part C）+ tip 钉死（Part D）。关联 active OpenSpec change 时未 archive 不得 merge；用户直接说 merge 也不得隐式跳过。触发词：「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, post-push merge check. 被 opsx-jira-fix-workflow / opsx-solve-workflow / jira-fix-workflow frontmatter dependencies 强依赖。"
 ---
@@ -12,6 +12,8 @@ description: "合并纪律：合并动作（glab/gh mr/pr merge）前必须加�
 ## When this applies
 
 Any merge into a protected branch (`glab mr merge` / `gh pr merge` / `git merge <target>`) — whether from a workflow's branch-closeout decision, a **direct user merge command** ("merge MR" / "合并"), or AI preparing the merge call. "Keep branch" / "continue development" do not trigger.
+
+When hosts use `feature-branch-closeout`, that skill owns the **closeout menu**; this skill runs **only after merge is selected** (or on a direct merge command). Do not redefine the full menu here.
 
 **Execution order when merging: Part A (archive gate) → Part B (rebase) → Part C (coverage) → Part D (tip pinning) → merge.** Part A runs first so archive work is not deferred past rebase/CI. A rebase changes the source tip, forcing Parts C/D to re-run on the new tip.
 

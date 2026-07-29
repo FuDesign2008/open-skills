@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.12.0"
+version: "1.13.0"
 user-invocable: true
 description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」 / opsx jira fix, OpenSpec Jira fix workflow."
 dependencies:
@@ -22,6 +22,8 @@ dependencies:
   - completion-evidence-discipline
   - domain-language-discipline
   - test-first-discipline
+  - design-approval-gate
+  - feature-branch-closeout
 ---
 
 # OPSX Jira Bug-Fix Workflow
@@ -60,8 +62,10 @@ Not a replacement for plain `jira-fix-workflow`:
 - `workflow-mode-lifecycle` (auto/manual mode lifecycle), `clarifying-question-discipline` (hard active-questioning discipline and investigation-first), `known-issue-research` (stage 2 research routing / known-issue quick search / industry-wide evaluation)
 - `ensure-tests` (stage 6.2.5 test-suite ensure: complete and run tests when infra exists; scaffold with user confirmation when it doesn't)
 - `test-first-discipline` (execution: failing-test-first for behavior changes; distinct from ensure-tests)
+- `design-approval-gate` (before execution: no production impl without approval; named auto/hotfix escapes)
+- `feature-branch-closeout` (stage 8: closeout menu; merge delegates to merge-discipline)
 - `domain-language-discipline` (clarify/analyze: project glossary / CONTEXT.md when domain terms matter)
-- `merge-discipline` (stage 8 merge discipline)
+- `merge-discipline` (stage 8 merge discipline — after closeout selects merge)
 - `openspec-workspace-gates` (stage 0 OpenSpec workspace and native-skill gate)
 - `jira-status-writeback` (stage 8 post-merge writeback: status transition + fix-comment SOP, single source)
 
@@ -286,7 +290,7 @@ If the project's convention doesn't accept fix comments, don't force it — but 
 
 ### 6.2.5 Test-first then test-suite ensure (mandatory, before entering stage 7)
 
-For behavior-changing work, follow `test-first-discipline` during implementation. Once every `tasks.md` checkbox is checked, before entering stage 7 verification, this step is mandatory:
+Before production edits, follow `design-approval-gate` (manual: user pass; auto/force/lean: named escape + 留痕). For behavior-changing work, follow `test-first-discipline` during implementation. Once every `tasks.md` checkbox is checked, before entering stage 7 verification, this step is mandatory:
 
 Load and call `ensure-tests`, declaring `mode=mandatory`, scoped to this fix's logic files; a failure or a declined necessary-scaffolding request blocks entry to stage 7. ensure-tests does not satisfy test-first.
 
@@ -356,13 +360,13 @@ Default: after verification passes, archive first, confirm the `openspec/specs/`
 
 ### 8.3 Branch closeout
 
-Once archiving and the diff check are complete, confirm branch closeout with the user: keep the current branch, open a PR/MR, merge, or continue development. Never declare completion while verification hasn't passed or archiving isn't complete.
+Once archiving and the diff check are complete, load `feature-branch-closeout` for the menu (PR / merge / keep / continue). Never declare completion while verification hasn't passed or archiving isn't complete.
 
-> **Order constraint**: archive (8.2) → branch-closeout decision (8.3) → merge discipline `merge-discipline` (8.3.1) → execute the merge → Jira writeback (8.4). Choosing "keep the branch" or "continue development" skips both merge discipline and Jira writeback.
+> **Order constraint**: archive (8.2) → `feature-branch-closeout` (8.3) → on merge, `merge-discipline` (8.3.1) → execute the merge → Jira writeback (8.4). Choosing keep/continue skips both merge discipline and Jira writeback.
 
 #### 8.3.1 Merge discipline (`merge-discipline` skill)
 
-> Load `merge-discipline` before executing any merge action and run Part A → B → C → D; the pre-merge checklist is in `merge-discipline/reference.md`. Even when the user directly says "merge", it must still be loaded — never implicitly skipped.
+> On merge (from closeout or a direct user merge command), load `merge-discipline` and run Part A → B → C → D; the pre-merge checklist is in `merge-discipline/reference.md`. Never implicitly skip.
 
 ### 8.4 Jira writeback (after the merge completes)
 
