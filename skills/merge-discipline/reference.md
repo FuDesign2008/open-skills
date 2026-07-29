@@ -2,7 +2,7 @@
 
 ## Pre-merge checklist (gates + tip pinning)
 
-> Full rules live in this skill's `SKILL.md` (Part A archive gate + Part B rebase + Part C coverage + Part D tip pinning). This is a pre-merge self-check cheat sheet; referencing workflows must not copy the body — keep a one-line pointer only.
+> Full rules live in this skill's `SKILL.md` (Part A archive gate + Part B rebase + Part C coverage + Part R PR code review + Part D tip pinning). This is a pre-merge self-check cheat sheet; referencing workflows must not copy the body — keep a one-line pointer only.
 
 **OpenSpec archive association gate (Part A, first):**
 - [ ] Association decided? (diff contains active `openspec/changes/<name>/`, or session-bound name still in `openspec list`) → Part A
@@ -20,9 +20,15 @@
 - [ ] Project `coverage-gate` preference resolved? (`AGENTS.md` → `CLAUDE.md`; unset ≡ `ask`)
 - [ ] If `ask`: asked user “run / skip for this merge”? (must not auto-run)
 - [ ] If **run**: is test-coverage-analyzer available? → if not, write env-gap trail and wait for user
-- [ ] If **run**: gate script executed? Result? → pass → Part D; below threshold / crash / no report / no tests → pause for user
+- [ ] If **run**: gate script executed? Result? → pass → Part R; below threshold / crash / no report / no tests → pause for user
 - [ ] If **skip** (`never` or user-explicit skip): audit trail written? (not an implicit miss)
 - [ ] Implicit miss only means “should-run but did not”
+
+**PR code review (Part R):**
+
+- [ ] Strong dependency `pr-code-review` present? (else abort with per-skill `npx skills add … --skill pr-code-review --yes`)
+- [ ] `pr-code-review` run on the open PR/MR tip?
+- [ ] Pass (no issues ≥80) → Part D; fail → block (or explicit skip 留痕)
 
 **Merge tip pinning (Part D):**
 

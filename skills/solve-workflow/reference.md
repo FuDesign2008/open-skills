@@ -57,7 +57,10 @@ solve-workflow strongly depends on the following skills via frontmatter dependen
 Without them, stage gates lose their single sources of truth — running anyway would produce unreviewed solutions with unclear root causes, defeating the point of a PDCA workflow.
 
 【Install】
-- Universal install (recommended, installs every skill):
+- Install **each** missing skill by name (preferred):
+  npx skills add FuDesign2008/open-skills -g --skill <name> --yes
+  (repeat once per missing name)
+- Or install every open-skills skill:
   npx skills add FuDesign2008/open-skills -g --skill '*' --yes
 - Full-capability install (Hooks/Commands/platform integration):
   see docs/INSTALL.md

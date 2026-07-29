@@ -1,13 +1,44 @@
 ---
 name: merge-discipline
-version: "1.3.1"
+version: "1.4.0"
 user-invocable: true
-description: "合并纪律：合并动作（glab/gh mr/pr merge）前必须加载——OpenSpec archive 关联门控（Part A，最先）+ rebase/冲突预检（Part B）+ 覆盖率门控（Part C）+ tip 钉死（Part D）。关联 active OpenSpec change 时未 archive 不得 merge；用户直接说 merge 也不得隐式跳过。触发词：「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, post-push merge check. 被 opsx-jira-fix-workflow / opsx-solve-workflow / jira-fix-workflow frontmatter dependencies 强依赖。"
+description: "合并纪律：合并动作（glab/gh mr/pr merge）前必须加载——OpenSpec archive 关联门控（Part A，最先）+ rebase/冲突预检（Part B）+ 覆盖率门控（Part C）+ PR 代码审查（Part R，强依赖 pr-code-review）+ tip 钉死（Part D）。关联 active OpenSpec change 时未 archive 不得 merge；用户直接说 merge 也不得隐式跳过。触发词：「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」「合并前 code-review」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, pr code review before merge, post-push merge check. 被 opsx-jira-fix-workflow / opsx-solve-workflow / jira-fix-workflow frontmatter dependencies 强依赖。"
+dependencies:
+  - pr-code-review
 ---
 
 # Merge Discipline
 
-> Internal shared skill — the single source of truth for merge-time discipline. Four parts, run in order **A → B → C → D**: **OpenSpec archive association gate** (Part A) + **rebase/conflict pre-check** (Part B) + **coverage gate** (Part C) + **tip pinning** (Part D). Referencing workflows declare this in frontmatter `dependencies` and abort at startup if missing.
+> Internal shared skill — the single source of truth for merge-time discipline. Five parts, run in order **A → B → C → R → D**: **OpenSpec archive association gate** (Part A) + **rebase/conflict pre-check** (Part B) + **coverage gate** (Part C) + **PR code review** (Part R, strong-dep `pr-code-review`) + **tip pinning** (Part D). Referencing workflows declare this in frontmatter `dependencies` and abort at startup if missing.
+
+## Prerequisite skill check
+
+On load, scan frontmatter `dependencies`. If any is missing → print the Missing Notice below and **abort** (no silent degrade).
+
+### Missing Notice
+
+```
+⚠️ merge-discipline is missing a strong dependency and cannot run
+
+【Missing skill(s)】
+- <name>: <one-line purpose>
+
+【Why it's needed】
+merge-discipline strongly depends on:
+- `pr-code-review`: Part R — multi-perspective PR review with ≥80 confidence filter before tip-pin merge
+
+【Install】
+Install each missing skill by name (preferred):
+  npx skills add FuDesign2008/open-skills -g --skill <name> --yes
+Example for this skill's dependency:
+  npx skills add FuDesign2008/open-skills -g --skill pr-code-review --yes
+Or install every open-skills skill:
+  npx skills add FuDesign2008/open-skills -g --skill '*' --yes
+
+Re-trigger merge after installing.
+```
+
+When listing multiple missing skills, print **one** `npx skills add … --skill <name> --yes` line **per** missing name (do not only show `'*'`).
 
 ## When this applies
 
@@ -15,7 +46,7 @@ Any merge into a protected branch (`glab mr merge` / `gh pr merge` / `git merge 
 
 When hosts use `feature-branch-closeout`, that skill owns the **closeout menu**; this skill runs **only after merge is selected** (or on a direct merge command). Do not redefine the full menu here.
 
-**Execution order when merging: Part A (archive gate) → Part B (rebase) → Part C (coverage) → Part D (tip pinning) → merge.** Part A runs first so archive work is not deferred past rebase/CI. A rebase changes the source tip, forcing Parts C/D to re-run on the new tip.
+**Execution order when merging: Part A (archive gate) → Part B (rebase) → Part C (coverage) → Part R (PR code review) → Part D (tip pinning) → merge.** Part A runs first so archive work is not deferred past rebase/CI. A rebase changes the source tip, forcing Parts C/R/D to re-run on the new tip.
 
 ---
 
@@ -136,7 +167,7 @@ Scan `AGENTS.md` then `CLAUDE.md` (first match wins) for a line matching (case-i
 | *(unset)* | Treat as `ask` |
 | `ask` | On **every** merge, ask the user: run coverage for this merge, or skip? **MUST NOT** auto-run |
 | `always` | Run gate steps without asking (subject to analyzer availability) |
-| `never` | Skip analyzer; write project-preference 留痕; proceed to Part D |
+| `never` | Skip analyzer; write project-preference 留痕; proceed to Part R |
 
 ### 2. Pre-detection (only if decision is **run**)
 
@@ -158,7 +189,7 @@ Independent Bash permission — runs the analyzer script:
 
    | Result | 🤖 Auto | 👤 Manual |
    |---|---|---|
-   | ✅ Report generated + coverage meets threshold | Continue to Part D (tip pinning) | Prompt pass, wait for user re-confirm |
+   | ✅ Report generated + coverage meets threshold | Continue to Part R (PR code review) | Prompt pass, wait for user re-confirm |
    | ⚠️ Coverage below threshold | Pause, output report, await user (force/add-tests/abort) | same |
    | 💥 Crash / no report / exit 1 | Treat as gate-fail, pause | same |
    | 📭 No test code / 0% pass | Present report, pause for user judgment | same |
@@ -179,7 +210,32 @@ Location: PR description and `design.md` Verification Notes.
 
 ---
 
-## Part D — Tip pinning (after gate passes, before merge)
+## Part R — PR code review (strong dependency)
+
+Prevents **merge-without-PR-review**: coverage/CI can be green while the diff still carries high-confidence defects that a multi-perspective review would catch.
+
+1. Confirm frontmatter dependency `pr-code-review` is available (prerequisite check already ran at load).
+2. Load `pr-code-review` and run it against the **open PR/MR** about to be merged (follow that skill exactly).
+3. **Decision matrix:**
+
+| Result | Action |
+|---|---|
+| Pass (no issues ≥80) | Proceed to Part D |
+| Fail (one or more issues ≥80 posted or ready) | **Block merge.** Fix on the source tip, re-enter from Part A on the new tip, or user **explicit** skip with 留痕 |
+| Skill ineligible skip (closed/draft/already reviewed this session) | Treat as pass for this Part only if the PR is still the merge candidate and a prior ≥80-clean review exists on this tip; otherwise pause for user |
+
+### 留痕 (explicit skip only)
+
+`【PR code-review 门控跳过】用户显式跳过 Part R（pr-code-review）。时间：<ISO>。决策人：用户。PR：<url or id>。`
+
+### Red flags
+
+- Skipping Part R because “CI is green” or “coverage-gate never”.
+- Calling Claude Code `/code-review` plugin as a substitute without loading `pr-code-review` (different install surface; this repo’s contract is the open-skills skill).
+
+---
+
+## Part D — Tip pinning (after Part R passes, before merge)
 
 Prevents the **stale-tip merge race**: archive/fix commits pushed seconds before merge fail to enter the target because the merge fast-forwards to the pre-push tip (whose pipeline was already green), while the freshly-pushed commits stay on the source branch. (Postmortem: `docs/mr-merge-stale-tip-archive-miss-incident.md`.)
 
@@ -208,12 +264,13 @@ Prevents the **stale-tip merge race**: archive/fix commits pushed seconds before
 
 ## Mode lifecycle
 
-Asking the user under `ask`, or running the analyzer after opt-in, does not by itself trigger "auto reverts to manual" (sub-step of the merge flow). Gate pause (Part A block / below-threshold / crash / should-run implicit miss / wait for ask answer) = merge flow interrupted, reverts to manual per existing rules. Part B rebase execution follows the same rule: a user-confirmed rebase is a sub-step of the merge flow (does not itself revert to manual); an unresolved conflict or aborted rebase interrupts the merge flow and reverts to manual.
+Asking the user under `ask`, or running the analyzer after opt-in, does not by itself trigger "auto reverts to manual" (sub-step of the merge flow). Gate pause (Part A block / below-threshold / crash / should-run implicit miss / wait for ask answer / Part R fail) = merge flow interrupted, reverts to manual per existing rules. Part B rebase execution follows the same rule: a user-confirmed rebase is a sub-step of the merge flow (does not itself revert to manual); an unresolved conflict or aborted rebase interrupts the merge flow and reverts to manual.
 
 ---
 
 ## Integration guide (for referencing workflows)
 
-- **Keep in your own body:** your stage ordering line (e.g. `archive → branch-closeout → merge-discipline(A→B→C→D) → merge → writeback`), a one-line pointer to this skill, and 1-2 key red-flags. Do **not** copy the Part steps inline.
-- **Delegate to this skill:** all four Parts — A (archive gate), B (rebase), C (coverage), D (tip pinning).
+- **Keep in your own body:** your stage ordering line (e.g. `archive → branch-closeout → merge-discipline(A→B→C→R→D) → merge → writeback`), a one-line pointer to this skill, and 1-2 key red-flags. Do **not** copy the Part steps inline.
+- **Delegate to this skill:** all five Parts — A (archive gate), B (rebase), C (coverage), R (PR code review via `pr-code-review`), D (tip pinning).
 - **Pre-merge checklist (single source):** [reference.md](reference.md)「合并前检查清单」/ "Pre-merge checklist". Referencing workflows keep **one pointer sentence** only — do **not** paste the checklist into workflow `reference.md`.
+- **Missing strong deps:** abort and print per-skill `npx skills add FuDesign2008/open-skills -g --skill <name> --yes` (see Prerequisite skill check).

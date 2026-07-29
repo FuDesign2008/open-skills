@@ -1,8 +1,8 @@
 ---
 name: feature-branch-closeout
-version: "1.0.1"
+version: "1.0.2"
 user-invocable: false
-description: "Post-verification feature-branch closeout menu: after verify (and archive when applicable), present PR / merge / keep / continue options; optional worktree cleanup; selecting merge MUST load merge-discipline Parts A–D; keep/continue MUST NOT trigger merge gates. Triggers — 「分支收尾」「feature 收尾菜单」「合入或保留分支」「branch closeout」 / feature branch closeout, post-verify branch menu. Do NOT use as a name alias for finishing-a-development-branch."
+description: "Post-verification feature-branch closeout menu: after verify (and archive when applicable), present PR / merge / keep / continue options; optional worktree cleanup; selecting merge MUST load merge-discipline Parts A→B→C→R→D; keep/continue MUST NOT trigger merge gates. Triggers — 「分支收尾」「feature 收尾菜单」「合入或保留分支」「branch closeout」 / feature branch closeout, post-verify branch menu. Do NOT use as a name alias for finishing-a-development-branch."
 dependencies:
   - merge-discipline
 ---
@@ -37,7 +37,7 @@ Optional (when applicable): detect worktree / detached HEAD / isolation created 
 If the choice is **merge** (or the user later says merge):
 
 1. Load `merge-discipline`
-2. Run Parts **A → B → C → D**
+2. Run Parts **A → B → C → R → D**
 3. Only then execute the platform merge
 
 Do **not** copy rebase / coverage / tip-pin prose into this skill.
@@ -49,7 +49,7 @@ Do **not** copy rebase / coverage / tip-pin prose into this skill.
 ## Forbidden
 
 - Silently merging without the menu (unless user already ordered merge explicitly — then still run `merge-discipline`)
-- Embedding merge-discipline Parts A–D inline
+- Embedding merge-discipline Parts A→B→C→R→D inline
 - Renaming this skill to `finishing-a-development-branch` inside this repository
 
 ## Integration guide
