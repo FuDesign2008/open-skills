@@ -138,7 +138,7 @@ dependencies:  # 可选，数组形式，声明强依赖的其他 skill
 Skill 内容...
 ```
 
-**`dependencies` 字段（可选）**：数组形式，声明本 skill 强依赖的其他 skill。声明后，skill 必须在启动时做前置检查（扫描可用 skill 列表），缺失任一依赖立即中止流程并提示安装命令，**不得静默降级**。被依赖的 skill 不需要反向声明。
+**`dependencies` 字段（可选）**：数组形式，声明本 skill 强依赖的其他 skill。声明后，skill 必须在启动时做前置检查（扫描可用 skill 列表），缺失任一依赖立即中止流程并提示安装命令，**不得静默降级**。被依赖的 skill 不需要反向声明——不得把「Integrated by / Strongly depended on by」主机名清单当作行为契约维护；至多用角色句（如「Referenced by PDCA hosts via frontmatter `dependencies`」）。强依赖权威来源是**引用方** frontmatter 与本文「Skill 清单」依赖列。
 
 **触发词设计**：支持两种形式——单独触发词（如「分析问题」）或带冒号形式（如「分析问题： xxx」）；冒号和空格不限制中英文。在 `description` 中列出所有触发词，**必须包含中文触发词**，可同时列英文等价词（如 `「提交代码」 / "commit code"`）；工作流 skill 的阶段名即为触发词（如「分析问题」触发 solve-workflow 的阶段 1）。
 

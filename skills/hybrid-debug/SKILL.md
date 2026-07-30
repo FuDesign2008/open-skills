@@ -7,7 +7,7 @@ description: "Hybrid app (native shell + WebView/WKWebView/Electron + H5) full-s
 
 # Hybrid Fullstack Debugging
 
-> **Role**: Provides a four-layer analysis model and a domain knowledge base for debugging hybrid applications (native shell + embedded web). It is a methodology + knowledge enhancement, not a standalone end-to-end workflow — it is strongly depended on by `solve-workflow` via frontmatter `dependencies` (invoked after a prerequisite check), and it delegates runtime inspection to `browser-debug-toolkit`.
+> **Role**: Provides a four-layer analysis model and a domain knowledge base for debugging hybrid applications (native shell + embedded web). It is a methodology + knowledge enhancement, not a standalone end-to-end workflow — **referenced by** PDCA hosts via frontmatter `dependencies` (invoked after a prerequisite check), and it delegates runtime inspection to `browser-debug-toolkit`.
 >
 > **Domain knowledge** (technical pitfalls, native↔H5 contract templates, anchored case) is in [reference.md](reference.md).
 
@@ -32,7 +32,7 @@ Strong signals (any one is enough):
 
 | Skill | Responsibility | Relationship to this skill |
 |-------|---------------|----------------------------|
-| `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, `opsx-jira-fix-workflow` | PDCA workflows | **Strongly depended on by all four workflows via frontmatter `dependencies`.** Each runs a prerequisite check at startup; if this skill is missing, the workflow aborts with an install prompt. This skill is the hybrid-specific deep-dive of their technical-analysis phase. |
+| PDCA hosts | Host workflows | **Referenced by** PDCA hosts via frontmatter `dependencies` (missing → host aborts). Hybrid-specific deep-dive of their technical-analysis phase. Hosts are SoT for that edge. |
 | `browser-debug-toolkit` | Browser DevTools tool-selection decision table | This skill's **runtime evidence** step delegates to it — four-layer analysis tells you *what* to verify; `browser-debug-toolkit` tells you *which tool* to verify it with. |
 | `essence-diagnosis` | General essence diagnosis (SOAP + multi-hypothesis + adversarial debate) | For hybrid problems that are still foggy after four-layer analysis, escalate to `essence-diagnosis` for heavyweight multi-hypothesis verification. |
 | `android-webview-debug` | Toggle Android WebView remote debugging on/off | Often a prerequisite step — enables chrome-devtools inspection of an Android WebView before this skill's runtime-evidence step can run. |

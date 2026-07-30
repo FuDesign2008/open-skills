@@ -2,7 +2,7 @@
 name: jira-status-writeback
 version: "1.0.0"
 user-invocable: false
-description: "Post-merge Jira writeback SOP: transition only to「已修复」, then independent jira_add_comment with body. Triggers — 「Jira 状态回写」「回写已修复」「合并后写 Jira」「jira writeback」「jira status writeback」. Do NOT use for reading issues, creating issues, or pre-merge comments. Loaded by jira-fix-workflow / opsx-jira-fix-workflow after merge."
+description: "Post-merge Jira writeback SOP: transition only to「已修复」, then independent jira_add_comment with body. Triggers — 「Jira 状态回写」「回写已修复」「合并后写 Jira」「jira writeback」「jira status writeback」. Do NOT use for reading issues, creating issues, or pre-merge comments. Loaded by Jira fix hosts after merge via frontmatter dependencies."
 ---
 
 # Jira Status Writeback
