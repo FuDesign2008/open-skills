@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.14.0"
+version: "1.15.0"
 user-invocable: true
 description: "Eight-stage PDCA problem-solving workflow that persists analysis, proposal, design review, plan, execution, and verification into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context. Use for feature work, bug fixes, refactors, and complex engineering tasks that need long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick one-off edit with no traceability need — use solve-workflow instead. Triggers：「opsx解决」「OpenSpec解决」「规范化解决」「创建OpenSpec变更」「创建opsx变更」「用OpenSpec分析」「用OpenSpec修复」「opsx自动解决」「OpenSpec自动解决」「opsx-solve」「opsx-solve-workflow」 / opsx solve, OpenSpec solve workflow, create an OpenSpec change."
 dependencies:
@@ -23,6 +23,7 @@ dependencies:
   - domain-language-discipline
   - test-first-discipline
   - design-approval-gate
+  - delivery-discipline
   - feature-branch-closeout
   - decision-fog-discipline
   - workspace-isolation-discipline
@@ -67,6 +68,7 @@ Not a replacement for plain `solve-workflow`:
 - `test-suite-ensure` (stage 6 test-suite ensure: complete and run tests when infra exists; scaffold with user confirmation when it doesn't)
 - `test-first-discipline` (stage 6: failing-test-first for behavior changes; distinct from test-suite-ensure)
 - `design-approval-gate` (before stage 6: no production impl without approval; named auto/hotfix escapes)
+- `delivery-discipline` (stage 8: optional commit + open/update PR/MR after archive; not every run delivers)
 - `feature-branch-closeout` (stage 8: post-archive closeout menu; merge delegates to merge-discipline)
 - `decision-fog-discipline` (before explore solutions: graduate fog / decision tickets first)
 - `workspace-isolation-discipline` (before stage 6: optional isolated workspace)
@@ -307,9 +309,9 @@ If verification passed, run the pre-archive check:
 
 If `openspec-archive-change` fails, do **not** manually manipulate the `openspec/` directory — stop and tell the user to check the OpenSpec installation.
 
-After archiving, always check the diff to confirm both the main-specs update and the archive-directory move landed in the project root's git working-tree changes. Then load `feature-branch-closeout` for the closeout menu (PR / merge / keep / continue). Never declare completion while tests haven't passed, archiving isn't complete, or the diff hasn't been reviewed.
+After archiving, always check the diff to confirm both the main-specs update and the archive-directory move landed in the project root's git working-tree changes. Then load `delivery-discipline` when this run may need commit + PR/MR (archive diffs usually need delivery; the skill's need-delivery gate may still skip). Then load `feature-branch-closeout` for the closeout menu (PR / merge / keep / continue). Never declare completion while tests haven't passed, archiving isn't complete, or the diff hasn't been reviewed.
 
-> **Order constraint**: archive + diff check → `feature-branch-closeout` → on merge, `merge-discipline` A→B→C→R→D. Choosing keep/continue does not trigger merge discipline.
+> **Order constraint**: archive + diff check → optional `delivery-discipline` → `feature-branch-closeout` → on merge, `merge-discipline` A→B→C→R→D. Choosing keep/continue does not trigger merge discipline.
 
 #### Merge discipline (`merge-discipline` skill)
 

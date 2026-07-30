@@ -1,6 +1,6 @@
 ---
 name: solve-workflow
-version: "1.20.1"
+version: "1.21.0"
 user-invocable: true
 description: "Eight-stage PDCA workflow for systematically solving bugs, refactors, and feature-development tasks: clarify → analyze → explore solutions → review → plan → execute → verify → retrospect. Manual mode (default) pauses for user confirmation at each stage exit; auto mode runs end-to-end. Triggers — 「明确问题」「分析问题」「探索方案」「审查方案」「制定计划」「执行计划」「检查验证」「复盘改进」(alias「回顾总结」)；「继续分析」「深入分析」「修改方案」「完善方案」「优化方案」「更新计划」「修订计划」「修改计划」；「自动模式」「自动分析」「自动解决」 / clarify problem, analyze problem, explore solutions, review solution, make plan, execute plan, verify, retrospective, auto mode."
 dependencies:
@@ -21,6 +21,7 @@ dependencies:
   - domain-language-discipline
   - test-first-discipline
   - design-approval-gate
+  - delivery-discipline
   - feature-branch-closeout
   - decision-fog-discipline
   - workspace-isolation-discipline
@@ -48,6 +49,7 @@ dependencies:
 - `test-suite-ensure` (stage 6 test completion: generate and run tests when test infrastructure exists; scaffold with user confirmation when it doesn't)
 - `test-first-discipline` (stage 6: failing-test-first for behavior changes; distinct from test-suite-ensure)
 - `design-approval-gate` (before stage 6: no production impl without approval; named auto/hotfix escapes)
+- `delivery-discipline` (stage 8: optional commit + open/update PR/MR before closeout; not every run delivers)
 - `feature-branch-closeout` (stage 8: post-verify branch menu; merge delegates to merge-discipline when used)
 - `decision-fog-discipline` (before explore solutions: graduate fog / decision tickets first)
 - `workspace-isolation-discipline` (before stage 6: optional isolated workspace)
@@ -96,7 +98,7 @@ dependencies:
 | 5 Make a plan | ✅ Read; ❌ Edit/Write/Bash | ⛔ Stop after the plan, wait for confirmation | File change list + order |
 | 6 Execute the plan | ✅ Everything | Auto-advance to stage 7 when clean | Execution report |
 | 7 Verify | ✅ Bash; ❌ Edit/Write | ⛔ Stop after the results, wait for confirmation | Verification results |
-| 8 Retrospective | ❌ Edit/Write (unless the user confirms writing, or a new cycle starts) | End / or loop back to stage 3/4 | Improvement suggestions + sediment carrier |
+| 8 Retrospective | ❌ Edit/Write (unless the user confirms writing, delivery, or a new cycle starts) | End / or loop back to stage 3/4 | Optional delivery + closeout + improvement suggestions |
 
 ---
 
@@ -316,7 +318,15 @@ Output format is in [reference.md](reference.md) § Stage 7 — Verification Res
 
 ## Stage 8: Retrospective (Act)
 
-> Load `learn-and-improve` for the retrospective and knowledge sediment; this stage keeps only solve-workflow's cycle decision, optional wrap-up summary doc, and coverage-gate reminder. Do not write files by default; only proceed to "make a plan → execute the plan" when the user explicitly requests writing or a new cycle. When a feature branch needs closeout (PR / merge / keep / continue), load `feature-branch-closeout` (merge path loads `merge-discipline`).
+> After verify: optional code delivery → branch closeout → retrospective. Load `delivery-discipline` when this run may need commit + PR/MR (not every run — that skill's need-delivery gate may skip). Then load `feature-branch-closeout` for the menu (PR / merge / keep / continue; merge loads `merge-discipline`). Then load `learn-and-improve` for retrospective and knowledge sediment. Do not write rule/skill files by default; only proceed to "make a plan → execute the plan" when the user explicitly requests writing or a new cycle.
+
+### Optional delivery (`delivery-discipline`)
+
+Load `delivery-discipline` and follow it. Pass `{pr-body-extra}` / `{commit-context}` when useful. If the gate skips delivery, continue to closeout (user may still choose open PR via the menu, which re-enters `delivery-discipline`).
+
+### Branch closeout (`feature-branch-closeout`)
+
+Load `feature-branch-closeout` for the closeout menu. Choosing keep/continue does not trigger merge discipline.
 
 ### Delegate to `learn-and-improve` (retrospective)
 
@@ -335,11 +345,11 @@ After the output, proactively ask: "是否需要生成总结文档？" / "Do you
 
 ### Pre-merge coverage reminder (conditional, non-gating)
 
-> ⚠️ solve-workflow **never performs any git merge operation** (all 8 stages are analysis/review/execution/verification/retrospective — there is no merge step). This reminder is **advisory, not a mandatory gate** — it does not run a script, does not block the flow, and is not a capability-discovery table entry. Full trigger conditions and reminder text are in [reference.md](reference.md) § Stage 8 — Pre-Merge Coverage Reminder (Non-Gating).
+> ⚠️ solve-workflow **does not own protected-branch merge** as a mandatory stage step — merge only happens if closeout selects merge (via `merge-discipline`). Optional commit/PR is owned by `delivery-discipline`. The coverage reminder is **advisory, not a mandatory gate** — it does not run a script, does not block the flow, and is not a capability-discovery table entry. Full trigger conditions and reminder text are in [reference.md](reference.md) § Stage 8 — Pre-Merge Coverage Reminder (Non-Gating).
 
-**Boundary with mandatory gates**: solve-workflow only suggests "run this before merging" — it never runs the script or judges pass/fail. The mandatory gate (script run + decision matrix + audit trail) belongs to skills that own a merge step (`jira-fix-workflow` / the `opsx-*` family), executed right before their merge step.
+**Boundary with mandatory gates**: solve-workflow only suggests "run this before merging" — it never runs the coverage script or judges pass/fail on its own. The mandatory coverage gate belongs to `merge-discipline` Part C when merge is selected (also used by `jira-fix-workflow` / the `opsx-*` family).
 
-**Tool restrictions**: Edit/Write forbidden; do not write files unless the user explicitly asks to "write to rules" / "create a skill" / "update docs", or a new cycle begins.
+**Tool restrictions**: Edit/Write forbidden except when executing `delivery-discipline` / closeout git operations the user confirmed; do not write rule/skill files unless the user explicitly asks to "write to rules" / "create a skill" / "update docs", or a new cycle begins.
 
 ---
 
@@ -349,6 +359,6 @@ After the output, proactively ask: "是否需要生成总结文档？" / "Do you
 |------|------|------|
 | Continuing analysis after the existence check concludes "doesn't exist / description mismatch" | Wrong direction from the start | Stop immediately, report, wait for user confirmation |
 | Stage 8 writes to rule files or creates a skill by default | Pollutes long-term rules; breaks the summarize-only boundary | Stage 8 only outputs sediment suggestions; only proceed to "make a plan → execute the plan" after the user explicitly asks |
-| Stage 8 treats the coverage reminder as a mandatory gate (runs a script / blocks the flow) | solve-workflow has no merge stage — forcing the script run overreaches with no merge decision to attach to | The reminder is advisory only: print the text, never run `test-coverage-analyzer`, never block; the mandatory gate belongs to skills that own a merge step |
+| Stage 8 treats the coverage reminder as a mandatory gate (runs a script / blocks the flow) | Coverage preference belongs to merge-discipline Part C when merge is selected | The reminder is advisory only: print the text, never run `test-coverage-analyzer` from solve alone; never block |
 
 ---

@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.14.1"
+version: "1.15.0"
 user-invocable: true
 description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」 / opsx jira fix, OpenSpec Jira fix workflow."
 dependencies:
@@ -23,6 +23,7 @@ dependencies:
   - domain-language-discipline
   - test-first-discipline
   - design-approval-gate
+  - delivery-discipline
   - feature-branch-closeout
   - decision-fog-discipline
   - workspace-isolation-discipline
@@ -66,6 +67,7 @@ Not a replacement for plain `jira-fix-workflow`:
 - `test-suite-ensure` (stage 6.2.5 test-suite ensure: complete and run tests when infra exists; scaffold with user confirmation when it doesn't)
 - `test-first-discipline` (execution: failing-test-first for behavior changes; distinct from test-suite-ensure)
 - `design-approval-gate` (before execution: no production impl without approval; named auto/hotfix escapes)
+- `delivery-discipline` (stage 8: commit + open/update PR/MR after archive; field map via placeholders)
 - `feature-branch-closeout` (stage 8: closeout menu; merge delegates to merge-discipline)
 - `decision-fog-discipline` (before explore solutions: graduate fog / decision tickets first)
 - `workspace-isolation-discipline` (before execution: optional isolated workspace)
@@ -322,33 +324,9 @@ Output format: see [reference.md](reference.md)「Stage 7 Verification Results�
 
 Do not submit a PR on failed verification. The execution record is `tasks.md` checkboxes, the PR/MR description, and `design.md`'s Verification Notes.
 
-## Stage 8: Submit the PR, archive, merge & close out
+## Stage 8: Archive, submit PR, merge & close out
 
-### 8.1 Commit & PR
-
-Before submitting, confirm:
-
-- All relevant `tasks.md` checkboxes are complete.
-- OpenSpec artifacts, code changes, and necessary verification notes are all in the diff or PR/MR description.
-- Verification passed, or manual-verification items are explicitly listed.
-
-Commit message:
-
-```text
-fix(<scope>): <JIRA-ID> <subject>
-```
-
-PR/MR description must include:
-
-- Jira link
-- Root cause
-- Fix approach
-- OpenSpec change path
-- Changed-file list
-- Verification evidence
-- Risk & rollback
-
-### 8.2 OpenSpec archive
+### 8.1 OpenSpec archive
 
 Pre-archive sync steps:
 
@@ -362,13 +340,26 @@ Before merging or preparing to merge, confirm archiving is complete (consistent 
 - When an active OpenSpec change is associated: **must** archive first (sync main specs + move into `openspec/changes/archive/`), confirm the diff, then merge; "archive after merge" is **never** a normal path.
 - A PR with no associated change: Part A passes through, archiving not required.
 
-Default: after verification passes, archive first, confirm the `openspec/specs/` update and the `openspec/changes/archive/` move are in the diff, then complete the PR/merge.
+Default: after verification passes, archive first, confirm the `openspec/specs/` update and the `openspec/changes/archive/` move are in the diff, then deliver and close out.
+
+### 8.2 Commit & PR (`delivery-discipline`)
+
+Before delivery, confirm:
+
+- All relevant `tasks.md` checkboxes are complete.
+- OpenSpec artifacts, code changes, and necessary verification notes are all in the diff or PR/MR description.
+- Verification passed, or manual-verification items are explicitly listed.
+
+Load `delivery-discipline` and follow it. Supply:
+
+- `{commit-context}`: prefer `fix(<scope>): <JIRA-ID> <subject>`
+- `{pr-body-extra}`: Jira link, root cause, fix approach, OpenSpec change path, changed-file list, verification evidence, risk & rollback
 
 ### 8.3 Branch closeout
 
-Once archiving and the diff check are complete, load `feature-branch-closeout` for the menu (PR / merge / keep / continue). Never declare completion while verification hasn't passed or archiving isn't complete.
+Once archiving, delivery, and the diff check are complete, load `feature-branch-closeout` for the menu (PR / merge / keep / continue). Never declare completion while verification hasn't passed or archiving isn't complete.
 
-> **Order constraint**: archive (8.2) → `feature-branch-closeout` (8.3) → on merge, `merge-discipline` (8.3.1) → execute the merge → Jira writeback (8.4). Choosing keep/continue skips both merge discipline and Jira writeback.
+> **Order constraint**: archive (8.1) → `delivery-discipline` (8.2) → `feature-branch-closeout` (8.3) → on merge, `merge-discipline` (8.3.1) → execute the merge → Jira writeback (8.4). Choosing keep/continue skips both merge discipline and Jira writeback.
 
 #### 8.3.1 Merge discipline (`merge-discipline` skill)
 
@@ -399,7 +390,7 @@ Once archiving and branch closeout are complete (and Jira writeback when merge r
 > - Manually manipulating the `openspec/` directory after an archive failure
 > - PR description missing the OpenSpec change path or verification evidence
 > - Running the analyzer by default under an `ask` preference without asking the user (see `merge-discipline` Part C)
-> - Triggering merge discipline before archive (8.2) completes (order: 8.2 archive → 8.3 branch closeout → 8.3.1 merge discipline `merge-discipline` → merge → 8.4 Jira writeback)
+> - Triggering merge discipline before archive (8.1) completes (order: 8.1 archive → 8.2 `delivery-discipline` → 8.3 branch closeout → 8.3.1 merge discipline → merge → 8.4 Jira writeback)
 
 ## Batch OPSX Jira fixes
 

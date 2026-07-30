@@ -1,6 +1,6 @@
 ---
 name: jira-fix-workflow
-version: "3.23.2"
+version: "3.24.0"
 user-invocable: true
 description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」 / fix this bug, jira-fix, auto fix, force fix, resume fix. Do NOT use for batch fixes across multiple issues — use jira-fix-batch instead."
 dependencies:
@@ -22,6 +22,7 @@ dependencies:
   - domain-language-discipline
   - test-first-discipline
   - design-approval-gate
+  - delivery-discipline
   - feature-branch-closeout
   - decision-fog-discipline
   - workspace-isolation-discipline
@@ -214,17 +215,18 @@ Output the result only — do not change code. Compare against the Jira repro/ex
 
 ## Stage 9: Submit PR/MR
 
-1. Collect the Jira ID, root cause, solution, files, and report paths
-2. `git-commit` (`execute=true`): add/commit/push; message format in reference.md § Commit Message Format (must include the Jira ID)
-3. Open a PR/MR matching the remote (`gh` / `glab`); description includes root cause, solution, files, verification scenarios (≥2 each of functional/boundary/regression), and the Jira link
+Load `delivery-discipline` and follow it. Supply:
 
-👤 stop after presenting the plan; the AI executes once confirmed. 🤖 executes directly. Completion output: reference.md § Stage 9 → `07-report.md`.
+- `{commit-context}`: `type`/`scope`/`subject`/`jira_id` (message format in reference.md § Commit Message Format — must include the Jira ID)
+- `{pr-body-extra}`: root cause, solution, files, verification scenarios (≥2 each of functional/boundary/regression), and the Jira link
+
+👤 stop after presenting the delivery plan; the AI executes once confirmed. 🤖 executes directly. Completion output: reference.md § Stage 9 → `07-report.md`.
 
 ---
 
 ## Stage 10: Review & Merge
 
-Present the PR/MR URL. Load `feature-branch-closeout` for the closeout menu (PR already open → typically merge / keep / continue). **Both auto and manual require user confirmation before merging.**
+Present the PR/MR URL (from stage 9). Load `feature-branch-closeout` for the closeout menu (PR already open → typically merge / keep / continue). **Both auto and manual require user confirmation before merging.**
 
 Once merge is selected:
 
