@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.14.0"
+version: "1.14.1"
 user-invocable: true
 description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」 / opsx jira fix, OpenSpec Jira fix workflow."
 dependencies:
@@ -26,6 +26,7 @@ dependencies:
   - feature-branch-closeout
   - decision-fog-discipline
   - workspace-isolation-discipline
+  - learn-and-improve
 ---
 
 # OPSX Jira Bug-Fix Workflow
@@ -72,6 +73,7 @@ Not a replacement for plain `jira-fix-workflow`:
 - `merge-discipline` (stage 8 merge discipline — after closeout selects merge)
 - `opsx-workspace-gate` (stage 0 OpenSpec workspace and native-skill gate)
 - `jira-status-writeback` (stage 8 post-merge writeback: status transition + fix-comment SOP, single source)
+- `learn-and-improve` (stage 8 retrospective and knowledge sediment)
 
 ## Prerequisite skill check
 
@@ -387,9 +389,9 @@ Once the PR/MR has merged and the code is on the main branch, write back the Jir
 
 The closeout record is authoritative via the PR/MR, Jira comment, and OpenSpec archive result.
 
-### 8.5 AI engineering sediment
+### 8.5 Retrospective (delegate to `learn-and-improve`)
 
-OpenSpec artifacts are archived through the normal flow. `AGENTS.md` / rules / skills and other AI engineering knowledge: writing requires an **explicit user request first**; one-off or unverified lessons should not be solidified.
+Once archiving and branch closeout are complete (and Jira writeback when merge ran), load `learn-and-improve` and follow its framework. OpenSpec artifacts archived through the normal flow are not subject to its sediment-value gate. AI engineering knowledge (`AGENTS.md`, rules, skills, etc.) uses that skill's carrier decision tree; writing requires an explicit user request first.
 
 > 🚩 **Red Flags (stage 8)**:
 > - Submitting a PR before verification passes

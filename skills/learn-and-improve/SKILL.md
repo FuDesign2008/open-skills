@@ -1,8 +1,8 @@
 ---
 name: learn-and-improve
-version: "1.0.1"
+version: "1.0.2"
 user-invocable: true
-description: "Structured retrospective and knowledge sediment for completed work (the Act phase of PDCA). Run a disciplined post-work review (Keep-Problem-Try / Stop-Start-Continue / After-Action Review by context), judge which lessons are worth solidifying, pick the right carrier, validate the sediment gets reused, and feed improvements back. Use whenever finished work needs reflection — as the review stage of solve-workflow / opsx-solve-workflow, or standalone on any completed task. Triggers — 「回顾总结」「复盘」「经验沉淀」「总结经验教训」「改进闭环」「沉淀规则」「项目复盘」 / learn and improve, lessons learned, retrospective, post-mortem, debrief."
+description: "Structured retrospective and knowledge sediment for completed work (the Act phase of PDCA). Run a disciplined post-work review (Keep-Problem-Try / Stop-Start-Continue / After-Action Review by context), judge which lessons are worth solidifying, pick the right carrier, validate the sediment gets reused, and feed improvements back. Use whenever finished work needs reflection — as the review/closeout stage of solve-workflow / opsx-solve-workflow / jira-fix-workflow / opsx-jira-fix-workflow, or standalone on any completed task. Triggers — 「回顾总结」「复盘」「经验沉淀」「总结经验教训」「改进闭环」「沉淀规则」「项目复盘」 / learn and improve, lessons learned, retrospective, post-mortem, debrief."
 ---
 
 # Learn and Improve
@@ -18,13 +18,13 @@ The core disease it treats is **"captured but not applied"** — lessons written
 ## When to use
 
 - **Standalone**: the user finished work and wants to reflect — "复盘一下这次", "做个回顾总结", "what did we learn from this".
-- **Integrated**: `solve-workflow` / `opsx-solve-workflow` reach their review stage and invoke this skill via frontmatter `dependencies`.
+- **Integrated**: `solve-workflow` / `opsx-solve-workflow` / `jira-fix-workflow` / `opsx-jira-fix-workflow` reach their review or closeout stage and invoke this skill via frontmatter `dependencies`.
 
 The trigger phrases in the description govern both paths.
 
 ## Relationship to other skills
 
-- **Integrated by**: `solve-workflow`, `opsx-solve-workflow` (via `dependencies` — strong; if missing, the workflow aborts at its prerequisite check rather than silently downgrading).
+- **Integrated by**: `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, `opsx-jira-fix-workflow` (via `dependencies` — strong; if missing, the workflow aborts at its prerequisite check rather than silently downgrading).
 - **Analogous to**: `solution-review` (the deep review skill for phase 3). This is the deep review skill for the Act phase. Same pattern, different stage.
 
 ## The framework — 4 steps
