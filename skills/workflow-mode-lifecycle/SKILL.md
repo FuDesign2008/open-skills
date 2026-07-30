@@ -2,7 +2,7 @@
 name: workflow-mode-lifecycle
 version: "1.0.0"
 user-invocable: false
-description: "Shared lifecycle contract for manual/auto modes in PDCA-style workflow skills: auto mode always reverts to manual on completion or interruption, re-entering auto requires an explicit trigger, implicit continuation never re-activates it, and batch orchestrators pass mode explicitly. Referenced via frontmatter dependencies by solve-workflow, opsx-solve-workflow, jira-fix-workflow, opsx-jira-fix-workflow; load when a workflow delegates its mode rules."
+description: "Shared lifecycle contract for manual/auto modes in PDCA-style workflow skills: auto mode always reverts to manual on completion or interruption, re-entering auto requires an explicit trigger, implicit continuation never re-activates it, and batch orchestrators pass mode explicitly. Referenced by PDCA hosts via frontmatter dependencies; load when a host delegates its mode rules."
 ---
 
 # Workflow Mode Lifecycle

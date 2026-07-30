@@ -2,7 +2,7 @@
 name: analysis-core
 version: "1.1.0"
 user-invocable: false
-description: "Shared analysis-stage methodology for PDCA fix workflows: temporary-change permission and rollback gate, red-capable reproduction loop before hypothesis lists, instrumentation-debug triggers with debug-skill delegation, analysis step skeleton (existence → research routing → phenomenon/locate/root-cause/upstream-eval/impact), and debug-verify loop. Parameterizes the post-analysis exit as {next-stage}. Referenced via frontmatter dependencies by solve-workflow, opsx-solve-workflow, jira-fix-workflow, opsx-jira-fix-workflow. Triggers — 「分析阶段核心」「分析核心」「临时改动门控」「红环门控」「打点调试门控」「调试验证闭环」「analysis-core」 / analysis stage core, red-capable loop gate, temp-change gate, instrumentation debug gate, debug-verify loop."
+description: "Shared analysis-stage methodology for PDCA fix workflows: temporary-change permission and rollback gate, red-capable reproduction loop before hypothesis lists, instrumentation-debug triggers with debug-skill delegation, analysis step skeleton (existence → research routing → phenomenon/locate/root-cause/upstream-eval/impact), and debug-verify loop. Parameterizes the post-analysis exit as {next-stage}. Referenced by PDCA hosts via frontmatter dependencies. Triggers — 「分析阶段核心」「分析核心」「临时改动门控」「红环门控」「打点调试门控」「调试验证闭环」「analysis-core」 / analysis stage core, red-capable loop gate, temp-change gate, instrumentation debug gate, debug-verify loop."
 dependencies:
   - known-issue-research
   - runtime-evidence-debug

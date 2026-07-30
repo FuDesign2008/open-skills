@@ -7,7 +7,7 @@ description: "When a bug involves a named third-party library/framework, or symp
 
 # Dependency Upgrade as Bug Fix
 
-> **Role**: A decision-and-execution methodology for the case where the cleanest fix for a bug is *upgrading a dependency* rather than writing a local workaround. It is a methodology enhancement: it can be invoked standalone, and it is referenced by `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, and `opsx-jira-fix-workflow` during their technical-analysis phase (as the optimistic counterpart to the "no viable solution" branch).
+> **Role**: A decision-and-execution methodology for the case where the cleanest fix for a bug is *upgrading a dependency* rather than writing a local workaround. It is a methodology enhancement: it can be invoked standalone, and it is **referenced by** PDCA hosts during their technical-analysis phase (as the optimistic counterpart to the "no viable solution" branch).
 
 ## Why this skill exists
 
@@ -71,7 +71,7 @@ Once the decision to upgrade is made, execute it safely. These checks exist beca
 
 | Skill | Relationship |
 |-------|--------------|
-| `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, `opsx-jira-fix-workflow` | These workflows reference this skill at their technical-analysis phase (the optimistic counterpart to the "industry-wide no-viable-solution" branch). When invoked through a workflow, start from the 4-step decision order using the workflow's already-established root cause. |
+| PDCA hosts | **Referenced by** PDCA hosts at technical-analysis (optimistic counterpart to the "industry-wide no-viable-solution" branch). When invoked through a host, start from the 4-step decision order using the host's already-established root cause. Hosts are SoT for that edge. |
 | `effective-web-research` | Step 2 (checking the Changelog) benefits from this skill's research discipline — official sources first (the library's own changelog site), check recency, cross-validate non-trivial claims. |
 | `runtime-evidence-debug` | If root-cause confidence is still fuzzy after checking the Changelog, this skill's escape hatch (web research for known platform/framework issues) overlaps with step 2 here. This skill is the *fix-strategy* decision; `runtime-evidence-debug` is the *evidence-gathering* methodology. |
 

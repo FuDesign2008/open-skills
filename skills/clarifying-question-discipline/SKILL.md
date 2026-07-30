@@ -2,7 +2,7 @@
 name: clarifying-question-discipline
 version: "1.2.0"
 user-invocable: false
-description: "Hard discipline for asking the user clarifying questions: ask exactly ONE most critical question per round (priority: purpose → constraints → success criteria), include a recommended answer when asking, resolve unknowns across MULTIPLE rounds until clear, distinguish fact self-check vs decision ask-human, and do NOT rush to solutions during clarification. Also carries the investigation-first principle. Referenced via frontmatter dependencies by workflow skills (solve-workflow, opsx-solve-workflow, jira-fix-workflow, opsx-jira-fix-workflow, perf-workflow). Triggers — 「一次一问」「多轮问清」「澄清提问纪律」「推荐答案提问」 / clarifying question discipline."
+description: "Hard discipline for asking the user clarifying questions: ask exactly ONE most critical question per round (priority: purpose → constraints → success criteria), include a recommended answer when asking, resolve unknowns across MULTIPLE rounds until clear, distinguish fact self-check vs decision ask-human, and do NOT rush to solutions during clarification. Also carries the investigation-first principle. Referenced by PDCA and perf hosts via frontmatter dependencies. Triggers — 「一次一问」「多轮问清」「澄清提问纪律」「推荐答案提问」 / clarifying question discipline."
 ---
 
 # Clarifying Question Discipline

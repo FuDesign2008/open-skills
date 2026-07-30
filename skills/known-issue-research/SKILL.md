@@ -2,7 +2,7 @@
 name: known-issue-research
 version: "1.1.0"
 user-invocable: false
-description: "External-research routing for confirmed code problems: triage whether the root cause is internal / external / hybrid, run a known-issue quick search before deep root-causing (platform silent failures, nested host runtimes, no code-level suspects), and evaluate industry-wide hard limits. Delegates all WebSearch discipline to effective-web-research. Referenced via frontmatter dependencies by workflow skills (solve-workflow, opsx-solve-workflow, jira-fix-workflow, opsx-jira-fix-workflow); load during the technical-analysis stage."
+description: "External-research routing for confirmed code problems: triage whether the root cause is internal / external / hybrid, run a known-issue quick search before deep root-causing (platform silent failures, nested host runtimes, no code-level suspects), and evaluate industry-wide hard limits. Delegates all WebSearch discipline to effective-web-research. Referenced by PDCA hosts via frontmatter dependencies; load during the technical-analysis stage."
 dependencies:
   - effective-web-research
 ---

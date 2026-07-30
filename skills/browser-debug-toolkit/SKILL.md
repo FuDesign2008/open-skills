@@ -11,7 +11,7 @@ description: "Browser runtime debugging toolkit — prioritize browser DevTools 
 
 UI/CSS/DOM layout issues often have root causes that only manifest at runtime — dynamically generated DOM structures, CSS specificity conflicts, layout calculation anomalies. Static code analysis (Read/Grep) and console-based debugging (console.log) have a fundamental limitation: they cannot observe the rendered DOM tree, computed CSS properties, or box model geometry.
 
-This skill provides a scene-to-tool decision table and usage guides for each tool. It is strongly depended on by `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, and `opsx-jira-fix-workflow` via frontmatter `dependencies` (invoked after a prerequisite check when browser-reproducible scenarios are detected).
+This skill provides a scene-to-tool decision table and usage guides for each tool. **Referenced by** PDCA hosts via frontmatter `dependencies` (invoked after a prerequisite check when browser-reproducible scenarios are detected). Hosts are SoT for that edge.
 
 ## Prerequisites
 
@@ -154,13 +154,13 @@ For the web-access curl API cheat sheet, the ego-browser heredoc recipes, and de
 
 ## Workflow Integration
 
-This skill is strongly depended on by `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, and `opsx-jira-fix-workflow` via frontmatter `dependencies` (each runs a prerequisite check at startup; if missing, it aborts). It is also discovered by `debug-workflow` and similar workflow skills through their environment capability exploration. It is delegated to by `hybrid-debug` for runtime evidence in hybrid app (WebView/WKWebView/Electron + H5) debugging scenarios, and by `runtime-evidence-debug` for UI/CSS/DOM instrumentation in general debugging scenarios:
+**Referenced by** PDCA hosts via frontmatter `dependencies` (missing → host aborts). Also discovered by `debug-workflow` and similar workflow skills through environment capability exploration. Delegated to by `hybrid-debug` for runtime evidence in hybrid app (WebView/WKWebView/Electron + H5) debugging, and by `runtime-evidence-debug` for UI/CSS/DOM instrumentation in general debugging:
 
 1. **Analysis stage**: Browser-reproducible problems (UI/CSS/DOM as typical scenes) → prioritize browser tools to reproduce the problem and inspect runtime state
 2. **Before console.log debugging**: For UI issues, inspect with browser DevTools first (more efficient than console.log), then fall back to logging if still unresolved
 3. **Verification stage**: After fix, use browser tools to verify that the fix works (before/after runtime-state comparison)
 
-> Progressive enhancement: This skill does not replace the workflow's core process. In `solve-workflow` it is guaranteed available by the prerequisite check; in other workflows (e.g., `debug-workflow`), when browser tools are unavailable, the original process executes unchanged.
+> Progressive enhancement: This skill does not replace the host workflow's core process. When loaded as a strong dependency it is guaranteed by the host prerequisite check; in other workflows (e.g., `debug-workflow`), when browser tools are unavailable, the original process executes unchanged.
 
 ## Quick Reference
 

@@ -1,8 +1,8 @@
 ---
 name: learn-and-improve
-version: "1.0.2"
+version: "1.0.3"
 user-invocable: true
-description: "Structured retrospective and knowledge sediment for completed work (the Act phase of PDCA). Run a disciplined post-work review (Keep-Problem-Try / Stop-Start-Continue / After-Action Review by context), judge which lessons are worth solidifying, pick the right carrier, validate the sediment gets reused, and feed improvements back. Use whenever finished work needs reflection — as the review/closeout stage of solve-workflow / opsx-solve-workflow / jira-fix-workflow / opsx-jira-fix-workflow, or standalone on any completed task. Triggers — 「回顾总结」「复盘」「经验沉淀」「总结经验教训」「改进闭环」「沉淀规则」「项目复盘」 / learn and improve, lessons learned, retrospective, post-mortem, debrief."
+description: "Structured retrospective and knowledge sediment for completed work (the Act phase of PDCA). Run a disciplined post-work review (Keep-Problem-Try / Stop-Start-Continue / After-Action Review by context), judge which lessons are worth solidifying, pick the right carrier, validate the sediment gets reused, and feed improvements back. Use whenever finished work needs reflection — as a PDCA host closeout/review stage via frontmatter dependencies, or standalone on any completed task. Triggers — 「回顾总结」「复盘」「经验沉淀」「总结经验教训」「改进闭环」「沉淀规则」「项目复盘」 / learn and improve, lessons learned, retrospective, post-mortem, debrief."
 ---
 
 # Learn and Improve
@@ -11,20 +11,20 @@ description: "Structured retrospective and knowledge sediment for completed work
 
 ## Why this skill exists
 
-Across `solve-workflow`, `opsx-solve-workflow` and others, the review stage was an afterthought — each author wrote a shallow inline version, nobody imported real methodology, and the same lessons got captured then forgotten. Compare `solution-review`, which is a deep independent skill for phase 3 (citing FMEA / SRE PRR / CBAM). This skill is the **equivalent for the Act stage**: deep, methodology-anchored, reusable.
+Across PDCA-style fix workflows, the review stage was often an afterthought — each host wrote a shallow inline version, nobody imported real methodology, and the same lessons got captured then forgotten. Compare `solution-review`, which is a deep independent skill for phase 3 (citing FMEA / SRE PRR / CBAM). This skill is the **equivalent for the Act stage**: deep, methodology-anchored, reusable.
 
 The core disease it treats is **"captured but not applied"** — lessons written into a doc and never retrieved. PMI identifies this as the dominant failure of lessons-learned programs. So retrieval/effectiveness validation is a first-class step here, not an afterthought (the **Retrieve** step of the lessons-learned 5-step: Identify → Document → Analyze → Store → **Retrieve**).
 
 ## When to use
 
 - **Standalone**: the user finished work and wants to reflect — "复盘一下这次", "做个回顾总结", "what did we learn from this".
-- **Integrated**: `solve-workflow` / `opsx-solve-workflow` / `jira-fix-workflow` / `opsx-jira-fix-workflow` reach their review or closeout stage and invoke this skill via frontmatter `dependencies`.
+- **Integrated**: a PDCA host reaches its review or closeout stage and loads this skill via frontmatter `dependencies`.
 
 The trigger phrases in the description govern both paths.
 
 ## Relationship to other skills
 
-- **Integrated by**: `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, `opsx-jira-fix-workflow` (via `dependencies` — strong; if missing, the workflow aborts at its prerequisite check rather than silently downgrading).
+- **Referenced by**: PDCA hosts via frontmatter `dependencies` (strong; missing → host aborts at prerequisite check). Hosts are the source of truth for that edge — this skill does not maintain an integrator name list.
 - **Analogous to**: `solution-review` (the deep review skill for phase 3). This is the deep review skill for the Act phase. Same pattern, different stage.
 
 ## The framework — 4 steps
