@@ -47,6 +47,7 @@ solve-workflow strongly depends on the following skills via frontmatter dependen
 - `test-suite-ensure`: stage 6 test completion (`mode=advisory`)
 - `test-first-discipline`: stage 6 failing-test-first for behavior changes (distinct from test-suite-ensure)
 - `design-approval-gate`: before stage 6 — no production impl without approval (named auto/hotfix escapes)
+- `delivery-discipline`: stage 8 optional commit + open/update PR/MR (not every run delivers)
 - `feature-branch-closeout`: stage 8 post-verify branch menu (merge delegates to merge-discipline when used)
 - `decision-fog-discipline`: before explore solutions — graduate fog / decision tickets first
 - `workspace-isolation-discipline`: before stage 6 — optional isolated workspace
@@ -129,7 +130,7 @@ Please confirm the review verdict:
 
 ## Stage 8 — Pre-Merge Coverage Reminder (Non-Gating)
 
-> ⚠️ solve-workflow **never performs any git merge operation** (all 8 stages are analysis/review/execution/verification/retrospective — there is no merge step). This reminder is **advisory, not a mandatory gate** — it does not run a script, does not block the flow, and is not a capability-discovery table entry.
+> ⚠️ solve-workflow **does not own protected-branch merge** as a mandatory stage step — merge only happens if closeout selects merge (via `merge-discipline`). Optional commit/PR is owned by `delivery-discipline`. This reminder is **advisory, not a mandatory gate** — it does not run a script, does not block the flow, and is not a capability-discovery table entry.
 
 **Trigger conditions** (all must hold):
 1. Environment discovery finds the `test-coverage-analyzer` skill available

@@ -47,17 +47,17 @@ Common delta-spec format mistakes (cause `openspec validate` to fail):
 
 ---
 
-## Stage 8.1 Commit Message
+## Stage 8.2 Commit Message (`delivery-discipline` `{commit-context}`)
 
 ```text
 fix(<scope>): <JIRA-ID> <subject>
 ```
 
-Example: `fix(ai-summary): YNOTR-12167 fix AI summary button display in shared links`
+Example: `fix(ai-summary): PROJ-123 fix AI summary button display in shared links`
 
 ---
 
-## Stage 8.1 PR/MR Description
+## Stage 8.2 PR/MR Description (`delivery-discipline` `{pr-body-extra}`)
 
 PR/MR description must include:
 
