@@ -54,6 +54,29 @@
         "放行到 Part B",
         "不要求 openspec archive"
       ]
+    },
+    {
+      "id": 5,
+      "name": "non-code-light-skills-only",
+      "prompt": "AGENTS.md 声明 pr-review-gate: non-code-light。PR 只改 skills/foo/SKILL.md 与 openspec/specs/foo/spec.md，无 hooks/.opencode/workflows/运行时源码。Parts A–C 已通过。用户说「合并」。说明 Part R 如何选 depth（dry-run）。",
+      "expected_output": "解析 non-code-light → 表面为 non-application-code → 调用 pr-code-review depth=light → 双轴 ≥80 通过后进 Part D；不得跳过 Part R",
+      "expectations": [
+        "读取 pr-review-gate: non-code-light",
+        "按 reference 表面表判定非应用代码",
+        "以 depth=light 调用 pr-code-review",
+        "不因是 Markdown 而 never 跳过 Part R"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "non-code-light-mixed-full",
+      "prompt": "AGENTS.md 声明 pr-review-gate: non-code-light。PR 同时改 skills/bar/SKILL.md 与 .opencode/plugins/x.js。Parts A–C 已通过。用户说「合并」。说明 Part R depth（dry-run）。",
+      "expected_output": "表面含 denylist（.opencode）→ application-code → depth=full 跑 pr-code-review",
+      "expectations": [
+        "识别 .opencode 为 denylist",
+        "判定 application-code 表面",
+        "以 depth=full 调用 pr-code-review"
+      ]
     }
   ]
 }

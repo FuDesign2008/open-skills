@@ -6,6 +6,25 @@ Behavioral contract for dual-axis (Standards∥Spec), multi-perspective, confide
 
 ## Requirements
 
+### Requirement: pr-code-review SHALL support depth full and light
+
+When invoked by `merge-discipline` Part R (or a caller that passes depth), `pr-code-review` MUST accept `depth=full` (default) or `depth=light`.
+
+- **full**: dual-axis Standards∥Spec with multi-perspective review preferred in parallel when the host supports it.
+- **light**: dual-axis Standards∥Spec on the pinned tip is still mandatory; multi-perspective parallel swarm is NOT required; confidence ≥80 Critical/Important clearance and publish rules remain the same as full for Part R pass/fail.
+
+Standalone user triggers without depth MUST default to `full`.
+
+#### Scenario: Part R requests light depth
+
+- **WHEN** `merge-discipline` Part R invokes `pr-code-review` with `depth=light`
+- **THEN** the skill runs dual-axis clearance without requiring parallel multi-perspective dispatch
+
+#### Scenario: Default depth is full
+
+- **WHEN** the skill is invoked without a depth parameter
+- **THEN** it runs at full depth
+
 ### Requirement: PR code review SHALL use dual-axis Standards and Spec reports
 
 `pr-code-review` MUST present findings under separate **Standards** and **Spec** axes and MUST NOT merge or re-rank findings across axes into one undifferentiated list. A pass on one axis MUST NOT hide a fail on the other.
@@ -31,7 +50,7 @@ Before spawning review perspectives, `pr-code-review` MUST pin a review fixed po
 
 ### Requirement: PR code review SHALL keep Claude-style eligibility, confidence filter, and publish rules
 
-`pr-code-review` MUST retain: open/non-draft eligibility (and skip trivial/already-reviewed-this-session cases with a stated reason); multi-perspective review (guidelines, bugs-in-diff, history/blame, prior PR comments, in-file comments) preferably in parallel; per-issue confidence 0–100 with **drop below 80**; false-positive discard rules (pre-existing, nits, linter-catchable, unchanged lines); and publish via platform CLI with full-SHA permalinks when commenting.
+`pr-code-review` MUST retain: open/non-draft eligibility (and skip trivial/already-reviewed-this-session cases with a stated reason); multi-perspective review when depth is full (guidelines, bugs-in-diff, history/blame, prior PR comments, in-file comments) preferably in parallel; per-issue confidence 0–100 with **drop below 80**; false-positive discard rules (pre-existing, nits, linter-catchable, unchanged lines); and publish via platform CLI with full-SHA permalinks when commenting. Light depth MUST NOT weaken the ≥80 Critical/Important Part R gate.
 
 #### Scenario: Low-confidence issues are not published as blockers
 

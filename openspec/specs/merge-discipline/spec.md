@@ -163,18 +163,65 @@ The skill SHALL default to Strategy A (same-MR pinned-tip merge: archive + main 
 - **WHEN** the user issues a direct merge command without going through closeout
 - **THEN** merge-discipline still loads (unchanged existing requirement)
 
+### Requirement: Part R SHALL resolve pr-review-gate preference before review depth
+
+Before loading `pr-code-review`, Part R MUST resolve `pr-review-gate:` from `AGENTS.md` then `CLAUDE.md` (first match wins). Allowed values: `always`, `never`, `ask`, `non-code-light`. If unset, Part R MUST treat the preference as `always` (full dual-axis review).
+
+#### Scenario: Unset preference means full review
+
+- **WHEN** neither `AGENTS.md` nor `CLAUDE.md` declares `pr-review-gate:`
+- **THEN** Part R runs full-depth `pr-code-review` (no light path solely from unset)
+
+#### Scenario: never skips with 留痕
+
+- **WHEN** preference is `never`
+- **THEN** Part R writes project-preference skip 留痕 and proceeds to Part D without invoking `pr-code-review`
+
+#### Scenario: ask requires user choice
+
+- **WHEN** preference is `ask`
+- **THEN** Part R asks whether to run full, light, or skip for this merge; MUST NOT auto-pick; skip requires user-explicit skip 留痕
+
+### Requirement: Part R SHALL classify non-application-code surfaces
+
+Part R MUST classify the open PR/MR three-dot diff as **non-application-code** when every changed path matches the allowlist and none match the denylist in `merge-discipline/reference.md`. A mixed diff (any denylisted path) MUST be classified as **application-code**.
+
+#### Scenario: Skills-only PR is non-application-code
+
+- **WHEN** the PR diff only changes files under `skills/**` and `openspec/**` and `docs/**` Markdown
+- **THEN** the surface classifier reports non-application-code
+
+#### Scenario: Mixed runtime source forces full surface
+
+- **WHEN** the PR also changes a denylisted path (e.g. `.opencode/**`, `hooks/**`, or runtime source extensions per the reference table)
+- **THEN** the surface is application-code
+
+### Requirement: non-code-light preference SHALL use light review on non-application-code surfaces
+
+When preference is `non-code-light` and the surface is non-application-code, Part R MUST invoke `pr-code-review` with `depth=light`, still applying dual-axis ≥80 Critical/Important clearance. When preference is `non-code-light` and the surface is application-code, Part R MUST use `depth=full`. When preference is `always`, Part R MUST use `depth=full` regardless of surface.
+
+#### Scenario: non-code-light on docs/skills PR
+
+- **WHEN** preference is `non-code-light` and surface is non-application-code
+- **THEN** Part R runs `pr-code-review` at light depth, then proceeds to Part D on pass
+
+#### Scenario: non-code-light on code PR
+
+- **WHEN** preference is `non-code-light` and surface is application-code
+- **THEN** Part R runs `pr-code-review` at full depth
+
 ### Requirement: Part R SHALL run pr-code-review before tip pinning
 
-After Part C (coverage) resolves to continue, and before Part D (tip pinning), `merge-discipline` MUST load strong dependency `pr-code-review` and run it against the open PR/MR about to be merged. Missing `pr-code-review` MUST abort with a per-skill install command (`npx skills add FuDesign2008/open-skills -g --skill pr-code-review --yes`). Execution order MUST be A → B → C → R → D → merge.
+After Part C (coverage) resolves to continue, and before Part D (tip pinning), `merge-discipline` MUST apply the `pr-review-gate` preference and surface classifier. Unless preference resolves to `never` (or `ask` with user skip 留痕), Part R MUST load strong dependency `pr-code-review` and run it at the selected depth against the open PR/MR about to be merged. Missing `pr-code-review` MUST abort with a per-skill install command when a run (full or light) is required. Execution order MUST remain A → B → C → R → D → merge.
 
-#### Scenario: Order includes Part R
+#### Scenario: Order includes Part R when review runs
 
-- **WHEN** a protected-branch merge is imminent and Parts A–C have passed
+- **WHEN** a protected-branch merge is imminent, Parts A–C have passed, and preference requires a review run
 - **THEN** Part R runs `pr-code-review` before any tip-pin merge command
 
 ### Requirement: Part R pass/fail SHALL use dual-axis clearance
 
-Part R MUST treat `pr-code-review` as failed (block merge) when either the Standards or Spec axis retains one or more issues at confidence ≥80 with severity Critical or Important, unless the user gives an explicit Part R skip 留痕. Minor-only survivors or all scores below 80 MUST count as Part R pass. Part R MUST NOT require a receiving-code-review reception loop to pass.
+Part R MUST treat `pr-code-review` as failed (block merge) when either the Standards or Spec axis retains one or more issues at confidence ≥80 with severity Critical or Important, unless the user gives an explicit Part R skip 留痕. Minor-only survivors or all scores below 80 MUST count as Part R pass. Part R MUST NOT require a receiving-code-review reception loop to pass. Light depth MUST NOT weaken this clearance rule.
 
 #### Scenario: Spec-axis Important blocks merge
 
