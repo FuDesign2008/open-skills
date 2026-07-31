@@ -1,8 +1,8 @@
 ---
 name: merge-discipline
-version: "1.4.1"
+version: "1.5.0"
 user-invocable: true
-description: "Hard gate before merging into a protected branch: run Parts A→B→C→R→D (OpenSpec archive association, rebase/conflict pre-check, coverage preference, pr-code-review dual-axis clearance, tip-pin merge). Do NOT merge while an associated OpenSpec change is still active; do NOT skip on a direct \"merge MR\" command. Triggers — 「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」「合并前 code-review」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, pr code review before merge."
+description: "Hard gate before merging into a protected branch: run Parts A→B→C→R→D (OpenSpec archive association, rebase/conflict pre-check, coverage preference, pr-code-review with optional light depth via pr-review-gate, tip-pin merge). Do NOT merge while an associated OpenSpec change is still active; do NOT skip on a direct \"merge MR\" command. Triggers — 「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」「合并前 code-review」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, pr code review before merge."
 dependencies:
   - pr-code-review
 ---
@@ -214,9 +214,33 @@ Location: PR description and `design.md` Verification Notes.
 
 Prevents **merge-without-PR-review**: coverage/CI can be green while the diff still carries high-confidence defects that a multi-perspective, dual-axis review would catch.
 
-1. Confirm frontmatter dependency `pr-code-review` is available (prerequisite check already ran at load).
-2. Load `pr-code-review` and run it against the **open PR/MR** about to be merged (follow that skill exactly — Standards∥Spec, confidence ≥80).
-3. **Decision matrix:**
+### 1. Resolve `pr-review-gate` preference
+
+Scan `AGENTS.md` then `CLAUDE.md` (first match wins) for:
+
+`pr-review-gate:\s*(always|never|ask|non-code-light)\b`
+
+| Value | Behavior |
+|---|---|
+| *(unset)* | Treat as `always` (full-depth review — preserves prior default) |
+| `always` | Run `pr-code-review` at `depth=full` |
+| `never` | Skip `pr-code-review`; write project-preference 留痕; proceed to Part D |
+| `ask` | Ask the user: full / light / skip for this merge; MUST NOT auto-pick; skip needs user-explicit skip 留痕 |
+| `non-code-light` | Classify the PR surface (§2); non-application-code → `depth=light`; application-code → `depth=full` |
+
+### 2. Classify PR surface (when needed)
+
+When preference is `non-code-light` (or the user chose light under `ask`), classify the open PR/MR **three-dot** changed paths using the allow/deny table in [reference.md](reference.md)「Non-application-code surface」.
+
+- **All paths allowlisted and none denylisted** → non-application-code
+- **Any denylisted path** (or mixed) → application-code
+
+### 3. Run or skip
+
+1. Confirm frontmatter dependency `pr-code-review` is available when a review run is required (prerequisite check already ran at load).
+2. If preference is `never` (or `ask` + user skip): write 留痕 → Part D (do not load `pr-code-review`).
+3. Otherwise load `pr-code-review` with the selected `depth` (`full` or `light`) against the open PR/MR about to be merged (follow that skill — Standards∥Spec, confidence ≥80).
+4. **Decision matrix:**
 
 | Result | Action |
 |---|---|
@@ -224,15 +248,21 @@ Prevents **merge-without-PR-review**: coverage/CI can be green while the diff st
 | Fail — either axis has ≥80 Critical/Important | **Block merge.** Fix on the source tip, re-enter from Part A, or user **explicit** skip with 留痕 |
 | Skill ineligible skip (closed/draft/already reviewed this session) | Treat as pass for this Part only if the PR is still the merge candidate and a prior ≥80-clean dual-axis review exists on this tip; otherwise pause for user |
 
-### 留痕 (explicit skip only)
+### 留痕
 
-`【PR code-review 门控跳过】用户显式跳过 Part R（pr-code-review）。时间：<ISO>。决策人：用户。PR：<url or id>。`
+| Case | Template |
+|------|----------|
+| User explicit skip | `【PR code-review 门控跳过】用户显式跳过 Part R（pr-code-review）。时间：<ISO>。决策人：用户。PR：<url or id>。` |
+| Project preference never | `【PR code-review 门控跳过】工程偏好 pr-review-gate: never。时间：<ISO>。决策人：项目配置。` |
+| Light path used | Optional note in the review comment: `pr-review-gate: non-code-light; surface=non-application-code; depth=light` |
 
 ### Red flags
 
-- Skipping Part R because “CI is green” or “coverage-gate never”.
-- Calling Claude Code `/code-review` plugin as a substitute without loading `pr-code-review`.
-- Collapsing Standards and Spec into one ranked list and treating “overall look fine” as Part R pass.
+- Skipping Part R because “CI is green” or “coverage-gate never” (coverage skip is not a Part R skip)
+- Treating unset `pr-review-gate` as light or never (unset MUST be `always`)
+- Calling Claude Code `/code-review` plugin as a substitute without loading `pr-code-review`
+- Collapsing Standards and Spec into one ranked list and treating “overall look fine” as Part R pass
+- Using light depth on a mixed/application-code surface under `non-code-light`
 
 ---
 

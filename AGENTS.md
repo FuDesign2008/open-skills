@@ -11,11 +11,15 @@
 7. **Skill description ≤1024 字符，只写触发路由四要素** — frontmatter `description` 的职责是让 Agent 路由触发，不是文档：只写「做什么 / 何时用 / 触发词（含中文，见铁律 3）/ Do NOT use 反向边界」，方法论细节、环节枚举、格式清单一律归入 SKILL.md 正文或 reference.md。硬上限 1024 字符（Agent Skills 规范，超限平台加载器会报警），软目标 ≤950（留统计口径余量）。修改 description 后运行 `npm run lint:skill-description` 校验；pre-commit 已内置该校验，超限将阻断提交。
 8. **能力断言必须实证** — 凡涉及「某工具/Skill 能做什么、不能做什么」「某能力市场上无竞品」等能力断言，写入文档或 Skill 前必须经一手实证：本地源码实证（目标 skill 的 SKILL.md / API 文档）+ 外部官方数据（GitHub、官方文档），不接受二手转述或「看起来合理」的推断。能力对比类文档需在文首标注核验日期与来源，便于后续刷新。
 
-### 合并偏好（merge-discipline Part C）
+### 合并偏好（merge-discipline Part C / Part R）
 
 `coverage-gate: never`
 
+`pr-review-gate: non-code-light`
+
 > 本仓库为 Markdown skills 库，合并前不默认跑 `test-coverage-analyzer`。其他工程可在 `AGENTS.md` / `CLAUDE.md` 声明 `coverage-gate: always` | `never` | `ask`（未声明 ≡ 每次合并询问）。
+>
+> `pr-review-gate`：`always`（全量 `pr-code-review`）| `never`（跳过 Part R，须留痕）| `ask`（每次询问 full/light/skip）| `non-code-light`（非应用代码表面用 light 深度，否则 full）。**未声明 ≡ `always`**（保持历史默认，不全仓静默变轻）。本仓默认 `non-code-light`：docs/skills/openspec 等表面走轻量双轴审查；含 hooks / `.opencode` / workflows / 运行时源码扩展则仍 full。
 
 ### Skill 调用分层（User- vs Model-invoked）
 
