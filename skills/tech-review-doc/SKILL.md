@@ -1,6 +1,6 @@
 ---
 name: tech-review-doc
-version: "1.0.0"
+version: "1.0.1"
 user-invocable: true
 description: "Turn a technical design doc into a product/QA-readable technical review markdown (business language + Mermaid). Hard-gates §1 background/goals until the user explicitly approves before writing the file. Triggers — 「技术评审文档」「生成评审文档」「design to review」「tech review doc」「写技术评审」. Do NOT use for marketing articles (article-writer), code PDCA (solve-workflow), or AI de-slop rewriting (humanizer)."
 dependencies:
@@ -193,12 +193,20 @@ Prefer “who does what to whom, and what the user sees” over implementation d
 
 ---
 
+## Host auto-mode contract
+
+When invoked under `write-workflow` **auto mode**:
+
+- The §1 HARD-GATE still applies — **no** file write and **no** Steps 2–5 until the user explicitly approves §1.
+- After §1 approval, Steps 2–5 MAY run continuously (diagrams → remaining sections → write file) without per-step confirmation.
+- Standalone or manual-host invocation keeps the interactive §1 gate as in Step 1.4.
+
 ## Relationship to other skills
 
 | Skill | Relationship |
 |-------|--------------|
 | `clarifying-question-discipline` | Strong dependency for Step 1 |
-| `write-workflow` | Optional host that routes here by default for tech-review writing |
+| `write-workflow` | Optional host (eight-stage) that routes here by default for tech-review writing |
 
 ---
 
