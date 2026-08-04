@@ -109,3 +109,40 @@ The host MUST declare Full / Incremental / Lean paths that adjust writing depth 
 - **WHEN** `workflow-mode-lifecycle` is not available
 - **THEN** write-workflow aborts at startup and does not silently run without mode rules
 
+### Requirement: Write-workflow strongly depends on both humanizer skills
+
+`write-workflow` frontmatter `dependencies` MUST include `humanizer` and `humanizer-zh` in addition to existing dependencies. Missing either MUST abort startup with an install hint (no silent degrade). The repository MUST NOT ship `skills/humanizer/` or `skills/humanizer-zh/`. The missing-dependency notice MUST instruct installing from upstream URLs and require exact directory names:
+
+- `npx skills add https://github.com/blader/humanizer.git` → directory / name `humanizer`
+- `npx skills add https://github.com/op7418/Humanizer-zh.git` → directory / name `humanizer-zh`
+
+The notice MUST NOT claim these skills are installable via `FuDesign2008/open-skills --skill humanizer` (or humanizer-zh).
+
+#### Scenario: Missing humanizer-zh aborts write-workflow
+
+- **WHEN** `humanizer-zh` is not installed
+- **THEN** write-workflow prints a missing-dependency notice pointing at the Humanizer-zh upstream install command and directory-name requirement, and does not proceed
+
+#### Scenario: open-skills does not vendor humanizer trees
+
+- **WHEN** an auditor lists `skills/` in this repository
+- **THEN** neither `humanizer` nor `humanizer-zh` skill directories are present
+
+### Requirement: Write-workflow routes humanize requests by language
+
+Stage 1 route table MUST list AI de-slop / humanize as shipped writers. For primarily Chinese source text, stage 6 MUST load `humanizer-zh`; for primarily English source text, stage 6 MUST load `humanizer`. Ambiguous language → ask one clarifying question (clarifying-question-discipline).
+
+#### Scenario: Chinese text routes to humanizer-zh
+
+- **WHEN** the user requests humanize on a Chinese document via write-workflow
+- **THEN** stage 6 delegates to `humanizer-zh`
+
+### Requirement: Humanizer writers use input confirmation instead of tech-review §1 gate
+
+Host auto/manual hard-pause rules for `tech-review-doc` §1 MUST remain. For `humanizer` / `humanizer-zh`, the host MUST require a confirmed input (path or pasted text) before rewrite, and MUST NOT apply the tech-review §1 background-approval gate.
+
+#### Scenario: Humanizer path does not require §1 business-goals approval
+
+- **WHEN** write-workflow routes to humanizer or humanizer-zh
+- **THEN** the agent does not block on tech-review §1 background confirmation
+

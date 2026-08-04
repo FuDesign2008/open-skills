@@ -7,8 +7,10 @@ Host-stage templates for `write-workflow`. Writer-specific formats live in `tech
 ## Stage 1 — Clarify intent
 
 ```
-【Intent】Document type: ... / Writer: tech-review-doc (or other)
-【Source】Design path: ...
+【Intent】Document type: tech-review | humanize-en | humanize-zh | ...
+【Writer】tech-review-doc | humanizer | humanizer-zh
+【Source】Design path / text path / pasted excerpt: ...
+【Language】(humanize) zh | en | ask
 【Path】Full | Incremental | Lean — reason: ...
 【Mode】Manual | Auto
 【Open】...(one question if needed)
@@ -93,6 +95,10 @@ Hand off → writer Step 1 (§1 draft).
 
 【Missing】<name>
 
-【Install】
+【Install — in-repo open-skills】
 npx skills add FuDesign2008/open-skills -g --skill <name> --yes
+
+【Install — external humanizers】(directory / name MUST match)
+npx skills add https://github.com/blader/humanizer.git          → humanizer
+npx skills add https://github.com/op7418/Humanizer-zh.git       → humanizer-zh
 ```
