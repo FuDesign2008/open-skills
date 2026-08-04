@@ -1,21 +1,23 @@
 ---
 name: write-workflow
-version: "1.1.0"
+version: "1.2.0"
 user-invocable: true
-description: "Eight-stage document-writing host: clarify intent → analyze sources → explore approach → review approach → outline → execute writer → verify → retrospect. Manual mode pauses at stage exits; auto mode advances but never skips the writer §1 approval gate. Triggers — 「写文档」「写文档工作流」「写技术评审」「生成评审文档」「自动写文档」「自动模式」「write workflow」「write-workflow」. Do NOT use for code bugs/features (solve-workflow), performance (perf-workflow), or marketing articles (article-writer)."
+description: "Eight-stage document-writing host: clarify → analyze sources → explore → review → outline → execute writer → verify → retrospect. Writers: tech-review-doc, humanizer, humanizer-zh (all strong deps). Auto mode never skips tech-review §1. Triggers — 「写文档」「写技术评审」「去AI痕迹」「人性化改写」「自动写文档」「write workflow」「humanize」. Do NOT use for code PDCA (solve-workflow), performance (perf-workflow), or marketing articles (article-writer)."
 dependencies:
   - clarifying-question-discipline
   - tech-review-doc
   - workflow-mode-lifecycle
+  - humanizer
+  - humanizer-zh
 ---
 
 # Write Workflow
 
-> Eight-stage **document-writing** host (solve-like skeleton, writing semantics). Writer skills own document methodology; this host owns routing, source analysis, mode lifecycle, path depth, and verify/retrospect.
+> Eight-stage **document-writing** host. Writer skills own methodology; this host owns routing, source analysis, mode lifecycle, path depth, and verify/retrospect.
 >
-> **Default writer:** `tech-review-doc` (design → product/QA technical review).
+> **Writers (strong deps):** `tech-review-doc` (design → review), `humanizer` (EN de-slop), `humanizer-zh` (ZH de-slop).
 >
-> **Not** `solve-workflow` (code PDCA), **not** `analysis-core` (debug/root-cause). Stage 2 is writing-oriented source analysis only.
+> **Not** `solve-workflow` / `analysis-core`. Stage 2 is writing-oriented source analysis only.
 >
 > **Output templates:** [reference.md](reference.md).
 
@@ -29,7 +31,7 @@ npx skills add FuDesign2008/open-skills -g --skill <missing-name> --yes
 
 Or: `npx skills add FuDesign2008/open-skills -g --skill '*' --yes`.
 
-**No silent degradation.** Especially: do **not** run without `workflow-mode-lifecycle`.
+**No silent degradation.**
 
 **Must not depend on:** `analysis-core`, `runtime-evidence-debug`, `hybrid-debug`, `browser-debug-toolkit`.
 
@@ -37,129 +39,126 @@ Or: `npx skills add FuDesign2008/open-skills -g --skill '*' --yes`.
 
 | Phrasing | Mode | Note |
 |----------|------|------|
-| 「写文档」「写文档工作流」「write workflow」 | 👤 Manual | Default; pause at host stage exits |
-| 「写技术评审」「生成评审文档」 | 👤 Manual | Route to `tech-review-doc` |
-| 「自动写文档」「自动模式」+ write intent | 🤖 Auto | Advance host stages; **§1 approval still pauses** |
+| 「写文档」「写文档工作流」「write workflow」 | 👤 Manual | Detect document type |
+| 「写技术评审」「生成评审文档」 | 👤 Manual | Route → `tech-review-doc` |
+| 「去AI痕迹」「人性化改写」「humanize」 | 👤 Manual | Route → `humanizer` / `humanizer-zh` by language |
+| 「自动写文档」「自动模式」+ write intent | 🤖 Auto | Advance; writer-specific hard pauses still apply |
 
-**Mode detection:** trigger contains 「自动」 → auto; else manual. Mid-run: 「切换自动模式」/「切换手动模式」.
+**Mode detection:** 「自动」 → auto; else manual. Mid-run: 「切换自动模式」/「切换手动模式」.
 
-Core lifecycle (revert to manual / explicit re-entry only / no sticky auto) → load `workflow-mode-lifecycle`. **write-workflow differences:**
+Core lifecycle → `workflow-mode-lifecycle`. **Differences:**
 
-- **Completion** = stage 8 retrospect finishes → revert to manual.
-- **Hard pause even in auto:** writer §1 (or equivalent) user approval; missing required source path.
-- After §1 approval in auto: continue Steps 2–5 of the writer, then host stages 7–8, without further host confirmation.
-- Interruption (abort, user stop) → revert to manual.
+- **Completion** = stage 8 done → revert to manual.
+- **Hard pauses (even in auto):**
+  - `tech-review-doc`: §1 user approval; missing design path
+  - `humanizer` / `humanizer-zh`: confirmed input text or file path (no tech-review §1 gate)
+- After hard pause clears in auto: continue writer + stages 7–8 without extra host stops.
+- Interruption → revert to manual.
 
 ## Path selection
 
-Declare the path when confirming intent (stage 1):
-
-| Path | When | Writing depth |
-|------|------|----------------|
-| Full | New major feature review; fuzzy goals; many modules | Full diagrams as needed; rich §4; careful Non-Goals |
-| Incremental | Ordinary design → review with clear goals | Needed diagrams only; moderate §4 |
-| Lean | Small high-certainty change; single surface | Minimal diagrams; aggressive skip of §3/§6; **verify + §1 gate never skipped** |
-
-Upgrade path if scope grows (lean → incremental → full). Manual upgrade needs user confirmation.
+| Path | When | Depth |
+|------|------|--------|
+| Full | Major review / fuzzy goals / heavy humanize pass | Full writer depth |
+| Incremental | Ordinary docs | Default |
+| Lean | Small high-certainty change | Minimal optional sections; **verify + writer hard pause never skipped** |
 
 ## ⚡ Quick Reference
 
-| Stage | Tool permissions | 👤 Manual stop | 🤖 Auto | Required output |
-|-------|------------------|----------------|---------|-----------------|
-| 1 Clarify intent | Read only if user `@` path / pasted excerpt | ⛔ Confirm intent/path/path-selection | Skip if input already clear | Restatement + route + Path |
-| 2 Analyze sources | ✅ Read/Grep sources; ❌ write review file | ⛔ Confirm gap list / readiness | Continue if no blocking gaps | Source inventory + gaps |
-| 3 Explore approach | ✅ Read; ❌ write review file | ⛔ Pick diagram/§3/§6 choices | Auto-pick per Path + design | Approach options |
-| 4 Review approach | ✅ Read; ❌ write review file | ⛔ User OK on checklist | Auto-pass if checklist clean | Approach checklist |
-| 5 Make outline | ✅ Read; ❌ write review file | ⛔ Confirm outline / enter §1 draft | Go to writer Step 1 | Outline → §1 draft handoff |
-| 6 Execute (writer) | Per writer | Writer §1 gate always | Same §1 gate; then continuous | Review file via writer |
-| 7 Verify | ✅ Read output; ❌ Edit unless user asks fix | ⛔ Confirm verify | Continue to 8 if green | Verify report |
-| 8 Retrospect | ❌ Edit skill files by default | End | End + revert manual | Brief improvements |
+| Stage | 👤 Manual stop | 🤖 Auto | Required output |
+|-------|----------------|---------|-----------------|
+| 1 Clarify intent | ⛔ Confirm route/Path/mode | Skip if clear | Restatement + writer + Path |
+| 2 Analyze sources | ⛔ Gaps/readiness | Continue if no blockers | Inventory + gaps |
+| 3 Explore approach | ⛔ Choices | Auto-pick | Approach |
+| 4 Review approach | ⛔ Checklist OK | Auto-pass if clean | Checklist |
+| 5 Make outline | ⛔ Confirm | Hand off | Outline / humanize plan |
+| 6 Execute writer | Writer hard pause | Same pause; then continuous | Writer output |
+| 7 Verify | ⛔ Confirm | Continue if green | Verify report |
+| 8 Retrospect | End | End + revert manual | Brief improvements |
 
 ## Stage 1: Clarify intent
 
-1. Restate what document to produce and the source design path.
-2. Choose route (default `tech-review-doc`) and Path (Full/Incremental/Lean).
-3. Follow `clarifying-question-discipline` (one question per turn) when unclear.
-4. **[👤]** Stop for confirmation. **[🤖]** If path + doc type + design path are already clear, continue to stage 2.
+1. Document type / writer route (table below).
+2. Path (Full/Incremental/Lean) and mode.
+3. `clarifying-question-discipline` when unclear (**one question per turn**).
+4. **Language for humanize:** primarily Chinese → `humanizer-zh`; primarily English → `humanizer`; ambiguous → ask once.
 
-Output format: [reference.md](reference.md) § Stage 1.
+| Document type | Writer | Status |
+|---------------|--------|--------|
+| Technical review (design → product/QA) | `tech-review-doc` | Shipped |
+| AI de-slop / humanize (English-primary) | `humanizer` | Shipped |
+| AI de-slop / humanize (Chinese-primary) | `humanizer-zh` | Shipped |
+| Other | Ask or stop | — |
 
-## Stage 2: Analyze sources (writing analysis)
+**[👤]** Confirm. **[🤖]** Skip confirm when route + inputs already clear.
 
-> Inspired by “understand before changing” — **not** `analysis-core`. No instrumentation, no root-cause debug loop.
+Output: [reference.md](reference.md) § Stage 1.
 
-1. **Existence:** design doc readable; note related PRD/OpenSpec if present.
-2. **Inventory:** title, modules/surfaces, multi-option comparison?, existing Mermaid, review type.
-3. **Gaps:** missing business goals, undefined terms, unclear Non-Goals — list for stage 5 / writer §1.
-4. Do **not** write the review file.
+## Stage 2: Analyze sources
 
-**[👤]** Stop after the inventory/gap report. **[🤖]** Continue unless a blocking gap (e.g. no design path).
+1. **Existence:** required input readable (design path or text/file to humanize).
+2. **Inventory:** for tech-review — title/modules/Mermaid/multi-option; for humanize — language, length, tone target.
+3. **Gaps:** list blockers for later stages.
+4. Do **not** write the final output file yet (except analysis notes in chat).
 
-Output: [reference.md](reference.md) § Stage 2.
+**[👤]** Stop after report. **[🤖]** Continue unless blocking gap.
 
-## Stage 3: Explore writing approach
+## Stages 3–5 by writer profile
 
-Propose how to write (not how to implement the product):
+### Profile: `tech-review-doc`
 
-- Which Mermaid types are needed
-- Whether §3 comparison / §6 release sections apply
-- Detail level for §4 given Path
+- **3** Diagrams / §3 / §6 / §4 depth  
+- **4** Audience checklist (no code in §§1–3)  
+- **5** Outline → hand off writer Step 1 (§1 draft)
 
-**[👤]** Wait for choice if options differ. **[🤖]** Select per Path + design evidence.
+### Profile: `humanizer` / `humanizer-zh`
 
-## Stage 4: Review writing approach
+- **3** Scope: whole doc vs selection; tone (formal/casual/technical)  
+- **4** Checklist: preserve facts; no invented claims; match tone  
+- **5** Short plan: input → rewrite → optional change summary  
 
-Run a **lightweight checklist** (audience language, no code in §§1–3, conditional sections). Do **not** load full `solution-review` / `code-design-review` unless the user asks.
-
-**[👤]** Wait for OK. **[🤖]** Continue if no blocking checklist fails.
-
-## Stage 5: Make outline
-
-Produce a short outline: §1 topics to confirm, planned figures, sections to skip. Hand off into writer Step 1 (§1 draft dialogue).
-
-**[👤]** Confirm outline. **[🤖]** Enter writer Step 1 immediately.
+**[👤]/[🤖]** pauses per Quick Reference.
 
 ## Stage 6: Execute via writer
 
-Load the routed writer (`tech-review-doc` by default) and **follow it exactly**, including its HARD-GATE on §1.
+Load the routed writer and **follow it exactly**.
 
-- Do not weaken §1 approval in auto mode.
-- After §1 approval: in 🤖 auto, allow continuous Steps 2–5 + file write; in 👤 manual, follow the writer’s own pauses.
+- `tech-review-doc`: HARD-GATE on §1; auto may continuous-run after approval.
+- `humanizer` / `humanizer-zh`: require confirmed input; then rewrite per that skill; **do not** apply tech-review §1.
 
 ## Stage 7: Verify
 
-Check against writer success criteria and host expectations: file path/naming, §1 confirmed, diagrams, §3/§6 skip rules, §§1–3 no code except Mermaid.
+- **tech-review-doc:** path/naming, §1 approved, diagrams, §3/§6 rules, §§1–3 language rules.  
+- **humanizer*:** facts preserved, AI patterns reduced, tone matched; optional quality score if the writer defines one.
 
 Output: [reference.md](reference.md) § Stage 7.
 
-**[👤]** Stop for confirmation. **[🤖]** Continue to stage 8 if green; if red, stop for user.
-
 ## Stage 8: Retrospect
 
-Brief improvements (host routing, Path choice, gap handling). Do not write skill/rule files unless the user asks. Optional: ask whether to open a follow-up for another writer (e.g. humanizer).
-
-Then revert auto → manual per `workflow-mode-lifecycle`.
+Brief improvements. Do not edit skill files unless asked. Revert auto → manual.
 
 ## Extension slot (future writers)
 
-1. Add `skills/<name>/`.
-2. Add a route-table row; update description triggers (≤1024).
-3. Keep stage 6 as “load writer and follow exactly.”
-4. Only add frontmatter strong dependencies when required for the default path.
+1. Add `skills/<name>/` and publish.  
+2. Prefer **optional** route unless product requires strong dep (humanizers are strong by deliberate choice).  
+3. Add route row + description triggers (≤1024).  
+4. Stage 6 stays “load writer and follow exactly.”
 
 ## Relationship to other skills
 
 | Skill | Relationship |
 |-------|--------------|
-| `tech-review-doc` | Strong dependency; default stage-6 writer |
-| `clarifying-question-discipline` | Strong dependency |
-| `workflow-mode-lifecycle` | Strong dependency; mode rules |
-| `analysis-core` | **Not** a dependency — writing analysis is host stage 2 only |
-| `solve-workflow` | Sibling host — not wired |
+| `tech-review-doc` | Strong dep; review writer |
+| `humanizer` | Strong dep; EN humanize |
+| `humanizer-zh` | Strong dep; ZH humanize |
+| `clarifying-question-discipline` | Strong dep |
+| `workflow-mode-lifecycle` | Strong dep |
+| `solve-workflow` | Sibling — not wired |
 
 ## Red flags
 
-- Skipping writer §1 approval in auto mode
-- Declaring `analysis-core` or debug skills on this host
-- Inlining the full tech-review five-step body into this file
-- Treating Path as code-PDCA scope instead of writing depth
+- Skipping `tech-review-doc` §1 in auto mode  
+- Applying §1 gate to humanizer routes  
+- Silent degrade when humanizer skills missing  
+- Declaring `analysis-core` on this host  
+- Inlining full writer bodies into this file  
