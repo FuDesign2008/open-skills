@@ -95,6 +95,10 @@ Hand off → writer Step 1 (§1 draft).
 
 【Missing】<name>
 
-【Install】
+【Install — in-repo open-skills】
 npx skills add FuDesign2008/open-skills -g --skill <name> --yes
+
+【Install — external humanizers】(directory / name MUST match)
+npx skills add https://github.com/blader/humanizer.git          → humanizer
+npx skills add https://github.com/op7418/Humanizer-zh.git       → humanizer-zh
 ```

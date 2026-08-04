@@ -26,7 +26,6 @@
 | 类型 | `user-invocable` | 典型例子 |
 |------|------------------|----------|
 | **编排入口** | `true` | `solve-workflow`、`opsx-solve-workflow`、`jira-fix-workflow`、`perf-workflow`、`write-workflow` |
-| **写作子能力** | `true` | `tech-review-doc`、`humanizer`、`humanizer-zh`、`article-writer` |
 | **共享纪律 / 方法论** | 默认 `false`，经 frontmatter `dependencies` 加载 | `*-discipline`、`analysis-core`、`staged-review-flow`、`design-approval-gate`、`feature-branch-closeout` |
 | **可独立触发的横切动作** | 显式 `true`（例外） | `merge-discipline`、`delivery-discipline`、`test-suite-ensure`、`solution-review`、`learn-and-improve`、`pr-code-review` |
 
@@ -81,10 +80,8 @@ open-skills/
 | solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、node-version-discipline、staged-review-flow、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、delivery-discipline、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline |
 | opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、merge-discipline、staged-review-flow、opsx-workspace-gate、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、delivery-discipline、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline |
 | perf-workflow | 工作流 | clarifying-question-discipline、known-issue-research |
-| write-workflow | 工作流 | clarifying-question-discipline、tech-review-doc、workflow-mode-lifecycle、humanizer、humanizer-zh |
+| write-workflow | 工作流 | clarifying-question-discipline、tech-review-doc、workflow-mode-lifecycle、humanizer（外置）、humanizer-zh（外置） |
 | tech-review-doc | 内容创作 | clarifying-question-discipline |
-| humanizer | 内容创作 | 无 |
-| humanizer-zh | 内容创作 | 无 |
 | frontend-perf | 知识库 | perf-workflow |
 | android-webview-debug | 工具 | 无 |
 | git-commit | Git | 无 |

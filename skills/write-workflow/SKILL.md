@@ -1,8 +1,8 @@
 ---
 name: write-workflow
-version: "1.2.0"
+version: "1.2.1"
 user-invocable: true
-description: "Eight-stage document-writing host: clarify → analyze sources → explore → review → outline → execute writer → verify → retrospect. Writers: tech-review-doc, humanizer, humanizer-zh (all strong deps). Auto mode never skips tech-review §1. Triggers — 「写文档」「写技术评审」「去AI痕迹」「人性化改写」「自动写文档」「write workflow」「humanize」. Do NOT use for code PDCA (solve-workflow), performance (perf-workflow), or marketing articles (article-writer)."
+description: "Eight-stage document-writing host: clarify → analyze sources → explore → review → outline → execute writer → verify → retrospect. In-repo writer: tech-review-doc. External strong deps: humanizer, humanizer-zh. Auto mode never skips tech-review §1. Triggers — 「写文档」「写技术评审」「去AI痕迹」「人性化改写」「自动写文档」「write workflow」「humanize」. Do NOT use for code PDCA (solve-workflow), performance (perf-workflow), or marketing articles (article-writer)."
 dependencies:
   - clarifying-question-discipline
   - tech-review-doc
@@ -15,7 +15,7 @@ dependencies:
 
 > Eight-stage **document-writing** host. Writer skills own methodology; this host owns routing, source analysis, mode lifecycle, path depth, and verify/retrospect.
 >
-> **Writers (strong deps):** `tech-review-doc` (design → review), `humanizer` (EN de-slop), `humanizer-zh` (ZH de-slop).
+> **Writers:** `tech-review-doc` (in-repo, design → review). `humanizer` / `humanizer-zh` are **external strong dependencies** (not shipped in this repo) for EN/ZH de-slop.
 >
 > **Not** `solve-workflow` / `analysis-core`. Stage 2 is writing-oriented source analysis only.
 >
@@ -23,18 +23,18 @@ dependencies:
 
 ## Prerequisite skill check
 
-At startup, verify every frontmatter `dependencies` entry. If any is missing, abort:
+At startup, verify every frontmatter `dependencies` entry. If any is missing, abort with an install hint — **no silent degradation**.
 
-```
-npx skills add FuDesign2008/open-skills -g --skill <missing-name> --yes
-```
+| Missing skill | Install (directory / `name` MUST match) |
+|---------------|------------------------------------------|
+| `clarifying-question-discipline`, `tech-review-doc`, `workflow-mode-lifecycle` | `npx skills add FuDesign2008/open-skills -g --skill <name> --yes` |
+| `humanizer` | `npx skills add https://github.com/blader/humanizer.git` → skill dir **`humanizer`** |
+| `humanizer-zh` | `npx skills add https://github.com/op7418/Humanizer-zh.git` → skill dir **`humanizer-zh`** |
 
-Or: `npx skills add FuDesign2008/open-skills -g --skill '*' --yes`.
-
-**No silent degradation.**
+Or for all **in-repo** open-skills: `npx skills add FuDesign2008/open-skills -g --skill '*' --yes` (does **not** install external humanizers).
 
 **Must not depend on:** `analysis-core`, `runtime-evidence-debug`, `hybrid-debug`, `browser-debug-toolkit`.
-
+**Must not vendor:** do not add `skills/humanizer/` or `skills/humanizer-zh/` to this repository.
 ## Triggers and modes
 
 | Phrasing | Mode | Note |
@@ -85,9 +85,9 @@ Core lifecycle → `workflow-mode-lifecycle`. **Differences:**
 
 | Document type | Writer | Status |
 |---------------|--------|--------|
-| Technical review (design → product/QA) | `tech-review-doc` | Shipped |
-| AI de-slop / humanize (English-primary) | `humanizer` | Shipped |
-| AI de-slop / humanize (Chinese-primary) | `humanizer-zh` | Shipped |
+| Technical review (design → product/QA) | `tech-review-doc` | In-repo |
+| AI de-slop / humanize (English-primary) | `humanizer` | External strong dep |
+| AI de-slop / humanize (Chinese-primary) | `humanizer-zh` | External strong dep |
 | Other | Ask or stop | — |
 
 **[👤]** Confirm. **[🤖]** Skip confirm when route + inputs already clear.
@@ -140,7 +140,7 @@ Brief improvements. Do not edit skill files unless asked. Revert auto → manual
 ## Extension slot (future writers)
 
 1. Add `skills/<name>/` and publish.  
-2. Prefer **optional** route unless product requires strong dep (humanizers are strong by deliberate choice).  
+2. Prefer **optional** route unless product requires strong dep (external humanizers are strong by deliberate choice; still not vendored here).  
 3. Add route row + description triggers (≤1024).  
 4. Stage 6 stays “load writer and follow exactly.”
 
@@ -148,9 +148,9 @@ Brief improvements. Do not edit skill files unless asked. Revert auto → manual
 
 | Skill | Relationship |
 |-------|--------------|
-| `tech-review-doc` | Strong dep; review writer |
-| `humanizer` | Strong dep; EN humanize |
-| `humanizer-zh` | Strong dep; ZH humanize |
+| `tech-review-doc` | Strong dep (in-repo); review writer |
+| `humanizer` | Strong dep (**external**); EN humanize |
+| `humanizer-zh` | Strong dep (**external**); ZH humanize |
 | `clarifying-question-discipline` | Strong dep |
 | `workflow-mode-lifecycle` | Strong dep |
 | `solve-workflow` | Sibling — not wired |
