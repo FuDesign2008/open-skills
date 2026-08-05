@@ -168,4 +168,24 @@ Command: `jira-read --list` or `jira-read -l`
 | 3 | YNOTR-12169 | [title 3] | P3 | 3 days ago |
 
 3 cached items, storage path: $JIRA_CACHE_DIR/
+
+---
+
+## 7. Attachment Download Report（附件下载报告）
+
+当工单存在附件且用户要求下载时，按以下格式报告下载结果：
+
+```
+## Attachment Download Report
+
+| # | Attachment | Size | Status | Path |
+|---|-----------|------|--------|------|
+| 1 | ynote-desktop-log-xxx.zip | 2.0 MB | ✅ 已下载并解压 | issues/{type}/jira-bug/YNOTR-xxxxx-ynote-desktop-log/ |
+| 2 | screenshot-1.png | 181 KB | 📌 截图未归档（如需请说明） | — |
+
+**下载方式**: scripts/download_jira_attachments.sh（Bearer + mTLS + -k）
+**注意**: setting.json 等含 deviceId/cookies 敏感信息，提交/外发前需脱敏
+```
+
+> 附件一律用脚本下载到本地磁盘，不进入 Agent 上下文（见 SKILL.md「Attachment Download」）。
 ```

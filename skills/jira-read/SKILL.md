@@ -1,8 +1,8 @@
 ---
 name: jira-read
-version: "3.0.0"
+version: "3.1.0"
 user-invocable: true
-description: Read Jira issue data from local cache or API. Triggers when user says "jira-read [JIRA-ID]", 「读取 Jira」「查看 Jira」「下载 Jira」 (read/view/download Jira), or needs to fetch Jira issue data. Requires $JIRA_CACHE_DIR (e.g. ~/.cache/jira).
+description: Read Jira issue data from local cache or API, and download attachments via script (never into context). Triggers when user says "jira-read [JIRA-ID]", 「读取 Jira」「查看 Jira」「下载 Jira」「下载附件」 (read/view/download Jira / download attachments), or needs to fetch Jira issue data. Requires $JIRA_CACHE_DIR (e.g. ~/.cache/jira).
 ---
 
 # Jira Read — Execution Rules
@@ -69,9 +69,47 @@ Read Markdown → parse YAML front matter and body → output as structured Mark
 
 **Parsed fields**: `jira_id`, `title`, `priority`, `status`, `reporter`, `assignee`, `created_at`, `updated_at`, `downloaded_at`, `source_url`; body contains issue description, reproduction steps, expected/actual results, comment history.
 
-**Attachment handling**: Do not download or display attachment content. If the Jira description or comments reference attachments (e.g., screenshots, log files), note at the end of output: "This issue contains attachments. To view them, visit Jira: {issue_url}".
+**Attachment handling**: Never read attachment content into the Agent context. If the issue has attachments (logs, screenshots), note them at the end of the output. When the user needs the actual attachment (logs), follow the "Attachment Download" section below.
 
 > Output format examples for each scenario: see [`reference.md`](reference.md)
+
+---
+
+## Attachment Download（附件下载）
+
+附件一律用脚本下载到本地磁盘，不进入 Agent 上下文；需要查看日志内容时用 `grep`/`head`/`tail` 定向提取关键行。
+
+### 认证（内网 Jira）
+
+| 要素 | 来源 | 值 |
+|---|---|---|
+| PAT（Bearer） | 环境变量 `JIRA_PERSONAL_TOKEN` | 由 mcp-atlassian 配置注入 |
+| mTLS 客户端证书 | `JIRA_CLIENT_CERT` / `JIRA_CLIENT_KEY` | `~/.config/jira-certs/client.crt` + `client.key` |
+| SSL | `JIRA_SSL_VERIFY=false` | 内网自签名证书 → curl 需 `-k` |
+
+### 附件 URL
+
+从 `jira_get_issue` 返回的 `attachment[].url` 直接取：
+`https://jira.mail.netease.com/secure/attachment/{attachmentId}/{filename}`
+
+### 下载脚本
+
+脚本位于 skill 目录内：`scripts/download_jira_attachments.sh <attachment-id> <filename> <输出路径>`。例如：
+
+```bash
+scripts/download_jira_attachments.sh 133273 ynote-desktop-log-1785203336185.zip /tmp/logs/YNOTR-14729.zip
+```
+
+脚本自动使用 `JIRA_PERSONAL_TOKEN`（Bearer，HTTP 失败回退 Basic）；证书路径可用 `JIRA_CLIENT_CERT`/`JIRA_CLIENT_KEY` 覆盖。若脚本不可用，按「认证」表手工构造 curl。
+
+### 下载与归档流程
+
+1. 用 `jira_get_issue(issue_key=..., fields="summary,description,attachment,status,priority")` 拿附件清单（attachment[].id / filename / url）
+2. 用脚本下载附件到临时目录，先下载 1 个验证认证，再批量
+3. `unzip -l` 预览 zip 内部结构，确认平铺格式后再解压
+4. 归档到工程 `issues/{type}/jira-bug/{JIRA-ID}-ynote-desktop-log/`，写 `{JIRA-ID}.md` 记录工单信息 + 附件清单
+
+> 下载结果报告格式见 [`reference.md`](reference.md) § 7
 
 ---
 
