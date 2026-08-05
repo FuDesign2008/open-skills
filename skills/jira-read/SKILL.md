@@ -75,41 +75,41 @@ Read Markdown → parse YAML front matter and body → output as structured Mark
 
 ---
 
-## Attachment Download（附件下载）
+## Attachment Download
 
-附件一律用脚本下载到本地磁盘，不进入 Agent 上下文；需要查看日志内容时用 `grep`/`head`/`tail` 定向提取关键行。
+Always download attachments to local disk via the script — never read attachment content into the Agent context. To inspect log contents, extract only the relevant lines with `grep`/`head`/`tail`.
 
-### 认证（内网 Jira）
+### Authentication (Internal Jira)
 
-| 要素 | 来源 | 值 |
+| Element | Source | Value |
 |---|---|---|
-| PAT（Bearer） | 环境变量 `JIRA_PERSONAL_TOKEN` | 由 mcp-atlassian 配置注入 |
-| mTLS 客户端证书 | `JIRA_CLIENT_CERT` / `JIRA_CLIENT_KEY` | `~/.config/jira-certs/client.crt` + `client.key` |
-| SSL | `JIRA_SSL_VERIFY=false` | 内网自签名证书 → curl 需 `-k` |
+| PAT (Bearer) | env var `JIRA_PERSONAL_TOKEN` | injected by mcp-atlassian config |
+| mTLS client cert | `JIRA_CLIENT_CERT` / `JIRA_CLIENT_KEY` | `~/.config/jira-certs/client.crt` + `client.key` |
+| SSL | `JIRA_SSL_VERIFY=false` | internal self-signed cert → curl needs `-k` |
 
-### 附件 URL
+### Attachment URL
 
-从 `jira_get_issue` 返回的 `attachment[].url` 直接取：
-`https://jira.mail.netease.com/secure/attachment/{attachmentId}/{filename}`
+Take it directly from `attachment[].url` returned by `jira_get_issue`, e.g.:
+`https://jira.example.com/secure/attachment/{attachmentId}/{filename}`
 
-### 下载脚本
+### Download Script
 
-脚本位于 skill 目录内：`scripts/download_jira_attachments.sh <attachment-id> <filename> <输出路径>`。例如：
+The script lives in the skill directory: `scripts/download_jira_attachments.sh <attachment-id> <filename> <output-path>`. Example:
 
 ```bash
-scripts/download_jira_attachments.sh 133273 ynote-desktop-log-1785203336185.zip /tmp/logs/YNOTR-14729.zip
+scripts/download_jira_attachments.sh 100001 app-log-1700000000000.zip /tmp/logs/PROJ-1234.zip
 ```
 
-脚本自动使用 `JIRA_PERSONAL_TOKEN`（Bearer，HTTP 失败回退 Basic）；证书路径可用 `JIRA_CLIENT_CERT`/`JIRA_CLIENT_KEY` 覆盖。若脚本不可用，按「认证」表手工构造 curl。
+The script uses `JIRA_PERSONAL_TOKEN` automatically (Bearer, falls back to Basic on HTTP failure); cert paths can be overridden via `JIRA_CLIENT_CERT`/`JIRA_CLIENT_KEY`. If the script is unavailable, build the curl command manually following the "Authentication" table.
 
-### 下载与归档流程
+### Download & Archive Flow
 
-1. 用 `jira_get_issue(issue_key=..., fields="summary,description,attachment,status,priority")` 拿附件清单（attachment[].id / filename / url）
-2. 用脚本下载附件到临时目录，先下载 1 个验证认证，再批量
-3. `unzip -l` 预览 zip 内部结构，确认平铺格式后再解压
-4. 归档到工程 `issues/{type}/jira-bug/{JIRA-ID}-ynote-desktop-log/`，写 `{JIRA-ID}.md` 记录工单信息 + 附件清单
+1. Call `jira_get_issue(issue_key=..., fields="summary,description,attachment,status,priority")` to get the attachment list (`attachment[].id` / `filename` / `url`)
+2. Download attachments to a temp dir via the script — download 1 first to verify auth, then batch
+3. `unzip -l` to preview the zip structure; confirm it is flat before extracting
+4. Archive into the project at `issues/{type}/jira-bug/{JIRA-ID}-app-log/`, writing `{JIRA-ID}.md` to record the ticket info + attachment list
 
-> 下载结果报告格式见 [`reference.md`](reference.md) § 7
+> Download result report format: see [`reference.md`](reference.md) § 7
 
 ---
 
