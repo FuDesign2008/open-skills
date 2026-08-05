@@ -5,6 +5,11 @@ if git diff --cached --name-only | grep -qE '^skills/.+/SKILL\.md$'; then
   node scripts/lint-skill-description.mjs || exit 1
 fi
 
+# De-identification gate (铁律 2): block new internal identifiers in staged content.
+if git diff --cached --name-only --diff-filter=ACM | grep -qE '^(skills|commands|docs)/'; then
+  node scripts/lint-skill-deidentification.mjs --staged || exit 1
+fi
+
 # Auto-regenerate skills index when skill metadata or generator script changes.
 if git diff --cached --name-only | grep -qE '^(skills/.+/SKILL\.md|scripts/gen-skill-docs\.mjs)$'; then
   echo "Regenerating docs/generated/skills-index.md..."
