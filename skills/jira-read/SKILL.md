@@ -1,8 +1,8 @@
 ---
 name: jira-read
-version: "3.0.0"
+version: "3.1.0"
 user-invocable: true
-description: Read Jira issue data from local cache or API. Triggers when user says "jira-read [JIRA-ID]", 「读取 Jira」「查看 Jira」「下载 Jira」 (read/view/download Jira), or needs to fetch Jira issue data. Requires $JIRA_CACHE_DIR (e.g. ~/.cache/jira).
+description: Read Jira issue data from local cache or API, and download attachments via script (never into context). Triggers when user says "jira-read [JIRA-ID]", 「读取 Jira」「查看 Jira」「下载 Jira」「下载附件」 (read/view/download Jira / download attachments), or needs to fetch Jira issue data. Requires $JIRA_CACHE_DIR (e.g. ~/.cache/jira).
 ---
 
 # Jira Read — Execution Rules
@@ -69,9 +69,47 @@ Read Markdown → parse YAML front matter and body → output as structured Mark
 
 **Parsed fields**: `jira_id`, `title`, `priority`, `status`, `reporter`, `assignee`, `created_at`, `updated_at`, `downloaded_at`, `source_url`; body contains issue description, reproduction steps, expected/actual results, comment history.
 
-**Attachment handling**: Do not download or display attachment content. If the Jira description or comments reference attachments (e.g., screenshots, log files), note at the end of output: "This issue contains attachments. To view them, visit Jira: {issue_url}".
+**Attachment handling**: Never read attachment content into the Agent context. If the issue has attachments (logs, screenshots), note them at the end of the output. When the user needs the actual attachment (logs), follow the "Attachment Download" section below.
 
 > Output format examples for each scenario: see [`reference.md`](reference.md)
+
+---
+
+## Attachment Download
+
+Always download attachments to local disk via the script — never read attachment content into the Agent context. To inspect log contents, extract only the relevant lines with `grep`/`head`/`tail`.
+
+### Authentication (Internal Jira)
+
+| Element | Source | Value |
+|---|---|---|
+| PAT (Bearer) | env var `JIRA_PERSONAL_TOKEN` | injected by mcp-atlassian config |
+| mTLS client cert | `JIRA_CLIENT_CERT` / `JIRA_CLIENT_KEY` | `~/.config/jira-certs/client.crt` + `client.key` |
+| SSL | `JIRA_SSL_VERIFY=false` | internal self-signed cert → curl needs `-k` |
+
+### Attachment URL
+
+Take it directly from `attachment[].url` returned by `jira_get_issue`, e.g.:
+`https://jira.example.com/secure/attachment/{attachmentId}/{filename}`
+
+### Download Script
+
+The script lives in the skill directory: `scripts/download_jira_attachments.sh <attachment-id> <filename> <output-path>`. Example:
+
+```bash
+scripts/download_jira_attachments.sh 100001 app-log-1700000000000.zip /tmp/logs/PROJ-1234.zip
+```
+
+The script uses `JIRA_PERSONAL_TOKEN` automatically (Bearer, falls back to Basic on HTTP failure); cert paths can be overridden via `JIRA_CLIENT_CERT`/`JIRA_CLIENT_KEY`. If the script is unavailable, build the curl command manually following the "Authentication" table.
+
+### Download & Archive Flow
+
+1. Call `jira_get_issue(issue_key=..., fields="summary,description,attachment,status,priority")` to get the attachment list (`attachment[].id` / `filename` / `url`)
+2. Download attachments to a temp dir via the script — download 1 first to verify auth, then batch
+3. `unzip -l` to preview the zip structure; confirm it is flat before extracting
+4. Archive into the project at `issues/{type}/jira-bug/{JIRA-ID}-app-log/`, writing `{JIRA-ID}.md` to record the ticket info + attachment list
+
+> Download result report format: see [`reference.md`](reference.md) § 7
 
 ---
 
