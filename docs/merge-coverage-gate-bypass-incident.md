@@ -3,8 +3,8 @@
 > **用途**：本文档记录一次 opsx-solve-workflow「合并前覆盖率门控」被绕过的真实事件，分析根因，供 Skill 作者优化 `opsx-solve-workflow` / `jira-fix-workflow` / `opsx-jira-fix-workflow` / `test-coverage-analyzer` 等相关 Skill 时参考。
 >
 > **事件日期**：2026-07-22
-> **涉及工程**：markdown-editor（`/Users/admin/workspace/ynote/special-markdown/markdown-editor`）
-> **涉及 MR**：[#450 feat(file-link): 新增协同表格 icon 并对齐 bulb 扩展名映射](https://g.hz.netease.com/cowork/web/ynote/markdown-editor/-/merge_requests/450)
+> **涉及工程**：markdown-editor（`/Users/user/workspace/app/special-markdown/markdown-editor`）
+> **涉及 MR**：[#450 feat(file-link): 新增协同表格 icon 并对齐 bulb 扩展名映射](https://git.example.com/cowork/web/app/markdown-editor/-/merge_requests/450)
 
 ---
 

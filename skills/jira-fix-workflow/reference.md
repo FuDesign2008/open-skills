@@ -46,12 +46,12 @@ state.json           ← progress (mode, review_round, review_status)
 
 ```json
 {
-  "jira_id": "YNOTR-12345",
-  "jira_url": "https://your-jira.example.com/browse/YNOTR-12345",
+  "jira_id": "PROJ-12345",
+  "jira_url": "https://your-jira.example.com/browse/PROJ-12345",
   "mode": "manual",
   "current_phase": 3,
   "completed_phases": [0, 1],
-  "branch": "fix/jira-fix-YNOTR-12345",
+  "branch": "fix/jira-fix-PROJ-12345",
   "grade": null,
   "selected_option": null,
   "review_round": 0,
@@ -88,7 +88,7 @@ Stop points are in the SKILL.md "Quick Reference". When a fixed closing line is 
 
 ## Stage 7 Branch-Creation Details
 
-- **Naming**: `fix/jira-fix-[JIRA-ID]` (e.g. `fix/jira-fix-YNOTR-12167`)
+- **Naming**: `fix/jira-fix-[JIRA-ID]` (e.g. `fix/jira-fix-PROJ-12167`)
 - **[🤖]**: match each repo's `.git` root against stage 6's file list → batch `git checkout -b …`; abort on failure
 - **[👤 single-repo]**: create directly, append the "Stage 7 branch (manual, single-repo)" script
 - **[👤 multi-repo]**: present repo/base-branch/branch-name, create once confirmed, append "Stage 7 branch (manual, multi-repo)"
@@ -101,7 +101,7 @@ Stop points are in the SKILL.md "Quick Reference". When a fixed closing line is 
 ```
 ## Stage 0 Complete: Prerequisite Check Passed
 
-**Jira ID**: YNOTR-12167
+**Jira ID**: PROJ-12167
 **Issue Title**: [title] (existence confirmed)
 **Priority**: P1
 **Execution Mode**: 🤖 Auto / 👤 Manual
@@ -119,7 +119,7 @@ Proceeding to Stage 1: Read Jira Info
 ```
 ## Stage 1 Complete: Jira Info Retrieved
 
-**Jira ID**: YNOTR-12167
+**Jira ID**: PROJ-12167
 **Title**: [title]
 **Priority**: P1
 **Status**: To Do
@@ -188,7 +188,7 @@ Proceeding to Stage 4: Difficulty Grading
 ```
 ## ⚠️ jira-fix Terminated: Difficulty Exceeds Auto-Fix Threshold
 
-**Jira ID**: YNOTR-12167
+**Jira ID**: PROJ-12167
 **Difficulty Grade**: 🔴 Extremely Hard
 **Matched Conditions**:
   - [x] Root cause unknown: unable to pinpoint a specific fix location after analysis
@@ -196,8 +196,8 @@ Proceeding to Stage 4: Difficulty Grading
   - [ ] Change scope too large
 
 **Work Completed**:
-  - Branch created: fix/jira-fix-YNOTR-12167
-  - Analysis saved: .jira-fix/YNOTR-12167/02-analysis.md
+  - Branch created: fix/jira-fix-PROJ-12167
+  - Analysis saved: .jira-fix/PROJ-12167/02-analysis.md
 
 **Recommended Next Steps**:
   1. Continue with manual mode: jira-fix [URL] --manual --resume
@@ -215,7 +215,7 @@ Proceeding to Stage 4: Difficulty Grading
 **Recommendation**:
 
   Option A — Analysis only (recommended)
-    Save the analysis to .jira-fix/YNOTR-12167/02-analysis.md
+    Save the analysis to .jira-fix/PROJ-12167/02-analysis.md
     Add a Jira comment: "AI analysis complete; human evaluation needed before continuing the fix"
     End this fix attempt and wait for a human to take over
 
@@ -309,9 +309,9 @@ Please give a verdict:
 ```
 ## Stage 7 Pre-Step: Git Branch Auto-Created
 
-**Jira ID**: YNOTR-12167
+**Jira ID**: PROJ-12167
 **Base Branch**: release/8.2.30
-**Fix Branch**: fix/jira-fix-YNOTR-12167
+**Fix Branch**: fix/jira-fix-PROJ-12167
 **Status**: Automatically switched to the fix branch
 
 ---
@@ -324,8 +324,8 @@ Auto-continuing to execute the plan
 
 | Project | Base Branch | Fix Branch | Status |
 |------|---------|---------|------|
-| backend | release/8.2.30 | fix/jira-fix-YNOTR-12167 | ✅ Created |
-| frontend | release/8.2.30 | fix/jira-fix-YNOTR-12167 | ✅ Created |
+| backend | release/8.2.30 | fix/jira-fix-PROJ-12167 | ✅ Created |
+| frontend | release/8.2.30 | fix/jira-fix-PROJ-12167 | ✅ Created |
 
 ---
 Auto-continuing to execute the plan
@@ -335,9 +335,9 @@ Auto-continuing to execute the plan
 ```
 ## Stage 7 Pre-Step: Git Branch Created
 
-**Jira ID**: YNOTR-12167
+**Jira ID**: PROJ-12167
 **Base Branch**: release/8.2.30 (source: main_branch file)
-**Fix Branch**: fix/jira-fix-YNOTR-12167
+**Fix Branch**: fix/jira-fix-PROJ-12167
 
 ---
 Starting code changes
