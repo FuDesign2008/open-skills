@@ -222,7 +222,7 @@ Grading and path table:
 
 Confirm or create the Jira issue's OpenSpec change. If stage 1 already created or reused a change, this stage only validates and completes the artifacts; manual mode must confirm the change name first; auto mode may generate and continue.
 
-- **Naming**: `fix-<jira-id-lower>-<short-topic>` (e.g. `fix-ynotr-12167-ai-summary-button`)
+- **Naming**: `fix-<jira-id-lower>-<short-topic>` (e.g. `fix-proj-12167-ai-summary-button`)
 - **Creation**: delegate to `openspec-new-change` (read its SKILL.md; `/opsx:new` is an entry alias)
 - **Jira completeness**: `design.md` must include at least Jira Context / Root Cause / Options / Risk / Verification Notes; proposal / delta-spec field details are in [reference.md](reference.md)「Stage 3 Artifact Field Checklist」
 
