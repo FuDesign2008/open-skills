@@ -1,0 +1,24 @@
+name: De-identification gate
+
+on:
+  pull_request:
+    paths:
+      - "skills/**"
+      - "commands/**"
+      - "docs/**"
+      - "scripts/lint-skill-deidentification.mjs"
+      - ".husky/pre-commit"
+
+jobs:
+  deid:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch base
+        run: git fetch origin main
+
+      - name: No new internal identifiers in PR diff
+        run: node scripts/lint-skill-deidentification.mjs --base origin/main
