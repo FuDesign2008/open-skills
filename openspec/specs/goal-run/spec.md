@@ -92,3 +92,17 @@ The system SHALL produce a structured completion report after the long run and s
 - **WHEN** 长跑结束
 - **THEN** 主 agent 输出完成报告（模板5：目标回顾、验收标准逐项状态、实际产出与证据、遗留问题、耗时/token），人工判断结果型标准并抽查机器项；验收发现的问题回填至下一轮需求对齐清单
 
+### Requirement: 长跑启动批准门控
+
+The system SHALL require explicit user approval before launching a long run when it involves unattended operation, a budget above threshold, or irreversible actions; auto mode does not bypass this gate.
+
+#### Scenario: 高影响长跑获批
+
+- **WHEN** 长跑满足任一高影响条件（无人值守 / 大预算 / 不可逆操作）
+- **THEN** 系统在启动前暂停并请求用户显式批准「最终 goal 条件 + 预算 + 配套清单」，即使处于 auto 模式也不得跳过
+
+#### Scenario: 普通长跑无需门控
+
+- **WHEN** 长跑为低影响（小预算 / 可逆 / 单文件高确定性）
+- **THEN** 系统无需批准门控，按阶段 4 正常启动
+
