@@ -6,7 +6,6 @@ description: "Goal-Driven long-run workflow: run an agent autonomously for hours
 dependencies:
   - clarifying-question-discipline
   - completion-evidence-discipline
-  - workflow-mode-lifecycle
 ---
 
 # Goal-Driven Long-Run Workflow
@@ -26,7 +25,6 @@ dependencies:
 
 - `clarifying-question-discipline`: stage 1 requirement clarification (one question per turn; clarify-first)
 - `completion-evidence-discipline`: stage 2/5 acceptance evidence (no pass claims without fresh evidence)
-- `workflow-mode-lifecycle`: manual/auto mode lifecycle rules (auto reverts to manual; explicit re-entry)
 
 **Related (informational)**: `solve-workflow` (full PDCA; this workflow is the "goal long-run" execution path), manual §8 of the 7×24-agent-reliability-handbook (methodology source).
 
@@ -42,17 +40,9 @@ dependencies:
 
 ---
 
-## Path Selection
+## Path Selection（轻量）
 
-Pick a path by task complexity and declare it when confirming the goal in stage 1:
-
-| Path | When to use | Requirement |
-|------|-------------|-------------|
-| Full | Multi-module / cross-domain work, ambiguous scope | All five stages in full |
-| Incremental | Existing-behavior change with a clear end state | All five stages, lean output ok |
-| Lean | Single-file high-certainty change | 1 goal condition + risk note; stage 5 never skipped |
-
-If scope expands mid-run (the goal needs more modules / sub-agents / budget than planned), upgrade the path: lean → incremental → full. In manual mode, upgrading requires user confirmation — pause and re-confirm the goal condition.
+Long-run scale is already expressed by the goal condition and budget in stage 2. For a single-file high-certainty change, keep stage 2/3 lean (1 goal condition + minimal sub-agent planning); for multi-module / cross-domain work, plan sub-agent division and context technique in full. Stage 5 (report + human acceptance) is never skipped.
 
 ---
 
@@ -164,12 +154,9 @@ If scope expands mid-run (the goal needs more modules / sub-agents / budget than
 
 ## Mode Lifecycle
 
-> 规则来源：`workflow-mode-lifecycle`（强依赖）。核心规则：
-
 - **Manual (default)**: pauses at stages 1, 2, 3, at the stage-4 approval gate, and stage 5 for confirmation.
 - **Auto** 「自动模式」/「自动跑」: advances 1→2→3→4→5 without confirmation, **except** the stage-4 high-impact approval gate (still requires a pause); stage 5 always ends at human acceptance.
-- **Revert-to-manual**: auto always reverts to manual on completion (including after stage-5 human acceptance) or on any interruption (Ctrl+C / failure / user stop).
-- **Explicit re-entry**: re-entering auto requires an explicit trigger (「自动模式」/「自动跑」); implicit continuation (e.g. 「继续」) never re-activates auto.
+- **Revert-to-manual**: auto always reverts to manual on completion (including after stage-5 human acceptance) or on any interruption (Ctrl+C / failure / user stop). Re-entering auto requires an explicit trigger; implicit continuation never re-activates it.
 - **长跑特有**: a long run that ends (goal achieved or budget exhausted) returns control to the human — do not auto-start a new goal or auto-extend the budget without explicit user confirmation.
 
 ---
