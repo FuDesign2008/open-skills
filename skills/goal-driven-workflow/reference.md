@@ -183,7 +183,6 @@ When a skill declared in frontmatter `dependencies` is missing, print the follow
 goal-driven-workflow strongly depends on the following skills via frontmatter dependencies (missing = abort):
 - `clarifying-question-discipline`: stage 1 requirement clarification (one question per turn; clarify-first)
 - `completion-evidence-discipline`: stage 2/5 acceptance evidence (no pass claims without fresh evidence)
-- `workflow-mode-lifecycle`: manual/auto mode lifecycle rules (auto reverts to manual; explicit re-entry)
 ```
 
 ---
