@@ -1,6 +1,6 @@
 # Goal-Driven Run — Output Format Reference
 
-This file holds the per-stage output templates for the `goal-driven-run` skill, plus a quick reference to Claude Code's official `/goal` command. Templates are adapted from the 7×24-agent-reliability-handbook §8 (Goal-Driven 长跑模式).
+This file holds the per-stage output templates for the `goal-driven-workflow` skill, plus a quick reference to Claude Code's official `/goal` command. Templates are adapted from the 7×24-agent-reliability-handbook §8 (Goal-Driven 长跑模式).
 
 ---
 
@@ -173,13 +173,13 @@ This file holds the per-stage output templates for the `goal-driven-run` skill, 
 When a skill declared in frontmatter `dependencies` is missing, print the following and abort immediately:
 
 ```
-⚠️ goal-driven-run is missing a strong dependency and cannot run in full
+⚠️ goal-driven-workflow is missing a strong dependency and cannot run in full
 
 【Missing skill(s)】
 - [skill-name]: [what it is for]
 
 【Why it's needed】
-goal-driven-run strongly depends on the following skills via frontmatter dependencies (missing = abort):
+goal-driven-workflow strongly depends on the following skills via frontmatter dependencies (missing = abort):
 - `clarifying-question-discipline`: stage 1 requirement clarification (one question per turn; clarify-first)
 - `completion-evidence-discipline`: stage 2/5 acceptance evidence (no pass claims without fresh evidence)
 ```

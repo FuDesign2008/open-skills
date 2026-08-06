@@ -1,5 +1,5 @@
 ---
-name: goal-driven-run
+name: goal-driven-workflow
 version: "0.1.0"
 user-invocable: true
 description: "Goal-Driven long-run workflow: run an agent autonomously for hours toward a verifiable goal. Five stages — ① clarify requirements & output contract ② layer acceptance criteria + design the /goal condition (measurable end state, stated check, constraints, turn/time cap) ③ sub-agent division & context management (context-rot mitigation) ④ launch the long run (/goal, claude -p non-interactive, or manual-loop fallback) ⑤ completion report & human acceptance. Built on top of Claude Code's native /goal harness, with a generic fallback for environments without /goal. Triggers — 「goal 长跑」「goal run」「goal-driven」「目标驱动长跑」「一个 goal 下去跑」「长跑目标」「无人值守跑任务」「goal-run」 / goal run, goal-driven, long-run goal, autonomous run, run until done."
@@ -17,7 +17,7 @@ dependencies:
 ## Invocation Conventions
 
 - **Trigger words** (per `description`): 「goal 长跑」「goal run」「goal-driven」「目标驱动长跑」「一个 goal 下去跑」「长跑目标」「无人值守跑任务」「goal-run」 / goal run, goal-driven, long-run goal, autonomous run, run until done
-- **Command form**: `/goal-driven-run xxx`, `/goal-run xxx`
+- **Command form**: `/goal-driven-workflow xxx`, `/goal-run xxx`
 - **Default behavior**: treat `xxx` as the task to run as a goal; enter stage 1 (clarify). If `xxx` already contains a concrete verifiable goal + acceptance criteria, skip ahead to stage 2.
 - **Not applicable**: single-step edits, tasks with no verifiable end state, or tasks better served by `/loop` (recurring polling) or plain auto mode (single-turn tool approvals).
 

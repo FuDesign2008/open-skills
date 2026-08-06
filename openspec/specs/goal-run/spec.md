@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Goal-driven long-run execution capability owned by the user-invocable `goal-driven-run` skill: five-stage orchestration — ① requirement alignment & output contract → ② layered acceptance criteria + `/goal` condition design (official four parts, mandatory budget clause) → ③ sub-agent division & context management (context-rot mitigation) → ④ long-run launch (`/goal` / `claude -p` non-interactive / manual-loop fallback, with CLAUDE.md + hooks + auto-mode companion) → ⑤ completion report & human acceptance. Built on top of Claude Code's native `/goal` harness (v2.1.139+), with a generic fallback for environments without `/goal`.
+Goal-driven long-run execution capability owned by the user-invocable `goal-driven-workflow` skill: five-stage orchestration — ① requirement alignment & output contract → ② layered acceptance criteria + `/goal` condition design (official four parts, mandatory budget clause) → ③ sub-agent division & context management (context-rot mitigation) → ④ long-run launch (`/goal` / `claude -p` non-interactive / manual-loop fallback, with CLAUDE.md + hooks + auto-mode companion) → ⑤ completion report & human acceptance. Built on top of Claude Code's native `/goal` harness (v2.1.139+), with a generic fallback for environments without `/goal`.
 
 ## Requirements
 
