@@ -6,6 +6,7 @@ description: "Goal-Driven long-run workflow: run an agent autonomously for hours
 dependencies:
   - clarifying-question-discipline
   - completion-evidence-discipline
+  - workflow-mode-lifecycle
 ---
 
 # Goal-Driven Long-Run Workflow
@@ -25,6 +26,7 @@ dependencies:
 
 - `clarifying-question-discipline`: stage 1 requirement clarification (one question per turn; clarify-first)
 - `completion-evidence-discipline`: stage 2/5 acceptance evidence (no pass claims without fresh evidence)
+- `workflow-mode-lifecycle`: manual/auto mode lifecycle rules (auto reverts to manual; explicit re-entry)
 
 **Related (informational)**: `solve-workflow` (full PDCA; this workflow is the "goal long-run" execution path), manual §8 of the 7×24-agent-reliability-handbook (methodology source).
 
@@ -37,6 +39,20 @@ dependencies:
 3. Any missing → print the missing-dependency notice (format in [reference.md](reference.md) § Prerequisite Skill Check — Missing Notice) and **abort immediately**
 
 > **No-downgrade principle**: a missing strong dependency aborts the flow — never fall back to a simplified version.
+
+---
+
+## Path Selection
+
+Pick a path by task complexity and declare it when confirming the goal in stage 1:
+
+| Path | When to use | Requirement |
+|------|-------------|-------------|
+| Full | Multi-module / cross-domain work, ambiguous scope | All five stages in full |
+| Incremental | Existing-behavior change with a clear end state | All five stages, lean output ok |
+| Lean | Single-file high-certainty change | 1 goal condition + risk note; stage 5 never skipped |
+
+If scope expands mid-run (the goal needs more modules / sub-agents / budget than planned), upgrade the path: lean → incremental → full. In manual mode, upgrading requires user confirmation — pause and re-confirm the goal condition.
 
 ---
 
@@ -109,6 +125,13 @@ dependencies:
 
 ## Stage 4: Launch the Long Run
 
+> **设计批准门控（长跑启动前）**: 启动长跑前必须获得用户显式批准。满足任一条件即触发强制门控（**auto 模式也不例外**，必须暂停请求批准）：
+> - 无人值守运行（auto 模式 / 调度执行）
+> - 预算超过阈值（如 >30 turns / >1h / 大额 token）
+> - 涉及不可逆操作（deploy / 对外消息 / 批量改动生产数据）
+>
+> 手动模式：阶段 3 完成后停止，展示「最终 goal 条件 + 预算 + 配套清单」，等用户确认后再启动。
+
 1. **Pre-flight** ([reference.md](reference.md) § Stage 4):
    - **CLAUDE.md at project root** — every turn reads it; encode architecture/coding conventions/acceptance rules there for consistency across a multi-turn run.
    - **PostToolUse hooks** for auto-validation (lint/type-check on each edit) — catches issues mid-run.
@@ -127,6 +150,8 @@ dependencies:
 
 ## Stage 5: Completion Report & Human Acceptance
 
+> **验收证据纪律**（遵循 `completion-evidence-discipline`）：任何「完成 / 通过」声明必须基于**当前轮次实际运行的证据**（命令输出 / 测试结果 / 文件差异），不得以「设计了场景」「应该能过」代替。逐项标注：`Executed`（命令 + 输出摘要）或 `Pending`（需人工操作）。
+
 1. Main agent produces a **structured completion report** ([reference.md](reference.md) § Stage 5 — 模板5): goal recap, acceptance-criteria status (hard/soft/human), actual deliverables + verification evidence, leftovers/risks, spend.
 2. **Human acceptance**:
    - Machine-verifiable items: reported by agent + spot-check.
@@ -139,9 +164,13 @@ dependencies:
 
 ## Mode Lifecycle
 
-- **Manual (default)**: pauses at stages 1, 2, 3, 5 for confirmation.
-- **Auto** 「自动模式」/「自动跑」: advances 1→2→3→4→5 without confirmation; stage 5 still ends at human acceptance.
-- Auto always reverts to manual on completion or interruption; re-entering auto requires an explicit trigger.
+> 规则来源：`workflow-mode-lifecycle`（强依赖）。核心规则：
+
+- **Manual (default)**: pauses at stages 1, 2, 3, at the stage-4 approval gate, and stage 5 for confirmation.
+- **Auto** 「自动模式」/「自动跑」: advances 1→2→3→4→5 without confirmation, **except** the stage-4 high-impact approval gate (still requires a pause); stage 5 always ends at human acceptance.
+- **Revert-to-manual**: auto always reverts to manual on completion (including after stage-5 human acceptance) or on any interruption (Ctrl+C / failure / user stop).
+- **Explicit re-entry**: re-entering auto requires an explicit trigger (「自动模式」/「自动跑」); implicit continuation (e.g. 「继续」) never re-activates auto.
+- **长跑特有**: a long run that ends (goal achieved or budget exhausted) returns control to the human — do not auto-start a new goal or auto-extend the budget without explicit user confirmation.
 
 ---
 

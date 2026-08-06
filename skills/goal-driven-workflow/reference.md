@@ -89,6 +89,7 @@ This file holds the per-stage output templates for the `goal-driven-workflow` sk
 
 ```
 ## 长跑启动单
+- 批准状态：<已批准 / 待批准>（高影响长跑：无人值守 / 大预算 / 不可逆操作，必须获批后才启动）
 - 环境：交互 / 非交互(claude -p) / 手工退化
 - /goal 条件：<4 部分条件，含预算子句>
 - 配套：
@@ -182,6 +183,7 @@ When a skill declared in frontmatter `dependencies` is missing, print the follow
 goal-driven-workflow strongly depends on the following skills via frontmatter dependencies (missing = abort):
 - `clarifying-question-discipline`: stage 1 requirement clarification (one question per turn; clarify-first)
 - `completion-evidence-discipline`: stage 2/5 acceptance evidence (no pass claims without fresh evidence)
+- `workflow-mode-lifecycle`: manual/auto mode lifecycle rules (auto reverts to manual; explicit re-entry)
 ```
 
 ---
