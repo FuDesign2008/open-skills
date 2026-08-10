@@ -65,7 +65,7 @@ Long-run scale is already expressed by the goal condition and budget in stage 2.
 > ⚠️ 主动提问：遵循 `clarifying-question-discipline`（一次一问、多轮问清；问清优先，不急着答）。
 
 1. **Restate the goal** in your own words; extract goal / deliverables / constraints / expected outcome.
-2. **Ask exactly ONE most critical question per turn** (purpose → constraints → success criteria priority) until the goal is unambiguous. Use AskUserQuestion (or native equivalent) with a recommended answer.
+2. **Ask exactly ONE most critical question per turn** (purpose → constraints → success criteria priority) until the goal is unambiguous. Prefer structured single-select questioning with a recommended answer; fall back to plain prose if the host has no structured UI.
 3. **Output contract**: agree on the deliverable(s) and what "done" looks like.
 4. **Pre-judge output vs outcome** (see stage 2): mark which standards the agent can self-verify (output-type) vs which need human judgment (outcome-type).
 5. Fill **模板1 需求对齐清单** ([reference.md](reference.md) § Stage 1).
