@@ -63,7 +63,6 @@ Long-run scale is already expressed by the goal condition and budget in stage 2.
 ## Stage 1: Clarify Requirements & Output Contract
 
 > ⚠️ Follow `clarifying-question-discipline` (one question per turn; multi-round until clear; clarify first, do not rush to answer).
-> ⚠️ 主动提问：遵循 `clarifying-question-discipline`（一次一问、多轮问清；问清优先，不急着答）。
 
 1. **Restate the goal** in your own words; extract goal / deliverables / constraints / expected outcome.
 2. **Ask exactly ONE most critical question per turn** until the goal is unambiguous (question selection per `clarifying-question-discipline`). Prefer structured single-select questioning with a recommended answer; fall back to plain prose if the host has no structured UI.
