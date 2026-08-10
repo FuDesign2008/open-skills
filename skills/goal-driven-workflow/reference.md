@@ -1,171 +1,173 @@
-# Goal-Driven Run — Output Format Reference
+# Goal-Driven Workflow — Output Format Reference
 
-This file holds the per-stage output templates for the `goal-driven-workflow` skill, plus a quick reference to Claude Code's official `/goal` command. Templates are adapted from the 7×24-agent-reliability-handbook §8 (Goal-Driven 长跑模式).
+Per-stage output templates for `goal-driven-workflow`, plus a primary-harness cheat sheet for Claude Code's `/goal` (examples — other agents use equivalents). Methodology source: 7×24-agent-reliability-handbook §8.
 
 ---
 
-## Stage 1 — Requirements & Output Contract (模板1)
+## Stage 1 — Requirements & Output Contract (Template 1)
 
 ```
 【Goal restatement】I understand the goal as: ...
 【Key elements】Deliverables: ... / Constraints: ... / Background: ... / Expected outcome: ...
-【Output vs Outcome 预判】
-- 输出型（agent 可自验）：<如：构建通过、测试全绿、无 TODO>
-- 结果型（需人验收）：<如：方案符合团队架构约定>
+【Output vs Outcome pre-judge】
+- Output-type (agent can self-verify): <e.g. build passes, tests green, no TODO>
+- Outcome-type (needs human acceptance): <e.g. design fits team architecture norms>
 【Points to confirm】(ask ONE question per turn, per clarifying-question-discipline)
 ```
 
-**需求对齐清单**（逐项填写）：
+**Requirements checklist** (fill every row):
 
-| 项 | 填写内容 |
-|----|---------|
-| 目标（一段话） | ... |
-| 产出物 | ... |
-| 成功标准（机器可验） | ... |
-| 成功标准（人工判断） | ... |
-| 范围（做什么） | ... |
-| 非目标（不做什么） | ... |
-| 约束 | ... |
-| 预算（turn/时间/token 上限） | ... |
-| 边界情况处理 | ... |
-
----
-
-## Stage 2 — Acceptance Criteria + Goal Condition (模板2)
-
-```
-## 验收标准
-### 硬性（机器可验 → 成为 /goal 条件）
-- [ ] 构建命令通过：<命令>
-- [ ] 测试通过：<命令>（覆盖 >= <阈值>）
-- [ ] 无 TODO/FIXME 残留
-- [ ] <其他机器可验项>
-
-### 软性（质检模型 + 确定性 checker）
-- [ ] <质量要求>
-- [ ] <一致性要求>
-
-### 人工（结果型 → 阶段 5 人工验收）
-- [ ] <业务/架构判断项>
-- [ ] <体验判断项>
-
-## /goal 条件（官方 4 部分）
-<可测量终态> + <声明的检查方式> + <关键约束> + <预算子句：or stop after N turns>
-示例：all tests in test/auth pass and the lint step is clean, stop after 20 turns
-```
+| Item | Content |
+|------|---------|
+| Goal (one paragraph) | ... |
+| Deliverables | ... |
+| Success criteria (machine-verifiable) | ... |
+| Success criteria (human judgment) | ... |
+| In scope | ... |
+| Out of scope | ... |
+| Constraints | ... |
+| Budget (turn / time / token cap) | ... |
+| Edge-case handling | ... |
 
 ---
 
-## Stage 3 — Sub-agent Division & Context Management (模板3)
+## Stage 2 — Acceptance Criteria + Goal Condition (Template 2)
 
 ```
-## 协作设计
-### 上下文技术选型
-- [ ] Sub-agent 架构（并行探索/多模块）—— 子代理深工，主 agent 只收 1-2k 摘要
-- [ ] Compaction（压缩）—— 长对话流，接近窗口上限总结重开
-- [ ] Structured note-taking（结构化笔记）—— 多里程碑迭代，NOTES.md/memory
+## Acceptance criteria
+### Hard (machine-verifiable → becomes goal-harness condition)
+- [ ] Build command passes: <command>
+- [ ] Tests pass: <command> (coverage >= <threshold>)
+- [ ] No TODO/FIXME left
+- [ ] <other machine-verifiable items>
 
-### sub-agent 划分
-- [ ] 按模块：<A> / <B> ...
-- [ ] 按领域：<研究> / <实现> / <验证>
-- [ ] 独立 harness：实现 agent 与审查 agent 分离
+### Soft (LLM-judge + deterministic checker)
+- [ ] <quality bar>
+- [ ] <consistency bar>
 
-### 每个 sub-agent 定义
-- 任务描述 + 输出物
-- 允许的工具（最小集 + 白名单）
-- 输出契约（摘要 + 证据 + 遗留问题）
-- 完成条件（机器可验）
-- 失败处理（无法完成如何上报）
+### Human (outcome-type → stage 5 human acceptance)
+- [ ] <business/architecture judgment>
+- [ ] <experience judgment>
 
-### 主 agent 职责
-- [ ] 保持高层面计划 + 进度跟踪
-- [ ] 只接收摘要，不接收细节
-- [ ] 合成结果 + 汇总到完成报告
+## Goal condition (official 4 parts)
+<measurable end state> + <stated check> + <key constraints> + <budget: or stop after N turns>
+Example: all tests in test/auth pass and the lint step is clean, stop after 20 turns
 ```
 
 ---
 
-## Stage 4 — Launch the Long Run (模板4)
+## Stage 3 — Sub-agent Division & Context Management (Template 3)
 
 ```
-## 长跑启动单
-- 批准状态：<已批准 / 待批准>（高影响长跑：无人值守 / 大预算 / 不可逆操作，必须获批后才启动）
-- 环境：交互 / 非交互(claude -p) / 手工退化
-- /goal 条件：<4 部分条件，含预算子句>
-- 配套：
-  - [ ] CLAUDE.md 在项目根（架构/约定/验收规则）
-  - [ ] PostToolUse hook 自动校验（lint/typecheck）
-  - [ ] auto mode 已启用（无人值守）
-- 预算：<N turns / N 分钟 / token 上限>
-- 命令：
-  - 交互：/goal <condition>
-  - 非交互：claude -p "/goal <condition>" --output-format stream-json --verbose
-```
+## Collaboration design
+### Context technique
+- [ ] Sub-agent architecture (parallel / multi-module) — subs do deep work; main keeps 1–2k summaries only
+- [ ] Compaction — long conversational flows; summarize-and-reopen near window limit
+- [ ] Structured note-taking — milestone iteration via NOTES.md / memory
 
-**Run log**（执行中记录）：turn 数 / 已耗 token / 评估器最近 reason / 异常。
+### Sub-agent split
+- [ ] By module: <A> / <B> ...
+- [ ] By domain: <research> / <implement> / <verify>
+- [ ] Independent harness: implementer vs reviewer separated
 
----
+### Per sub-agent definition
+- Task + deliverables
+- Allowed tools (minimal set + allowlist)
+- Output contract (summary + evidence + leftovers)
+- Completion condition (machine-verifiable)
+- Failure handling (how to report inability to finish)
 
-## Stage 5 — Completion Report & Human Acceptance (模板5)
-
-```
-## 完成报告
-### 目标回顾
-- 原始目标：<一段话>
-
-### 完成情况（对照验收标准逐项）
-- 硬性标准：全部通过 ✅ / 未通过项：<列出>
-- 软性标准：<自查结论>
-- 人工标准：<留给人工判断的问题/说明>
-
-### 实际完成内容
-- 改动/产出的清单（文件/artifact + 一句话说明）
-- 验证证据（构建/测试输出摘要、覆盖率等）
-
-### 遗留问题与风险
-- 未完成项 / 已知风险 / 需要人决策的点
-- 下一步建议
-
-### 备注
-- 实际耗时 / turn 数 / token 消耗 / 偏离计划之处
+### Main agent duties
+- [ ] Keep high-level plan + progress tracking
+- [ ] Receive summaries only, not details
+- [ ] Synthesize into the completion report
 ```
 
 ---
 
-## /goal 官方命令速查（code.claude.com/docs/en/goal）
+## Stage 4 — Launch the Long Run (Template 4)
 
-| 命令 | 作用 |
-|------|------|
-| `/goal <条件>` | 设置完成条件并立即开始一轮（条件即指令）；已有 goal 则被替换 |
-| `/goal`（无参） | 查看当前状态：条件 / 运行时长 / 已评估 turn 数 / token 花费 / 评估器最近 reason |
-| `/goal clear` | 清除未完成的 goal（别名：stop / off / reset / none / cancel） |
-| `claude -p "/goal <条件>"` | 非交互模式，单次调用跑完即退出 |
-| `claude -p "/goal ..." --output-format stream-json --verbose` | 非交互 + 实时查看每轮输出（默认 text 模式中途无输出，像卡住） |
-| `Ctrl+C` | 非交互下提前中断 |
-| `--resume` / `--continue` | 恢复会话时保留未完成 goal（turn/token 基线重置） |
+```
+## Long-run launch sheet
+- Approval: <approved / pending> (high-impact: unattended / large budget / irreversible — must approve before start; auto mode does not bypass)
+- Environment: interactive / non-interactive CLI / manual-loop fallback
+- Goal condition: <4 parts, including budget>
+- Companions:
+  - [ ] Per-turn project convention file at repo root (e.g. CLAUDE.md)
+  - [ ] Post-edit validation hooks (e.g. lint/typecheck on each edit)
+  - [ ] Auto-approval mode enabled (unattended)
+- Budget: <N turns / N minutes / token cap>
+- Commands (primary-harness examples):
+  - Interactive: /goal <condition>
+  - Non-interactive: claude -p "/goal <condition>" --output-format stream-json --verbose
+```
 
-**机制要点**：
-- 每轮后小快评估模型（默认 Haiku，可 `ANTHROPIC_DEFAULT_HAIKU_MODEL` 换）读取 transcript 判断条件；不调用工具、不读文件 → 条件必须可由 Claude 输出证明。
-- **无内置 token 预算** → 条件中必须写 `or stop after N turns` 或时间子句。
-- 条件最长 4000 字符。
-- 一个 session 一个 active goal；goal 达成后自动清除。
-- 要求 Claude Code **v2.1.139+**；需接受 trust dialog；`disableAllHooks` 或 `allowManagedHooksOnly`(managed) 时不可用。
+**Run log** (during execution): turn count / tokens spent / latest evaluator reason / anomalies.
 
-**条件 4 部分**（官方推荐）：
-1. 一个可测量终态（测试结果 / 构建退出码 / 文件数 / 空队列）
-2. 声明的检查方式（Claude 如何证明，如 `npm test exits 0`）
-3. 关键约束（路上不能改变的，如 `no other test file is modified`）
-4. 预算子句（`or stop after N turns`）
+---
 
-**与相邻机制对比**：
-- `/goal` + **auto mode** = 无人值守长跑（auto 批准单 turn 内工具调用，/goal 决定是否开下一 turn）。二者互补。
-- `/goal` vs **Stop hook**：/goal 是 session 内快捷方式；Stop hook 在 settings 全局生效、可跑确定性脚本（比 /goal 更灵活，但要配置）。
-- `/goal` vs **`/loop`**：loop 按时间间隔重跑（轮询），goal 直到完成——不是一回事。
+## Stage 5 — Completion Report & Human Acceptance (Template 5)
 
-**可靠性三件套**（长跑更稳）：
-1. 项目根 **CLAUDE.md**——每轮自动读取，提供一致上下文。
-2. **PostToolUse hooks** 自动校验（每步自动 lint/type-check）。
-3. **auto mode** 开启——否则长跑每写一个文件就卡在审批。
+```
+## Completion report
+### Goal recap
+- Original goal: <one paragraph>
+
+### Status vs acceptance criteria
+- Hard: all pass ✅ / failed: <list>
+- Soft: <self-check conclusion>
+- Human: <items left for human judgment>
+
+### Actual deliverables
+- Change/artifact list (path + one-line note)
+- Verification evidence (build/test output summaries, coverage, etc.) — per completion-evidence-discipline
+
+### Leftovers and risks
+- Incomplete items / known risks / decisions needed
+- Next-step suggestions
+
+### Notes
+- Wall time / turns / tokens / plan deviations
+```
+
+---
+
+## Primary harness cheat sheet (`/goal` — Claude Code)
+
+Examples for the Claude Code `/goal` harness. Other agents: map to their goal/loop equivalent or use the manual fallback in the skill body.
+
+| Command | Role |
+|---------|------|
+| `/goal <condition>` | Set completion condition and start a turn immediately; replaces any existing goal |
+| `/goal` (no args) | Status: condition / elapsed / evaluated turns / tokens / latest reason |
+| `/goal clear` | Clear unfinished goal (aliases: stop / off / reset / none / cancel) |
+| `claude -p "/goal <condition>"` | Non-interactive; single invocation runs to exit |
+| `claude -p "/goal ..." --output-format stream-json --verbose` | Non-interactive + live progress (default text mode looks stuck mid-run) |
+| `Ctrl+C` | Interrupt non-interactive early |
+| `--resume` / `--continue` | Resume session; unfinished goal kept (turn/token baselines reset) |
+
+**Mechanics**:
+- After each turn a small evaluator model (default Haiku; override via `ANTHROPIC_DEFAULT_HAIKU_MODEL`) reads the transcript only — no tools, no files → conditions must be output-provable.
+- **No built-in token budget** → always include `or stop after N turns` or a time clause.
+- Condition max length 4000 characters.
+- One active goal per session; cleared when achieved.
+- Requires Claude Code **v2.1.139+**; trust dialog; unavailable when `disableAllHooks` or managed-hooks-only blocks it.
+
+**Four parts** (official recommendation):
+1. One measurable end state (test result / build exit code / file count / empty queue)
+2. Stated check (how the agent proves it, e.g. `npm test exits 0`)
+3. Key constraints (must not change along the way)
+4. Budget clause (`or stop after N turns`)
+
+**Adjacent mechanisms**:
+- `/goal` + **auto mode** = unattended long run (auto approves in-turn tool calls; `/goal` decides whether to open the next turn).
+- `/goal` vs **Stop hook**: `/goal` is in-session; Stop hooks are global settings and can run deterministic scripts.
+- `/goal` vs **`/loop`**: loop re-runs on a timer (polling); goal runs until done — different jobs.
+
+**Reliability trio** (long runs are stabler with all three):
+1. Per-turn convention file at project root (e.g. `CLAUDE.md`).
+2. Post-edit validation hooks (lint/type-check each step).
+3. Auto-approval mode — otherwise every file write stalls the run.
 
 ---
 
@@ -180,16 +182,20 @@ When a skill declared in frontmatter `dependencies` is missing, print the follow
 - [skill-name]: [what it is for]
 
 【Why it's needed】
-goal-driven-workflow strongly depends on the following skills via frontmatter dependencies (missing = abort):
-- `clarifying-question-discipline`: stage 1 requirement clarification (one question per turn; clarify-first)
-- `completion-evidence-discipline`: stage 2/5 acceptance evidence (no pass claims without fresh evidence)
+goal-driven-workflow strongly depends on (missing = abort):
+- `clarifying-question-discipline`: stage 1 requirement clarification
+- `completion-evidence-discipline`: stage 2/5 acceptance evidence
+- `design-approval-gate`: stage 4 launch approval pattern (long-run high-impact still pauses under auto)
+
+【Install】
+  npx skills add FuDesign2008/open-skills -g --skill <name> --yes
 ```
 
 ---
 
 ## Sources
 
-- Claude Code 官方文档 `/goal` — code.claude.com/docs/en/goal
-- Anthropic《Effective Context Engineering for AI Agents》— anthropic.com/engineering（context rot / sub-agent / compaction / note-taking）
-- Yuval Yeret《AI Agents Can Now Run Toward Goals》— yuvalyeret.com（output vs outcome 目标）
-- 7×24-agent-reliability-handbook §8（本 skill 的方法论来源）
+- Claude Code docs `/goal` — code.claude.com/docs/en/goal
+- Anthropic, *Effective Context Engineering for AI Agents* — anthropic.com/engineering (context rot / sub-agent / compaction / note-taking)
+- Yuval Yeret, *AI Agents Can Now Run Toward Goals* — yuvalyeret.com (output vs outcome)
+- 7×24-agent-reliability-handbook §8 (methodology source for this skill)

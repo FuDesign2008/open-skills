@@ -76,26 +76,26 @@ The system SHALL plan sub-agent division and select a context-management techniq
 
 ### Requirement: 长跑执行多模式支持
 
-The system SHALL support launching the long run in interactive `/goal`, non-interactive `claude -p`, or manual-loop fallback mode depending on the environment.
+The system SHALL support launching the long run via: (1) an interactive goal harness when available, (2) a non-interactive agent CLI invocation of that harness when available, or (3) a manual bounded goal loop fallback. Instructional text MUST describe these as intents first; concrete `/goal` and `claude -p` forms MAY appear as primary-harness examples, not as the only supported platforms.
 
-#### Scenario: 非交互执行
+#### Scenario: Non-interactive execution
 
-- **WHEN** 用户需要无人值守跑完即退出
-- **THEN** 系统使用 `claude -p "/goal <condition>" --output-format stream-json --verbose` 启动，并可实时查看进度
+- **WHEN** the user needs an unattended run-to-completion invocation
+- **THEN** the system launches via the environment's non-interactive agent CLI wrapping the goal harness when available (example: `claude -p "/goal <condition>" --output-format stream-json --verbose`), and can stream progress
 
-#### Scenario: 无 /goal 环境退化
+#### Scenario: No goal-harness fallback
 
-- **WHEN** 当前环境不支持 `/goal`（旧版本或其他 agent）
-- **THEN** 系统退化为手工 goal 循环：迭代「执行 → 对照验收清单验证 → 未达则继续（受预算约束）→ 达成则停止」，且必须显式设置停止子句
+- **WHEN** the current environment has no `/goal`-equivalent harness
+- **THEN** the system falls back to a manual goal loop: iterate do-work → verify against acceptance checklist → continue if unmet (budget-bounded) → stop when met, with an explicit stop clause
 
 ### Requirement: 无人值守配套设施
 
-The system SHALL guide the required companion setup for unattended long runs: project-root CLAUDE.md, PostToolUse auto-validation hooks, and auto mode.
+The system SHALL guide companion setup for unattended long runs using intent-first wording: a project convention/instructions file re-read each turn, post-edit automatic validation hooks, and an approval mode that does not stall on routine tool writes. Primary-harness examples (e.g. project-root `CLAUDE.md`, PostToolUse hooks, Claude Code auto mode) MAY be named; MUST NOT imply other agents cannot substitute equivalents.
 
-#### Scenario: 无人值守配套就位
+#### Scenario: Unattended companions in place
 
-- **WHEN** 长跑需要无人值守（auto 模式或调度执行）
-- **THEN** 系统确认 CLAUDE.md（每轮一致上下文）与 PostToolUse hook（每步自动校验）就位，并启用 auto mode 避免文件写入审批卡顿
+- **WHEN** the long run must be unattended (auto/scheduled)
+- **THEN** the system confirms a per-turn convention file and post-edit validation hooks are in place, and enables an auto-approval mode so routine writes do not stall the run
 
 ### Requirement: 复合目标拆分
 
@@ -108,24 +108,56 @@ The system SHALL split compound objectives into a chain of sequential goals, eac
 
 ### Requirement: 完成报告与人工验收
 
-The system SHALL produce a structured completion report after the long run and separate machine-verifiable acceptance (spot-checked by human) from human outcome-level acceptance.
+The system SHALL produce a structured completion report after the long run, separate machine-verifiable acceptance (spot-checked by human) from human outcome-level acceptance, and MUST follow `completion-evidence-discipline` for any pass/done claims (fresh current-turn evidence; Executed vs Pending labels). The host MUST thin-reference that skill rather than restating its full iron law.
 
-#### Scenario: 报告与分层验收
+#### Scenario: Report and layered acceptance
 
-- **WHEN** 长跑结束
-- **THEN** 主 agent 输出完成报告（模板5：目标回顾、验收标准逐项状态、实际产出与证据、遗留问题、耗时/token），人工判断结果型标准并抽查机器项；验收发现的问题回填至下一轮需求对齐清单
+- **WHEN** the long run ends
+- **THEN** the main agent outputs the completion report (template 5: goal recap, per-criterion status, deliverables + evidence, leftovers, spend), the human judges outcome-type items and spot-checks machine items; findings feed the next run's requirements template
+
+#### Scenario: Pass claims cite completion-evidence-discipline
+
+- **WHEN** the agent marks hard acceptance items as passed
+- **THEN** each pass claim is backed per `completion-evidence-discipline` with Executed evidence or labeled Pending
 
 ### Requirement: 长跑启动批准门控
 
-The system SHALL require explicit user approval before launching a long run when it involves unattended operation, a budget above threshold, or irreversible actions; auto mode does not bypass this gate.
+The system SHALL require explicit user approval before launching a long run when it involves unattended operation, a budget above threshold, or irreversible actions. The host MUST thin-reference `design-approval-gate` for the approval gate pattern. Auto mode does **not** bypass this long-run high-impact gate (intentional host divergence from generic auto escape).
 
-#### Scenario: 高影响长跑获批
+#### Scenario: High-impact long run approved
 
-- **WHEN** 长跑满足任一高影响条件（无人值守 / 大预算 / 不可逆操作）
-- **THEN** 系统在启动前暂停并请求用户显式批准「最终 goal 条件 + 预算 + 配套清单」，即使处于 auto 模式也不得跳过
+- **WHEN** the long run meets any high-impact condition (unattended / large budget / irreversible)
+- **THEN** the system pauses before launch and requests explicit user approval of the final goal condition + budget + companion checklist, and MUST NOT skip even in auto mode
 
-#### Scenario: 普通长跑无需门控
+#### Scenario: Ordinary long run needs no gate
 
-- **WHEN** 长跑为低影响（小预算 / 可逆 / 单文件高确定性）
-- **THEN** 系统无需批准门控，按阶段 4 正常启动
+- **WHEN** the long run is low-impact (small budget / reversible / single-file high-certainty)
+- **THEN** the system does not require the high-impact approval gate and may start stage 4 normally after prior stage confirms
+
+### Requirement: Goal-run instructional body SHALL be English
+
+Instructional body text in `goal-driven-workflow` (`SKILL.md` and `reference.md` templates/cheatsheets) MUST be written in English. Chinese trigger phrases MUST remain in frontmatter `description` (and may appear in the invocation trigger list that mirrors description). MUST NOT leave Chinese instructional prose in stage bodies, gate blocks, or output templates.
+
+#### Scenario: Stage body has no Chinese instructional prose
+
+- **WHEN** an agent reads `goal-driven-workflow` stage sections and `reference.md` templates
+- **THEN** instructional sentences and template labels are English; Chinese appears only as description/invocation triggers where required
+
+### Requirement: Goal-run command entry SHALL follow command-file conventions when present
+
+When `commands/goal-run.md` is added, it MUST set `disable-model-invocation: true` and MUST instruct the agent to invoke `goal-driven-workflow` and follow it exactly. The repository SHOULD add this command as part of this change.
+
+#### Scenario: Command file invokes the skill
+
+- **WHEN** `commands/goal-run.md` exists
+- **THEN** it sets `disable-model-invocation: true` and instructs the agent to invoke `goal-driven-workflow` and follow it exactly
+
+### Requirement: Goal-run SHALL strong-depend on design-approval-gate for launch approval
+
+`goal-driven-workflow` MUST declare `design-approval-gate` in frontmatter `dependencies`, verify it at startup, and thin-reference it at the long-run launch gate. Long-run-specific rule: high-impact launches (unattended / over-budget / irreversible) MUST still pause for explicit user approval even when the host is in auto mode — this is an intentional divergence from `design-approval-gate`'s generic auto-mode escape and MUST be stated at the host launch gate.
+
+#### Scenario: Launch gate thin-refs design-approval-gate
+
+- **WHEN** stage 4 is about to start a high-impact long run
+- **THEN** the host loads `design-approval-gate` and still requires explicit user approval for unattended / over-budget / irreversible launches even under auto mode
 
