@@ -81,7 +81,7 @@ open-skills/
 | opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、merge-discipline、staged-review-flow、opsx-workspace-gate、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、delivery-discipline、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline |
 | perf-workflow | 工作流 | clarifying-question-discipline、known-issue-research |
 | write-workflow | 工作流 | clarifying-question-discipline、tech-review-doc、workflow-mode-lifecycle、humanizer（外置）、humanizer-zh（外置） |
-| goal-driven-workflow | 工作流 | clarifying-question-discipline、completion-evidence-discipline |
+| goal-driven-workflow | 工作流 | clarifying-question-discipline、completion-evidence-discipline、design-approval-gate |
 | tech-review-doc | 内容创作 | clarifying-question-discipline |
 | frontend-perf | 知识库 | perf-workflow |
 | android-webview-debug | 工具 | 无 |
