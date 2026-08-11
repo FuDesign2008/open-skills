@@ -86,6 +86,8 @@ open-skills/
 | tech-review-doc | 内容创作 | clarifying-question-discipline |
 | frontend-perf | 知识库 | perf-workflow |
 | android-webview-debug | 工具 | 无 |
+| figma-pixel-implement | 工具 | 无（可选配合 figma-pixel-verify） |
+| figma-pixel-verify | 工具 | 无（可选消费 implement 规格表） |
 | git-commit | Git | 无 |
 | jira-fix-workflow | Jira 工作流 | delivery-discipline、jira-read、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、merge-discipline、staged-review-flow、jira-status-writeback、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline、learn-and-improve |
 | opsx-jira-fix-workflow | Jira 工作流 | delivery-discipline、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、merge-discipline、staged-review-flow、opsx-workspace-gate、jira-status-writeback、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline、learn-and-improve、openspec 原生 skills（阶段 0 检查） |
