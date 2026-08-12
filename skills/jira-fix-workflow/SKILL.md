@@ -25,7 +25,7 @@ dependencies:
   - delivery-discipline
   - feature-branch-closeout
   - decision-fog-discipline
-  - workspace-isolation-discipline
+  - git-worktree-discipline
   - learn-and-improve
   - figma-pixel-implement
   - figma-pixel-verify
@@ -192,7 +192,7 @@ Exit script: reference.md.
 
 ## Stage 7: Execute the Plan
 
-Before production edits, follow `design-approval-gate` (manual: user pass; auto/force: named escape + 留痕). Optionally follow `workspace-isolation-discipline` before non-trivial edits.
+Before production edits, follow `design-approval-gate` (manual: user pass; auto/force: named escape + 留痕). Optionally follow `git-worktree-discipline` before non-trivial edits.
 
 **Figma pixel fidelity:** When the issue/plan includes a Figma URL/node or pixel-restore / design-faithful UI intent, load `figma-pixel-implement` and follow it. Do not restate its methodology here.
 

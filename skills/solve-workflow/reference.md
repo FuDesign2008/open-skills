@@ -50,7 +50,7 @@ solve-workflow strongly depends on the following skills via frontmatter dependen
 - `delivery-discipline`: stage 8 optional commit + open/update PR/MR (not every run delivers)
 - `feature-branch-closeout`: stage 8 post-verify branch menu (merge delegates to merge-discipline when used)
 - `decision-fog-discipline`: before explore solutions — graduate fog / decision tickets first
-- `workspace-isolation-discipline`: before stage 6 — optional isolated workspace
+- `git-worktree-discipline`: before stage 6 — worktree gate + optional isolated workspace
 - `domain-language-discipline`: clarify/analyze — project glossary / CONTEXT.md when domain terms matter
 - `completion-evidence-discipline`: verification honesty — fresh current-turn evidence before pass claims
 - `node-version-discipline`: Node-version alignment before running tests in stage 7

@@ -9,6 +9,8 @@
 | [generated/skills-index.md](generated/skills-index.md) | 所有人 | 全部 skill 的版本、可唤起性、描述（触发条件）；由脚本生成，页首有维护提示 |
 | [figma-pixel-fidelity-mask-incident.md](figma-pixel-fidelity-mask-incident.md) | 贡献者 / Skill 作者 | Figma 像素保真被 CSS mask 破坏的事件复盘与早期单 skill 草案 |
 | [figma-pixel-fidelity-research.md](figma-pixel-fidelity-research.md) | 贡献者 / Skill 作者 | Figma MCP 官方能力 + 社区 skill 深潜；**双 skill**（实现 / 检查）架构草案 |
+| [git-worktree-multi-repo-local-verify-case.md](git-worktree-multi-repo-local-verify-case.md) | 贡献者 / Skill 作者 | 多仓 git worktree 本地验证真案例：兄弟路径断裂、联调分层、对 `git-worktree-discipline` 的启示 |
+| [merge-coverage-gate-bypass-incident.md](merge-coverage-gate-bypass-incident.md) | 贡献者 / Skill 作者 | 合并前覆盖率门控被绕过的事件复盘 |
 
 ### 给维护者与贡献者
 
