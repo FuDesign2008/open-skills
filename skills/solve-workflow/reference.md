@@ -54,6 +54,7 @@ solve-workflow strongly depends on the following skills via frontmatter dependen
 - `domain-language-discipline`: clarify/analyze — project glossary / CONTEXT.md when domain terms matter
 - `completion-evidence-discipline`: verification honesty — fresh current-turn evidence before pass claims
 - `node-version-discipline`: Node-version alignment before running tests in stage 7
+- `figma-pixel-implement` / `figma-pixel-verify`: Figma export-faithful implement + measured verify (required installed; invoke when Figma UI work is in scope)
 
 Without them, stage gates lose their single sources of truth — running anyway would produce unreviewed solutions with unclear root causes, defeating the point of a PDCA workflow.
 

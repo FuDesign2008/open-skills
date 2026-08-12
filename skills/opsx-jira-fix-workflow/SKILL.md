@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.15.0"
+version: "1.16.0"
 user-invocable: true
 description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」 / opsx jira fix, OpenSpec Jira fix workflow."
 dependencies:
@@ -28,6 +28,8 @@ dependencies:
   - decision-fog-discipline
   - workspace-isolation-discipline
   - learn-and-improve
+  - figma-pixel-implement
+  - figma-pixel-verify
 ---
 
 # OPSX Jira Bug-Fix Workflow
@@ -76,6 +78,7 @@ Not a replacement for plain `jira-fix-workflow`:
 - `opsx-workspace-gate` (stage 0 OpenSpec workspace and native-skill gate)
 - `jira-status-writeback` (stage 8 post-merge writeback: status transition + fix-comment SOP, single source)
 - `learn-and-improve` (stage 8 retrospective and knowledge sediment)
+- `figma-pixel-implement` / `figma-pixel-verify` (Figma export-faithful implement + measured verify; required installed; invoke only when Figma UI work is in scope)
 
 ## Prerequisite skill check
 
@@ -280,6 +283,8 @@ A multi-repo scenario needs a branch per repo, listing each repo, branch, and co
 
 ### 6.2 Execute tasks
 
+**Figma pixel fidelity:** When the issue/plan includes a Figma URL/node or pixel-restore / design-faithful UI intent, load `figma-pixel-implement` and follow it. Do not restate its methodology here.
+
 Work through `tasks.md` in order:
 
 1. Handle only the current task at a time.
@@ -317,6 +322,7 @@ Must cover:
 4. Jira cross-check: are the repro steps and expected/actual results closed out
 5. Side-effect check: are related modules and platforms affected; the verification report must disclose `Node (declared vX) ✅/⚠️ not aligned`
 6. Debug-verify loop: if stage 2 used a debug skill to locate the root cause, verify the fix using that **same** skill per `analysis-core` §4 (not tests alone)
+7. Figma pixel verify: when this run implemented from Figma or alignment checking is required, load `figma-pixel-verify` and follow it for measured pass/fail
 
 > Label each result per `staged-review-flow`'s verification-report honesty rule and `completion-evidence-discipline` (no pass claims without fresh current-turn evidence).
 
