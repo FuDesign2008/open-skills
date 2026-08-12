@@ -39,22 +39,46 @@ Before the first non-trivial production edit in a PDCA host execute stage, the A
 
 ### Requirement: Detect existing isolation before create
 
-The skill MUST detect an already-active isolation workspace for the change (native or `.worktrees/`) and reuse it instead of nesting a second worktree by default.
+The skill MUST detect an already-active isolation workspace for the change (native or `.worktrees/`) and reuse it instead of nesting a second worktree by default. Detection MUST distinguish a git submodule from a linked worktree before concluding that isolation already exists.
 
 #### Scenario: Reuse active worktree
 
 - **WHEN** the session is already inside a change-scoped worktree or native isolation workspace
 - **THEN** the Agent MUST report reuse and skip create
 
+#### Scenario: Submodule is not treated as worktree isolation
+
+- **WHEN** `git-dir` differs from `git-common-dir` solely because the cwd is a submodule
+- **THEN** the Agent MUST treat the checkout as a normal repo for create/gate purposes (may still create a worktree)
+
 ### Requirement: Create path prefers native then git worktree
 
-When creating isolation, the Agent MUST prefer the host Agent's native workspace/worktree capability when available; otherwise use `git worktree` under a gitignored `.worktrees/` path. Creation MUST be recorded for later closeout cleanup.
+When creating isolation, the Agent MUST prefer the host Agent's native workspace/worktree capability when available; otherwise use `git worktree` under a project-local ignored directory (prefer `.worktrees/`, else existing `worktrees/`, else default `.worktrees/`). Before adding a git worktree under a project-local directory, the Agent MUST verify the directory is ignored (e.g. `git check-ignore`) and fix `.gitignore` when it is not. Creation MUST be recorded for later closeout cleanup. If creation fails due to permission/sandbox denial, the Agent MUST fall back to working in place with a short 留痕.
 
 #### Scenario: Fallback git worktree
 
 - **WHEN** native isolation is unavailable and the repo is a git working tree
-- **THEN** the Agent MAY create a worktree under ignored `.worktrees/<branch-or-change-id>/`
-- **AND** MUST ensure `.worktrees/` is ignored before adding files there
+- **THEN** the Agent MAY create a worktree under ignored `.worktrees/<branch-or-change-id>/` (or project `worktrees/` when that is the existing convention)
+- **AND** MUST ensure the chosen directory is ignored before adding files there
+
+#### Scenario: Create blocked by sandbox
+
+- **WHEN** `git worktree add` fails with a permission or sandbox denial
+- **THEN** the Agent MUST report the failure, continue in the current directory, and leave a short 留痕
+
+### Requirement: Setup and baseline after isolation
+
+After creating isolation (or when reusing an isolated workspace that still lacks dependencies), the Agent MUST run project-appropriate dependency setup when project markers exist, then run a baseline test or verify command when the project has one. A failing baseline MUST be reported to the user with an ask whether to proceed or investigate.
+
+#### Scenario: Baseline fails
+
+- **WHEN** baseline tests or verify fail in the isolated workspace
+- **THEN** the Agent MUST report the failures and ask before continuing implementation
+
+#### Scenario: No project test command
+
+- **WHEN** the project has no applicable install or test/verify command
+- **THEN** the Agent MAY skip that step and state the skip briefly
 
 ### Requirement: Suitability guidance for multi-repo and full packs
 
