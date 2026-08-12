@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.15.0"
+version: "1.16.0"
 user-invocable: true
 description: "Eight-stage PDCA problem-solving workflow that persists analysis, proposal, design review, plan, execution, and verification into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context. Use for feature work, bug fixes, refactors, and complex engineering tasks that need long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick one-off edit with no traceability need — use solve-workflow instead. Triggers：「opsx解决」「OpenSpec解决」「规范化解决」「创建OpenSpec变更」「创建opsx变更」「用OpenSpec分析」「用OpenSpec修复」「opsx自动解决」「OpenSpec自动解决」「opsx-solve」「opsx-solve-workflow」 / opsx solve, OpenSpec solve workflow, create an OpenSpec change."
 dependencies:
@@ -27,6 +27,8 @@ dependencies:
   - feature-branch-closeout
   - decision-fog-discipline
   - workspace-isolation-discipline
+  - figma-pixel-implement
+  - figma-pixel-verify
 ---
 
 # OPSX Eight-Stage Problem-Solving Workflow
@@ -75,6 +77,7 @@ Not a replacement for plain `solve-workflow`:
 - `domain-language-discipline` (clarify/analyze: project glossary / CONTEXT.md when domain terms matter)
 - `merge-discipline` (stage 8 merge discipline — after closeout selects merge)
 - `opsx-workspace-gate` (stage 0 OpenSpec workspace and native-skill gate)
+- `figma-pixel-implement` / `figma-pixel-verify` (Figma export-faithful implement + measured verify; required installed; invoke only when Figma UI work is in scope)
 
 ## Prerequisite skill check
 
@@ -248,6 +251,8 @@ In manual mode, output the plan and pause; wait for user confirmation before ent
 
 Before production edits, follow `design-approval-gate` (manual: user pass; auto/lean: named escape + 留痕). Optionally follow `workspace-isolation-discipline` before non-trivial edits.
 
+**Figma pixel fidelity:** When the task includes a Figma URL/node or pixel-restore / design-faithful UI intent, load `figma-pixel-implement` and follow it (export-faithful assets + design-spec table). Do not restate its methodology here.
+
 Read `tasks.md` and implement in order:
 
 1. Work on the single smallest current task at a time.
@@ -277,6 +282,7 @@ Verification must cover three layers:
 2. **Engineering verification**: run the project's tests, type check, lint, or build (under the aligned version).
 3. **Behavior cross-check**: confirm the implementation covers every delta-spec requirement and scenario, one by one.
 4. **Debug-verify loop**: if stage 2 used a debug skill to locate the root cause, verify the fix using that **same** skill per `analysis-core` §4 (not tests alone).
+5. **Figma pixel verify**: when this run implemented from Figma or the user/plan requires alignment checking, load `figma-pixel-verify` and follow it for measured pass/fail (do not restate its methodology here).
 
 Verification conclusions must be based on commands you ran and personally read the output of this round — never report "a scenario was designed" as "passed".
 

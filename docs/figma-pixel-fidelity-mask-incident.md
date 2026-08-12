@@ -216,6 +216,7 @@ Skill 触发词应覆盖：「还原 Figma」「像素对齐」「顶栏 icon」
 
 ## 八、文档维护
 
-- **状态**：案例已合入产品仓；Skill **尚未**在 open-skills 建目录。  
-- **下一步**：用第六节草案运行 `skill-creator` / 人工起草 `skills/figma-pixel-fidelity/SKILL.md`。  
-- **勿**把本文件当成可 install 的 skill；安装物应是独立 skill 包。
+- **状态**：案例已合入产品仓；open-skills 已提供双 skill（不再落单一 `figma-pixel-fidelity`）。  
+- **架构**：像素级对齐**实现** + **检查**是否对齐 — [`figma-pixel-implement`](../skills/figma-pixel-implement/SKILL.md) / [`figma-pixel-verify`](../skills/figma-pixel-verify/SKILL.md)。调研与边界见 [`figma-pixel-fidelity-research.md`](./figma-pixel-fidelity-research.md)。  
+- **下一步**：可选真机 node 跑通 implement → verify；官方 MCP/skill 变更时刷新调研文。  
+- **勿**把本文件当成可 install 的 skill；安装物是上述两个 skill 目录。

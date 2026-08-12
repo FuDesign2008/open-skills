@@ -7,6 +7,8 @@
 | [../.opencode/INSTALL.md](../.opencode/INSTALL.md) | OpenCode **全能力安装** | 插件、符号链接、命令；与 Claude/Cursor 差异见 [.opencode/AGENTS.md](../.opencode/AGENTS.md) |
 | [opencode-coding-fangirl-implementation.md](opencode-coding-fangirl-implementation.md) | 贡献者 | coding-fangirl 在 OpenCode 的实现说明 |
 | [generated/skills-index.md](generated/skills-index.md) | 所有人 | 全部 skill 的版本、可唤起性、描述（触发条件）；由脚本生成，页首有维护提示 |
+| [figma-pixel-fidelity-mask-incident.md](figma-pixel-fidelity-mask-incident.md) | 贡献者 / Skill 作者 | Figma 像素保真被 CSS mask 破坏的事件复盘与早期单 skill 草案 |
+| [figma-pixel-fidelity-research.md](figma-pixel-fidelity-research.md) | 贡献者 / Skill 作者 | Figma MCP 官方能力 + 社区 skill 深潜；**双 skill**（实现 / 检查）架构草案 |
 
 ### 给维护者与贡献者
 

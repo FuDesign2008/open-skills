@@ -1,6 +1,6 @@
 ---
 name: jira-fix-workflow
-version: "3.24.0"
+version: "3.25.0"
 user-invocable: true
 description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」 / fix this bug, jira-fix, auto fix, force fix, resume fix. Do NOT use for batch fixes across multiple issues — use jira-fix-batch instead."
 dependencies:
@@ -27,6 +27,8 @@ dependencies:
   - decision-fog-discipline
   - workspace-isolation-discipline
   - learn-and-improve
+  - figma-pixel-implement
+  - figma-pixel-verify
 ---
 
 # Jira Bug-Fix Workflow
@@ -192,6 +194,8 @@ Exit script: reference.md.
 
 Before production edits, follow `design-approval-gate` (manual: user pass; auto/force: named escape + 留痕). Optionally follow `workspace-isolation-discipline` before non-trivial edits.
 
+**Figma pixel fidelity:** When the issue/plan includes a Figma URL/node or pixel-restore / design-faithful UI intent, load `figma-pixel-implement` and follow it. Do not restate its methodology here.
+
 **Branch**: naming and single-/multi-repo flow are in [reference.md](reference.md) § Stage 7 Branch-Creation Details; write `00-branch.md`.
 
 Execute strictly per the plan; check off `TodoWrite` / plan checkboxes item by item as completed. Tag every change `// fix [JIRA-ID]`. Quality gate: `node-version-discipline` → `ReadLints` → `typescript-check` when a tsconfig exists. 🤖 multi-repo changes and lints per repo, write `reports/[JIRA-ID]-analysis.md`.
@@ -202,7 +206,7 @@ After execution: 🤖 normal→8, 🟠 pause for review; 👤 normal wait for co
 
 ## Stage 8: Check & Verify
 
-Output the result only — do not change code. Compare against the Jira repro/expected result, stage 6's plan, tests, side effects, and root cause; use `analysis-core` §4 for the debug-verify loop. Verification-report honesty per `staged-review-flow` and `completion-evidence-discipline`. Template: reference.md § Stage 8.
+Output the result only — do not change code. Compare against the Jira repro/expected result, stage 6's plan, tests, side effects, and root cause; use `analysis-core` §4 for the debug-verify loop. When this run implemented from Figma or alignment checking is required, load `figma-pixel-verify` and follow it for measured pass/fail. Verification-report honesty per `staged-review-flow` and `completion-evidence-discipline`. Template: reference.md § Stage 8.
 
 | Verdict | Next |
 |------|------|

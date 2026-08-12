@@ -1,6 +1,6 @@
 ---
 name: solve-workflow
-version: "1.21.0"
+version: "1.22.0"
 user-invocable: true
 description: "Eight-stage PDCA workflow for systematically solving bugs, refactors, and feature-development tasks: clarify → analyze → explore solutions → review → plan → execute → verify → retrospect. Manual mode (default) pauses for user confirmation at each stage exit; auto mode runs end-to-end. Triggers — 「明确问题」「分析问题」「探索方案」「审查方案」「制定计划」「执行计划」「检查验证」「复盘改进」(alias「回顾总结」)；「继续分析」「深入分析」「修改方案」「完善方案」「优化方案」「更新计划」「修订计划」「修改计划」；「自动模式」「自动分析」「自动解决」 / clarify problem, analyze problem, explore solutions, review solution, make plan, execute plan, verify, retrospective, auto mode."
 dependencies:
@@ -25,6 +25,8 @@ dependencies:
   - feature-branch-closeout
   - decision-fog-discipline
   - workspace-isolation-discipline
+  - figma-pixel-implement
+  - figma-pixel-verify
 ---
 
 # Eight-Stage Problem-Solving Workflow
@@ -55,6 +57,7 @@ dependencies:
 - `workspace-isolation-discipline` (before stage 6: optional isolated workspace)
 - `domain-language-discipline` (clarify/analyze: project glossary / CONTEXT.md when domain terms matter)
 - `node-version-discipline` (Node-version alignment before running tests in stage 7)
+- `figma-pixel-implement` / `figma-pixel-verify` (Figma export-faithful implement + measured verify; required installed; invoke only when Figma UI work is in scope)
 
 **Related skills** (informational, not a strong dependency): `perf-workflow` (dedicated performance analysis), `jira-fix-workflow` (end-to-end Jira fix flow that embeds this workflow)
 
@@ -259,6 +262,8 @@ When the user says "更新计划" / "修订计划" / "修改计划" (update/revi
 
 > Principle: execute strictly per the plan, confirm on completion. Before production edits, follow `design-approval-gate` (manual: user pass; auto/lean: named escape + 留痕). Optionally follow `workspace-isolation-discipline` (isolated workspace) before non-trivial edits.
 
+**Figma pixel fidelity:** When the task includes a Figma URL/node or pixel-restore / design-faithful UI intent, load `figma-pixel-implement` and follow it (export-faithful assets + design-spec table). Do not restate its methodology here.
+
 ### Execution flow
 
 1. Modify files in the plan's order
@@ -292,6 +297,7 @@ For behavior-changing work, follow `test-first-discipline` (failing test observe
 4. **Side-effect verification** — check whether the change introduced new problems or unexpected behavior changes elsewhere (functional side effects), and any unexpected performance/security/maintainability impact (non-functional side effects)
 5. **Logic and process review** — check for gaps or omissions
 6. **Debug-verify loop** — if stage 2 used a debug skill to locate the root cause, verify the fix with **that same skill** per `analysis-core` §4 (not tests alone)
+7. **Figma pixel verify** — when this run implemented from Figma or the user/plan requires alignment checking, load `figma-pixel-verify` and follow it for measured pass/fail (do not restate its methodology here)
 
 ### Running tests
 
