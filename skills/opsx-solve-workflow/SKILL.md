@@ -26,7 +26,7 @@ dependencies:
   - delivery-discipline
   - feature-branch-closeout
   - decision-fog-discipline
-  - workspace-isolation-discipline
+  - git-worktree-discipline
   - figma-pixel-implement
   - figma-pixel-verify
 ---
@@ -73,7 +73,7 @@ Not a replacement for plain `solve-workflow`:
 - `delivery-discipline` (stage 8: optional commit + open/update PR/MR after archive; not every run delivers)
 - `feature-branch-closeout` (stage 8: post-archive closeout menu; merge delegates to merge-discipline)
 - `decision-fog-discipline` (before explore solutions: graduate fog / decision tickets first)
-- `workspace-isolation-discipline` (before stage 6: optional isolated workspace)
+- `git-worktree-discipline` (before stage 6: worktree gate + optional isolated workspace)
 - `domain-language-discipline` (clarify/analyze: project glossary / CONTEXT.md when domain terms matter)
 - `merge-discipline` (stage 8 merge discipline — after closeout selects merge)
 - `opsx-workspace-gate` (stage 0 OpenSpec workspace and native-skill gate)
@@ -249,7 +249,7 @@ In manual mode, output the plan and pause; wait for user confirmation before ent
 
 ## Stage 6: Execute the plan
 
-Before production edits, follow `design-approval-gate` (manual: user pass; auto/lean: named escape + 留痕). Optionally follow `workspace-isolation-discipline` before non-trivial edits.
+Before production edits, follow `design-approval-gate` (manual: user pass; auto/lean: named escape + 留痕). Optionally follow `git-worktree-discipline` before non-trivial edits.
 
 **Figma pixel fidelity:** When the task includes a Figma URL/node or pixel-restore / design-faithful UI intent, load `figma-pixel-implement` and follow it (export-faithful assets + design-spec table). Do not restate its methodology here.
 

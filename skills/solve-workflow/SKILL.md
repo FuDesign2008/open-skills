@@ -24,7 +24,7 @@ dependencies:
   - delivery-discipline
   - feature-branch-closeout
   - decision-fog-discipline
-  - workspace-isolation-discipline
+  - git-worktree-discipline
   - figma-pixel-implement
   - figma-pixel-verify
 ---
@@ -54,7 +54,7 @@ dependencies:
 - `delivery-discipline` (stage 8: optional commit + open/update PR/MR before closeout; not every run delivers)
 - `feature-branch-closeout` (stage 8: post-verify branch menu; merge delegates to merge-discipline when used)
 - `decision-fog-discipline` (before explore solutions: graduate fog / decision tickets first)
-- `workspace-isolation-discipline` (before stage 6: optional isolated workspace)
+- `git-worktree-discipline` (before stage 6: worktree gate + optional isolated workspace)
 - `domain-language-discipline` (clarify/analyze: project glossary / CONTEXT.md when domain terms matter)
 - `node-version-discipline` (Node-version alignment before running tests in stage 7)
 - `figma-pixel-implement` / `figma-pixel-verify` (Figma export-faithful implement + measured verify; required installed; invoke only when Figma UI work is in scope)
@@ -260,7 +260,7 @@ When the user says "更新计划" / "修订计划" / "修改计划" (update/revi
 
 ## Stage 6: Execute the Plan
 
-> Principle: execute strictly per the plan, confirm on completion. Before production edits, follow `design-approval-gate` (manual: user pass; auto/lean: named escape + 留痕). Optionally follow `workspace-isolation-discipline` (isolated workspace) before non-trivial edits.
+> Principle: execute strictly per the plan, confirm on completion. Before production edits, follow `design-approval-gate` (manual: user pass; auto/lean: named escape + 留痕). Optionally follow `git-worktree-discipline` (worktree gate + isolated workspace) before non-trivial edits.
 
 **Figma pixel fidelity:** When the task includes a Figma URL/node or pixel-restore / design-faithful UI intent, load `figma-pixel-implement` and follow it (export-faithful assets + design-spec table). Do not restate its methodology here.
 

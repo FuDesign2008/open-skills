@@ -26,7 +26,7 @@ dependencies:
   - delivery-discipline
   - feature-branch-closeout
   - decision-fog-discipline
-  - workspace-isolation-discipline
+  - git-worktree-discipline
   - learn-and-improve
   - figma-pixel-implement
   - figma-pixel-verify
@@ -72,7 +72,7 @@ Not a replacement for plain `jira-fix-workflow`:
 - `delivery-discipline` (stage 8: commit + open/update PR/MR after archive; field map via placeholders)
 - `feature-branch-closeout` (stage 8: closeout menu; merge delegates to merge-discipline)
 - `decision-fog-discipline` (before explore solutions: graduate fog / decision tickets first)
-- `workspace-isolation-discipline` (before execution: optional isolated workspace)
+- `git-worktree-discipline` (before execution: worktree gate + optional isolated workspace)
 - `domain-language-discipline` (clarify/analyze: project glossary / CONTEXT.md when domain terms matter)
 - `merge-discipline` (stage 8 merge discipline — after closeout selects merge)
 - `opsx-workspace-gate` (stage 0 OpenSpec workspace and native-skill gate)
@@ -303,7 +303,7 @@ If the project's convention doesn't accept fix comments, don't force it — but 
 
 ### 6.2.5 Test-first then test-suite ensure (mandatory, before entering stage 7)
 
-Before production edits, follow `design-approval-gate` (manual: user pass; auto/force/lean: named escape + 留痕). Optionally follow `workspace-isolation-discipline` before non-trivial edits. For behavior-changing work, follow `test-first-discipline` during implementation. Once every `tasks.md` checkbox is checked, before entering stage 7 verification, this step is mandatory:
+Before production edits, follow `design-approval-gate` (manual: user pass; auto/force/lean: named escape + 留痕). Optionally follow `git-worktree-discipline` before non-trivial edits. For behavior-changing work, follow `test-first-discipline` during implementation. Once every `tasks.md` checkbox is checked, before entering stage 7 verification, this step is mandatory:
 
 Load and call `test-suite-ensure`, declaring `mode=mandatory`, scoped to this fix's logic files; a failure or a declined necessary-scaffolding request blocks entry to stage 7. test-suite-ensure does not satisfy test-first.
 

@@ -20,6 +20,8 @@
 > 本仓库为 Markdown skills 库，合并前不默认跑 `test-coverage-analyzer`。其他工程可在 `AGENTS.md` / `CLAUDE.md` 声明 `coverage-gate: always` | `never` | `ask`（未声明 ≡ 每次合并询问）。
 >
 > `pr-review-gate`：`always`（全量 `pr-code-review`）| `never`（跳过 Part R，须留痕）| `ask`（每次询问 full/light/skip）| `non-code-light`（非应用代码表面用 light 深度，否则 full）。**未声明 ≡ `always`**（保持历史默认，不全仓静默变轻）。本仓默认 `non-code-light`：docs/skills/openspec 等表面走轻量双轴审查；含 hooks / `.opencode` / workflows / 运行时源码扩展则仍 full。
+>
+> `worktree-gate`：`always` | `never` | `ask`（未声明 ≡ `ask`）。由 `git-worktree-discipline` 在 design-approval 之后、非平凡生产编辑之前解析；`ask` 下先按仓库状态给出适合度推荐再询问是否创建隔离工作区。
 
 ### Skill 调用分层（User- vs Model-invoked）
 
@@ -77,8 +79,8 @@ open-skills/
 
 | Skill | 类别 | 依赖 |
 |-------|------|------|
-| solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、node-version-discipline、staged-review-flow、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、delivery-discipline、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline、figma-pixel-implement、figma-pixel-verify |
-| opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、merge-discipline、staged-review-flow、opsx-workspace-gate、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、delivery-discipline、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline、figma-pixel-implement、figma-pixel-verify |
+| solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、node-version-discipline、staged-review-flow、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、delivery-discipline、feature-branch-closeout、decision-fog-discipline、git-worktree-discipline、figma-pixel-implement、figma-pixel-verify |
+| opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、merge-discipline、staged-review-flow、opsx-workspace-gate、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、delivery-discipline、feature-branch-closeout、decision-fog-discipline、git-worktree-discipline、figma-pixel-implement、figma-pixel-verify |
 | perf-workflow | 工作流 | clarifying-question-discipline、known-issue-research |
 | write-workflow | 工作流 | clarifying-question-discipline、tech-review-doc、workflow-mode-lifecycle、humanizer（外置）、humanizer-zh（外置） |
 | brainstorm-workflow | 工作流 | brainstorming（外置）、solve-workflow |
@@ -89,8 +91,8 @@ open-skills/
 | figma-pixel-implement | 工具 | 无（被 solve / opsx-solve / jira-fix / opsx-jira-fix 强依赖） |
 | figma-pixel-verify | 工具 | 无（被 solve / opsx-solve / jira-fix / opsx-jira-fix 强依赖） |
 | git-commit | Git | 无 |
-| jira-fix-workflow | Jira 工作流 | delivery-discipline、jira-read、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、merge-discipline、staged-review-flow、jira-status-writeback、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline、learn-and-improve、figma-pixel-implement、figma-pixel-verify |
-| opsx-jira-fix-workflow | Jira 工作流 | delivery-discipline、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、merge-discipline、staged-review-flow、opsx-workspace-gate、jira-status-writeback、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、workspace-isolation-discipline、learn-and-improve、figma-pixel-implement、figma-pixel-verify、openspec 原生 skills（阶段 0 检查） |
+| jira-fix-workflow | Jira 工作流 | delivery-discipline、jira-read、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、merge-discipline、staged-review-flow、jira-status-writeback、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、git-worktree-discipline、learn-and-improve、figma-pixel-implement、figma-pixel-verify |
+| opsx-jira-fix-workflow | Jira 工作流 | delivery-discipline、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、merge-discipline、staged-review-flow、opsx-workspace-gate、jira-status-writeback、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、git-worktree-discipline、learn-and-improve、figma-pixel-implement、figma-pixel-verify、openspec 原生 skills（阶段 0 检查） |
 | jira-status-writeback | Jira 工具 | 无（被 jira-fix / opsx-jira-fix 强依赖） |
 | jira-read | Jira 工具 | 无 |
 | typescript-check | 工具 | 无 |
@@ -112,7 +114,7 @@ open-skills/
 | feature-branch-closeout | 工作流纪律 | merge-discipline、delivery-discipline |
 | delivery-discipline | 工作流纪律 | git-commit |
 | decision-fog-discipline | 工作流纪律 | 无 |
-| workspace-isolation-discipline | 工作流纪律 | 无 |
+| git-worktree-discipline | 工作流纪律 | 无 |
 | merge-discipline | 合并纪律 | pr-code-review |
 | pr-code-review | 审查 | 无 |
 | known-issue-research | 调研方法论 | effective-web-research |
