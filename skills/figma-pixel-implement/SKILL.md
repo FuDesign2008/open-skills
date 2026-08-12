@@ -1,8 +1,8 @@
 ---
 name: figma-pixel-implement
-version: "1.0.0"
+version: "1.0.1"
 user-invocable: true
-description: "Implement Figma UI with export-faithful assets and a design-spec table for later measured verify. Use when implementing from Figma URLs/nodes or user asks pixel-level restore / 按稿实现. Prerequisites: Figma MCP + official figma-design-to-code (or equivalent). Does NOT claim pixel alignment complete—hand off to figma-pixel-verify. Triggers — 「像素级还原」「按稿实现」「Figma 对齐实现」「还原 Figma」「figma 保真实现」 / implement from Figma, pixel restore. Do NOT use for code→Figma canvas writes, no-design creative UI, or post-impl alignment checking alone (use figma-pixel-verify)."
+description: "Implement Figma UI with export-faithful assets and a design-spec table for later measured verify. Use when implementing from Figma URLs/nodes or user asks pixel-level restore / 按稿实现. Prerequisite: a working Figma design-context channel (MCP or equivalent)—not a Cursor-only skill name. Does NOT claim pixel alignment complete—hand off to figma-pixel-verify. Triggers — 「像素级还原」「按稿实现」「Figma 对齐实现」「还原 Figma」「figma 保真实现」 / implement from Figma, pixel restore. Do NOT use for code→Figma canvas writes, no-design creative UI, or post-impl alignment checking alone (use figma-pixel-verify)."
 ---
 
 # Figma Pixel Implement
@@ -11,10 +11,12 @@ Implement UI from a Figma node into the target codebase with **export-faithful a
 
 **Completion boundary:** this skill ends at “implemented + measurable contract.” It does **not** assert pixel alignment. Run `figma-pixel-verify` for pass/fail with evidence.
 
+This skill is **platform-agnostic** (Claude Code / Cursor / OpenCode / others). It requires a **Figma design-context capability**, not a particular Agent’s skill id.
+
 ## Prerequisites
 
-1. **Official design-to-code first** — Before any design-context / screenshot MCP call for implementation, load the Agent’s official Figma design-to-code skill (commonly `figma-design-to-code` or an equivalent published under that role). Follow its URL parsing, Code Connect, and project-adaptation rules.
-2. **Figma MCP available** — Confirm the Agent can invoke Figma design tools (design context, metadata, screenshot as provided by the environment). If tools are missing or auth fails, **stop**: tell the user how to enable Figma MCP / plugin for their Agent. Do **not** invent a single hard-coded install path as the only option.
+1. **Figma design-context available (hard gate)** — Confirm the Agent can fetch structured design payload for a node (design context, metadata, screenshot, asset export as the environment provides). If that channel is missing or auth fails, **stop**: tell the user how to enable Figma MCP / plugin / equivalent for *their* Agent. Do **not** invent a single hard-coded install path as the only option. Do **not** invent UI from the URL alone.
+2. **Optional: platform Figma→code guidance** — If this Agent already ships an official Figma design→code skill or guide (names vary by product; one Cursor plugin example is `figma-design-to-code`), load it when present and follow its URL parsing / Code Connect / adaptation rules. **Missing that named skill is not a blocker**—continue with Figma MCP (or equivalent) + this skill’s fidelity rules. Do not require a Cursor-only skill id on Claude Code, OpenCode, or other Agents.
 3. **Figma URL or node** — Prefer a `figma.com` design/make URL or explicit `fileKey` + `nodeId`. If missing, ask once with clarifying-question discipline.
 
 ## Workflow (ordered)
@@ -43,14 +45,16 @@ Do not require a named MCP server id or CLI as the only path.
 
 ## Relationship to other skills
 
-| Skill | Boundary |
-|-------|----------|
-| Official `figma-design-to-code` (or equiv.) | Prerequisite loader for MCP implement hygiene |
+| Capability | Boundary |
+|------------|----------|
+| Agent-native Figma→code guidance (optional, name varies) | When present, load for MCP hygiene; never a hard dependency on one product’s skill id |
+| Figma MCP / design-context tools | Hard gate for structured fetch |
 | `figma-pixel-verify` | Owns measured pass/fail after this skill |
 | `design-approval-gate` | Host workflow pre-impl approval — orthogonal |
 
 ## Pitfalls
 
+- Treating a Cursor-only skill name as required on every Agent.
 - Treating MCP code as final without project adaptation.
 - Claiming “pixel perfect” without `figma-pixel-verify`.
 - Using CSS mask recolor for icons that Figma exported as flat assets.

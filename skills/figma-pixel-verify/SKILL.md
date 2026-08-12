@@ -56,7 +56,7 @@ If **no** JS-eval / computed-style channel exists: run vision-only comparison, l
 | Skill | Boundary |
 |-------|----------|
 | `figma-pixel-implement` | Produces code + spec table; does not own final verdict |
-| Official design-to-code | Not a substitute for measurement |
+| Agent-native Figma→code guidance / MCP fetch | Not a substitute for measurement |
 | Host PDCA workflows | Optional invoke — not a default strong dependency |
 
 ## Pitfalls

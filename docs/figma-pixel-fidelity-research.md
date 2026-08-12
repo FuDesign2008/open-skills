@@ -23,7 +23,7 @@
 | 实现对齐 | `figma-pixel-implement` | 「像素级还原」「按稿实现」「Figma 对齐实现」 |
 | 检查对齐 | `figma-pixel-verify` | 「检查像素对齐」「对照 Figma 验收」「设计保真检查」 |
 
-**与 Cursor 官方 `figma-design-to-code` 的关系**：官方 skill 是 **Figma 插件自带的 Agent Skill**（非独立产品名），规定「Figma→代码」时必须先走 `get_design_context`。本仓两 skill **不替代**它；实现 skill **前置加载**它（或声明强依赖/前置检查），在其上补：**规格表、资产黑名单（含 CSS mask）、完成定义**；检查 skill **只做验收**，可被独立唤起。
+**与各 Agent 自带 Figma→code 引导的关系**：部分产品（如 Cursor 插件）会带 `figma-design-to-code` 一类 skill，规定「Figma→代码」时先取 design context。本仓两 skill **不替代**这类引导，也**不把任一产品的 skill id 当成通用硬依赖**。实现 skill 的硬门禁是 **Figma design-context / MCP 可用**；若当前 Agent 有同角色引导则加载，没有则直接走 MCP + 本仓规格表/资产纪律；检查 skill **只做验收**，可被独立唤起。
 
 ---
 
@@ -266,9 +266,10 @@ Playwright 抽 computed style ↔ Figma inventory；容差示例：尺寸 ±4px�
         ▼
 ┌───────────────────────────┐
 │  figma-pixel-implement    │  ← 本仓 skill A
-│  前置：figma-design-to-code│
-│  + 规格表 + 资产纪律      │
-│  + 写出可测实现           │
+│  硬门禁：Figma design-context/MCP │
+│  可选：Agent 自带 Figma→code 引导 │
+│  + 规格表 + 资产纪律              │
+│  + 写出可测实现                   │
 └─────────────┬─────────────┘
               │ 产出：代码 + 规格表（工作笔记/artifact）
               ▼
@@ -285,8 +286,8 @@ Playwright 抽 computed style ↔ Figma inventory；容差示例：尺寸 ±4px�
 
 **建议强制流程**：
 
-1. 加载官方 `figma-design-to-code`（或等价），确认 Figma MCP 可用（工具可见）；不可用则停并指导启用（**不**硬编码某一 stdio 安装块）。  
-2. 调用 `get_design_context`；大稿：`get_metadata` → 子节点分治。  
+1. 确认 Figma design-context / MCP 可用（工具可见）；不可用则停并指导启用（**不**硬编码某一 stdio 安装块、**不**要求 Cursor 专属 skill 名）。若 Agent 自带 Figma→code 引导（名称因平台而异），有则加载；无则继续。  
+2. 调用 design-context；大稿：`get_metadata` → 子节点分治。  
 3. `get_variable_defs` → 填 **规格表**（映射项目 token，禁止无脑硬编码）。  
 4. `get_screenshot` 作视觉参考（细部可提高分辨率意图）；主要区块宜分段截图（借鉴 Hub-B）。  
 5. 资产：下载进仓；**白名单** `<img>`/导出 SVG path 保色；**黑名单** CSS mask、色块冒充、手改 `currentColor` 再 mask（来自 incident）。  
@@ -317,7 +318,7 @@ Playwright 抽 computed style ↔ Figma inventory；容差示例：尺寸 ±4px�
 
 | 已有 | 边界 |
 |------|------|
-| Cursor `figma-design-to-code` | 取稿入口；A 前置，不复制全文 |
+| Cursor `figma-design-to-code` | 仅 Cursor 侧示例；A **可选**加载，非跨平台硬依赖 |
 | `design-approval-gate` | **写码前**方案批准；A/B 是 **有稿 UI 的实现/验收** |
 | `frontend-design`（外置） | 无稿探索；**有稿时 A/B 优先** |
 | `completion-evidence-discipline` | B 的 PASS 声称须附当轮测量证据 |
@@ -327,7 +328,7 @@ Playwright 抽 computed style ↔ Figma inventory；容差示例：尺寸 ±4px�
 
 | Skill | `user-invocable` | 建议 dependencies |
 |-------|------------------|-------------------|
-| A implement | `true` | 无强制本仓依赖；文档要求环境具备 Figma MCP + 官方 design-to-code |
+| A implement | `true` | 无强制本仓依赖；硬门禁为 Figma design-context/MCP；Agent 自带 Figma→code 引导可选 |
 | B verify | `true` | 可选声明与 A 的「规格表契约」；无则 B 内含轻量抽取 |
 
 宿主工作流（如 solve）**不要**默认强依赖二者（非人人做 UI）；由触发词 / 有 Figma URL 的 UI 任务唤起。
@@ -340,7 +341,7 @@ Playwright 抽 computed style ↔ Figma inventory；容差示例：尺寸 ±4px�
 |--------------------|----------|
 | 单 skill `figma-pixel-fidelity` | 拆成 **implement + verify** |
 | 截图对照硬门禁 | 保留，但升格为 **B 的 numeric+vision**；A 只准备规格与资产 |
-| 与 design-to-code 划界 | 写清：A **前置**官方 skill，补黑名单与规格表 |
+| 与 design-to-code 划界 | 写清：A 硬依赖 **design-context 通道**；产品专名 skill 仅可选 |
 | 验收用例回归 mask | 归 **B**：mask 实现应 FAIL；`<img>` 正例 PASS |
 
 ---

@@ -1,0 +1,40 @@
+{
+  "skill_name": "figma-pixel-implement",
+  "evals": [
+    {
+      "id": 1,
+      "name": "mcp-unavailable-aborts",
+      "prompt": "用户说：「像素级还原这个 Figma」并给出 https://www.figma.com/design/AbCdEfGhIjKlMnOp/Demo?node-id=12-34 。当前会话的工具列表里没有 Figma design-context / metadata / screenshot 类 MCP 工具（也无法调用）。请按 figma-pixel-implement 说明你下一步怎么做（dry-run：只写计划与对用户的回复要点，不要假装已经拉到稿）。",
+      "expected_output": "Abort implement; tell user to enable Figma MCP/plugin in platform-agnostic terms; do not invent UI from imagination or claim a single hard-coded install path as the only option; do not claim pixel complete.",
+      "expectations": [
+        "Stops or refuses to invent the UI without Figma MCP / design-context tools",
+        "Instructs enabling Figma MCP or equivalent in platform-agnostic wording (not only one hard-coded stdio snippet)",
+        "Does not claim pixel alignment is already complete",
+        "Parses or acknowledges fileKey/nodeId from the URL (12:34 or 12-34)"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "mask-recolor-forbidden",
+      "prompt": "假设 Figma MCP 可用且已拿到某图标导出（扁平蓝色 SVG）。目标仓库是暗色主题的 React+CSS 项目。同事建议用 CSS mask + background-color / currentColor 让图标跟主题走。用户触发「按稿实现」。请按 figma-pixel-implement 写出资产落地方案与设计规格表草稿（dry-run，可虚构合理数值）。",
+      "expected_output": "Reject mask/currentColor recolor pipeline; use img or export-preserving SVG; prefer second export or pending for dark theme; include design-spec table with token/class columns.",
+      "expectations": [
+        "Rejects CSS mask / mask-image + fill or currentColor recolor as the delivery path for the Figma-colored glyph",
+        "Prefers <img> / export-preserving SVG / second theme export, or records an explicit pending item",
+        "Includes a design-spec table with measurable expected values",
+        "Spec table includes a token/class (or flagged one-off) column or equivalent mapping"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "no-pixel-claim-handoff",
+      "prompt": "你刚按稿把一个 Card 组件写进了 src/components/PromoCard.tsx，并写好了规格表。用户问：「是不是已经像素级对齐了？」请按 figma-pixel-implement 回答（dry-run）。",
+      "expected_output": "Does not claim verified pixel alignment; points to design-spec table; recommends figma-pixel-verify for measured pass/fail.",
+      "expectations": [
+        "Does not assert that pixel alignment is verified complete",
+        "Mentions the design-spec table as the measurable contract",
+        "Recommends figma-pixel-verify (or an equivalent measured check) for pass/fail"
+      ]
+    }
+  ]
+}

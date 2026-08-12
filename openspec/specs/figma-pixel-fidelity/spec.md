@@ -20,14 +20,19 @@ open-skills MUST provide two installable skills: `figma-pixel-implement` (pixel-
 - **WHEN** the user invokes alignment checking without a prior implement run in the same session
 - **THEN** `figma-pixel-verify` MUST either consume an existing design-spec table or extract a minimal spec for the named Figma node before measuring
 
-### Requirement: figma-pixel-implement SHALL prerequisite official design-to-code context retrieval
+### Requirement: figma-pixel-implement SHALL obtain Figma design context via a platform-agnostic channel
 
-Before writing UI code for a Figma node, `figma-pixel-implement` MUST ensure the official Figma design-to-code guidance is loaded (e.g. Cursor/plugin `figma-design-to-code` or equivalent) and MUST obtain design context via the Figma MCP primary design-context tool for that node. If Figma MCP tools are unavailable, the skill MUST stop and instruct the user how to enable them using platform-agnostic intent (MUST NOT hardcode a single stdio install snippet as the only path).
+Before writing UI code for a Figma node, `figma-pixel-implement` MUST obtain structured design context through whatever Figma design-context / MCP (or equivalent) tools the current Agent exposes. If an Agent-native Figma→code guidance skill is present, the implement skill SHOULD load it for URL parsing / Code Connect / adaptation hygiene. Absence of any particular product skill id (including Cursor plugin `figma-design-to-code`) MUST NOT by itself abort implement when design-context tools are available. If Figma design-context tools are unavailable, the skill MUST stop and instruct the user how to enable them using platform-agnostic intent (MUST NOT hardcode a single stdio install snippet as the only path; MUST NOT require a Cursor-only skill name on Claude Code, OpenCode, or other Agents).
 
 #### Scenario: MCP unavailable aborts implement
 
 - **WHEN** Figma design-context tools are not available in the session
 - **THEN** the agent MUST NOT invent UI from a screenshot alone and MUST tell the user to connect Figma MCP (or equivalent) before continuing
+
+#### Scenario: Missing Cursor design-to-code skill does not block other Agents
+
+- **WHEN** the Agent has Figma design-context MCP tools but no skill named `figma-design-to-code`
+- **THEN** `figma-pixel-implement` MUST proceed with MCP design-context + this skill’s fidelity rules rather than aborting for a missing Cursor-specific skill id
 
 #### Scenario: Large frames are decomposed
 
@@ -82,7 +87,7 @@ Skill bodies MUST describe intents (obtain design context, export assets, measur
 
 ### Requirement: figma-pixel-fidelity SHALL document boundaries with adjacent skills
 
-The skills MUST state that official Figma design-to-code owns context retrieval conventions; `design-approval-gate` owns pre-implementation solution approval; `figma-pixel-implement` owns export-faithful implementation + spec table; `figma-pixel-verify` owns post-implementation measured alignment. External “taste” / no-design frontend skills MUST NOT override Figma fidelity when a node URL is in scope.
+The skills MUST state that Figma design-context / MCP (plus any Agent-native Figma→code guidance when present) owns structured context retrieval; `design-approval-gate` owns pre-implementation solution approval; `figma-pixel-implement` owns export-faithful implementation + spec table; `figma-pixel-verify` owns post-implementation measured alignment. External “taste” / no-design frontend skills MUST NOT override Figma fidelity when a node URL is in scope. Skill prose MUST remain platform-agnostic and MUST NOT treat a single product’s skill id as universal.
 
 #### Scenario: Approval gate remains distinct
 

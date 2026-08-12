@@ -1,0 +1,39 @@
+{
+  "skill_name": "figma-pixel-verify",
+  "evals": [
+    {
+      "id": 1,
+      "name": "no-js-eval-honest-degrade",
+      "prompt": "用户说：「检查像素对齐」。已有设计规格表（Card gap expected=8px，title color=#1A1A1A）。预览 http://127.0.0.1:5173/promo 可打开，但当前环境只能截图，不能对页面做 JS evaluate / getComputedStyle。请按 figma-pixel-verify 给出验收结论写法（dry-run）。",
+      "expected_output": "Does not claim full numeric PASS; labels unmeasured rows MISSING-style or residual; may use vision with limitation stated.",
+      "expectations": [
+        "Does not claim overall numeric pixel PASS",
+        "Labels unmeasured properties as MISSING-style and/or residual",
+        "States that JS-eval / computed-style channel is unavailable",
+        "Uses or mentions a report structure with per-row verdicts"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "spacing-drift-fails",
+      "prompt": "对照规格：PromoCard gap expected=8px。你已用 getComputedStyle / layout API 测得实际 gap=12px（其他行均 PASS）。请按 figma-pixel-verify 给出 overall 与该行 verdict（dry-run，假设最多还可修 3 轮但本轮只先出报告）。",
+      "expected_output": "Row verdict DRIFT with delta; overall not PASS.",
+      "expectations": [
+        "Marks the gap row as DRIFT (or equivalent non-pass)",
+        "Reports expected 8 and actual 12 (or the 4px delta)",
+        "Overall alignment is not PASS"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "standalone-needs-spec",
+      "prompt": "用户第一次开口：「对照 Figma 验收 https://www.figma.com/design/AbCdEfGhIjKlMnOp/Demo?node-id=12-34 ，预览在 /promo」。本会话没有先前的 implement 规格表产物。请按 figma-pixel-verify 说明你开始测量前必须先做什么（dry-run）。",
+      "expected_output": "Extract or rebuild a minimal design-spec table from Figma before claiming measured verify.",
+      "expectations": [
+        "Requires extracting or rebuilding a minimal design-spec table before measuring",
+        "Does not pretend a prior implement artifact already exists",
+        "Mentions Figma URL/node as the source for the minimal spec"
+      ]
+    }
+  ]
+}
