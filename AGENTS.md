@@ -21,7 +21,7 @@
 >
 > `pr-review-gate`：`always`（全量 `pr-code-review`）| `never`（跳过 Part R，须留痕）| `ask`（每次询问 full/light/skip）| `non-code-light`（非应用代码表面用 light 深度，否则 full）。**未声明 ≡ `always`**（保持历史默认，不全仓静默变轻）。本仓默认 `non-code-light`：docs/skills/openspec 等表面走轻量双轴审查；含 hooks / `.opencode` / workflows / 运行时源码扩展则仍 full。
 >
-> `worktree-gate`：`always` | `never` | `ask`（未声明 ≡ `ask`）。由 `git-worktree-discipline` 在 design-approval 之后、非平凡生产编辑之前解析；`ask` 下先按仓库状态给出适合度推荐再询问是否创建隔离工作区。
+> `worktree-gate`：`always` | `never` | `ask`（未声明 ≡ `ask`）。由 `git-worktree-discipline` 在首个非平凡持久化写入（文档或代码）之前解析；`ask` 下先按仓库状态给出适合度推荐再询问是否创建隔离工作区。
 
 ### Skill 调用分层（User- vs Model-invoked）
 

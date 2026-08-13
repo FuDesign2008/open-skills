@@ -72,7 +72,7 @@ Not a replacement for plain `jira-fix-workflow`:
 - `delivery-discipline` (stage 8: commit + open/update PR/MR after archive; field map via placeholders)
 - `feature-branch-closeout` (stage 8: closeout menu; merge delegates to merge-discipline)
 - `decision-fog-discipline` (before explore solutions: graduate fog / decision tickets first)
-- `git-worktree-discipline` (before execution: worktree gate + optional isolated workspace)
+- `git-worktree-discipline` (before stage 1 — first artifact write: worktree gate + optional isolated workspace)
 - `domain-language-discipline` (clarify/analyze: project glossary / CONTEXT.md when domain terms matter)
 - `merge-discipline` (stage 8 merge discipline — after closeout selects merge)
 - `opsx-workspace-gate` (stage 0 OpenSpec workspace and native-skill gate)
@@ -125,7 +125,7 @@ Never create an extra local runtime directory for an OPSX Jira fix. To continue 
 | Stage | ✅ Allowed | ❌ Forbidden |
 |------|---------|---------|
 | 0 Prerequisite check | Read, Grep, Glob, Bash (read-only checks), Jira API (read-only) | Edit, Write, Git write operations |
-| 1 Read Jira | Jira API, jira-read, Read, OPSX skills (create change) | Edit/Write business code; Bash that changes the implementation |
+| 1 Read Jira | Jira API, jira-read, Read, OPSX skills (create change), Bash (worktree gate) | Edit/Write business code; Bash that changes the implementation |
 | 2 Analyze the problem | Read, Grep, WebSearch; analysis-assist Edit/Write per `analysis-core` §1 (must be registered for rollback) | Business-code changes made to implement the fix |
 | 3 Create the change | Native OPSX skills, Write (artifacts) | Edit business code |
 | 4 Explore solutions | Read, Grep | Edit/Write business code |
@@ -149,6 +149,8 @@ Never create an extra local runtime directory for an OPSX Jira fix. To continue 
 | 8 Submit & close out | Same as auto mode | Same as manual mode |
 
 ## Stage 1: Read Jira
+
+Before the first artifact write (`design.md` Jira context), load `git-worktree-discipline` (worktree gate + optional isolation).
 
 Read the latest Jira data and write it into OpenSpec artifacts as early as possible — never leave it only in chat context.
 
@@ -271,6 +273,8 @@ In manual mode, output the plan and pause; in auto mode, the normal case auto-ad
 
 ## Stage 6: Execute the fix & verify
 
+Before production edits, follow `design-approval-gate` (manual: user pass; auto/force/lean: named escape + 留痕).
+
 ### 6.1 Create the fix branch
 
 Branch naming:
@@ -303,7 +307,7 @@ If the project's convention doesn't accept fix comments, don't force it — but 
 
 ### 6.2.5 Test-first then test-suite ensure (mandatory, before entering stage 7)
 
-Before production edits, follow `design-approval-gate` (manual: user pass; auto/force/lean: named escape + 留痕). Optionally follow `git-worktree-discipline` before non-trivial edits. For behavior-changing work, follow `test-first-discipline` during implementation. Once every `tasks.md` checkbox is checked, before entering stage 7 verification, this step is mandatory:
+For behavior-changing work, follow `test-first-discipline` during implementation. Once every `tasks.md` checkbox is checked, before entering stage 7 verification, this step is mandatory:
 
 Load and call `test-suite-ensure`, declaring `mode=mandatory`, scoped to this fix's logic files; a failure or a declined necessary-scaffolding request blocks entry to stage 7. test-suite-ensure does not satisfy test-first.
 

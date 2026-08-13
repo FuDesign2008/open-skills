@@ -73,7 +73,7 @@ Not a replacement for plain `solve-workflow`:
 - `delivery-discipline` (stage 8: optional commit + open/update PR/MR after archive; not every run delivers)
 - `feature-branch-closeout` (stage 8: post-archive closeout menu; merge delegates to merge-discipline)
 - `decision-fog-discipline` (before explore solutions: graduate fog / decision tickets first)
-- `git-worktree-discipline` (before stage 6: worktree gate + optional isolated workspace)
+- `git-worktree-discipline` (before stage 3 — first artifact write: worktree gate + optional isolated workspace)
 - `domain-language-discipline` (clarify/analyze: project glossary / CONTEXT.md when domain terms matter)
 - `merge-discipline` (stage 8 merge discipline — after closeout selects merge)
 - `opsx-workspace-gate` (stage 0 OpenSpec workspace and native-skill gate)
@@ -195,6 +195,8 @@ Produce 2-5 solutions based on stage 2, each including:
 
 In manual mode, output the comparison table and then pause for the user's pick.
 
+Before the first artifact write (`proposal.md`), load `git-worktree-discipline` (worktree gate + optional isolation).
+
 🔌 **OPSX skills integration**: once a solution is selected, complete the following two steps via the `openspec-continue-change` skill (each call creates one artifact — read its SKILL.md first, then follow its instructions):
 
 1. **Create `proposal.md`** (the change's first ready artifact): merge stage 2's root-cause analysis (Why / Impact) with this stage's solution selection (What Changes / Capabilities) into a complete proposal.
@@ -249,7 +251,7 @@ In manual mode, output the plan and pause; wait for user confirmation before ent
 
 ## Stage 6: Execute the plan
 
-Before production edits, follow `design-approval-gate` (manual: user pass; auto/lean: named escape + 留痕). Optionally follow `git-worktree-discipline` before non-trivial edits.
+Before production edits, follow `design-approval-gate` (manual: user pass; auto/lean: named escape + 留痕).
 
 **Figma pixel fidelity:** When the task includes a Figma URL/node or pixel-restore / design-faithful UI intent, load `figma-pixel-implement` and follow it (export-faithful assets + design-spec table). Do not restate its methodology here.
 
