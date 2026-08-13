@@ -1,7 +1,7 @@
 # git-worktree-discipline Specification
 
 ## Purpose
-Pre-exec git/native worktree isolation with preference gate and suitability recommendation; cleanup via closeout.
+Pre-write (docs or code) git/native worktree isolation with preference gate and suitability recommendation; cleanup via closeout.
 
 ## Requirements
 ### Requirement: Skill id SHALL be git-worktree-discipline
@@ -14,9 +14,9 @@ The skill directory and frontmatter `name` MUST be `git-worktree-discipline` (no
 - **THEN** its `name` is `git-worktree-discipline`
 - **AND** no skill directory named `workspace-isolation-discipline` remains
 
-### Requirement: Pre-exec worktree gate with preference resolution
+### Requirement: Pre-write worktree gate with preference resolution
 
-Before the first non-trivial production edit in a PDCA host execute stage, the Agent MUST load `git-worktree-discipline` and resolve `worktree-gate` from `AGENTS.md` / `CLAUDE.md` as `always` | `never` | `ask`. Unset MUST behave as `ask`.
+Before the first non-trivial persistent write (docs or code) in a PDCA host run, the Agent MUST load `git-worktree-discipline` and resolve `worktree-gate` from `AGENTS.md` / `CLAUDE.md` as `always` | `never` | `ask`. Unset MUST behave as `ask`.
 
 #### Scenario: never skips create
 

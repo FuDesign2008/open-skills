@@ -260,7 +260,7 @@ When the user says "更新计划" / "修订计划" / "修改计划" (update/revi
 
 ## Stage 6: Execute the Plan
 
-> Principle: execute strictly per the plan, confirm on completion. Before production edits, follow `design-approval-gate` (manual: user pass; auto/lean: named escape + 留痕). Optionally follow `git-worktree-discipline` (worktree gate + isolated workspace) before non-trivial edits.
+> Principle: execute strictly per the plan, confirm on completion. Before production edits, follow `design-approval-gate` (manual: user pass; auto/lean: named escape + 留痕). Before the first non-trivial write (docs or code), load `git-worktree-discipline` (worktree gate + optional isolation).
 
 **Figma pixel fidelity:** When the task includes a Figma URL/node or pixel-restore / design-faithful UI intent, load `figma-pixel-implement` and follow it (export-faithful assets + design-spec table). Do not restate its methodology here.
 

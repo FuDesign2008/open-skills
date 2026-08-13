@@ -2,18 +2,18 @@
 name: git-worktree-discipline
 version: "1.1.0"
 user-invocable: false
-description: "Pre-exec git/native worktree isolation with worktree-gate (always|never|ask; unset≡ask): detect reuse (incl. submodule guard), recommend suitability, create (native then ignored .worktrees/), setup+baseline, or decline/lean with 留痕; cleanup via feature-branch-closeout. Triggers — 「git worktree」「工作区隔离」「隔离工作区」「执行前隔离」「worktree 门控」 / git worktree discipline. Do NOT use as Superpowers using-git-worktrees alias or for closeout destroy."
+description: "Pre-write (docs or code) git/native worktree isolation with worktree-gate (always|never|ask; unset≡ask): detect reuse (incl. submodule guard), recommend suitability, create (native then ignored .worktrees/), setup+baseline, or decline/lean with 留痕; cleanup via feature-branch-closeout. Triggers — 「git worktree」「工作区隔离」「隔离工作区」「执行前隔离」「worktree 门控」 / git worktree discipline. Do NOT use as Superpowers using-git-worktrees alias or for closeout destroy."
 ---
 
 # Git Worktree Discipline
 
-> Internal shared skill. Optional **create/detect** isolation before production implementation. Hosts declare it in `dependencies` and abort if missing.
+> Internal shared skill. Optional **create/detect** isolation before the first non-trivial write (docs or code). Hosts declare it in `dependencies` and abort if missing.
 >
 > **Name note:** intentionally **not** named `using-git-worktrees`. Use `git-worktree-discipline` only. Operational create/detect/setup details live in `reference.md` (inspired by common worktree practice; no external skill dependency).
 
 ## When to run
 
-After `design-approval-gate` passes (or auto escape), **before** non-trivial production edits. Skip the create offer only when already isolated for this change, or gate/`never`, or lean/hotfix in-place 留痕 this session.
+Before the first non-trivial persistent write (docs or code) in the host run. Skip the create offer only when already isolated for this change, or gate/`never`, or lean/hotfix in-place 留痕 this session.
 
 ## Loop
 
@@ -36,7 +36,7 @@ Do **not** replace design approval. Do **not** silently destroy isolation mid-ru
 
 ## Integration guide
 
-- Hosts: one line before execution — load this skill (worktree gate + optional isolation).
+- Hosts: one line before the first artifact/code write — load this skill (worktree gate + optional isolation).
 - Compose with `feature-branch-closeout` for cleanup only.
 - Prefer `user-invocable: false`.
 - Full detect/create/setup checklist: `reference.md`.

@@ -64,7 +64,7 @@ Core rules live in `workflow-mode-lifecycle`. "Full flow complete" means stages 
 
 | Stage | Edit/Write | Bash | 👤 Manual stop point | 🤖 Auto stop point | Required output |
 |------|-----------|------|-------------|-------------|---------|
-| 0 Prerequisite check | ❌ | ❌ | Abort on failure; success→1 | Abort on failure/P0; success continues | Check summary |
+| 0 Prerequisite check | ❌ | ✅ (worktree gate) | Abort on failure; success→1 | Abort on failure/P0; success continues | Check summary |
 | 1 Read Jira | ❌ | ❌ | →2 | →2 | Jira summary |
 | 2 Understanding alignment | ❌ | ❌ | ⛔ Wait for confirmation→3 | Skip→3 | Restatement + ambiguities |
 | 3 Analyze | ❌ | ❌ | Stop on existence-check failure; done→4 then ⏸️→5 | Stop on existence-check failure; done continues | Root cause + difficulty |
@@ -110,7 +110,7 @@ Upgrading in manual mode requires user confirmation.
 
 Any failure aborts the flow.
 
-1. Detect the mode (including `--force` / `--resume`), write it to `state.json`
+1. Detect the mode (including `--force` / `--resume`); before the first persistent write (`state.json`, docs, or code), load `git-worktree-discipline` (worktree gate + optional isolation); then write the mode to `state.json`
 2. `jira_get_issue` (title/priority) connectivity check; abort on failure
 3. **P0 interception** (auto only): P0 → abort, switch to manual
 4. Git: 🤖 dirty→stash; 👤 dirty→prompt to handle
@@ -192,7 +192,7 @@ Exit script: reference.md.
 
 ## Stage 7: Execute the Plan
 
-Before production edits, follow `design-approval-gate` (manual: user pass; auto/force: named escape + 留痕). Optionally follow `git-worktree-discipline` before non-trivial edits.
+Before production edits, follow `design-approval-gate` (manual: user pass; auto/force: named escape + 留痕).
 
 **Figma pixel fidelity:** When the issue/plan includes a Figma URL/node or pixel-restore / design-faithful UI intent, load `figma-pixel-implement` and follow it. Do not restate its methodology here.
 
