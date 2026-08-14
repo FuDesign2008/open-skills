@@ -110,5 +110,5 @@ EOF
 
 The panels are the strongest CDP-debugging surface (Google's official MCP, 26+ tools). Two under-used recipes:
 
-- **Jank / frame drops**: record a performance trace while reproducing the interaction → inspect Long Tasks and the main-thread flame chart → pair with the `frontend-perf` skill for framework-specific root causes (React re-render storms, Angular CD cycles). Runtime trace first, code reading second.
+- **Jank / frame drops**: record a performance trace while reproducing the interaction → inspect Long Tasks and the main-thread flame chart → pair with the `perf-optimize-workflow` skill (knowledge layer reference.md) for framework-specific root causes (React re-render storms, Angular CD cycles). Runtime trace first, code reading second.
 - **Async loading / network anomalies**: use the network tooling to list requests filtered by URL/status → inspect response bodies and timing waterfall → compare against the expected API contract. When the same page is behind login, either attach the MCP to an existing logged-in Chrome, or switch to ego-browser Recipe C (raw CDP with inherited login state).

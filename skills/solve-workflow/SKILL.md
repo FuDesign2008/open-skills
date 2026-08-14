@@ -60,7 +60,7 @@ dependencies:
 - `node-version-discipline` (Node-version alignment before running tests in stage 7)
 - `figma-pixel-implement` / `figma-pixel-verify` (Figma export-faithful implement + measured verify; required installed; invoke only when Figma UI work is in scope)
 
-**Related skills** (informational, not a strong dependency): `perf-workflow` (dedicated performance analysis), `jira-fix-workflow` (end-to-end Jira fix flow that embeds this workflow)
+**Related skills** (informational, not a strong dependency): `perf-optimize-workflow` (dedicated performance optimization paradigm), `jira-fix-workflow` (end-to-end Jira fix flow that embeds this workflow)
 
 ## Prerequisite Skill Check
 

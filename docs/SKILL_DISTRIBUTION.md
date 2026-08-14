@@ -6,7 +6,7 @@
 
 | 类别 | 路径 | 用途 | 是否分发 |
 |------|------|------|---------|
-| 分发 skill | `skills/*` | 通用工作流（solve-workflow、code-design-review、perf-workflow 等） | ✅ 是 |
+| 分发 skill | `skills/*` | 通用工作流（solve-workflow、code-design-review、perf-optimize-workflow 等） | ✅ 是 |
 | 工程级 skill | `.claude/skills/openspec-*` | open-skills 仓库自身的 openspec 工作流配置 | ❌ 否 |
 
 ## 为什么 openspec-* 不分发

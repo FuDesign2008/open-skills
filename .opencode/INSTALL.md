@@ -254,7 +254,7 @@ Get-ChildItem "$env:USERPROFILE\.config\opencode\commands" | Where-Object { $_.L
 ```
 /skill coding-fangirl
 /skill solve-workflow
-/skill perf-workflow
+/skill perf-optimize-workflow
 ```
 
 或使用触发词：

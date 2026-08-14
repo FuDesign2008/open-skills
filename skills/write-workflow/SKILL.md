@@ -2,7 +2,7 @@
 name: write-workflow
 version: "1.2.1"
 user-invocable: true
-description: "Eight-stage document-writing host: clarify → analyze sources → explore → review → outline → execute writer → verify → retrospect. In-repo writer: tech-review-doc. External strong deps: humanizer, humanizer-zh. Auto mode never skips tech-review §1. Triggers — 「写文档」「写技术评审」「去AI痕迹」「人性化改写」「自动写文档」「write workflow」「humanize」. Do NOT use for code PDCA (solve-workflow), performance (perf-workflow), or marketing articles (article-writer)."
+description: "Eight-stage document-writing host: clarify → analyze sources → explore → review → outline → execute writer → verify → retrospect. In-repo writer: tech-review-doc. External strong deps: humanizer, humanizer-zh. Auto mode never skips tech-review §1. Triggers — 「写文档」「写技术评审」「去AI痕迹」「人性化改写」「自动写文档」「write workflow」「humanize」. Do NOT use for code PDCA (solve-workflow), performance (perf-optimize-workflow), or marketing articles (article-writer)."
 dependencies:
   - clarifying-question-discipline
   - tech-review-doc

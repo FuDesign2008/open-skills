@@ -1,5 +1,18 @@
 # Release Notes
 
+## [2.0.0] - 2026-08-14
+
+### ⚠️ BREAKING CHANGES
+
+**`perf-workflow` 与 `frontend-perf` 已删除**，替换为基于双栈实战（native C++ 工具链 + 大型 Web 富文本编辑器）验证的性能优化范式：
+
+- **新增 `perf-optimize-workflow`**（编排入口）：基准建设 → 证据门禁 → 归因 → 单目标迭代优化 → A/B 交叉统计验证 → 基准留痕，可选无人值守迭代循环；继承原 `perf-workflow` 全部「性能*」触发词与原 `frontend-perf` 的前端触发词；前端知识层（React/Angular/Electron 版本特性、量化标准、优化手法）整合进其 `reference.md`（按栈成章，留其他栈扩展位）
+- **新增 `perf-evidence-discipline`**（硬纪律，`user-invocable: false`）：九条证据有效性纪律（环境节流伪影 / 监控自污染 / 框架计数口径 / 设备画像节流矩阵 / 输入真实性 / 开关生命周期 / 单样本外推禁令 / 终极对照实验 / 负结果留痕），作为 `perf-optimize-workflow` 四个阶段的前置门禁
+
+**迁移指引**：按名引用 `perf-workflow` / `frontend-perf` 的地方改用 `perf-optimize-workflow`（流程与触发词）或其 `reference.md`（前端知识）；`npx skills update` 后旧 skill 自动移除。
+
+---
+
 ## [1.16.0] - 2026-07-22
 
 ### Changed
