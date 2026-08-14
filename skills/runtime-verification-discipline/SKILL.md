@@ -2,7 +2,7 @@
 name: runtime-verification-discipline
 version: "1.0.0"
 user-invocable: false
-description: "Hard discipline for runtime verification in PDCA workflows: the AI executes verification itself in an environment — real preferred over simulated, subject to determinism + safety — never defaulting to a human checklist. Attempt-first, resolve a pluggable provider (project script/skill → shared capability skill), and hand to a human only at a true hard boundary with a stated reason. Use at any workflow verify/check stage (bug fix or feature) to decide WHERE verification runs, WHO runs it, WHETHER it suffices. Referenced by PDCA hosts via frontmatter dependencies. Triggers — 「环境验证」「真实环境验证」「模拟环境验证」「AI 验证」「验证分层」「验证充分性」 / runtime verification, environment verification, real vs simulated. Do NOT alias completion-evidence-discipline (evidence freshness) or runtime-evidence-debug (debug instrumentation)."
+description: "Hard discipline for runtime verification in PDCA workflows: the AI executes verification itself in an environment — real preferred over simulated, subject to determinism + safety — never defaulting to a human checklist. Attempt-first, resolve a pluggable provider (project script/skill → shared capability skill), and hand to a human only at a true hard boundary with a stated reason. Use at any workflow verify/check stage (bug fix or feature) to decide WHERE verification runs, WHO runs it, WHETHER it suffices. Referenced by PDCA hosts via frontmatter dependencies. Triggers — 「环境验证」「真实环境验证」「真机验证」「真机测试」「模拟环境验证」「AI 验证」「验证分层」「验证充分性」 / runtime verification, environment verification, real vs simulated. Do NOT alias completion-evidence-discipline (evidence freshness) or runtime-evidence-debug (debug instrumentation)."
 ---
 
 # Runtime Verification Discipline
