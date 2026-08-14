@@ -5,14 +5,15 @@ user-invocable: true
 description: "Performance optimization paradigm workflow, proven across stacks: benchmark harness → evidence gate → attribution → one-target-per-iteration optimization → A/B cross-run statistical verification → benchmark-log sediment, with an optional unattended iteration loop. Stack knowledge (React/Angular/Electron) lives in reference.md. Triggers — 「性能分析」「性能证据」「性能定位」「性能假设」「性能监控」「性能优化」「性能验证」「性能深入」「性能问题」「卡顿」「很慢」「前端性能」「Electron 性能」 / performance analysis, perf evidence, locate bottleneck, perf optimization, perf verification. Do NOT use for non-performance bugs (solve-workflow) or trivial single-line edits."
 dependencies:
   - perf-evidence-discipline
-  - perf-iteration-loop
   - clarifying-question-discipline
   - known-issue-research
 ---
 
 # Performance Optimization Workflow
 
-> Strong dependencies (frontmatter): `perf-evidence-discipline` (evidence-validity gate at four stages), `perf-iteration-loop` (mandatory iteration-loop protocol binding Stages 5-6), `clarifying-question-discipline` (one question per turn), `known-issue-research` (known performance-pattern quick search at the locate stage). If any is missing, abort and print: `npx skills add FuDesign2008/open-skills -g --skill '*' --yes`.
+> Strong dependencies (frontmatter): `perf-evidence-discipline` (evidence-validity gate at four stages), `clarifying-question-discipline` (one question per turn), `known-issue-research` (known performance-pattern quick search at the locate stage). If any is missing, abort and print: `npx skills add FuDesign2008/open-skills -g --skill '*' --yes`.
+>
+> Runtime strong dependency (environment, not frontmatter): a loop-runner capability for the Stages 5-6 iteration loop — probed at Stage 5 entry; missing means optimization execution stops (see "Iteration loop").
 
 ## Scope
 
@@ -232,12 +233,39 @@ Every hypothesis verified, targets met — or remaining bottlenecks' cost-effect
 
 ---
 
-## Iteration loop (mandatory orchestration for Stages 5-6)
+## Iteration loop (environment-gated, mandatory for Stages 5-6)
 
-Optimize (Stage 5) and A/B verify (Stage 6) execute as a **repeating loop governed by `perf-iteration-loop`**, not as a single pass: each round runs profile → one-target optimize → A/B judge → correctness gate → commit + snapshot + log, until a stop condition fires (5 consecutive no-gain rounds / target met / ROI exhausted). This is where the paradigm's compounding gains come from — one-pass optimization stops at the first visible hotspot.
+Optimize (Stage 5) and A/B verify (Stage 6) execute as a repeating loop **mounted on a real environment loop runner** — never as one-off passes, and never as a self-invented prose loop. The compounding gains come from sustained rounds; a manual one-pass run stops at the first visible hotspot and silently loses the paradigm's core value.
 
-- The loop is a hard contract: when the environment provides a loop runner (ralph-style), mount the protocol on it; otherwise self-drive the rounds serially — the contract is identical either way.
-- Single pass is an explicit exception (user requests exactly one round), stated in the run's output — never the silent default.
+### Environment gate (at Stage 5 entry)
+
+Probe the environment for a loop capability — an installed loop runner (ralph-loop-style runner, `/loop`, goal-driven long-run, or any mechanism that auto-continues the agent across rounds with per-round context management):
+
+- **Found** → mount the loop body below on it and enter the loop. The runner drives round cadence and continuation; this workflow supplies what each round contains and when to stop.
+- **Not found** → **stop optimization execution**. Report the analysis stages' findings (they remain valid and deliverable), and state the exact blocker: install a loop runner, then re-enter at Stage 5. Do not degrade to a single manual pass — an honest abort beats a fake loop.
+
+This gate is a runtime strong dependency on the environment (not a frontmatter dependency — loop runners are environment plugins, not installable skills).
+
+### Loop body (each round, in order)
+
+1. **Profile** — re-acquire hotspots fresh this round; last round's list is stale input.
+2. **Pick exactly one target** — top hotspot by user impact × time-share; queue the rest.
+3. **Optimize that target** — per the Optimize stage (root-cause-mapped, revertible).
+4. **A/B judge** — interleaved cross-runs vs the previous snapshot; accept only if `avg_B − avg_A > max(stdev_B, stdev_A)` (rule owned by Stage 6); rejected → revert this round.
+5. **Correctness gate** — full test suite / output-equivalence before commit; never commit red.
+6. **Commit + snapshot + log** — one commit per round; snapshot the accepted build as next round's baseline (keyed by commit hash); append the round to the benchmark log, accepted or rejected, with reason.
+
+### Stop conditions (any one)
+
+- **5 consecutive no-gain rounds** — the optimization set has converged.
+- **Target met** — stage-1 threshold/red line reached and verified.
+- **ROI exhausted** — remaining bottlenecks' gain no longer justifies change cost.
+
+On stop: summarize rounds accepted/rejected, total measured gain vs baseline, remaining bottlenecks with ROI assessment.
+
+### Context discipline (long loops die of context bloat)
+
+Each round persists its outcome to the benchmark log and carries forward only: the round summary, the baseline-snapshot pointer, and the stop-condition counters. Raw profiles and intermediate data stay in the archive files — they are retrieved on demand, never carried in full across rounds.
 
 ## Output detail level (adaptive)
 
