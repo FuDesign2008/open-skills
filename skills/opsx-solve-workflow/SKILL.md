@@ -29,6 +29,7 @@ dependencies:
   - git-worktree-discipline
   - figma-pixel-implement
   - figma-pixel-verify
+  - runtime-verification-discipline
 ---
 
 # OPSX Eight-Stage Problem-Solving Workflow
@@ -298,8 +299,10 @@ Manual mode pauses here to wait for user confirmation before archiving. Do not a
 
 If the stage-6 execution report involves tests (unit tests, integration tests, manual verification steps):
 
+**Verification execution follows `runtime-verification-discipline`** (strong dependency): the AI executes verification itself in an environment, and hands a step to the user only at a classified true hard boundary, with the reason stated.
+
 - **AI can execute**: use Bash to run test commands (e.g. `npm test`, `pytest`, `go test`) and fold the result into the check conclusion.
-- **AI cannot execute** (no Bash, environment limits, tests need manual action): **explicitly remind the user**: "This change involves tests — please run [specific command/steps] yourself and confirm they pass before closing out."
+- **Otherwise**: classify the blocker per `runtime-verification-discipline`; only a true hard boundary becomes a user step, stated with its reason.
 
 ## Stage 8: Review & archive
 

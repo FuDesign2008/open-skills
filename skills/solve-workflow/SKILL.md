@@ -27,6 +27,7 @@ dependencies:
   - git-worktree-discipline
   - figma-pixel-implement
   - figma-pixel-verify
+  - runtime-verification-discipline
 ---
 
 # Eight-Stage Problem-Solving Workflow
@@ -305,8 +306,10 @@ If stage 5's plan or stage 6's execution report involves testing (unit tests, in
 
 > For Node / JavaScript / TypeScript projects, invoke `node-version-discipline` to align the Node version before running tests.
 
+**Verification execution follows `runtime-verification-discipline`** (strong dependency): the AI executes verification itself in an environment, and hands a step to the user only at a classified true hard boundary, with the reason stated.
+
 - **AI can execute**: run the test command via Bash (e.g. `npm test`, `pytest`, `go test`) and fold the result into the verification conclusion
-- **AI cannot execute** (no Bash, environment limits, tests require manual action): **explicitly tell the user**: "This change involves tests — please run [specific test command/steps] yourself and confirm they pass before wrapping up."
+- **Otherwise**: classify the blocker per `runtime-verification-discipline`; only a true hard boundary becomes a user step, stated with its reason.
 
 ### Verification-report honesty
 
