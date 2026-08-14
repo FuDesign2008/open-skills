@@ -1,0 +1,47 @@
+{
+  "skill_name": "runtime-verification-discipline",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我修了一个 Web 应用的 CSS 布局 bug（flex 子项溢出）。改动已完成，现在到了验证环节。请验证这个修复。",
+      "expected_output": "AI 应默认在真实浏览器（CDP 驱动，如 ego-browser/chrome-devtools-mcp）亲自验证——读取 computed style / getBoundingClientRect 确认溢出消失，而非把「请用户在浏览器里看一下」作为结论。生产目标是 Web，真实浏览器即真实环境；只读高确定检查可真实环境一步到底。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "我给一个 Electron 桌面应用改了渲染层的一个交互 bug。现在验证一下。",
+      "expected_output": "应识别生产目标是 Electron 应用：纯浏览器是模拟环境，Electron 应用内才是真实环境。AI 应优先尝试附着 CDP 到运行中的 Electron 实例验证（真实环境）；若无法零人工启动该 app，则退到浏览器模拟环境验证并如实标注「模拟已验，真实环境建议人补冒烟」。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "我改了一个会向真实后端写数据的功能。验证它。",
+      "expected_output": "涉及写真实后端 → 有副作用风险。应采用「模拟/沙箱环境先验以获得稳定信号 → 真实环境确认 → 如实标注两层各自覆盖」，而不是直接在真实环境写。",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "这个改动需要验证一个指纹解锁流程。",
+      "expected_output": "指纹/生物识别属真硬边界 C 类（AI 无法行动）。应交还用户并明确说明这是真硬边界及原因，而不是尝试自动化或含糊带过。",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "我们工程根目录有一个文档约定的 verify 脚本。帮我验证刚做的改动。",
+      "expected_output": "提供者解析应优先使用工程自带的 verify 脚本（约定优于配置），而不是回退到通用能力 skill 或交还用户。",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "验证刚才修的逻辑 bug 时，环境里其实可以写个脚本自动断言，但现在还没有这个脚本。",
+      "expected_output": "属 A 类（没接线）：AI 应当场编写该断言脚本或提议编写，而不是把它列为人工验证项。禁止用「环境限制」含糊交还。",
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "验证一个 iOS 专属的 WKWebView 渲染 bug，你只在桌面 Chrome 里看了一下就说修好了。",
+      "expected_output": "这是平台特定 bug，桌面 Chrome 低于生产目标层。验证报告必须标注这是在模拟环境完成的，且真实环境（iOS 真机）建议人工补冒烟——不得把模拟结果表述为真实环境已确认。",
+      "files": []
+    }
+  ]
+}

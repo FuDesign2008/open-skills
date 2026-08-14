@@ -30,6 +30,7 @@ dependencies:
   - learn-and-improve
   - figma-pixel-implement
   - figma-pixel-verify
+  - runtime-verification-discipline
 ---
 
 # OPSX Jira Bug-Fix Workflow
@@ -327,6 +328,8 @@ Must cover:
 5. Side-effect check: are related modules and platforms affected; the verification report must disclose `Node (declared vX) ✅/⚠️ not aligned`
 6. Debug-verify loop: if stage 2 used a debug skill to locate the root cause, verify the fix using that **same** skill per `analysis-core` §4 (not tests alone)
 7. Figma pixel verify: when this run implemented from Figma or alignment checking is required, load `figma-pixel-verify` and follow it for measured pass/fail
+
+**Verification execution follows `runtime-verification-discipline`** (strong dependency): the AI executes verification itself in an environment, and a step is listed as a manual-verification item only at a classified true hard boundary, with the reason stated.
 
 > Label each result per `staged-review-flow`'s verification-report honesty rule and `completion-evidence-discipline` (no pass claims without fresh current-turn evidence).
 

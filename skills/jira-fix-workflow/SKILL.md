@@ -29,6 +29,7 @@ dependencies:
   - learn-and-improve
   - figma-pixel-implement
   - figma-pixel-verify
+  - runtime-verification-discipline
 ---
 
 # Jira Bug-Fix Workflow
@@ -206,7 +207,7 @@ After execution: 🤖 normal→8, 🟠 pause for review; 👤 normal wait for co
 
 ## Stage 8: Check & Verify
 
-Output the result only — do not change code. Compare against the Jira repro/expected result, stage 6's plan, tests, side effects, and root cause; use `analysis-core` §4 for the debug-verify loop. When this run implemented from Figma or alignment checking is required, load `figma-pixel-verify` and follow it for measured pass/fail. Verification-report honesty per `staged-review-flow` and `completion-evidence-discipline`. Template: reference.md § Stage 8.
+Output the result only — do not change code. Compare against the Jira repro/expected result, stage 6's plan, tests, side effects, and root cause; use `analysis-core` §4 for the debug-verify loop. Verification execution follows `runtime-verification-discipline` (the AI executes verification itself in an environment, and hands a step to the user only at a classified true hard boundary, with the reason stated). When this run implemented from Figma or alignment checking is required, load `figma-pixel-verify` and follow it for measured pass/fail. Verification-report honesty per `staged-review-flow` and `completion-evidence-discipline`. Template: reference.md § Stage 8.
 
 | Verdict | Next |
 |------|------|
