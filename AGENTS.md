@@ -81,12 +81,13 @@ open-skills/
 |-------|------|------|
 | solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、node-version-discipline、staged-review-flow、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、delivery-discipline、feature-branch-closeout、decision-fog-discipline、git-worktree-discipline、figma-pixel-implement、figma-pixel-verify、runtime-verification-discipline |
 | opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、merge-discipline、staged-review-flow、opsx-workspace-gate、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、delivery-discipline、feature-branch-closeout、decision-fog-discipline、git-worktree-discipline、figma-pixel-implement、figma-pixel-verify、runtime-verification-discipline |
-| perf-optimize-workflow | 工作流 | perf-evidence-discipline、clarifying-question-discipline、known-issue-research |
+| perf-optimize-workflow | 工作流 | perf-evidence-discipline、perf-iteration-loop、clarifying-question-discipline、known-issue-research |
 | write-workflow | 工作流 | clarifying-question-discipline、tech-review-doc、workflow-mode-lifecycle、humanizer（外置）、humanizer-zh（外置） |
 | brainstorm-workflow | 工作流 | brainstorming（外置）、solve-workflow |
 | goal-driven-workflow | 工作流 | clarifying-question-discipline、completion-evidence-discipline、design-approval-gate |
 | tech-review-doc | 内容创作 | clarifying-question-discipline |
 | perf-evidence-discipline | 工作流纪律 | 无（被 perf-optimize-workflow 强依赖） |
+| perf-iteration-loop | 工作流编排 | 无（被 perf-optimize-workflow 强依赖） |
 | android-webview-debug | 工具 | 无 |
 | figma-pixel-implement | 工具 | 无（被 solve / opsx-solve / jira-fix / opsx-jira-fix 强依赖） |
 | figma-pixel-verify | 工具 | 无（被 solve / opsx-solve / jira-fix / opsx-jira-fix 强依赖） |

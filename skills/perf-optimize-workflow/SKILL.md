@@ -5,13 +5,14 @@ user-invocable: true
 description: "Performance optimization paradigm workflow, proven across stacks: benchmark harness → evidence gate → attribution → one-target-per-iteration optimization → A/B cross-run statistical verification → benchmark-log sediment, with an optional unattended iteration loop. Stack knowledge (React/Angular/Electron) lives in reference.md. Triggers — 「性能分析」「性能证据」「性能定位」「性能假设」「性能监控」「性能优化」「性能验证」「性能深入」「性能问题」「卡顿」「很慢」「前端性能」「Electron 性能」 / performance analysis, perf evidence, locate bottleneck, perf optimization, perf verification. Do NOT use for non-performance bugs (solve-workflow) or trivial single-line edits."
 dependencies:
   - perf-evidence-discipline
+  - perf-iteration-loop
   - clarifying-question-discipline
   - known-issue-research
 ---
 
 # Performance Optimization Workflow
 
-> Strong dependencies (frontmatter): `perf-evidence-discipline` (evidence-validity gate at four stages), `clarifying-question-discipline` (one question per turn), `known-issue-research` (known performance-pattern quick search at the locate stage). If any is missing, abort and print: `npx skills add FuDesign2008/open-skills -g --skill '*' --yes`.
+> Strong dependencies (frontmatter): `perf-evidence-discipline` (evidence-validity gate at four stages), `perf-iteration-loop` (mandatory iteration-loop protocol binding Stages 5-6), `clarifying-question-discipline` (one question per turn), `known-issue-research` (known performance-pattern quick search at the locate stage). If any is missing, abort and print: `npx skills add FuDesign2008/open-skills -g --skill '*' --yes`.
 
 ## Scope
 
@@ -231,15 +232,12 @@ Every hypothesis verified, targets met — or remaining bottlenecks' cost-effect
 
 ---
 
-## Unattended iteration loop (optional)
+## Iteration loop (mandatory orchestration for Stages 5-6)
 
-When the environment provides an iteration-loop capability (an agent loop / ralph-style runner), the whole paradigm can run hands-off:
+Optimize (Stage 5) and A/B verify (Stage 6) execute as a **repeating loop governed by `perf-iteration-loop`**, not as a single pass: each round runs profile → one-target optimize → A/B judge → correctness gate → commit + snapshot + log, until a stop condition fires (5 consecutive no-gain rounds / target met / ROI exhausted). This is where the paradigm's compounding gains come from — one-pass optimization stops at the first visible hotspot.
 
-**profile (top hotspots) → optimize (one target) → A/B benchmark → full test suite → commit + snapshot baseline → repeat; stop after 5 consecutive no-gain iterations.**
-
-- Every iteration still obeys the paradigm: one target, A/B-judged, reverted on rejection, logged either way.
-- Correctness gates (unit tests / output equivalence) run inside the loop, before commit.
-- This loop capability is an environmental plugin, not a dependency of this skill — when absent, iterate manually through Stages 2-6.
+- The loop is a hard contract: when the environment provides a loop runner (ralph-style), mount the protocol on it; otherwise self-drive the rounds serially — the contract is identical either way.
+- Single pass is an explicit exception (user requests exactly one round), stated in the run's output — never the silent default.
 
 ## Output detail level (adaptive)
 
