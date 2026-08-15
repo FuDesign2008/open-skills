@@ -136,6 +136,8 @@ On the lean path, stage 3 (explore solutions) may output just 1 solution + a ris
 
 > Principle: clarify the problem before technical analysis; this stage only aligns on the problem, it does not touch implementation logic.
 
+> **Domain routing**: if the problem is performance-domain (slow / jank / resource growth), suggest entering `perf-optimize-workflow` — its evidence-gated paradigm fits the domain; its analysis output can flow back into this workflow for fix execution. Informational reference, not a dependency.
+
 > **[🤖 Auto]** Skip this stage and go straight to stage 2, treating the user's input as an already-confirmed problem description.
 >
 > **[👤 Manual]** This stage must complete and be confirmed by the user before entering stage 2.

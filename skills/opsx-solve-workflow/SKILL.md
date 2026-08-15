@@ -140,6 +140,8 @@ Stages 1-5 forbid modifying business code but allow creating and updating OpenSp
 
 **⚠️ Active questioning**: follow `clarifying-question-discipline` (one question per round, multi-round until clear; clarify first, don't rush to answer). When domain vocabulary is in play, also follow `domain-language-discipline`.
 
+> **Domain routing**: if the problem is performance-domain (slow / jank / resource growth), suggest entering `perf-optimize-workflow` — its evidence-gated paradigm fits the domain; its analysis output can flow back into this workflow (artifacts still land in OpenSpec per this workflow). Informational reference, not a dependency.
+
 Manual mode must complete the following steps in order:
 
 1. **Restate the problem** — describe the user's problem in your own words.

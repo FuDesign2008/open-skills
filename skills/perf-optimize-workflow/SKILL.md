@@ -2,22 +2,21 @@
 name: perf-optimize-workflow
 version: "1.0.0"
 user-invocable: true
-description: "Performance optimization paradigm workflow, proven across stacks: benchmark harness → evidence gate → attribution → one-target-per-iteration optimization → A/B cross-run statistical verification → benchmark-log sediment, with an optional unattended iteration loop. Stack knowledge (React/Angular/Electron) lives in reference.md. Triggers — 「性能分析」「性能证据」「性能定位」「性能假设」「性能监控」「性能优化」「性能验证」「性能深入」「性能问题」「卡顿」「很慢」「前端性能」「Electron 性能」 / performance analysis, perf evidence, locate bottleneck, perf optimization, perf verification. Do NOT use for non-performance bugs (solve-workflow) or trivial single-line edits."
+description: "Performance optimization paradigm workflow, proven across stacks: benchmark harness → evidence-validity gate (nine in-file disciplines: measurement artifacts, caliber pollution, device-profile mismatch) → attribution → one-target-per-iteration optimization → A/B cross-run statistical verification → benchmark-log sediment, on an environment-gated iteration loop (no loop runner ⇒ honest stop). Stack knowledge (React/Angular/Electron) lives in reference.md. Triggers — 「性能分析」「性能证据」「性能定位」「性能假设」「性能监控」「性能优化」「性能验证」「性能深入」「性能问题」「卡顿」「很慢」「前端性能」「Electron 性能」「伪影排查」「口径校准」「设备画像」 / performance analysis, perf evidence, locate bottleneck, perf optimization, perf verification, measurement artifact check. Do NOT use for non-performance bugs (solve-workflow) or trivial single-line edits."
 dependencies:
-  - perf-evidence-discipline
   - clarifying-question-discipline
   - known-issue-research
 ---
 
 # Performance Optimization Workflow
 
-> Strong dependencies (frontmatter): `perf-evidence-discipline` (evidence-validity gate at four stages), `clarifying-question-discipline` (one question per turn), `known-issue-research` (known performance-pattern quick search at the locate stage). If any is missing, abort and print: `npx skills add FuDesign2008/open-skills -g --skill '*' --yes`.
+> Strong dependencies (frontmatter): `clarifying-question-discipline` (one question per turn), `known-issue-research` (known performance-pattern quick search at the locate stage). If any is missing, abort and print: `npx skills add FuDesign2008/open-skills -g --skill '*' --yes`.
 >
 > Runtime strong dependency (environment, not frontmatter): a loop-runner capability for the Stages 5-6 iteration loop — probed at Stage 5 entry; missing means optimization execution stops (see "Iteration loop").
 
 ## Scope
 
-This workflow owns the full performance optimization paradigm: **build a reproducible benchmark, gate every conclusion through evidence-validity checks, attribute the bottleneck along the full chain, optimize one target per iteration, verify by A/B cross-run statistics, and sediment results in a benchmark log** — optionally driving the whole loop unattended when the environment provides an iteration-loop capability.
+This workflow owns the full performance optimization paradigm: **build a reproducible benchmark, gate every conclusion through evidence-validity checks, attribute the bottleneck along the full chain, optimize one target per iteration, verify by A/B cross-run statistics, and sediment results in a benchmark log** — the optimize↔verify cycle running on an environment-provided iteration loop (honest stop when absent).
 
 It answers: who triggers what expensive operation, under which conditions, on which devices — and then eliminates it measurably. Shipping/rollout decisions belong to the project, not this workflow.
 
@@ -28,8 +27,8 @@ It answers: who triggers what expensive operation, under which conditions, on wh
 | Layer | Lives in | Changes when |
 |-------|----------|--------------|
 | Paradigm (this file) | `SKILL.md` | Rarely — behavioral contract, versioned deliberately |
-| Evidence-validity gate | `perf-evidence-discipline` (strong dependency) | Rarely — hard rules against measurement traps |
-| Stack knowledge | [reference.md](reference.md) (frontend chapter today; extensible per stack) | Often — framework versions and thresholds age; refresh via knowledge-only changes |
+| Evidence-validity disciplines | In-file section below | Rarely — hard rules against measurement traps |
+| Stack knowledge + case archive | [reference.md](reference.md) (frontend chapter today; extensible per stack) | Often — framework versions and thresholds age; refresh via knowledge-only changes |
 
 The paradigm is durable; the knowledge layer is perishable by design. Keep perishable content out of this file.
 
@@ -45,6 +44,7 @@ Trigger words (each enters the workflow; with 「trigger + colon + space + descr
 - **「性能优化」** → Stage 5: Optimize
 - **「性能验证」** → Stage 6: A/B Verify
 - **「前端性能」/「前端性能优化」/「Electron 性能」** → Stage 1, with the frontend knowledge chapter in [reference.md](reference.md) as the working knowledge base
+- **「伪影排查」/「口径校准」/「设备画像」** → evidence-gate mode: audit the suspect metric against the disciplines below before it drives any decision
 
 Performance-related logs or a profile handed over for analysis also enter at Stage 1 or 2.
 
@@ -53,7 +53,7 @@ Performance-related logs or a profile handed over for analysis also enter at Sta
 **先建基准再动刀，证据过闸才定罪，链路归因一锤定音，一轮一个目标，A/B 交叉说了算，负结果也留痕。** (Build the benchmark before cutting; convict only through the evidence gate; attribute along the full chain; one target per iteration; the A/B cross-run verdict rules; negative results leave traces too.)
 
 1. **Data-driven**: no conclusion precedes its measurement. No reproduction path or analyzable data yet → the first task is building one (Stage 1), not hypothesizing.
-2. **Evidence-gated**: every metric that feeds a decision must first pass `perf-evidence-discipline` (mounted per stage below). Non-decision-grade numbers may inform, never convict.
+2. **Evidence-gated**: every metric that feeds a decision must first pass the Evidence Validity Disciplines (in-file section below). Non-decision-grade numbers may inform, never convict.
 3. **Single variable, reproducible**: each hypothesis resolvable to yes/no with existing data or minimal targeted instrumentation; each optimization touches exactly one root-cause point so its benefit is attributable; results reproducible and falsifiable — correlation is not causation.
 4. **Full-chain, top-down**: from the user-perceived chain (macro) to the hotspot (micro); identify *where* it is slow (time/resource share), then *who* triggers it and *under what conditions*. Avoid blind-men-and-elephant local analysis.
 5. **Production caliber & device profile**: acceptance numbers come from production-caliber builds; conviction-grade conclusions come from device-profile-calibrated runs (CPU-throttle matrix), not from high-end developer machines alone.
@@ -71,6 +71,26 @@ Common jumps:
 - Stage 2's data already pins the bottleneck → skip Stage 3, go to Stage 4/5.
 - Stage 6 refutes the hypothesis → back to Stage 2/3; optimization fell short → back to Stage 5.
 - Intermittent issue hard to capture → prioritize Stage 4 long-term monitoring, return when it reproduces.
+
+---
+
+## Evidence Validity Disciplines
+
+> Hard gate: a performance conclusion may drive an optimization decision only after passing these checks. The traps fall into three classes — **measurement artifacts** (the environment or tool distorts the number), **caliber pollution** (the number is real but measures something else), and **device-profile mismatch** (true, but only on machines nobody complains about). Full anonymized case archive with real numbers: [reference.md](reference.md) Part 4.
+
+| # | Discipline | One-line rule |
+|---|-----------|---------------|
+| 1 | Environment-throttling artifacts | Frame/rAF-class metrics from a controlled browser (headless/occluded/backgrounded) are invalid until proven otherwise — background throttling clamps rAF toward ~800ms and cannot be lifted by focus emulation; detect via profiler sampling (idle-dominant ⇒ artifact); measure same-task instead (stimulus + forced sync layout read in one JS task) |
+| 2 | Monitor self-pollution | Instrumented builds can differ several-fold from production (monitor overhead + unminified code); dev caliber is for relative A/B trends only — optimization decisions use production caliber; on conflict with browser-native metrics, the browser wins |
+| 3 | Framework counter ambiguity | Audit any framework-internal statistic on a small scale before trusting it (cross-reconcile independent counts against a native metric); magnitude contradiction means the counter is the artifact — counters are trend signals, never conviction evidence |
+| 4 | Device-profile calibration | Conviction-grade conclusions need a CPU-throttle matrix (e.g. 1x/8x/20x) × path × scale; an unthrottled "innocent" verdict is invalid for low-end users — one workload can yield three verdicts across cells |
+| 5 | Input-event authenticity | Every synthetic input load must verify the content delta (document length delta == intended change); synthetic key/scroll events that bypass the real input pipeline are void regardless of driver-reported success |
+| 6 | Instrumentation toggle lifecycle | Toggles read at module-load time must be injected before page scripts load (debugging protocol's evaluate-on-new-document); spans ended by rAF inherit throttling (discipline 1) — phase conclusions use synchronous spans + long tasks |
+| 7 | Single-sample extrapolation ban | Developer-machine data is not a user profile; negative-ROI conclusions need user-profile evidence (aggregated telemetry / support feedback / field data) — one account cannot extrapolate |
+| 8 | Ultimate control experiment | When profilers show `(program)`/`(idle)` dominant (no JS hotspot), clone the live DOM into a pure static copy (same styles, zero product logic) and run the same load under the same throttle: copy ≈ original ⇒ bulk is DOM-scale physical cost (optimize base rendering cost), difference = product-code margin = code-level ceiling; ablation rider: "mechanism exists ≠ mechanism works" |
+| 9 | Negative results leave traces | Mark contaminated benchmark-log rows with invalidation warnings (what/why/correct caliber); exclusion records keep later readers from re-walking dead ends or citing bad numbers |
+
+**Gate rule**: for any metric, if the discipline covering its trap class is unresolved, the metric is **not decision-grade** — it may appear as trend-only context but must not drive optimization choices, priorities, or pass/fail verdicts.
 
 ---
 
@@ -96,7 +116,7 @@ Turn a vague "it's laggy" into a **reproducible, standardized, logged workload**
 
 ### Evidence gate (before any number leaves this stage)
 
-Load `perf-evidence-discipline` and clear its disciplines **1 (throttling artifacts), 2 (monitor self-pollution), 5 (input authenticity), 6 (toggle lifecycle)** for every metric you plan to carry forward. Numbers failing the gate are marked trend-only.
+Clear the in-file disciplines **1 (throttling artifacts), 2 (monitor self-pollution), 5 (input authenticity), 6 (toggle lifecycle)** for every metric you plan to carry forward. Numbers failing the gate are marked trend-only.
 
 ### Output
 
@@ -128,7 +148,7 @@ Find the anomalies in the data (who spent how much time/resources, when), trace 
 
 ### Evidence gate
 
-Disciplines **3 (counter audits — audit any framework-internal statistic before use)** and **8 (control experiment)** mount here.
+Disciplines **3 (counter audits — audit any framework-internal statistic before use)** and **8 (control experiment)** apply here.
 
 ### Output
 
@@ -151,7 +171,7 @@ Distill anomalies into **verifiable, falsifiable** root-cause hypotheses, classi
 
 ### Evidence gate
 
-Discipline **7 (single-sample extrapolation ban — "users don't hit this" needs user-profile evidence)** and discipline **4 (throttle matrix — hypotheses about user-perceived jank are validated on calibrated cells)** mount here.
+Discipline **7 (single-sample extrapolation ban — "users don't hit this" needs user-profile evidence)** and discipline **4 (throttle matrix — hypotheses about user-perceived jank are validated on calibrated cells)** apply here.
 
 ### Output
 
