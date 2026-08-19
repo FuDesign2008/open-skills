@@ -140,7 +140,7 @@ Stages 1-5 forbid modifying business code but allow creating and updating OpenSp
 
 **⚠️ Active questioning**: follow `clarifying-question-discipline` (one question per round, multi-round until clear; clarify first, don't rush to answer). When domain vocabulary is in play, also follow `domain-language-discipline`.
 
-> **Domain routing**: if the problem is performance-domain (slow / jank / resource growth), suggest entering `perf-optimize-workflow` — its evidence-gated paradigm fits the domain; its analysis output can flow back into this workflow (artifacts still land in OpenSpec per this workflow). Informational reference, not a dependency.
+> **Domain routing**: if the problem is performance-domain (slow / jank / resource growth), suggest entering `perf-optimize-workflow` — its evidence-gated paradigm fits the domain; its analysis output can flow back into this workflow (artifacts still land in OpenSpec per this workflow). Note: its campaigns create per-project artifacts (benchmark log + harness, and seeded `code-insight`/`code-optimizer` skills); the optimize-verify loop additionally requires an environment loop runner — analysis stages always run. Informational reference, not a dependency.
 
 Manual mode must complete the following steps in order:
 
