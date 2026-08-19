@@ -2,7 +2,7 @@
 
 Stack-specific knowledge for `perf-optimize-workflow`. The paradigm in [SKILL.md](SKILL.md) is durable; **this file is the perishable layer** — framework versions, thresholds, and tool tables age. Refresh entries via knowledge-only changes (PATCH version bumps) without touching the paradigm file.
 
-> **Reading guide**: Part 1 is the frontend quick-reference (standards, patterns, version features, tools) mapped to workflow stages; Part 2 is the frontend detailed expansion for the Optimize stage; Part 3 reserves extension slots for other stacks; Part 4 is the evidence-discipline case archive (real anonymized numbers behind the nine disciplines in SKILL.md). During analysis rely on SKILL.md + Part 1; during optimization consult Part 2 as needed; when auditing a suspect metric, read Part 4.
+> **Reading guide**: this file is the **stack corpus** — seed material for the project-level `code-insight` / `code-optimizer` skills that `perf-optimize-workflow` creates and evolves in each target project. Part 1 is the frontend quick-reference (seeds a JS-stack project's `code-insight`); Part 2 is the frontend optimization detail (seeds its `code-optimizer`); Part 3 reserves seed slots for other stacks (C++ / server / toolchain); Part 4 is the evidence-discipline case archive (paradigm-level, stays here). Before project skills mature, Parts 1-2 also serve as working knowledge directly; once seeded, the project skills own the living knowledge and this corpus only refreshes occasionally.
 
 ## Part 1 — Frontend quick reference (by workflow stage)
 

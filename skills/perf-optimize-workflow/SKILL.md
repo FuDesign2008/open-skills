@@ -2,7 +2,7 @@
 name: perf-optimize-workflow
 version: "1.0.0"
 user-invocable: true
-description: "Performance optimization paradigm workflow, proven across stacks: benchmark harness → evidence-validity gate (nine in-file disciplines: measurement artifacts, caliber pollution, device-profile mismatch) → attribution → one-target-per-iteration optimization → A/B cross-run statistical verification → benchmark-log sediment, on an environment-gated iteration loop (no loop runner ⇒ honest stop). Stack knowledge (React/Angular/Electron) lives in reference.md. Triggers — 「性能分析」「性能证据」「性能定位」「性能假设」「性能监控」「性能优化」「性能验证」「性能深入」「性能问题」「卡顿」「很慢」「前端性能」「Electron 性能」「伪影排查」「口径校准」「设备画像」 / performance analysis, perf evidence, locate bottleneck, perf optimization, perf verification, measurement artifact check. Do NOT use for non-performance bugs (solve-workflow) or trivial single-line edits."
+description: "Performance optimization paradigm workflow, proven across stacks: benchmark harness → evidence-validity gate (nine in-file disciplines: measurement artifacts, caliber pollution, device-profile mismatch) → attribution → one-target-per-iteration optimization → A/B cross-run statistical verification → benchmark-log sediment, on an environment-gated iteration loop (no loop runner ⇒ honest stop). Seeds per-project code-insight/code-optimizer skills and evolves them every campaign (stack corpus in reference.md). Triggers — 「性能分析」「性能证据」「性能定位」「性能假设」「性能监控」「性能优化」「性能验证」「性能深入」「性能问题」「卡顿」「很慢」「前端性能」「Electron 性能」「伪影排查」「口径校准」「设备画像」 / performance analysis, perf evidence, locate bottleneck, perf optimization, perf verification, measurement artifact check. Do NOT use for non-performance bugs (solve-workflow) or trivial single-line edits."
 dependencies:
   - clarifying-question-discipline
   - known-issue-research
@@ -16,7 +16,7 @@ dependencies:
 
 ## Scope
 
-This workflow owns the full performance optimization paradigm: **build a reproducible benchmark, gate every conclusion through evidence-validity checks, attribute the bottleneck along the full chain, optimize one target per iteration, verify by A/B cross-run statistics, and sediment results in a benchmark log** — the optimize↔verify cycle running on an environment-provided iteration loop (honest stop when absent).
+This workflow owns the full performance optimization paradigm: **build a reproducible benchmark, gate every conclusion through evidence-validity checks, attribute the bottleneck along the full chain, optimize one target per iteration, verify by A/B cross-run statistics, and sediment results in a benchmark log** — the optimize↔verify cycle running on an environment-provided iteration loop (honest stop when absent). Its per-project deliverables: the benchmark log + harness, and two **evolving project-level skills** (`code-insight` for attribution, `code-optimizer` for optimization) that carry the stack/project knowledge and improve with every campaign.
 
 It answers: who triggers what expensive operation, under which conditions, on which devices — and then eliminates it measurably. Shipping/rollout decisions belong to the project, not this workflow.
 
@@ -26,11 +26,11 @@ It answers: who triggers what expensive operation, under which conditions, on wh
 
 | Layer | Lives in | Changes when |
 |-------|----------|--------------|
-| Paradigm (this file) | `SKILL.md` | Rarely — behavioral contract, versioned deliberately |
-| Evidence-validity disciplines | In-file section below | Rarely — hard rules against measurement traps |
-| Stack knowledge + case archive | [reference.md](reference.md) (frontend chapter today; extensible per stack) | Often — framework versions and thresholds age; refresh via knowledge-only changes |
+| Paradigm + evidence disciplines (this file) | `SKILL.md` | Rarely — behavioral contract, versioned deliberately |
+| Project attribution/optimization skills | The project's agent-skill directory (`code-insight`, `code-optimizer`) | Every campaign — seeded from the corpus, evolved from campaign lessons |
+| Stack corpus (seed templates + evidence case archive) | [reference.md](reference.md) | Occasionally — stack chapters and cases refresh |
 
-The paradigm is durable; the knowledge layer is perishable by design. Keep perishable content out of this file.
+The paradigm is durable; the **project skills compound with every campaign** (that is where stack and project knowledge lives); the corpus is only the seed and needs occasional refresh. Keep perishable content out of this file.
 
 ## Trigger Recognition
 
@@ -132,6 +132,13 @@ Clear the in-file disciplines **1 (throttling artifacts), 2 (monitor self-pollut
 
 Find the anomalies in the data (who spent how much time/resources, when), trace the full trigger chain, and narrow to 1-2 core segments — with every load-bearing number already evidence-gated.
 
+### Project attribution skill (`code-insight`)
+
+The stack/project-specific attribution pipeline lives as a **project-level skill**, created and continuously improved by this workflow — the paradigm file stays generic.
+
+- **Probe at stage entry**: look for the project's `code-insight` skill (in the project's conventional agent-skill directory). Found → run its pipeline for this stage's localization work, and note any gap it fails to cover (that gap is this campaign's improvement candidate). Not found (first campaign) → **seed it**: attribution-pipeline skeleton from the matching stack chapter in [reference.md](reference.md) Part 1/3, plus this run's project discoveries (tool paths, workload specifics, known pitfalls). Manual mode confirms the seed location; auto mode uses the project's convention.
+- The seeded skill is a standing project asset: later sessions and other agents on the project can invoke it directly, independent of this workflow.
+
 ### Analysis approach
 
 1. **Full-chain topology**: segment the path from user action to problem end (code execution, system calls, network/storage), no gaps, no overlap; each segment independently timeable.
@@ -208,6 +215,10 @@ Monitoring-point list (file:line or function, purpose, toggle name) + the user a
 ### Goal
 
 Implement the change that eliminates/mitigates the confirmed bottleneck — **one root-cause target per iteration**, sized by impact.
+
+### Project optimization skill (`code-optimizer`)
+
+Same lifecycle as `code-insight`: probe the project's `code-optimizer` skill at stage entry; found → follow its optimization pipeline for this target and note gaps; not found → **seed it** from the matching stack chapter in [reference.md](reference.md) (Part 2 frontend / Part 3 slots) plus this run's discoveries. It accumulates this project's validated optimization patterns and rejected attempts, so every campaign starts smarter.
 
 ### Principles
 
@@ -286,6 +297,14 @@ On stop: summarize rounds accepted/rejected, total measured gain vs baseline, re
 ### Context discipline (long loops die of context bloat)
 
 Each round persists its outcome to the benchmark log and carries forward only: the round summary, the baseline-snapshot pointer, and the stop-condition counters. Raw profiles and intermediate data stay in the archive files — they are retrieved on demand, never carried in full across rounds.
+
+### Skill evolution (at every stop; or every ~5 rounds in long loops)
+
+Skills are code too — the project's `code-insight` / `code-optimizer` are themselves artifacts of the paradigm, improved by use. At each stop condition:
+
+- Fold this campaign's **validated lessons** into the two skills: attribution patterns that worked, optimizations that failed (with the rejection data), stack/project-specific pitfalls discovered.
+- The benchmark log's invalidation rows and negative results are the primary feed — they encode exactly what the skills got wrong or missed.
+- Update the skills in place; the next campaign starts smarter. This is where the paradigm compounds **across** campaigns, not just within one.
 
 ## Output detail level (adaptive)
 
