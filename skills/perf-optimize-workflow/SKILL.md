@@ -2,7 +2,7 @@
 name: perf-optimize-workflow
 version: "1.0.0"
 user-invocable: true
-description: "Performance optimization paradigm workflow, proven across stacks: benchmark harness → evidence-validity gate (nine in-file disciplines: measurement artifacts, caliber pollution, device-profile mismatch) → attribution → one-target-per-iteration optimization → A/B cross-run statistical verification → benchmark-log sediment, on an environment-gated iteration loop (no loop runner ⇒ honest stop). Seeds per-project code-insight/code-optimizer skills and evolves them every campaign (stack corpus in reference.md). Triggers — 「性能分析」「性能证据」「性能定位」「性能假设」「性能监控」「性能优化」「性能验证」「性能深入」「性能问题」「卡顿」「很慢」「前端性能」「Electron 性能」「伪影排查」「口径校准」「设备画像」 / performance analysis, perf evidence, locate bottleneck, perf optimization, perf verification, measurement artifact check. Do NOT use for non-performance bugs (solve-workflow) or trivial single-line edits."
+description: "Performance optimization paradigm workflow, proven across stacks: benchmark harness → evidence-validity gate (ten in-file disciplines: measurement artifacts, caliber pollution, device/profile mismatch, comparison environment state) → attribution → one-target-per-iteration optimization → A/B cross-run statistical verification → benchmark-log sediment, on an environment-gated iteration loop (no loop runner ⇒ honest stop). Seeds per-project code-insight/code-optimizer skills with probe scripts and evolves them every campaign (stack corpus in reference.md). Triggers — 「性能分析」「性能证据」「性能定位」「性能假设」「性能监控」「性能优化」「性能验证」「性能深入」「性能问题」「卡顿」「很慢」「前端性能」「Electron 性能」「伪影排查」「口径校准」「设备画像」 / performance analysis, perf evidence, locate bottleneck, perf optimization, perf verification, measurement artifact check. Do NOT use for non-performance bugs (solve-workflow) or trivial single-line edits."
 dependencies:
   - clarifying-question-discipline
   - known-issue-research
@@ -76,7 +76,7 @@ Common jumps:
 
 ## Evidence Validity Disciplines
 
-> Hard gate: a performance conclusion may drive an optimization decision only after passing these checks. The traps fall into three classes — **measurement artifacts** (the environment or tool distorts the number), **caliber pollution** (the number is real but measures something else), and **device-profile mismatch** (true, but only on machines nobody complains about). Full anonymized case archive with real numbers: [reference.md](reference.md) Part 4.
+> Hard gate: a performance conclusion may drive an optimization decision only after passing these checks. The traps fall into four classes — **measurement artifacts** (the environment or tool distorts the number), **caliber pollution** (the number is real but measures something else), **device-profile mismatch** (true, but only on machines nobody complains about), and **comparison environment-state invalidity** (the A/B verdict itself was produced in a polluted environment). Full anonymized case archive with real numbers: [reference.md](reference.md) Part 4.
 
 | # | Discipline | One-line rule |
 |---|-----------|---------------|
@@ -89,6 +89,7 @@ Common jumps:
 | 7 | Single-sample extrapolation ban | Developer-machine data is not a user profile; negative-ROI conclusions need user-profile evidence (aggregated telemetry / support feedback / field data) — one account cannot extrapolate |
 | 8 | Ultimate control experiment | When profilers show `(program)`/`(idle)` dominant (no JS hotspot), clone the live DOM into a pure static copy (same styles, zero product logic) and run the same load under the same throttle: copy ≈ original ⇒ bulk is DOM-scale physical cost (optimize base rendering cost), difference = product-code margin = code-level ceiling; ablation rider: "mechanism exists ≠ mechanism works" |
 | 9 | Negative results leave traces | Mark contaminated benchmark-log rows with invalidation warnings (what/why/correct caliber); exclusion records keep later readers from re-walking dead ends or citing bad numbers |
+| 10 | Comparison environment-state validity | Interleaved A/B assumes both arms see the same environment — after code switching, hot-reload state (mixed old/new modules, duplicated singletons) systematically pollutes one arm; optimizations touching module structure require an environment restart (or hard refresh) between arms before the judge's verdict counts |
 
 **Gate rule**: for any metric, if the discipline covering its trap class is unresolved, the metric is **not decision-grade** — it may appear as trend-only context but must not drive optimization choices, priorities, or pass/fail verdicts.
 
@@ -110,6 +111,7 @@ Turn a vague "it's laggy" into a **reproducible, standardized, logged workload**
 
 - **Standardized workloads, planned from a scenario inventory**: first build or read the project's **user-scenario inventory** (the full set of real usage scenarios and their coverage state — file it next to the harness, e.g. `SCENARIOS.md`), then plan scripted loads to close its gaps (open × scale, input × chars, scroll × rounds, switch, session-long editing, IME, paste, …). Each load is driven through **real input paths** (discipline 5) and verifiable by content delta.
 - **Long-session degradation is its own problem class**: short sessions expose single-operation cost; continuous editing / note-switching / history growth expose accumulated degradation (memory creep, latency-trend rise, undo-history bloat). Cover it with dedicated loads (session / switch / history class) and analyze by **trend slope and inflection point**, not single-run numbers.
+- **Probe-script pattern**: every recurring attribution question is sedimented as a reusable probe script under the harness (naming convention `probe-*` — profiler sampling, phase-split timing, counter audits, throttle-matrix drivers, …). Pipeline steps in the project's `code-insight` invoke probes instead of ad-hoc scripting; the first campaign seeds the initial probe set, later campaigns extend it.
 - **Automated capture**: metric collection wired once, reused every run — not manual copy-paste. Console/log parsing and structured JSON archives preferred.
 - **Baseline first**: record the pre-optimization baseline before any change; every later claim is a comparison against it.
 - **Benchmark log**: an append-only file (e.g. `BENCHMARK.md`) at repo root recording every run: date, commit, workload, scale, key metrics, note. This log is the campaign's memory — verdicts, retractions, and invalidations all land here (Stage 6).
@@ -137,7 +139,7 @@ Find the anomalies in the data (who spent how much time/resources, when), trace 
 
 The stack/project-specific attribution pipeline lives as a **project-level skill**, created and continuously improved by this workflow — the paradigm file stays generic.
 
-- **Probe at stage entry**: look for the project's `code-insight` skill (in the project's conventional agent-skill directory). Found → run its pipeline for this stage's localization work, and note any gap it fails to cover (that gap is this campaign's improvement candidate). Not found (first campaign) → **seed it as a step-by-step pipeline**: attribution-pipeline template from [reference.md](reference.md) Part 5 (JS stack today), adapted with this run's project discoveries (tool paths, workload specifics, known pitfalls); Parts 1-2 serve as knowledge attachments per pipeline step. Manual mode confirms the seed location; auto mode uses the project's convention.
+- **Probe at stage entry**: look for the project's `code-insight` skill (in the project's conventional agent-skill directory). Found → run its pipeline for this stage's localization work, and note any gap it fails to cover (that gap is this campaign's improvement candidate). Not found (first campaign) → **seed it as a step-by-step pipeline**: attribution-pipeline template from [reference.md](reference.md) Part 5 (JS stack today), adapted with this run's project discoveries (tool paths, workload specifics, known pitfalls, initial `probe-*` scripts under the harness); Parts 1-2 serve as knowledge attachments per pipeline step; run the specialist-perspective pass over the seeded content before landing. Manual mode confirms the seed location; auto mode uses the project's convention.
 - The seeded skill is a standing project asset: later sessions and other agents on the project can invoke it directly, independent of this workflow.
 
 ### Analysis approach
@@ -285,7 +287,7 @@ This gate is a runtime strong dependency on the environment (not a frontmatter d
 1. **Profile** — re-acquire hotspots fresh this round; last round's list is stale input.
 2. **Pick exactly one target** — top hotspot by user impact × time-share; queue the rest.
 3. **Optimize that target** — per the Optimize stage (root-cause-mapped, revertible).
-4. **A/B judge** — interleaved cross-runs vs the previous snapshot; accept only if `avg_B − avg_A > max(stdev_B, stdev_A)` (rule owned by Stage 6); rejected → revert this round.
+4. **A/B judge** — interleaved cross-runs vs the previous snapshot; accept only if `avg_B − avg_A > max(stdev_B, stdev_A)` (rule owned by Stage 6); before judging, honor discipline 10 (restart/hard-refresh the environment between arms when module structure changed); rejected → revert this round.
 5. **Correctness gate** — full test suite / output-equivalence before commit; never commit red.
 6. **Commit + snapshot + log** — one commit per round; snapshot the accepted build as next round's baseline (keyed by commit hash); append the round to the benchmark log, accepted or rejected, with reason.
 

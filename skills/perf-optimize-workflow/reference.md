@@ -705,7 +705,7 @@ When a stack's chapter grows large enough to churn independently, promote it to 
 
 ## Part 4 — Evidence-discipline case archive
 
-Full battle-tested cases behind the nine Evidence Validity Disciplines in [SKILL.md](SKILL.md). All cases come from one anonymized source campaign: a large web rich-text editor (React 16 codebase, driven through a browser debugging protocol) taken through a complete optimize-and-attribute loop (benchmark construction → 4 optimizations → four-path user-jank attribution → two special assessments). Numbers are real; project identifiers are stripped.
+Full battle-tested cases behind the ten Evidence Validity Disciplines in [SKILL.md](SKILL.md) (cases for disciplines 1-9 below; discipline 10's case is the hot-reload pollution recorded in the source campaign's harness pitfall log). All cases come from one anonymized source campaign: a large web rich-text editor (React 16 codebase, driven through a browser debugging protocol) taken through a complete optimize-and-attribute loop (benchmark construction → 4 optimizations → four-path user-jank attribution → two special assessments). Numbers are real; project identifiers are stripped.
 
 > Extension placeholder: cases from other stacks (native, server, compile-time) should be appended per discipline as they are validated in practice — the disciplines are platform-agnostic; the cases need not be.
 
@@ -813,7 +813,7 @@ Step-by-step pipeline skeletons used to seed the project-level `code-insight` / 
 
 ### code-insight seed pipeline (JS/web stack)
 
-1. **Harness baseline** — run the benchmark harness on the target workload scale; read open/interaction metrics with the evidence disciplines applied (production caliber, real input paths, content-delta asserts).
+1. **Harness baseline** — run the benchmark harness on the target workload scale; read open/interaction metrics with the evidence disciplines applied (production caliber, real input paths, content-delta asserts). **Reading priority (JS-stack attachment)**: open cost vs document scale (super-linear growth flags a scaling problem); render-penetration threshold applies to the **interaction phase only** (first-screen ~100% is normal — every node must render once); long-task tiering — >50ms investigate, >100ms severe bottleneck.
 2. **Trace attribution** — record a performance trace over the load; split time into Scripting / Rendering four-bucket (framework commit / style insertion / layout / paint) / GC; read flame-graph wide bars first; flag forced-reflow write→read patterns.
 3. **Framework rendering analysis** — framework-native counters and profilers (render counts, commit frequency, bailout behavior); apply the counter-audit discipline before trusting any self-built statistic; check the three measurable invariants (per-commit rendered ≈ changed nodes; per-keystroke rendered = O(1); commits per operation ≤ small constant).
 4. **Domain-specific dimensions** — the product class's invisible-to-framework costs (editor: selection/grapheme, decorations, collaboration transforms, undo history, serialization phases, large paste; app-specific equivalents enumerated at seed time).
