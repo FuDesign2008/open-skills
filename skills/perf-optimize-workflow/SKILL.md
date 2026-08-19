@@ -108,7 +108,8 @@ Turn a vague "it's laggy" into a **reproducible, standardized, logged workload**
 
 ### Benchmark harness contract (when building one)
 
-- **Standardized workloads**: scripted loads per user scenario (open × scale, input × chars, scroll × rounds, switch, session-long editing, IME, paste, …) — each load driven through **real input paths** (discipline 5) and verifiable by content delta.
+- **Standardized workloads, planned from a scenario inventory**: first build or read the project's **user-scenario inventory** (the full set of real usage scenarios and their coverage state — file it next to the harness, e.g. `SCENARIOS.md`), then plan scripted loads to close its gaps (open × scale, input × chars, scroll × rounds, switch, session-long editing, IME, paste, …). Each load is driven through **real input paths** (discipline 5) and verifiable by content delta.
+- **Long-session degradation is its own problem class**: short sessions expose single-operation cost; continuous editing / note-switching / history growth expose accumulated degradation (memory creep, latency-trend rise, undo-history bloat). Cover it with dedicated loads (session / switch / history class) and analyze by **trend slope and inflection point**, not single-run numbers.
 - **Automated capture**: metric collection wired once, reused every run — not manual copy-paste. Console/log parsing and structured JSON archives preferred.
 - **Baseline first**: record the pre-optimization baseline before any change; every later claim is a comparison against it.
 - **Benchmark log**: an append-only file (e.g. `BENCHMARK.md`) at repo root recording every run: date, commit, workload, scale, key metrics, note. This log is the campaign's memory — verdicts, retractions, and invalidations all land here (Stage 6).
@@ -136,7 +137,7 @@ Find the anomalies in the data (who spent how much time/resources, when), trace 
 
 The stack/project-specific attribution pipeline lives as a **project-level skill**, created and continuously improved by this workflow — the paradigm file stays generic.
 
-- **Probe at stage entry**: look for the project's `code-insight` skill (in the project's conventional agent-skill directory). Found → run its pipeline for this stage's localization work, and note any gap it fails to cover (that gap is this campaign's improvement candidate). Not found (first campaign) → **seed it**: attribution-pipeline skeleton from the matching stack chapter in [reference.md](reference.md) Part 1/3, plus this run's project discoveries (tool paths, workload specifics, known pitfalls). Manual mode confirms the seed location; auto mode uses the project's convention.
+- **Probe at stage entry**: look for the project's `code-insight` skill (in the project's conventional agent-skill directory). Found → run its pipeline for this stage's localization work, and note any gap it fails to cover (that gap is this campaign's improvement candidate). Not found (first campaign) → **seed it as a step-by-step pipeline**: attribution-pipeline template from [reference.md](reference.md) Part 5 (JS stack today), adapted with this run's project discoveries (tool paths, workload specifics, known pitfalls); Parts 1-2 serve as knowledge attachments per pipeline step. Manual mode confirms the seed location; auto mode uses the project's convention.
 - The seeded skill is a standing project asset: later sessions and other agents on the project can invoke it directly, independent of this workflow.
 
 ### Analysis approach
@@ -218,11 +219,12 @@ Implement the change that eliminates/mitigates the confirmed bottleneck — **on
 
 ### Project optimization skill (`code-optimizer`)
 
-Same lifecycle as `code-insight`: probe the project's `code-optimizer` skill at stage entry; found → follow its optimization pipeline for this target and note gaps; not found → **seed it** from the matching stack chapter in [reference.md](reference.md) (Part 2 frontend / Part 3 slots) plus this run's discoveries. It accumulates this project's validated optimization patterns and rejected attempts, so every campaign starts smarter.
+Same lifecycle as `code-insight`: probe the project's `code-optimizer` skill at stage entry; found → follow its optimization pipeline for this target and note gaps; not found → **seed it as a step-by-step pipeline** from the Part 5 template (JS stack) plus this run's discoveries. The seed MUST include a **deep-attribution step that delegates to the project's `code-insight`** (the two are cooperating pipelines, not isolated tools). It accumulates this project's validated optimization patterns and rejected attempts, so every campaign starts smarter.
 
 ### Principles
 
 - **Fix the root cause, not the symptom**: the change maps to the Stage 3 pattern (narrow the scope, batch, throttle, cache, move off-thread…), not a generic "make it faster".
+- **Technology-selection decisions escalate to the user**: introducing a new dependency, replacing a data structure, or changing an allocation/memory strategy → present the candidate options with trade-offs (performance / portability / maintenance) and let the user pick — the agent does not decide unilaterally.
 - **One target per iteration**: every commit optimizes exactly one thing, keeps the change reviewable and revertible, and makes Stage 6's benefit attribution unambiguous. Multiple good ideas queue as separate iterations.
 - **Layer priority** (high → low): business logic → application code → framework/dependency → system/hardware; prefer upper layers and "low change cost, high payoff" moves.
 - **Time-share priority**: optimize the highest-share segments first; a <10% segment improved 100x barely moves the total (Amdahl).
@@ -247,6 +249,7 @@ Change list (file, location, summary) + suggested verification scenario/metrics 
 - Keep the previous commit's build as Baseline (snapshot keyed by commit hash).
 - Alternate runs **B₁ A₁ B₂ A₂ B₃ A₃** (Baseline, New, interleaved) so system-load noise hits both sides roughly equally.
 - Accept an improvement **only if `avg_B − avg_A > max(stdev_B, stdev_A)`**. Single runs and minimum-of-N are not verdicts (min-of-N chases idle moments; single runs chase noise).
+- Intentional divergence from the source paradigm (recorded): the source accepts "certainly correct" micro-optimizations even within noise; this workflow keeps the hard statistical gate for agent execution — agents systematically overestimate "certainly correct". Restoring the exception would require static equivalence proof plus user confirmation.
 - Why it works: alternating runs experience the same machine states, so the difference is far more stable than absolute numbers — no machine lockdown, core pinning, or service-killing required.
 
 ### Verification checklist
@@ -304,6 +307,7 @@ Skills are code too — the project's `code-insight` / `code-optimizer` are them
 
 - Fold this campaign's **validated lessons** into the two skills: attribution patterns that worked, optimizations that failed (with the rejection data), stack/project-specific pitfalls discovered.
 - The benchmark log's invalidation rows and negative results are the primary feed — they encode exactly what the skills got wrong or missed.
+- **Review the update from the stack's specialist perspectives** (e.g. language semantics / runtime & framework / hardware & platform) before landing: lessons gathered mid-campaign can contradict each other or the skill's existing content — correct the inconsistencies, then write.
 - Update the skills in place; the next campaign starts smarter. This is where the paradigm compounds **across** campaigns, not just within one.
 
 ## Output detail level (adaptive)

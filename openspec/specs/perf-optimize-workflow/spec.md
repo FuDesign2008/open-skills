@@ -14,7 +14,12 @@ The skill MUST define the stages benchmark & evidence → locate the bottleneck 
 
 ### Requirement: Benchmark harness contract
 
-When no reproducible benchmark exists, the workflow MUST treat building one as part of Stage 1: standardized scripted workloads driven through real input paths (verifiable by content delta), automated capture, a pre-optimization baseline, an append-only benchmark log at the repo, and a reusable A/B judge.
+When no reproducible benchmark exists, the workflow MUST treat building one as part of the benchmark-evidence stage: it MUST first build or read a **scenario inventory** (the full set of real user scenarios and their coverage state) and plan workloads from it; standardized scripted workloads driven through real input paths (verifiable by content delta), including long-session degradation loads (continuous editing / switching / history growth) treated as their own problem class — analyzed by trend slope and inflection, not single-run numbers; automated capture; a pre-optimization baseline; an append-only benchmark log at the repo; and a reusable A/B judge.
+
+#### Scenario: Scenario inventory before workloads
+
+- **WHEN** planning harness workloads
+- **THEN** the workflow builds or reads the scenario inventory first and selects workloads to close its coverage gaps
 
 #### Scenario: Baseline before optimization
 
@@ -96,20 +101,29 @@ The Optimize and A/B-verify stages MUST execute as a repeating iteration loop **
 
 ### Requirement: The workflow SHALL seed and evolve project-level code-insight and code-optimizer skills
 
-The Locate stage MUST probe for a project-level attribution skill (`code-insight`) and the Optimize stage for a project-level optimization skill (`code-optimizer`), both living in the target project's conventional agent-skill directory (detected by convention; manual mode confirms the location before writing). On first campaign with a skill absent, the workflow MUST seed it from the matching stack chapter of the `reference.md` corpus plus this run's project discoveries (tool paths, workload specifics, known pitfalls). On later campaigns it MUST run the existing skill's pipeline and record gaps as improvement candidates. At every iteration-loop stop condition (and at least every ~5 rounds in long loops), the workflow MUST fold validated campaign lessons — attribution patterns that worked, rejected optimizations with their data, stack/project pitfalls, benchmark-log invalidation rows — back into the two skills in place.
+The Locate stage MUST probe for a project-level attribution skill (`code-insight`) and the Optimize stage for a project-level optimization skill (`code-optimizer`), both living in the target project's conventional agent-skill directory (detected by convention; manual mode confirms the location before writing). On first campaign with a skill absent, the workflow MUST seed it as a **step-by-step pipeline** from the seed templates in `reference.md` Part 5 plus this run's project discoveries — the seed MUST NOT be a reference-document shape; the `code-optimizer` seed MUST include a deep-attribution step that delegates to the project's `code-insight`. On later campaigns it MUST run the existing skill's pipeline and record gaps as improvement candidates. At every iteration-loop stop condition (and at least every ~5 rounds in long loops), the workflow MUST fold validated campaign lessons — attribution patterns that worked, rejected optimizations with their data, stack/project pitfalls, benchmark-log invalidation rows — back into the two skills in place, and the update MUST be reviewed from the stack's specialist perspectives (e.g. language / runtime / hardware) before landing, correcting inconsistencies the lessons reveal.
 
-#### Scenario: First campaign seeds the skills
+#### Scenario: First campaign seeds pipeline-shaped skills
 
 - **WHEN** the workflow enters the Locate stage in a project with no `code-insight` skill
-- **THEN** it seeds the skill from the matching stack chapter plus this run's project discoveries, confirming the location in manual mode
+- **THEN** it seeds a step-by-step attribution pipeline from the Part 5 template plus this run's project discoveries, confirming the location in manual mode
 
-#### Scenario: Campaign lessons evolve the skills
+#### Scenario: Optimizer delegates deep attribution to insight
+
+- **WHEN** a code-optimizer pipeline reaches its deep-attribution step
+- **THEN** it delegates to the same project's `code-insight` pipeline rather than re-implementing attribution
+
+#### Scenario: Campaign lessons evolve the skills with specialist review
 
 - **WHEN** the iteration loop hits a stop condition
-- **THEN** this campaign's validated attribution patterns, rejected optimizations (with data), and stack pitfalls are folded into `code-insight` / `code-optimizer` in place, so the next campaign starts smarter
+- **THEN** this campaign's validated lessons are folded into the project skills, and the updated skill content is reviewed from the stack's specialist perspectives before landing
 
-#### Scenario: Seeded skill works standalone
+### Requirement: Technology-selection decisions SHALL escalate to the user
 
-- **WHEN** a later session on the same project faces an attribution task without this workflow running
-- **THEN** the project's `code-insight` skill is invocable on its own as a standing project asset
+During the Optimize stage, decisions that introduce a new dependency, replace a data structure, or change an allocation/memory strategy MUST be escalated to the user as option lists with trade-offs (performance, portability, maintenance), rather than decided unilaterally by the agent.
+
+#### Scenario: Container replacement escalates
+
+- **WHEN** an optimization proposes replacing a core data structure with a different library/container family
+- **THEN** the workflow presents the candidate options with trade-offs and lets the user pick before implementing
 

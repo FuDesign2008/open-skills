@@ -2,7 +2,7 @@
 
 Stack-specific knowledge for `perf-optimize-workflow`. The paradigm in [SKILL.md](SKILL.md) is durable; **this file is the perishable layer** — framework versions, thresholds, and tool tables age. Refresh entries via knowledge-only changes (PATCH version bumps) without touching the paradigm file.
 
-> **Reading guide**: this file is the **stack corpus** — seed material for the project-level `code-insight` / `code-optimizer` skills that `perf-optimize-workflow` creates and evolves in each target project. Part 1 is the frontend quick-reference (seeds a JS-stack project's `code-insight`); Part 2 is the frontend optimization detail (seeds its `code-optimizer`); Part 3 reserves seed slots for other stacks (C++ / server / toolchain); Part 4 is the evidence-discipline case archive (paradigm-level, stays here). Before project skills mature, Parts 1-2 also serve as working knowledge directly; once seeded, the project skills own the living knowledge and this corpus only refreshes occasionally.
+> **Reading guide**: this file is the **stack corpus** — seed material for the project-level `code-insight` / `code-optimizer` skills that `perf-optimize-workflow` creates and evolves in each target project. **Part 5 holds the seed pipeline templates** (step-by-step attribution/optimization pipelines — seeds are pipelines, not reference documents); Part 1 is the frontend quick-reference and Part 2 the frontend optimization detail (knowledge attachments per pipeline step); Part 3 reserves seed slots for other stacks; Part 4 is the evidence-discipline case archive (paradigm-level, stays here). Before project skills mature, Parts 1-2 also serve as working knowledge directly; once seeded, the project skills own the living knowledge and this corpus only refreshes occasionally.
 
 ## Part 1 — Frontend quick reference (by workflow stage)
 
@@ -804,3 +804,47 @@ Full battle-tested cases behind the nine Evidence Validity Disciplines in [SKILL
 | Input authenticity assert | Content-length delta == intended change, after every load |
 | Static-copy control experiment | `cloneNode(true)` into a style-identical overlay, same load, same throttle |
 | Invalidation warning row | Benchmark log row: what/why/correct caliber |
+
+---
+
+## Part 5 — Seed pipeline templates
+
+Step-by-step pipeline skeletons used to seed the project-level `code-insight` / `code-optimizer` skills (see SKILL.md Stage 2 / Stage 5). **Seeds are pipelines, not reference documents** — the source paradigm's core claim is fixing methodology as a reproducible sequence of steps, not prompt luck. The JS-stack pipelines below are generalized from the web-editor campaign's project skill; adapt tool names, harness entry points, and domain dimensions to the project at seed time. Parts 1-2 attach as knowledge per step. C++ slot: pending validation by a native campaign — seed from discovery then.
+
+### code-insight seed pipeline (JS/web stack)
+
+1. **Harness baseline** — run the benchmark harness on the target workload scale; read open/interaction metrics with the evidence disciplines applied (production caliber, real input paths, content-delta asserts).
+2. **Trace attribution** — record a performance trace over the load; split time into Scripting / Rendering four-bucket (framework commit / style insertion / layout / paint) / GC; read flame-graph wide bars first; flag forced-reflow write→read patterns.
+3. **Framework rendering analysis** — framework-native counters and profilers (render counts, commit frequency, bailout behavior); apply the counter-audit discipline before trusting any self-built statistic; check the three measurable invariants (per-commit rendered ≈ changed nodes; per-keystroke rendered = O(1); commits per operation ≤ small constant).
+4. **Domain-specific dimensions** — the product class's invisible-to-framework costs (editor: selection/grapheme, decorations, collaboration transforms, undo history, serialization phases, large paste; app-specific equivalents enumerated at seed time).
+5. **Long-session degradation** — session/switch/history-class loads; trend slope and inflection analysis (memory creep, latency-trend rise, history bloat), not single-run numbers.
+6. **Ultimate control experiment** — when profilers show no JS hotspot: static-DOM-copy control run under the same throttle to split product-code margin from DOM-scale physical cost; ablation rider for dormant mechanisms.
+7. **Memory & GC** — three-snapshot heap comparison (before/after/again), detached-DOM counts and retained-size deltas; allocation sampling for GC pressure (minor GC is invisible in performance-panel markers).
+8. **Loading & bundling** — phase-split open timing (deserialize / first paint / full render / TTI), bundle composition, first-screen blockers.
+
+**Output template** (per bottleneck, ranked by impact):
+
+```
+【Bottleneck #N】<one-line conclusion>
+- Symptom: <quantified metric + source (harness/trace); interaction or first-screen phase>
+- Location: <file:line / component / function>
+- Evidence: <penetration / time-share / per-op counts / trace refs>
+- Impact surface: <open/input/scroll/collab/memory>
+- Suggested direction: <entry hypothesis for code-optimizer>
+- Confidence: <high/med/low + basis>
+```
+
+### code-optimizer seed pipeline (JS/web stack)
+
+- **Step 0 — Understand context**: read the bottleneck report entry hypothesis; confirm the one target of this round.
+- **Step 1 — Stack best-practice audit**: language/framework-level checks against the Part 2 knowledge attachments (re-render memoization, batching, OnPush/signals, list virtualization, code splitting).
+- **Step 2 — Allocation reduction**: object churn on hot paths, pooled/reused structures, lazy allocation of optional members.
+- **Step 3 — Data-structure review**: container choice vs access pattern (lookup/iteration/mutation profile); replace mismatched containers (escalate per the technology-selection rule).
+- **Step 4 — Dataflow & caching**: redundant recomputation, memoization seams, batched reads/writes, moved-off-thread candidates (workers/utility processes).
+- **Step 5 — Cache-friendly access** (hot loops): contiguous layout, field compaction, per-cache-line density.
+- **Step 6 — Deep attribution delegation**: for micro-level or hardware-adjacent questions, **invoke the project's `code-insight`** — the two skills are cooperating pipelines; do not re-implement attribution here.
+- **Step 7 — Correctness verification**: full test suite; output-equivalence where applicable; then the workflow's A/B judge decides accept/revert.
+
+### C++ / native seed slot
+
+Pending: pipeline shape validated by a native campaign (profiler-driven hotspot location → micro-architecture analysis → data-layout optimization → correctness gates). Seed from that campaign's discoveries; the article's five-step insight pipeline (optimization remarks → pipeline simulation → static analysis → struct layout → cross-check) is the reference shape.
