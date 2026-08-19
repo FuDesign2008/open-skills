@@ -1,6 +1,6 @@
-# Performance Optimization Reference — Knowledge Layer
+# Performance Optimization Reference — Stack Corpus & Seed Templates
 
-Stack-specific knowledge for `perf-optimize-workflow`. The paradigm in [SKILL.md](SKILL.md) is durable; **this file is the perishable layer** — framework versions, thresholds, and tool tables age. Refresh entries via knowledge-only changes (PATCH version bumps) without touching the paradigm file.
+The seed corpus for `perf-optimize-workflow`: stack knowledge used until a project's `code-insight` / `code-optimizer` skills are seeded and mature, the seed pipeline templates those skills start from, and the paradigm-level evidence case archive. The paradigm in [SKILL.md](SKILL.md) is durable; **this corpus ages** — framework versions, thresholds, and tool tables need occasional refresh via knowledge-only changes (PATCH version bumps) without touching the paradigm file.
 
 > **Reading guide**: this file is the **stack corpus** — seed material for the project-level `code-insight` / `code-optimizer` skills that `perf-optimize-workflow` creates and evolves in each target project. **Part 5 holds the seed pipeline templates** (step-by-step attribution/optimization pipelines — seeds are pipelines, not reference documents); Part 1 is the frontend quick-reference and Part 2 the frontend optimization detail (knowledge attachments per pipeline step); Part 3 reserves seed slots for other stacks; Part 4 is the evidence-discipline case archive (paradigm-level, stays here). Before project skills mature, Parts 1-2 also serve as working knowledge directly; once seeded, the project skills own the living knowledge and this corpus only refreshes occasionally.
 
@@ -8,12 +8,12 @@ Stack-specific knowledge for `perf-optimize-workflow`. The paradigm in [SKILL.md
 
 | Workflow stage | Frontend-specific content here |
 | -------------- | ------------------------------ |
-| Stage 1: Benchmark & evidence | Quantitative baselines: RAIL / Web Vitals / Electron metric thresholds |
-| Stage 2: Locate the bottleneck | Frontend bottleneck pattern table; render-pipeline localization rules |
-| Stage 3: Hypothesize the root cause | Frontend-specific root causes (reflow / long tasks / IPC / leaks) |
-| Stage 4: Build toggleable monitoring | Applicable tools and instrumentation points |
-| Stage 5: Optimize | Optimization priority reference (P0 → P1 → P2); Part 2 detailed approaches |
-| Stage 6: A/B verify | Pass criteria (LCP/INP/CLS/startup time) |
+| Stage 1: Benchmark & Evidence | Quantitative baselines: RAIL / Web Vitals / Electron metric thresholds |
+| Stage 2: Locate the Bottleneck | Frontend bottleneck pattern table; render-pipeline localization rules |
+| Stage 3: Hypothesize the Root Cause | Frontend-specific root causes (reflow / long tasks / IPC / leaks) |
+| Stage 4: Build Toggleable Monitoring | Applicable tools and instrumentation points |
+| Stage 5: Optimize | Optimization priority reference (P0 → P1 → P2, end of Part 2); Part 2 detailed approaches |
+| Stage 6: A/B Verify | Pass criteria (LCP/INP/CLS/startup time) |
 
 ### Quantitative standards
 
@@ -679,9 +679,7 @@ const loadHeavyFeature = async () => {
 
 Integrate bundle-size analysis into the build; alert on abnormal growth.
 
-### Optimization priority quick reference
-
-Prioritize the largest time-share — optimizing a <10% step by 100x yields limited gain (Amdahl's law).
+### 2.9 Optimization priority quick reference (Stage 5)
 
 **P0 (high impact, low cost)**: split long tasks >50ms into <50ms chunks via `requestIdleCallback`; virtual scrolling for long lists (>100 items); animations on transform/opacity only, batch-read-then-batch-write the DOM; convert all Electron IPC to async (remove every `sendSync`); move large-data parsing/encryption to Web Worker.
 
@@ -691,21 +689,21 @@ Prioritize the largest time-share — optimizing a <10% step by 100x yields limi
 
 ---
 
-## Part 3 — Extension slots (other stacks)
+## Part 3 — Stack extension slots (knowledge attachments)
 
-The paradigm in SKILL.md is stack-agnostic; this part reserves chapters for other stacks' knowledge as campaigns validate them:
+The paradigm in SKILL.md is stack-agnostic. Validated stack knowledge lands in the **project's `code-insight` / `code-optimizer` skills as attachments to their pipeline steps** (the living layer); this part only holds candidate material for stacks not yet validated by a campaign, plus the pipeline seed slots in Part 5:
 
-- **Native / C++** (slot): container/data-structure selection, allocation strategy, cache-friendly layout (AoS→SoA, field compression), branch-prediction-friendly code, micro-architecture profiling pipelines
-- **Server / backend** (slot): USE/RED dashboards, N+1 patterns, connection pooling, backpressure
-- **Compile-time / toolchain** (slot): build profiling, incremental builds, allocator replacement
+- **Native / C++** (candidate attachment material): container/data-structure selection, allocation strategy, cache-friendly layout (AoS→SoA, field compression), branch-prediction-friendly code, micro-architecture profiling methods — activate when a native campaign validates them (seed pipeline shape: see Part 5's native slot)
+- **Server / backend** (candidate): USE/RED dashboards, N+1 patterns, connection pooling, backpressure
+- **Compile-time / toolchain** (candidate): build profiling, incremental builds, allocator replacement
 
-When a stack's chapter grows large enough to churn independently, promote it to a separate knowledge skill and keep only a pointer here — the chapter boundary is the extraction seam.
+A stack's corpus chapter never "graduates" into a separate knowledge skill — it graduates into the project skills it seeds.
 
 ---
 
 ## Part 4 — Evidence-discipline case archive
 
-Full battle-tested cases behind the ten Evidence Validity Disciplines in [SKILL.md](SKILL.md) (cases for disciplines 1-9 below; discipline 10's case is the hot-reload pollution recorded in the source campaign's harness pitfall log). All cases come from one anonymized source campaign: a large web rich-text editor (React 16 codebase, driven through a browser debugging protocol) taken through a complete optimize-and-attribute loop (benchmark construction → 4 optimizations → four-path user-jank attribution → two special assessments). Numbers are real; project identifiers are stripped.
+Full battle-tested cases behind the ten Evidence Validity Disciplines in [SKILL.md](SKILL.md) — one case per discipline below. All cases come from one anonymized source campaign: a large web rich-text editor (React 16 codebase, driven through a browser debugging protocol) taken through a complete optimize-and-attribute loop (benchmark construction → 4 optimizations → four-path user-jank attribution → two special assessments). Numbers are real; project identifiers are stripped.
 
 > Extension placeholder: cases from other stacks (native, server, compile-time) should be appended per discipline as they are validated in practice — the disciplines are platform-agnostic; the cases need not be.
 
@@ -792,6 +790,15 @@ Full battle-tested cases behind the ten Evidence Validity Disciplines in [SKILL.
 - Row 3: "13,420 renders per keystroke" — invalid, counter artifact; correct reading: 2 spike commits out of 19.
 - Each row lives in the benchmark log next to the data it invalidates, with reason and correct caliber, so later readers cannot cite the contaminated numbers by accident. The campaign's durable output includes what it excluded, not only what it found.
 
+### Discipline 10 — Comparison environment-state validity
+
+**Case (hot-reload pollution in an A/B campaign)**
+
+- Symptom: during a control experiment campaign with repeated code switching between variants, the page crashed in batches to the error boundary; measurements from the affected window were garbage.
+- Root cause: hot module replacement after repeated file swaps left the page in a mixed old/new-module state (duplicated singletons for the controller and store) — one A/B arm was measuring a chimera, not either variant.
+- Fix: restart the dev server (or hard-refresh the page) between arms whenever module structure changed; when batch crashes appear, suspect environment state first, code second.
+- Generalized rule: interleaved A/B assumes identical environments per arm; structural changes (module/singleton topology) invalidate that assumption until the environment is reset.
+
 ### Generic detection toolkit (platform-agnostic intents)
 
 | Intent | Typical realization |
@@ -847,4 +854,4 @@ Step-by-step pipeline skeletons used to seed the project-level `code-insight` / 
 
 ### C++ / native seed slot
 
-Pending: pipeline shape validated by a native campaign (profiler-driven hotspot location → micro-architecture analysis → data-layout optimization → correctness gates). Seed from that campaign's discoveries; the article's five-step insight pipeline (optimization remarks → pipeline simulation → static analysis → struct layout → cross-check) is the reference shape.
+Pending: pipeline shape validated by a native campaign (profiler-driven hotspot location → micro-architecture analysis → data-layout optimization → correctness gates). Seed from that campaign's discoveries; the source paradigm's five-step insight pipeline (optimization remarks → pipeline simulation → static analysis → struct layout → cross-check) is the reference shape.

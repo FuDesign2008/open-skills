@@ -43,7 +43,7 @@ Trigger words (each enters the workflow; with 「trigger + colon + space + descr
 - **「性能监控」** → Stage 4: Build Toggleable Monitoring
 - **「性能优化」** → Stage 5: Optimize
 - **「性能验证」** → Stage 6: A/B Verify
-- **「前端性能」/「前端性能优化」/「Electron 性能」** → Stage 1, with the frontend knowledge chapter in [reference.md](reference.md) as the working knowledge base
+- **「前端性能」/「前端性能优化」/「Electron 性能」** → Stage 1, with the frontend corpus in [reference.md](reference.md) as working knowledge until the project's `code-insight`/`code-optimizer` skills are seeded and mature
 - **「伪影排查」/「口径校准」/「设备画像」** → evidence-gate mode: audit the suspect metric against the disciplines below before it drives any decision
 
 Performance-related logs or a profile handed over for analysis also enter at Stage 1 or 2.
@@ -80,16 +80,16 @@ Common jumps:
 
 | # | Discipline | One-line rule |
 |---|-----------|---------------|
-| 1 | Environment-throttling artifacts | Frame/rAF-class metrics from a controlled browser (headless/occluded/backgrounded) are invalid until proven otherwise — background throttling clamps rAF toward ~800ms and cannot be lifted by focus emulation; detect via profiler sampling (idle-dominant ⇒ artifact); measure same-task instead (stimulus + forced sync layout read in one JS task) |
-| 2 | Monitor self-pollution | Instrumented builds can differ several-fold from production (monitor overhead + unminified code); dev caliber is for relative A/B trends only — optimization decisions use production caliber; on conflict with browser-native metrics, the browser wins |
+| 1 | Environment-throttling artifacts | Frame/scheduling-class metrics from a controlled runtime (headless / occluded / backgrounded) are invalid until proven otherwise — background throttling can clamp frame callbacks by orders of magnitude and focus emulation does not lift it; detect by sampling the executor during the suspect window (idle-dominant ⇒ artifact); measure same-task instead (stimulus and measurement in one scheduling unit, so the runtime cannot defer work in between) |
+| 2 | Monitor self-pollution | Instrumented builds can differ several-fold from production (monitor overhead + unoptimized code); dev caliber is for relative A/B trends only — optimization decisions use production caliber; on conflict with runtime-native metrics, the runtime wins |
 | 3 | Framework counter ambiguity | Audit any framework-internal statistic on a small scale before trusting it (cross-reconcile independent counts against a native metric); magnitude contradiction means the counter is the artifact — counters are trend signals, never conviction evidence |
 | 4 | Device-profile calibration | Conviction-grade conclusions need a CPU-throttle matrix (e.g. 1x/8x/20x) × path × scale; an unthrottled "innocent" verdict is invalid for low-end users — one workload can yield three verdicts across cells |
-| 5 | Input-event authenticity | Every synthetic input load must verify the content delta (document length delta == intended change); synthetic key/scroll events that bypass the real input pipeline are void regardless of driver-reported success |
-| 6 | Instrumentation toggle lifecycle | Toggles read at module-load time must be injected before page scripts load (debugging protocol's evaluate-on-new-document); spans ended by rAF inherit throttling (discipline 1) — phase conclusions use synchronous spans + long tasks |
+| 5 | Input-event authenticity | Every synthetic input load must verify the observable state delta (produced change == intended change); synthetic key/scroll events that bypass the product's real input pipeline are void regardless of driver-reported success |
+| 6 | Instrumentation toggle lifecycle | Toggles read at load time must be injected before product scripts load (via the debugging protocol's pre-load injection capability); measurement spans ended by a deferred callback inherit environment throttling (discipline 1) — phase conclusions use synchronous spans plus native long-work counters |
 | 7 | Single-sample extrapolation ban | Developer-machine data is not a user profile; negative-ROI conclusions need user-profile evidence (aggregated telemetry / support feedback / field data) — one account cannot extrapolate |
-| 8 | Ultimate control experiment | When profilers show `(program)`/`(idle)` dominant (no JS hotspot), clone the live DOM into a pure static copy (same styles, zero product logic) and run the same load under the same throttle: copy ≈ original ⇒ bulk is DOM-scale physical cost (optimize base rendering cost), difference = product-code margin = code-level ceiling; ablation rider: "mechanism exists ≠ mechanism works" |
+| 8 | Ultimate control experiment | When profilers show no code hotspot (runtime internals dominant), clone the live scene into a pure static copy (same environment, zero product logic) and run the same load under the same conditions: copy ≈ original ⇒ bulk is the physical cost of content scale × environment, and the optimization direction shifts to cutting that base cost; the difference is the product-code margin — the ceiling of code-level optimization; ablation rider: "mechanism exists ≠ mechanism works" |
 | 9 | Negative results leave traces | Mark contaminated benchmark-log rows with invalidation warnings (what/why/correct caliber); exclusion records keep later readers from re-walking dead ends or citing bad numbers |
-| 10 | Comparison environment-state validity | Interleaved A/B assumes both arms see the same environment — after code switching, hot-reload state (mixed old/new modules, duplicated singletons) systematically pollutes one arm; optimizations touching module structure require an environment restart (or hard refresh) between arms before the judge's verdict counts |
+| 10 | Comparison environment-state validity | Interleaved A/B assumes both arms see the same environment — after code switching, hot-reload state (mixed old/new modules, duplicated singletons, stale registrations) systematically pollutes one arm; changes touching structural units (modules/singleton topology) require an environment reset (restart / hard refresh) between arms before the judge's verdict counts |
 
 **Gate rule**: for any metric, if the discipline covering its trap class is unresolved, the metric is **not decision-grade** — it may appear as trend-only context but must not drive optimization choices, priorities, or pass/fail verdicts.
 
@@ -215,6 +215,8 @@ Monitoring-point list (file:line or function, purpose, toggle name) + the user a
 
 ## Stage 5: Optimize (性能优化)
 
+> This stage and Stage 6 execute as the iteration loop (see "Iteration loop"); the environment gate is probed at this stage's entry.
+
 ### Goal
 
 Implement the change that eliminates/mitigates the confirmed bottleneck — **one root-cause target per iteration**, sized by impact.
@@ -241,16 +243,23 @@ Change list (file, location, summary) + suggested verification scenario/metrics 
 
 ## Stage 6: A/B Verify (性能验证)
 
+> This stage normally runs inside the iteration loop (see "Iteration loop"); a single pass is only the explicit user-requested exception.
+
 ### Goal
 
 1. Render a yes/no verdict on the hypothesis.
 2. If Stage 5 changed code: prove the optimization worked **statistically**, at production caliber, without side effects — or revert.
 
+### Evidence gate
+
+Disciplines **2 (production-caliber acceptance)**, **4 (user-jank verdicts from throttle-matrix cells)**, **9 (rejections and invalidations logged)**, and **10 (environment reset between arms when structural units changed)** apply to every verdict this stage produces — including single-pass runs.
+
 ### A/B cross-run statistical judge
 
 - Keep the previous commit's build as Baseline (snapshot keyed by commit hash).
 - Alternate runs **B₁ A₁ B₂ A₂ B₃ A₃** (Baseline, New, interleaved) so system-load noise hits both sides roughly equally.
-- Accept an improvement **only if `avg_B − avg_A > max(stdev_B, stdev_A)`**. Single runs and minimum-of-N are not verdicts (min-of-N chases idle moments; single runs chase noise).
+- Accept an improvement **only if `avg_B − avg_A > max(stdev_B, stdev_A)`** (the acceptance rule; referenced elsewhere, stated only here). Single runs and minimum-of-N are not verdicts (min-of-N chases idle moments; single runs chase noise).
+- Before judging, honor discipline 10: structural changes ⇒ reset the environment between arms.
 - Intentional divergence from the source paradigm (recorded): the source accepts "certainly correct" micro-optimizations even within noise; this workflow keeps the hard statistical gate for agent execution — agents systematically overestimate "certainly correct". Restoring the exception would require static equivalence proof plus user confirmation.
 - Why it works: alternating runs experience the same machine states, so the difference is far more stable than absolute numbers — no machine lockdown, core pinning, or service-killing required.
 
@@ -265,7 +274,7 @@ Change list (file, location, summary) + suggested verification scenario/metrics 
 
 ### Stop condition
 
-Every hypothesis verified, targets met — or remaining bottlenecks' cost-effectiveness too low (change cost ≫ payoff). Then optionally fold key metrics into standing monitoring/CI gates.
+Every hypothesis verified, targets met — or remaining bottlenecks' cost-effectiveness too low (change cost ≫ payoff). This is the campaign-level stop; the loop section's stop conditions govern round-level termination. Then optionally fold key metrics into standing monitoring/CI gates.
 
 ---
 
@@ -287,7 +296,7 @@ This gate is a runtime strong dependency on the environment (not a frontmatter d
 1. **Profile** — re-acquire hotspots fresh this round; last round's list is stale input.
 2. **Pick exactly one target** — top hotspot by user impact × time-share; queue the rest.
 3. **Optimize that target** — per the Optimize stage (root-cause-mapped, revertible).
-4. **A/B judge** — interleaved cross-runs vs the previous snapshot; accept only if `avg_B − avg_A > max(stdev_B, stdev_A)` (rule owned by Stage 6); before judging, honor discipline 10 (restart/hard-refresh the environment between arms when module structure changed); rejected → revert this round.
+4. **A/B judge** — Stage 6's acceptance rule decides accept/revert; honor discipline 10 before judging (environment reset between arms when structural units changed); rejected → revert this round.
 5. **Correctness gate** — full test suite / output-equivalence before commit; never commit red.
 6. **Commit + snapshot + log** — one commit per round; snapshot the accepted build as next round's baseline (keyed by commit hash); append the round to the benchmark log, accepted or rejected, with reason.
 
