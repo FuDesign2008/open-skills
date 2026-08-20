@@ -155,7 +155,7 @@ Save to `.jira-fix/{JIRA-ID}/02-alignment.md`.
 
 ## Stage 3: Analysis Complete
 
-Methodology steps live in `analysis-core` (existence → phenomenon → locate → red-capable loop → root cause → upstream-eval → impact). Do **not** restate that skeleton here.
+Methodology steps live in `analysis-core` (existence → phenomenon → locate → red-capable loop → root cause → upstream-eval → impact). Do **not** restate that skeleton here. The stage output MUST close with the **analysis gate output block** (SoT: `analysis-core` §5 — red loop / debug entry / scenario supplements / temporary changes; missing block blocks Stage 4); do not restate the block's fields.
 
 **Host-only output** (save to `.jira-fix/{JIRA-ID}/02-analysis.md`):
 
@@ -175,6 +175,7 @@ Path: `.jira-fix/{JIRA-ID}/02-analysis.md`
 - Existence: ✅ / ❌ / ⚠️ …
 - Root cause (one paragraph): …
 - Impact: …
+- Close with the analysis gate output block (`analysis-core` §5): Red loop / Debug entry / Scenario supplements / Temporary changes
 
 ---
 Proceeding to Stage 4: Difficulty Grading

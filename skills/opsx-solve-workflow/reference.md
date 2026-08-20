@@ -18,6 +18,12 @@ Stage-2 analysis methodology lives in `analysis-core` (not repeated here).
 
 ---
 
+## Stage 2 Analyze the Problem
+
+Analysis methodology and output format live in `analysis-core` (§§1-3 + §5). The stage output MUST close with the **analysis gate output block** (SoT: `analysis-core` §5 — red loop / debug entry / scenario supplements / temporary changes; missing block blocks Stage 3). Do not restate the block's fields here.
+
+---
+
 ## Stage 7 Check & Verify
 
 ```text

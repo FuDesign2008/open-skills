@@ -1,6 +1,6 @@
 ---
 name: solve-workflow
-version: "1.22.0"
+version: "1.23.0"
 user-invocable: true
 description: "Eight-stage PDCA workflow for systematically solving bugs, refactors, and feature-development tasks: clarify → analyze → explore solutions → review → plan → execute → verify → retrospect. Manual mode (default) pauses for user confirmation at each stage exit; auto mode runs end-to-end. Triggers — 「明确问题」「分析问题」「探索方案」「审查方案」「制定计划」「执行计划」「检查验证」「复盘改进」(alias「回顾总结」)；「继续分析」「深入分析」「修改方案」「完善方案」「优化方案」「更新计划」「修订计划」「修改计划」；「自动模式」「自动分析」「自动解决」 / clarify problem, analyze problem, explore solutions, review solution, make plan, execute plan, verify, retrospective, auto mode."
 dependencies:
@@ -46,7 +46,7 @@ dependencies:
 **Strong dependencies** (frontmatter `dependencies`; the prerequisite skill check below must pass at startup, or the flow aborts):
 - `staged-review-flow` (stage 4 review orchestration; depends on `solution-review` and `code-design-review`)
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit` (debug skills delegated to via `analysis-core`; stage 2 + stage 7)
-- `analysis-core` (single source of truth for stage 2's methodology: temporary-change gate / instrumentation debug / analysis step skeleton / debug-verify loop)
+- `analysis-core` (single source of truth for stage 2's methodology: temporary-change gate / instrumentation debug with runtime-evidence-debug as default entry / analysis step skeleton / analysis gate output block / debug-verify loop)
 - `learn-and-improve` (stage 8 retrospective and knowledge sediment)
 - `workflow-mode-lifecycle` (manual/auto mode lifecycle), `clarifying-question-discipline` (hard clarifying-question discipline and investigation-first), `known-issue-research` (stage 2 research routing / known-issue quick search / industry-wide evaluation)
 - `test-suite-ensure` (stage 6 test completion: generate and run tests when test infrastructure exists; scaffold with user confirmation when it doesn't)
@@ -187,7 +187,7 @@ Load the strong dependency `analysis-core` and run its §§1–3. This workflow'
 - `{next-stage}` = stage 3 "Explore Solutions"
 - `{root-cause step}` = step 5 "Root cause"; `{impact-assessment step}` = step 7 "Impact"; `{upstream-eval step}` = step 6 "Upstream dependency fix evaluation"
 
-Output format per `analysis-core` and `known-issue-research/reference.md`; if any temporary change was made, attach the "temporary-change list + rollback verification".
+Output format per `analysis-core` and `known-issue-research/reference.md`; the output MUST close with the analysis gate output block (`analysis-core` §5) — missing block blocks stage 3. If any temporary change was made, its list + rollback verification rides in the block's temporary-changes line.
 
 ---
 
