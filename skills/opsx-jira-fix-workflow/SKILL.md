@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.17.0"
+version: "1.18.0"
 user-invocable: true
 description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」 / opsx jira fix, OpenSpec Jira fix workflow."
 dependencies:
@@ -245,6 +245,8 @@ If the path is still foggy, follow `decision-fog-discipline` before the solution
 - Recommended solution
 
 **YAGNI**: solutions must stay strictly focused on fixing the Jira root cause and covering the delta specs, stripping non-essential features and over-engineering. Any addition beyond the root-cause scope must be explicitly labeled "extra optimization" with a stated reason for taking on the risk.
+
+> **Architecture-boundary precheck** (decision order): when a candidate solution crosses process or layer boundaries, answer the precheck before short-term costs (change size / reuse / single-repo) are weighed — (1) runtime initialization location: which process/layer initializes the called capability; (2) boundary legality: would a cross-layer import pull the callee's dependency tree into the caller's bundle graph (bundler static pre-scanning defeats dynamic `require`/`import` as a workaround); (3) ownership classification: system vs data/product capability vs the calling layer's positioning. The boundary verdict surfaces with the comparison table and gates auto-mode selection. Methodology: `code-design-review` Layer B dependency-direction dimension. Single-layer solutions do not trigger this precheck.
 
 In manual mode, output the solution table and pause for the user's pick; auto mode picks the best solution automatically.
 

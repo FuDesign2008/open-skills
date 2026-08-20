@@ -1,6 +1,6 @@
 ---
 name: code-design-review
-version: "1.1.0"
+version: "1.2.0"
 user-invocable: true
 description: "Authoritative framework for reviewing the design quality of proposed code changes — before implementation. Evaluates code-level metrics (accidental complexity, coupling via Myers/Connascence, cohesion, change amplification, tech debt, cyclomatic/cognitive complexity, Law of Demeter) and architecture-level quality attributes (testability, modularity, reliability, scalability, dependency direction via ISO 25010 + Clean Architecture + SDP) plus a security pass (OWASP Top 10). Use this skill whenever a proposed solution involves code changes and you need to assess whether the code is well-designed — not just whether it works, but whether it is maintainable, testable, and does not introduce design debt. Triggers — 「代码审查」「代码设计审查」「代码设计质量」「审查代码设计」「代码架构审查」「设计质量评估」「代码质量评审」「这个代码设计合理吗」「耦合度审查」「代码可维护性」 / code design review, code architecture review, design quality assessment, coupling analysis, maintainability review."
 ---
@@ -57,13 +57,13 @@ These are the metrics that apply to any code change, regardless of scale. Each t
 
 ### Layer B — Architecture-level quality attributes
 
-These evaluate the solution's impact on system-level quality attributes. Run full Layer B when the solution adds modules, changes dependency direction, crosses module boundaries, or alters public contracts. **Quick path** (small, isolated change with no new boundaries and no dependency-direction impact) may do a fast Layer B skim — state that limitation in the report. Do not skip Layer B because implementation looks easy.
+These evaluate the solution's impact on system-level quality attributes. Run full Layer B when the solution adds modules, changes dependency direction, crosses module boundaries, crosses process or layer boundaries, or alters public contracts. **Quick path** (small, isolated change with no new boundaries and no dependency-direction impact) may do a fast Layer B skim — state that limitation in the report. Do not skip Layer B because implementation looks easy.
 
 8. **Testability** (Clean Architecture — Uncle Bob) — Can business logic be tested without the UI, database, web server, or external services? If the solution makes logic un-testable in isolation, that is an architecture violation. Hard-to-test signals: hidden dependencies, static method calls, singletons, law-of-Demeter violations.
 9. **Modularity** (ISO/IEC 25010 — Maintainability → Modularity) — Does one change minimize impact on other components?
 10. **Reliability / resilience** (ISO/IEC 25010 — Reliability → Fault tolerance, Recoverability) — Does the solution consider failure scenarios (degradation, retry, circuit breaking)?
 11. **Scalability** (ISO/IEC 25010 — Performance efficiency → Capacity) — Can the solution handle expected data volume / concurrency growth, or does it embed a bottleneck?
-12. **Dependency direction** (Stable Dependencies Principle + Clean Architecture Dependency Rule) — Do dependencies point toward stability (stable modules depended-on by unstable ones), or does a stable module depend on an unstable one (inverted, fragile)?
+12. **Dependency direction** (Stable Dependencies Principle + Clean Architecture Dependency Rule) — Do dependencies point toward stability (stable modules depended-on by unstable ones), or does a stable module depend on an unstable one (inverted, fragile)? **Architecture-boundary verification** (for solutions crossing process or layer boundaries): (a) *runtime initialization location* — which process/layer actually initializes the called capability (FFI handles, databases, caches, service singletons); (b) *boundary legality* — can the caller legally reach it, or would a cross-layer static or dynamic import pull the callee's dependency tree (with its circular dependencies) into the caller's bundle graph? Bundler static pre-scanning means dynamic `require`/`import` does **not** bypass this; (c) *ownership classification* — is the capability a system capability (belongs in the shell/host layer) or a data/product capability (belongs in the service/product layer), and does that match the calling layer's positioning?
 
 ### Layer C — Security pass (when the solution touches a trust boundary)
 
@@ -88,6 +88,7 @@ These evaluate the solution's impact on system-level quality attributes. Run ful
 - A single business change requires cascading edits to 3+ modules with no direct business relationship (Shotgun Surgery), with no convergence strategy.
 - Dependency direction inverted — a stable module depends on an unstable one (violates SDP).
 - **(Layer B, full path)** Business logic cannot be tested in isolation from external dependencies (violates Clean Architecture testability), with no compensating measure.
+- **(Layer B, boundary-crossing solutions)** The called capability has no runtime in the caller's process/layer, or a cross-layer import pulls an unrelated dependency tree into the caller — blocking unless explicitly accepted as Prudent-Deliberate debt with a repayment plan. Short-term cost advantages (reuse of an existing implementation, single-repo change, no cross-team coordination) do not downgrade this verdict.
 - **(Security)** An OWASP Top 10 category is violated at the design level (e.g., design allows injection, broken access control).
 - A **clearly superior** modular / dependency / boundary design is identified, is **feasible within the current change scope**, and **materially improves long-term maintainability** — and the team has not explicitly accepted Prudent-Deliberate debt with a repayment plan. Do **not** pass solely because the weaker design is correct and near-term maintainable.
 

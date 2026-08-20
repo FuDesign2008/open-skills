@@ -1,6 +1,6 @@
 ---
 name: solve-workflow
-version: "1.23.0"
+version: "1.24.0"
 user-invocable: true
 description: "Eight-stage PDCA workflow for systematically solving bugs, refactors, and feature-development tasks: clarify → analyze → explore solutions → review → plan → execute → verify → retrospect. Manual mode (default) pauses for user confirmation at each stage exit; auto mode runs end-to-end. Triggers — 「明确问题」「分析问题」「探索方案」「审查方案」「制定计划」「执行计划」「检查验证」「复盘改进」(alias「回顾总结」)；「继续分析」「深入分析」「修改方案」「完善方案」「优化方案」「更新计划」「修订计划」「修改计划」；「自动模式」「自动分析」「自动解决」 / clarify problem, analyze problem, explore solutions, review solution, make plan, execute plan, verify, retrospective, auto mode."
 dependencies:
@@ -194,6 +194,8 @@ Output format per `analysis-core` and `known-issue-research/reference.md`; the o
 ## Stage 3: Explore Solutions
 
 > Principle: based on stage 2's analysis, offer 2–5 solutions; strip non-essential features and over-engineering (YAGNI). If the path is still foggy, follow `decision-fog-discipline` before the solution table.
+
+> **Architecture-boundary precheck** (decision order): when a candidate solution crosses process or layer boundaries, answer the precheck before short-term costs (change size / reuse / single-repo) are weighed — (1) runtime initialization location: which process/layer initializes the called capability; (2) boundary legality: would a cross-layer import pull the callee's dependency tree into the caller's bundle graph (bundler static pre-scanning defeats dynamic `require`/`import` as a workaround); (3) ownership classification: system vs data/product capability vs the calling layer's positioning. The boundary verdict surfaces with the comparison table and gates auto-mode selection. Methodology: `code-design-review` Layer B dependency-direction dimension. Single-layer solutions do not trigger this precheck.
 
 ### [🤖 Auto mode] Solution selection
 
