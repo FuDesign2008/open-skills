@@ -1,8 +1,8 @@
 ---
 name: runtime-evidence-debug
-version: "1.0.0"
+version: "1.1.0"
 user-invocable: true
-description: "Methodology for escalating from static code analysis to runtime evidence gathering when static analysis hits a wall. Covers the lifecycle: escalation decision, instrumentation design (structured logging, NOT shotgun console.log), reproduction (MRE/MCVE), evidence analysis, confidence gating, escape hatch (git bisect, web research), and fix verification (before/after comparison). Use when root-cause confidence is low or fuzzy after static analysis, when you need logging or instrumentation to observe runtime behavior, when reproducing a bug requires runtime data, when a previous fix did not work, or when verifying a fix needs before/after evidence. Triggers — 「打点调试」「打日志调试」「运行时调试」「运行时验证」「复现验证」「日志分析根因」「根因置信度不足」「静态分析受限」「升级运行时调试」「证据驱动调试」「静态分析碰壁」「需要打点」 / runtime evidence debugging, instrumentation debugging, add logging to debug, reproduce and verify, runtime verification, confidence gating, escalate to runtime, evidence-driven debugging."
+description: "Default entry of the debug skill family when runtime observation is needed: static analysis stalled, a fix did not work, logs look correct but behavior is wrong, or fix verification needs before/after evidence. Covers escalation decision, targeted instrumentation (not shotgun logging), MRE reproduction, evidence tiers, confidence gating, escape hatches, and fix verification; composes with browser-debug-toolkit / hybrid-debug / channel enablers without demoting them. Triggers — 「打点调试」「打日志调试」「运行时调试」「运行时验证」「复现验证」「日志分析根因」「根因置信度不足」「静态分析碰壁」「修了还是不行」「日志正常但行为不对」「偶现」「调试默认入口」 / runtime evidence debugging, instrumentation debugging, escalate to runtime, evidence-driven debugging, fix didn't work, intermittent bug."
 ---
 
 # Runtime Evidence-Driven Debugging

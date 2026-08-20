@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.16.0"
+version: "1.17.0"
 user-invocable: true
 description: "Eight-stage PDCA problem-solving workflow that persists analysis, proposal, design review, plan, execution, and verification into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context. Use for feature work, bug fixes, refactors, and complex engineering tasks that need long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick one-off edit with no traceability need — use solve-workflow instead. Triggers：「opsx解决」「OpenSpec解决」「规范化解决」「创建OpenSpec变更」「创建opsx变更」「用OpenSpec分析」「用OpenSpec修复」「opsx自动解决」「OpenSpec自动解决」「opsx-solve」「opsx-solve-workflow」 / opsx solve, OpenSpec solve workflow, create an OpenSpec change."
 dependencies:
@@ -62,7 +62,7 @@ Not a replacement for plain `solve-workflow`:
 **Strong-dependency skills** (frontmatter `dependencies`; must pass the "Prerequisite skill check" at startup — abort if any is missing):
 - `staged-review-flow` (stage 4 review orchestration; depends on `solution-review` and `code-design-review`)
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit` (delegated via `analysis-core`; stage 2 + stage 7)
-- `analysis-core` (single source for stage-2 analysis methodology: temporary-change gate / instrumentation debug / analysis step skeleton / debug-verify loop)
+- `analysis-core` (single source for stage-2 analysis methodology: temporary-change gate / instrumentation debug with runtime-evidence-debug as default entry / analysis step skeleton / analysis gate output block / debug-verify loop)
 - `node-version-discipline` (stage 7 Node version alignment)
 - `learn-and-improve` (stage 8 retrospective and knowledge sediment)
 - `workflow-mode-lifecycle` (auto/manual mode lifecycle)
@@ -179,6 +179,8 @@ Load the strong dependency `analysis-core` and execute its §§1-3. This workflo
 - `{root-cause step}` = step 5; `{impact-assessment step}` = step 7; `{upstream-eval step}` = step 6
 
 🔌 **OPSX**: this stage creates **no artifact**; Why / Impact are written into `proposal.md` once stage 3 selects a solution.
+
+The stage output MUST close with the analysis gate output block (`analysis-core` §5 — red loop / debug entry / scenario supplements / temporary changes); a missing block blocks entry to Stage 3.
 
 If the existence check fails or the description mismatches the code, pause for user confirmation and do not proceed to solution exploration.
 

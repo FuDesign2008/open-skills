@@ -2,7 +2,7 @@
 
 Output templates for each stage of the `opsx-jira-fix-workflow` skill, for the AI to follow when formatting output.
 
-Stage-2 analysis methodology lives in `analysis-core`; difficulty/path/design landing spot are still owned by SKILL.md orchestration.
+Stage-2 analysis methodology lives in `analysis-core`; difficulty/path/design landing spot are still owned by SKILL.md orchestration. The stage-2 output MUST close with the **analysis gate output block** (SoT: `analysis-core` §5 — red loop / debug entry / scenario supplements / temporary changes; missing block blocks Stage 3); do not restate the block's fields.
 
 ---
 

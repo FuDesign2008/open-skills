@@ -22,6 +22,8 @@ Please confirm whether my understanding is correct.
 
 Analysis methodology lives in `analysis-core` (temporary-change gate / analysis steps / instrumentation debug). The "industry-wide issue evaluation report" and "upstream dependency fix evaluation" templates are in `known-issue-research/reference.md` — not duplicated here.
 
+The stage output MUST close with the **analysis gate output block** (SoT: `analysis-core` §5 — red loop / debug entry / scenario supplements / temporary changes; missing block blocks stage 3). Do not restate the block's fields here.
+
 ---
 
 ## Prerequisite Skill Check — Missing Notice
@@ -38,7 +40,7 @@ When a skill declared in frontmatter `dependencies` is missing, print the follow
 solve-workflow strongly depends on the following skills via frontmatter dependencies (missing = abort):
 - `staged-review-flow`: stage 4 review orchestration (full `solution-review` + conditional `code-design-review`)
 - `solution-review` / `code-design-review`: review frameworks invoked by the orchestration skill
-- `analysis-core`: single source of truth for stage 2's methodology (temporary-change gate / instrumentation debug / analysis step skeleton / debug-verify loop)
+- `analysis-core`: single source of truth for stage 2's methodology (temporary-change gate / instrumentation debug with runtime-evidence-debug as default entry / analysis step skeleton / analysis gate output block / debug-verify loop)
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit`: debug skills delegated to via `analysis-core` (stage 2 + stage 7)
 - `learn-and-improve`: stage 8 retrospective and knowledge sediment
 - `workflow-mode-lifecycle`: core manual/auto mode lifecycle rules
