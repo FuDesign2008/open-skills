@@ -50,9 +50,9 @@ When unsure, default to **🟢 internal-first** (these workflows exist to change
 | ⚠️ Related discussion, root cause partly clear | Feed findings into the `{root-cause step}` as reference |
 | ❌ Nothing found | Skip silently; continue to the `{root-cause step}` |
 
-### 2.1 Performance-pattern variant (for perf-workflow)
+### 2.1 Performance-pattern variant (for perf-optimize-workflow)
 
-When the referring workflow is performance analysis (`perf-workflow`), treat §2 as a **known performance-pattern quick search** with these extra triggers (any one, before entering that workflow's hypothesis stage):
+When the referring workflow is performance analysis (`perf-optimize-workflow`), treat §2 as a **known performance-pattern quick search** with these extra triggers (any one, before entering that workflow's hypothesis stage):
 
 - Anomaly located but **cannot be classified** into the workflow's known performance-pattern table
 - Suspected **framework/library performance bug or limit** (named framework + version)
@@ -65,7 +65,7 @@ When the referring workflow is performance analysis (`perf-workflow`), treat §2
 | ⚠️ Related discussion, inconclusive | Feed into hypothesis directions |
 | ❌ Nothing found | Skip silently; continue the workflow's next stage |
 
-`perf-workflow` keeps its pattern table and stage orchestration; this subsection only owns the search methodology.
+`perf-optimize-workflow` keeps its pattern table and stage orchestration; this subsection only owns the search methodology.
 
 ## 3. Industry-wide issue evaluation
 

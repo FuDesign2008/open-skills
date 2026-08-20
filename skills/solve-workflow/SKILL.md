@@ -60,7 +60,7 @@ dependencies:
 - `node-version-discipline` (Node-version alignment before running tests in stage 7)
 - `figma-pixel-implement` / `figma-pixel-verify` (Figma export-faithful implement + measured verify; required installed; invoke only when Figma UI work is in scope)
 
-**Related skills** (informational, not a strong dependency): `perf-workflow` (dedicated performance analysis), `jira-fix-workflow` (end-to-end Jira fix flow that embeds this workflow)
+**Related skills** (informational, not a strong dependency): `perf-optimize-workflow` (dedicated performance optimization paradigm), `jira-fix-workflow` (end-to-end Jira fix flow that embeds this workflow)
 
 ## Prerequisite Skill Check
 
@@ -135,6 +135,8 @@ On the lean path, stage 3 (explore solutions) may output just 1 solution + a ris
 > ⚠️ Edit/Write are forbidden in this stage. Only output your understanding of the problem — do not modify any file.
 
 > Principle: clarify the problem before technical analysis; this stage only aligns on the problem, it does not touch implementation logic.
+
+> **Domain routing**: if the problem is performance-domain (slow / jank / resource growth), suggest entering `perf-optimize-workflow` — its evidence-gated paradigm fits the domain; its analysis output can flow back into this workflow for fix execution. Note: its campaigns create per-project artifacts (benchmark log + harness, and seeded `code-insight`/`code-optimizer` skills); the optimize-verify loop additionally requires an environment loop runner — analysis stages always run. Informational reference, not a dependency.
 
 > **[🤖 Auto]** Skip this stage and go straight to stage 2, treating the user's input as an already-confirmed problem description.
 >

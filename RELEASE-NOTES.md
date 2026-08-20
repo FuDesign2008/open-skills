@@ -1,5 +1,18 @@
 # Release Notes
 
+## [2.0.0] - 2026-08-14
+
+### ⚠️ BREAKING CHANGES
+
+**`perf-workflow` 与 `frontend-perf` 已删除**，替换为基于双栈实战（native C++ 工具链 + 大型 Web 富文本编辑器）验证的性能优化范式，收敛为**单一 skill**：
+
+- **新增 `perf-optimize-workflow`**（编排入口）：基准建设 → 证据门禁（**九条证据有效性纪律为文内节**：环境节流伪影 / 监控自污染 / 框架计数口径 / 设备画像节流矩阵 / 输入真实性 / 开关生命周期 / 单样本外推禁令 / 终极对照实验 / 负结果留痕）→ 归因 → 单目标迭代优化 → A/B 交叉统计验证 → 基准留痕；迭代循环挂载环境 loop runner（缺失则诚实终止优化执行，不降级单轮）；继承原 `perf-workflow` 全部「性能*」触发词、原 `frontend-perf` 前端触发词、证据纪律触发词（伪影排查/口径校准/设备画像）；前端知识层与纪律案例档案在 `reference.md`（按栈成章，留其他栈扩展位）
+- **通用主机薄路由**：solve-workflow / opsx-solve-workflow / jira-fix-workflow 的问题澄清与 intake 阶段各含一行信息性路由——性能域问题导向 `perf-optimize-workflow`（非强依赖）
+
+**迁移指引**：按名引用 `perf-workflow` / `frontend-perf` 的地方改用 `perf-optimize-workflow`（流程与触发词）或其 `reference.md`（前端知识与证据案例）；`npx skills update` 后旧 skill 自动移除。
+
+---
+
 ## [1.16.0] - 2026-07-22
 
 ### Changed

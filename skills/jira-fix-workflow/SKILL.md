@@ -124,6 +124,8 @@ Output: [reference.md](reference.md) § Stage 0. On success, proceed directly to
 
 Call `jira-read {JIRA-ID} --live` (degrade to cache → degrade further to manual/abort). Save `01-jira-info.md`. Extract: ID, title, priority, status, description, repro steps, expected/actual result, attachments, comments. Output: reference.md § Stage 1. Tools: ✅ mcp / jira-read; ❌ Edit/Write/Bash. Proceed directly to stage 2.
 
+> **Performance-domain issue** (slow / jank / resource growth): run the analysis, optimization, and verification work under `perf-optimize-workflow`'s evidence-gated paradigm (benchmark baseline → evidence gate → one-target iteration → A/B verdict) and fold its conclusions back into this workflow's stages; the Jira orchestration (branch, MR, writeback) stays here. Note: its campaigns create per-project artifacts in the repo (benchmark log + harness, and seeded `code-insight`/`code-optimizer` skills) — commit them alongside the fix; the optimize-verify loop additionally requires an environment loop runner (analysis stages always run). Informational reference, not a dependency.
+
 ---
 
 ## Stage 2: Understanding Alignment

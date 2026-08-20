@@ -75,7 +75,7 @@ After install/enable, verify the MCP is loaded:
 | Login wall / captcha interrupts the debug flow | `handOffTaskSpace` → user acts → `takeOverTaskSpace` (**unique**) | — | — | Atomic human-AI handoff mid-debug; agent and user share one browser without fighting for control |
 | Selector-fragile UI (Canvas / virtualized list / frequently re-skinned page) | `snapshotText()` @N refs + visual mode (screenshot + coordinates) | — (non-macOS: playwright-mcp a11y snapshot) | — | a11y-tree refs survive CSS/markup churn; re-snapshot after mutation |
 | Login state + full CDP domains needed together (e.g. network waterfall behind login) | `cdp('Network.*')` in logged-in task space | attach to an existing logged-in Chrome | `/eval` reads only; no full domains | Raw CDP passthrough with inherited login state |
-| Render performance (jank/frame drops) | `cdp('Performance.*')` raw trace | **Performance panel (purpose-built — preferred for perf)** | — | Flame chart, Long Tasks, render stats; pair with `frontend-perf` |
+| Render performance (jank/frame drops) | `cdp('Performance.*')` raw trace | **Performance panel (purpose-built — preferred for perf)** | — | Flame chart, Long Tasks, render stats; pair with `perf-optimize-workflow` |
 | Visual regression (style overwritten) | `captureScreenshot()` before/after diff | — | `/screenshot` before/after diff | Screenshot diff; pair with `visual-qa` skill |
 | Async loading / network issues | `cdp('Network.*')` + `drainEvents()` | Network panel | — | Request/response, waterfall, status codes |
 | State management anomaly (React/Vue) | `js()` inspect store / component state | React/Vue DevTools (user-operated extensions) | — | Component tree, props/state, time travel |

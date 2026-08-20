@@ -27,7 +27,7 @@
 
 | 类型 | `user-invocable` | 典型例子 |
 |------|------------------|----------|
-| **编排入口** | `true` | `solve-workflow`、`opsx-solve-workflow`、`jira-fix-workflow`、`perf-workflow`、`write-workflow`、`brainstorm-workflow` |
+| **编排入口** | `true` | `solve-workflow`、`opsx-solve-workflow`、`jira-fix-workflow`、`perf-optimize-workflow`、`write-workflow`、`brainstorm-workflow` |
 | **共享纪律 / 方法论** | 默认 `false`，经 frontmatter `dependencies` 加载 | `*-discipline`、`analysis-core`、`staged-review-flow`、`design-approval-gate`、`feature-branch-closeout` |
 | **可独立触发的横切动作** | 显式 `true`（例外） | `merge-discipline`、`delivery-discipline`、`test-suite-ensure`、`solution-review`、`learn-and-improve`、`pr-code-review` |
 
@@ -81,12 +81,11 @@ open-skills/
 |-------|------|------|
 | solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、node-version-discipline、staged-review-flow、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、delivery-discipline、feature-branch-closeout、decision-fog-discipline、git-worktree-discipline、figma-pixel-implement、figma-pixel-verify、runtime-verification-discipline |
 | opsx-solve-workflow | 工作流 | solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、learn-and-improve、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、analysis-core、test-suite-ensure、merge-discipline、staged-review-flow、opsx-workspace-gate、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、delivery-discipline、feature-branch-closeout、decision-fog-discipline、git-worktree-discipline、figma-pixel-implement、figma-pixel-verify、runtime-verification-discipline |
-| perf-workflow | 工作流 | clarifying-question-discipline、known-issue-research |
+| perf-optimize-workflow | 工作流 | clarifying-question-discipline、known-issue-research（证据纪律为文内节；迭代循环为运行时环境强依赖） |
 | write-workflow | 工作流 | clarifying-question-discipline、tech-review-doc、workflow-mode-lifecycle、humanizer（外置）、humanizer-zh（外置） |
 | brainstorm-workflow | 工作流 | brainstorming（外置）、solve-workflow |
 | goal-driven-workflow | 工作流 | clarifying-question-discipline、completion-evidence-discipline、design-approval-gate |
 | tech-review-doc | 内容创作 | clarifying-question-discipline |
-| frontend-perf | 知识库 | perf-workflow |
 | android-webview-debug | 工具 | 无 |
 | figma-pixel-implement | 工具 | 无（被 solve / opsx-solve / jira-fix / opsx-jira-fix 强依赖） |
 | figma-pixel-verify | 工具 | 无（被 solve / opsx-solve / jira-fix / opsx-jira-fix 强依赖） |
