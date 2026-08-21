@@ -1,6 +1,6 @@
 ---
 name: jira-fix-workflow
-version: "3.26.0"
+version: "3.27.0"
 user-invocable: true
 description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」 / fix this bug, jira-fix, auto fix, force fix, resume fix. Do NOT use for batch fixes across multiple issues — use jira-fix-batch instead."
 dependencies:
@@ -171,6 +171,8 @@ Write the grade to `04-grade.md` and state `grade`; declare the path. Template: 
 ## Stage 5: Explore & Review Solutions
 
 If the path is still foggy, follow `decision-fog-discipline` before the solution table. Offer 2-3 solutions (YAGNI). 🤖 auto-select (priority: thorough > best-practice > code quality > smallest change) → review. 👤 ask once if preference is missing, then present the comparison table.
+
+> **Architecture-boundary precheck** (decision order): when a candidate solution crosses process or layer boundaries, answer the precheck before short-term costs (change size / reuse / single-repo) are weighed — (1) runtime initialization location: which process/layer initializes the called capability; (2) boundary legality: would a cross-layer import pull the callee's dependency tree into the caller's bundle graph (bundler static pre-scanning defeats dynamic `require`/`import` as a workaround); (3) ownership classification: system vs data/product capability vs the calling layer's positioning. The boundary verdict surfaces with the comparison table and gates auto-mode selection. Methodology: `code-design-review` Layer B dependency-direction dimension. Single-layer solutions do not trigger this precheck.
 
 Output: list → expanded detail → **one** comparison table (see reference.md § Stage 5 Solution Comparison) → `03-options.md`. 👤 stop after the comparison table.
 
