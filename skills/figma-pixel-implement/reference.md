@@ -21,6 +21,7 @@ Write as Markdown (session note or artifact). One row per measurable property.
 - Record **raw numbers** from the design (px, rem only if the project converts consistently — note the conversion).
 - Colors: hex/rgba **or** token name + resolved value if known.
 - Omit properties you cannot observe later (verify will mark residual).
+- Multi-theme scope adds a `mode` column (or one row per mode) for theme-varying properties; resolve per-mode values from the design itself (variable `valuesByMode` when exposed, otherwise re-fetch with the file/frame mode switched or via the per-theme frame); shared values stay single-row.
 
 ## Asset whitelist / blacklist
 
@@ -30,6 +31,7 @@ Write as Markdown (session note or artifact). One row per measurable property.
 - `<img>` / Next `Image` / equivalent framework image components
 - Inline SVG **only** when fills/strokes match the design without a CSS recolor hack
 - Icon font / design-system icon components when they already map via Code Connect
+- Per-theme exports when multi-theme scope is explicit: export each theme's assets from its mode or per-theme frame (design-provided), not one export plus a recolor
 
 ### Avoid for Figma-colored glyphs (blacklist)
 
@@ -51,5 +53,5 @@ Write as Markdown (session note or artifact). One row per measurable property.
 
 - [ ] Spec table present and covers critical geometry, type, color
 - [ ] Assets use whitelist patterns; no mask-recolor for design-colored glyphs
-- [ ] Theme matches requested frame/variant
+- [ ] Theme matches requested frame/variant; multi-theme scope: theme inventory recorded, per-mode spec values and per-theme assets covered (or pending items noted)
 - [ ] User informed that `figma-pixel-verify` owns alignment verdict
