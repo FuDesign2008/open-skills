@@ -11,6 +11,7 @@ File name: `.goal-queue/<slug>.md` (slug = kebab-case goal summary; date prefix 
 
 - Status: pending
 - Priority: P1
+- Estimate: <coarse duration band, e.g. "<30min" / "~1h" / ">2h">
 - Created: YYYY-MM-DD HH:MM
 - Approved: <who/how the human confirmed condition + budget, e.g. "chat confirm 2026-08-26" / commit sha>
 
@@ -26,6 +27,8 @@ File name: `.goal-queue/<slug>.md` (slug = kebab-case goal summary; date prefix 
 
 The budget clause mirrors the engine's own mandatory-budget rule — a card without one fails the consumption-entry check.
 
+The estimate is advisory only: caps and the per-card budget stay authoritative, and estimate drift never invalidates an approval. Derive it from the card's budget ceiling plus visible scope (files/dirs touched, constraint complexity); prefer coarse bands over false precision.
+
 ## Progress Document
 
 Path: `.goal-queue/runs/<batch-id>/progress.md` (`batch-id` = run start timestamp `YYYYMMDD-HHMM`). Create at batch start; update on every status change.
@@ -34,6 +37,7 @@ Path: `.goal-queue/runs/<batch-id>/progress.md` (`batch-id` = run start timestam
 |-------|---------|
 | Task | card slug |
 | Mode | auto / default (as propagated to the child) |
+| Estimate | coarse planned duration from the card |
 | Status | pending / in progress / done / failed / skipped (covered) / waiting dependency / conflict pending confirmation |
 | Result summary | one line: what happened, or why parked/failed |
 | Branch | task branch tip |
@@ -44,7 +48,7 @@ Path: `.goal-queue/runs/<batch-id>/progress.md` (`batch-id` = run start timestam
 
 ```markdown
 ## Queue Run <batch-id>
-- Duration: <start → end>; caps hit: <none | max-tasks | time>
+- Duration: <start → end> (planned ≈ <sum of card estimates>); caps hit: <none | max-tasks | time>
 - Done: N   Failed: M   Skipped: K   Parked: P   Left pending: R
 - Branches awaiting review:
   - <branch> — <task slug> — <result tier> — report: <path>

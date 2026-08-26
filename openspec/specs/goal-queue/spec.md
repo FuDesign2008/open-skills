@@ -8,12 +8,12 @@ Persistent goal-backlog queue lifecycle owned by the user-invocable `goal-queue-
 
 ### Requirement: 持久 backlog 载体
 
-The system SHALL maintain the queue as a persistent project-local directory (default `.goal-queue/`) holding one markdown task card per goal, where each card records: measurable goal condition, mandatory turn/time budget clause, constraints, priority, status, and acceptance summary fields. Cards MUST be git-trackable so backlog state survives sessions and reviewable in diffs.
+The system SHALL maintain the queue as a persistent project-local directory (default `.goal-queue/`) holding one markdown task card per goal, where each card records: measurable goal condition, mandatory turn/time budget clause, constraints, priority, a coarse advisory duration estimate, status, and acceptance summary fields. Cards MUST be git-trackable so backlog state survives sessions and reviewable in diffs.
 
 #### Scenario: 需求入库
 
 - **WHEN** 用户在空闲时段提交一个需求并要求入队（如「goal 队列加个任务：修复登录超时 bug」）
-- **THEN** 系统将其加工为含可验证目标条件与预算子句的任务卡片写入 `.goal-queue/`，状态标记为待审批项，人确认条件与预算后入库完成
+- **THEN** 系统将其加工为含可验证目标条件、预算子句与粗粒度耗时预估（仅供参考，偏差不作废预审批）的任务卡片写入 `.goal-queue/`，状态标记为待审批项，人确认条件与预算后入库完成
 
 #### Scenario: 队列跨会话存续
 
@@ -82,7 +82,7 @@ The system SHALL propagate batch-level mode explicitly into every child long-run
 
 ### Requirement: 队列级预算与停止规则
 
-The system SHALL enforce queue-level caps independent of per-task budgets: a maximum number of tasks per run and/or an overall time cap supplied at trigger time or from the queue config, stopping cleanly when reached with remaining tasks left pending. The system treats stopping as a feature: hitting caps, emptying the queue, or repeated no-progress outcomes all end the run gracefully and hand back to the human.
+The system SHALL enforce queue-level caps independent of per-task budgets: a maximum number of tasks per run and/or an overall time cap supplied at trigger time or from the queue config, stopping cleanly when reached with remaining tasks left pending. When a run starts, the system SHOULD report upfront how the summed card estimates compare to the resolved caps (advisory only — stopping remains cap-driven). The system treats stopping as a feature: hitting caps, emptying the queue, or repeated no-progress outcomes all end the run gracefully and hand back to the human.
 
 #### Scenario: 总预算触顶优雅收尾
 

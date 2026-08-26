@@ -44,15 +44,15 @@ Card format and all output templates live in [reference.md](reference.md).
 
 This stage exists because approval is cheapest while the human is present. The card freezes exactly what will run and what it may cost — that frozen text is what makes unattended launches safe later, standing in for the launch approval the engine would otherwise demand from a person who is no longer there (`design-approval-gate` named-escape pattern; record the intake confirmation as the 留痕, e.g. in the card's approval line plus the git commit).
 
-1. Shape the submitted requirement into a task card ([reference.md](reference.md) § Task Card): measurable goal condition with a mandatory budget clause, constraints, priority, status `pending`.
+1. Shape the submitted requirement into a task card ([reference.md](reference.md) § Task Card): measurable goal condition with a mandatory budget clause, constraints, priority, status `pending`, plus a coarse duration estimate (advisory; derivation in [reference.md](reference.md)).
 2. Confirm condition + budget with the human **once, now**; record approval in the card. Do not start a run unless they asked for one in the same breath.
 3. Suggest committing the card so backlog changes stay reviewable.
 
-Loading without a queue request: give a one-glance overview (pending/in-progress counts, next actionable card) and wait.
+Loading without a queue request: give a one-glance overview (pending/in-progress counts, total estimate of the remaining pending work, next actionable card) and wait.
 
 ## Stage 2: Run the Queue
 
-Triggered by an explicit request («跑队列» variants) or by whatever the platform scheduler pulled in. Before dispatching, resolve queue-level caps from the trigger statement (max tasks and/or overall time; use the conservative default in [reference.md](reference.md) when unstated) — these exist so the worst case is a clean early stop with work left pending, never a runaway night.
+Triggered by an explicit request («跑队列» variants) or by whatever the platform scheduler pulled in. Before dispatching, resolve queue-level caps from the trigger statement (max tasks and/or overall time; use the conservative default in [reference.md](reference.md) when unstated) — these exist so the worst case is a clean early stop with work left pending, never a runaway night. Then compare the summed card estimates against the resolved time cap and record both in the first progress-doc entry: estimates are advisory and stopping stays cap-driven, but the human should know upfront if the queue will not fit.
 
 **Mode propagation**: a trigger containing 「自动」/"auto" runs every child invocation in auto mode; otherwise children keep their default mode. State this explicitly when invoking each child — do not rely on ambient inheritance, and treat each child's completion as final for continuity purposes (their auto-revert rules apply within their own run, not across the queue).
 
