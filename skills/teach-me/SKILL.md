@@ -39,6 +39,16 @@ An analogy may simplify, but it must never contradict the rational track's defin
 
 Every file path, line number, and API cited must come from files actually read in this session. If you have not read the code, either read it or drop to a labeled generic/public example. Fabricated evidence is a hard failure of this skill.
 
+## Visual aids
+
+One well-chosen table or diagram often explains more than a paragraph of prose — reach for one when the concept has a shape prose handles poorly. Pick the form by what the concept IS, not by habit:
+
+- **Comparison or multi-item mapping** (channels vs mechanisms, options vs trade-offs) → a small **markdown table**, one row per item.
+- **Topology, layering, or flow** (who talks to whom, how data moves) → a **text diagram**; use a Mermaid code block when the environment renders Mermaid, plain ASCII otherwise.
+- **Simple concept with no shape** → skip the visual. A forced diagram adds noise, not clarity.
+
+Keep visuals honest the same way as analogies: draw only relationships that actually exist — no invented arrows, no rows that don't correspond to reality. Real image files are a platform capability you may use when the environment offers them; never treat generating one as required.
+
 ## Output format
 
 ```markdown
@@ -46,6 +56,7 @@ Every file path, line number, and API cited must come from files actually read i
 1. **One-sentence definition**: ...
 2. **Why it exists**: ... (start from "what happens without it")
 3. **Concrete shape here**: ... (real file/line/API evidence, or a labeled public example)
+   (optional visual: table or diagram when step 3 involves a comparison or topology)
 4. **Key design implication**: ...
 
 ### <Intuitive understanding>  (e.g. 感性认识)
@@ -53,7 +64,7 @@ Every file path, line number, and API cited must come from files actually read i
 - **One-line memory anchor**: ...
 ```
 
-Render the headers and content in the user's language. A narrower question ("can A talk to B") still gets both tracks, but the rational track leads with the direct answer before the four steps.
+Render the headers and content in the user's language. A narrower question ("can A talk to B") still gets both tracks, but the rational track leads with the direct answer before the four steps. The visual slot is optional — leave it empty when the concept has no shape worth drawing.
 
 ## Worked examples
 

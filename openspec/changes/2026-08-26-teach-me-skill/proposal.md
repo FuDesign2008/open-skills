@@ -9,6 +9,8 @@ Concept questions ("what is X", "why does X exist", "can A talk to B") are frequ
 - De-identify `docs/concept-explanation-dual-track.md` in place (generic Electron desktop-app placeholders) so the source material can be committed; record the skill decision in its "next steps" note.
 - Add a doc-index row in `docs/README.md`; add a category/dependency row to the AGENTS.md skill table.
 - Regenerate `docs/generated/skills-index.md` (teach-me row appears).
+- Add a **visual-aids** section to `skills/teach-me/SKILL.md`: when to use a markdown table (comparisons, multi-channel matrices), when to use a text diagram (topology, layering, flow — Mermaid when the environment renders it, plain ASCII otherwise), real image files only as an optional platform capability (never a requirement, per the platform-neutrality rule); red lines extend to visuals (diagrams must depict real relationships; visuals obey the same fidelity criterion); an optional visual slot in the output template (empty state is legal).
+- Add a calibration note in `skills/teach-me/reference.md` anchoring the existing example table/diagram as instances of the visual-aids rule.
 
 ## Capabilities
 

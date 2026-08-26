@@ -27,6 +27,20 @@ The everyday analogy MAY simplify but MUST NOT contradict the rational track's d
 - **WHEN** a candidate analogy drops or contradicts one of the mechanism's defining constraints
 - **THEN** the analogy is adjusted (or replaced) so every key constraint survives the mapping
 
+### Requirement: teach-me SHALL use visual aids when they clarify
+
+teach-me MUST include a visual element (markdown table or text diagram — Mermaid when the environment renders it) in the answer when the concept involves a comparison, a multi-item mapping, or a topology/flow that prose handles poorly; visuals MUST depict real relationships (no invented arrows or rows) and obey the same fidelity criterion as analogies. Visuals are optional when they would not clarify; the answer MUST NOT force a visual for simple concepts.
+
+#### Scenario: Topology concept gets a diagram
+
+- **WHEN** the user asks about a multi-process communication topology or a layered data flow
+- **THEN** the answer includes a small text diagram (or Mermaid block) showing the real relationships among the components
+
+#### Scenario: Simple concept stays lean
+
+- **WHEN** the concept has no comparison, mapping, or topology to show (e.g. a one-line definition question)
+- **THEN** the answer omits visuals without failing the skill
+
 ### Requirement: teach-me SHALL not claim hands-on tutorial requests
 
 Tutorial/onboarding requests ("教我怎么用 X", "walk me through setting up X") route to teaching/onboarding-oriented skills (e.g. the `teach` skill); teach-me does not trigger for them.
