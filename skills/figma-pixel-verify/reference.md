@@ -46,12 +46,15 @@ JSON.stringify({
 
 - Target: <route or story>
 - Spec source: <path or note>
+- Theme scope: <single default | light+dark | …>
 - Iterations: <n>≤3
 - Overall: PASS | PASS-with-accepted-residuals | FAIL
 
 | node / role | property | expected | actual | verdict | notes |
 |-------------|----------|----------|--------|---------|-------|
 | … | … | … | … | PASS/DRIFT/… | |
+
+For multi-theme scope: repeat the table per theme (or add a `theme` column); each row under each theme gets its own verdict, and overall PASS requires every measured theme within tolerance.
 
 ### Residuals
 - …

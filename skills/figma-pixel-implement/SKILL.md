@@ -1,8 +1,8 @@
 ---
 name: figma-pixel-implement
-version: "1.0.1"
+version: "1.1.0"
 user-invocable: true
-description: "Implement Figma UI with export-faithful assets and a design-spec table for later measured verify. Use when implementing from Figma URLs/nodes or user asks pixel-level restore / 按稿实现. Prerequisite: a working Figma design-context channel (MCP or equivalent)—not a Cursor-only skill name. Does NOT claim pixel alignment complete—hand off to figma-pixel-verify. Triggers — 「像素级还原」「按稿实现」「Figma 对齐实现」「还原 Figma」「figma 保真实现」 / implement from Figma, pixel restore. Do NOT use for code→Figma canvas writes, no-design creative UI, or post-impl alignment checking alone (use figma-pixel-verify)."
+description: "Implement Figma UI with export-faithful assets and a design-spec table for later measured verify. Use when implementing from Figma URLs/nodes or user asks pixel-level restore / 按稿实现, including explicit light/dark or multi-theme scope (theme detection, per-mode spec values, per-theme assets). Prerequisite: a working Figma design-context channel (MCP or equivalent)—not a Cursor-only skill name. Does NOT claim pixel alignment complete—hand off to figma-pixel-verify. Triggers — 「像素级还原」「按稿实现」「Figma 对齐实现」「还原 Figma」「figma 保真实现」「暗黑模式还原」「多主题保真实现」 / implement from Figma, pixel restore, dark mode implement, multi-theme fidelity. Do NOT use for code→Figma canvas writes, no-design creative UI, or post-impl alignment checking alone (use figma-pixel-verify)."
 ---
 
 # Figma Pixel Implement
@@ -24,11 +24,12 @@ This skill is **platform-agnostic** (Claude Code / Cursor / OpenCode / others). 
 1. **Parse target** — Extract `fileKey` / `nodeId` (convert `node-id=1-2` → `1:2`). Note frame name for the spec table.
 2. **Fetch design context** — Call the environment’s design-context tool after step Prerequisites. Treat output as a **reference to adapt**, not paste-ready final code.
 3. **Large frames** — If the payload is truncated or the frame is clearly multi-section: fetch **metadata/structure** first, then implement **child nodes** one at a time (or in clear sections). Prefer variables/tokens over guessed literals.
-4. **Build the design-spec table** — Before or while coding, write a measurable table (session note or artifact). Minimum columns: `node` / role, `property`, `expected` (Figma exact), `unit`, `token` / class in repo, `source` (variable, MCP field, metadata, or Code Connect component). Screenshots are visual reference only—not the sole source of numbers. Template: [reference.md](reference.md).
-5. **Map to project** — Reuse existing components, tokens, and layout primitives. Prefer design-system variables over hard-coded values when the project already has them; flag unbound one-offs; when hard-coding is required for fidelity, record the expected value in the spec table.
-6. **Assets (hard rules)** — See [reference.md](reference.md) whitelist/blacklist. Export real image/SVG bytes into the project (or an approved dynamic source). Use `<img>` / framework image / export-preserving SVG. **Do not** use hand-authored path placeholders, CSS `mask` / `mask-image` + fill/`currentColor` recolor, or invent mask theming when only a light export exists (prefer a second export or record pending).
-7. **Theme** — Default to **design-faithful** colors and surfaces for the requested frame/variant. Do not silently restyle to an ambient dark/light theme unless the user or design variant requires it.
-8. **Hand off** — State that implementation is ready for measurement; point to the spec table; recommend `figma-pixel-verify` (or run it if the user asked for both).
+4. **Detect theme structure** — Before the spec table, establish how the design expresses themes: variable collections with multiple modes (e.g. `light`/`dark`), or separate per-theme frames/variants. For explicit multi-theme requests, record the theme inventory (mode names or per-theme frame nodeIds); single-theme requests stay on the requested frame/variant.
+5. **Build the design-spec table** — Before or while coding, write a measurable table (session note or artifact). Minimum columns: `node` / role, `property`, `expected` (Figma exact), `unit`, `token` / class in repo, `source` (variable, MCP field, metadata, or Code Connect component). Screenshots are visual reference only—not the sole source of numbers. For multi-theme scope, add a `mode` column (or one row per mode) for theme-varying properties: resolve per-mode values from the design itself (variable `valuesByMode` when the channel exposes it, otherwise re-fetch with the file/frame mode switched or via the per-theme frame); shared values stay single-row. Template: [reference.md](reference.md).
+6. **Map to project** — Reuse existing components, tokens, and layout primitives. Prefer design-system variables over hard-coded values when the project already has them; flag unbound one-offs; when hard-coding is required for fidelity, record the expected value in the spec table.
+7. **Assets (hard rules)** — See [reference.md](reference.md) whitelist/blacklist. Export real image/SVG bytes into the project (or an approved dynamic source). Use `<img>` / framework image / export-preserving SVG. **Do not** use hand-authored path placeholders, CSS `mask` / `mask-image` + fill/`currentColor` recolor, or invent mask theming when only a light export exists (prefer a second export or record pending). For multi-theme scope, export design-provided assets per theme (from each mode or per-theme frame)—one theme's export plus an invented recolor stays forbidden.
+8. **Theme** — Default to **design-faithful** colors and surfaces for the requested frame/variant. Do not silently restyle to an ambient dark/light theme unless the user or design variant requires it. When multi-theme scope is explicit, map theme-varying variables onto the project's theming mechanism (CSS custom properties / design tokens / `data-theme` or `prefers-color-scheme` switching) instead of duplicating hard-coded per-theme literals.
+9. **Hand off** — State that implementation is ready for measurement; point to the spec table (including its theme scope); recommend `figma-pixel-verify` (or run it if the user asked for both).
 
 ## Tool intent (platform-agnostic)
 
@@ -59,3 +60,4 @@ Do not require a named MCP server id or CLI as the only path.
 - Claiming “pixel perfect” without `figma-pixel-verify`.
 - Using CSS mask recolor for icons that Figma exported as flat assets.
 - Skipping the spec table so verify has nothing measurable.
+- Under explicit multi-theme scope: implementing only the requested theme and hand-rolling the other themes' values or assets instead of resolving them from the design.
