@@ -25,4 +25,4 @@
 - [x] 5.1 Add "Visual aids" section + optional template slot to `skills/teach-me/SKILL.md` (when table / when diagram / platform-neutral forms / red lines extend to visuals; empty slot legal)
 - [x] 5.2 Add calibration note in `skills/teach-me/reference.md` anchoring the existing example table/diagram as instances of the rule
 - [x] 5.3 Delta spec: add the visual-aids requirement (ADDED, SHALL + two Scenarios) — done alongside 5.1
-- [ ] 5.4 Gates: `lint:skill-description` + `lint:deid --staged` + index regen (description unchanged → expect no index diff)
+- [x] 5.4 Gates: `lint:skill-description` + `lint:deid --staged` + index regen (description unchanged → expect no index diff)
