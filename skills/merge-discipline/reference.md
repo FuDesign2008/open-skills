@@ -2,7 +2,7 @@
 
 ## Pre-merge checklist (gates + tip pinning)
 
-> Full rules live in this skill's `SKILL.md` (Part A archive gate + Part B rebase + Part C coverage + Part R PR code review + Part D tip pinning). This is a pre-merge self-check cheat sheet; referencing workflows must not copy the body — keep a one-line pointer only.
+> Full rules live in this skill's `SKILL.md` (Part A archive gate + Part B rebase + Part C coverage + Part R PR code review + Part D squash decision & tip pinning). This is a pre-merge self-check cheat sheet; referencing workflows must not copy the body — keep a one-line pointer only.
 
 **OpenSpec archive association gate (Part A, first):**
 - [ ] Association decided? (diff contains active `openspec/changes/<name>/`, or session-bound name still in `openspec list`) → Part A
@@ -34,9 +34,10 @@
 - [ ] If **skip** (`never` or user-explicit skip): 留痕 written?
 - [ ] Pass = neither axis has ≥80 Critical/Important → Part D; else block (or explicit skip 留痕)
 
-**Merge tip pinning (Part D):**
+**Merge squash decision + tip pinning (Part D):**
 
-- [ ] Merge pins the revision? (`gh`: `--match-head-commit` or platform equivalent; bare merge forbidden) → Part D step 1
+- [ ] Squash decision run before the merge command? (commit list + quality recommendation + explicit user choice; no auto-select, direct merge commands included) → Part D step 0
+- [ ] Merge pins the revision? (`gh`: `--match-head-commit` or platform equivalent; bare merge forbidden; merge method = Step 0 choice) → Part D step 1
 - [ ] After a fresh push, was “Pipeline succeeded” checked against that sha? → Part D step 2
 - [ ] Post-merge ancestor check OK? (MISSING → open backfill MR; do not claim closeout) → Part D step 3
 

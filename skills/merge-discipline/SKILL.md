@@ -1,15 +1,15 @@
 ---
 name: merge-discipline
-version: "1.5.0"
+version: "1.6.0"
 user-invocable: true
-description: "Hard gate before merging into a protected branch: run Parts A→B→C→R→D (OpenSpec archive association, rebase/conflict pre-check, coverage preference, pr-code-review with optional light depth via pr-review-gate, tip-pin merge). Do NOT merge while an associated OpenSpec change is still active; do NOT skip on a direct \"merge MR\" command. Triggers — 「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」「合并前 code-review」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, pr code review before merge."
+description: "Hard gate before merging into a protected branch: run Parts A→B→C→R→D (OpenSpec archive association, rebase/conflict pre-check, coverage preference, pr-code-review with optional light depth via pr-review-gate, squash decision from commit quality + tip-pin merge). Do NOT merge while an associated OpenSpec change is still active; do NOT skip on a direct \"merge MR\" command; do NOT auto-select squash — always ask with a commit-quality recommendation. Triggers — 「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」「合并前 code-review」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, pr code review before merge."
 dependencies:
   - pr-code-review
 ---
 
 # Merge Discipline
 
-> Internal shared skill — the single source of truth for merge-time discipline. Five parts, run in order **A → B → C → R → D**: **OpenSpec archive association gate** (Part A) + **rebase/conflict pre-check** (Part B) + **coverage gate** (Part C) + **PR code review** (Part R, strong-dep `pr-code-review`) + **tip pinning** (Part D). Referencing workflows declare this in frontmatter `dependencies` and abort at startup if missing.
+> Internal shared skill — the single source of truth for merge-time discipline. Five parts, run in order **A → B → C → R → D**: **OpenSpec archive association gate** (Part A) + **rebase/conflict pre-check** (Part B) + **coverage gate** (Part C) + **PR code review** (Part R, strong-dep `pr-code-review`) + **squash decision & tip pinning** (Part D). Referencing workflows declare this in frontmatter `dependencies` and abort at startup if missing.
 
 ## Prerequisite skill check
 
@@ -46,7 +46,7 @@ Any merge into a protected branch (`glab mr merge` / `gh pr merge` / `git merge 
 
 When hosts use `feature-branch-closeout`, that skill owns the **closeout menu**; this skill runs **only after merge is selected** (or on a direct merge command). Do not redefine the full menu here.
 
-**Execution order when merging: Part A (archive gate) → Part B (rebase) → Part C (coverage) → Part R (PR code review) → Part D (tip pinning) → merge.** Part A runs first so archive work is not deferred past rebase/CI. A rebase changes the source tip, forcing Parts C/R/D to re-run on the new tip.
+**Execution order when merging: Part A (archive gate) → Part B (rebase) → Part C (coverage) → Part R (PR code review) → Part D (squash decision + tip pinning) → merge.** Part A runs first so archive work is not deferred past rebase/CI. A rebase changes the source tip, forcing Parts C/R/D to re-run on the new tip.
 
 ---
 
@@ -266,15 +266,42 @@ When preference is `non-code-light` (or the user chose light under `ask`), class
 
 ---
 
-## Part D — Tip pinning (after Part R passes, before merge)
+## Part D — Squash decision + tip pinning (after Part R passes, before merge)
 
-Prevents the **stale-tip merge race**: archive/fix commits pushed seconds before merge fail to enter the target because the merge fast-forwards to the pre-push tip (whose pipeline was already green), while the freshly-pushed commits stay on the source branch. (Postmortem: `docs/mr-merge-stale-tip-archive-miss-incident.md`.)
+Part D owns everything between review pass and the merge command: the **squash decision** (Step 0) prevents merge-strategy-by-default, and **tip pinning** (Steps 1–4) prevents the stale-tip merge race. (Postmortem: `docs/mr-merge-stale-tip-archive-miss-incident.md`.)
+
+### Step 0 — Squash decision (mandatory, before the merge command)
+
+Prevents **merge-strategy-by-default**: the GitLab "Squash commits when merge request is accepted" checkbox and GitHub's squash merge method must be a surfaced, user-confirmed choice — never a platform default or a silent AI pick.
+
+1. **List the commits** on the tip about to merge (same tip Step 1 will pin):
+
+   ```bash
+   gh pr view <id> --json commits        # GitHub
+   glab mr commits <id>                  # GitLab (or the MR commits API)
+   ```
+
+2. **Classify and recommend** — apply the decision table, state the recommendation with its rationale:
+
+   | Commit history | Recommendation |
+   |---|---|
+   | Atomic commits with individual value (feature / reviewable enhancement / archive as separate commits) | **No-squash** — merge commit preserves history |
+   | Trivial accumulation (fixup / typo / wip / CI-retry noise, no standalone value) | **Squash** — collapse into one commit |
+   | Source branch will keep receiving development | **Lean no-squash** — squash cuts the commit graph shared with the target and breeds conflicts on later merges |
+
+3. **Ask and wait** — present the recommendation and require an explicit user choice (squash / no-squash). Never auto-select: direct merge commands and auto-mode host workflows all stop here (this ask is a sub-step of the merge flow, not a mode reversion). The user's explicit choice overrides the recommendation.
+
+4. **Execute with the chosen strategy** — the strategy flows into Step 1's merge command (`gh pr merge <id> --merge|--squash …` / `glab mr merge <id> [--squash] …`, flags per your CLI version). A platform without squash support: state the gap and merge with the available method.
+
+### Steps 1–4 — Tip pinning
+
+Prevents the **stale-tip merge race**: archive/fix commits pushed seconds before merge fail to enter the target because the merge fast-forwards to the pre-push tip (whose pipeline was already green), while the freshly-pushed commits stay on the source branch.
 
 1. **Pin the merge revision.**
    ```bash
    MERGE_SHA=$(git rev-parse origin/<source-branch>)   # or the SHA returned by push
    ```
-   Merge with `glab mr merge <id> --sha "$MERGE_SHA" -y` (GitLab) or `gh pr merge <id> --match-head-commit "$MERGE_SHA"` (GitHub; older docs may say `--sha` — use the flag your `gh` supports). A bare merge with no tip pin is forbidden.
+   Merge with `glab mr merge <id> --sha "$MERGE_SHA" -y` (GitLab) or `gh pr merge <id> --match-head-commit "$MERGE_SHA"` (GitHub; older docs may say `--sha` — use the flag your `gh` supports), using the merge method chosen in Step 0. A bare merge with no tip pin is forbidden.
    If the platform CLI has no tip-pin flag: wait for that tip's pipeline to pass before merging, and treat step 3 as the mandatory backstop.
 
 2. **Do not trust an instant `Pipeline succeeded`.**
