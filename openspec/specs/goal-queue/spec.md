@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Persistent goal-backlog queue lifecycle owned by the user-invocable `goal-queue-workflow` skill: durable task-card backlog, intake-time high-impact pre-approval with 留痕, serial consumption delegating each task to the `goal-driven-workflow` engine (`goal-run` capability), per-task branch/worktree isolation, queue-level budget and stopping rules, a per-run progress document, and a batch acceptance package that hands merge decisions back to the human. Scheduling stays platform-native; this layer treats any trigger — manual or scheduled — as "consume the queue until it drains or caps hit".
+Persistent goal-backlog queue lifecycle owned by the user-invocable `goal-driven-batch` skill: durable task-card backlog, intake-time high-impact pre-approval with 留痕, serial consumption delegating each task to the `goal-driven-workflow` engine (`goal-run` capability), per-task branch/worktree isolation, queue-level budget and stopping rules, a per-run progress document, and a batch acceptance package that hands merge decisions back to the human. Scheduling stays platform-native; this layer treats any trigger — manual or scheduled — as "consume the queue until it drains or caps hit".
 
 ## Requirements
 
@@ -114,7 +114,7 @@ The skill body MUST thin-reference `goal-driven-workflow` for single-run methodo
 
 ### Requirement: 正文语言与触发词
 
-Instructional body text of `goal-queue-workflow` MUST be written in English; Chinese MUST appear in the frontmatter description and trigger list (including queue-operation triggers like 「跑队列」「goal 队列」with English equivalents). The frontmatter `description` MUST stay within the repo's character limit and carry only routing information (what/when/triggers/do-not-use).
+Instructional body text of `goal-driven-batch` MUST be written in English; Chinese MUST appear in the frontmatter description and trigger list (including queue-operation triggers like 「跑队列」「goal 队列」with English equivalents). The frontmatter `description` MUST stay within the repo's character limit and carry only routing information (what/when/triggers/do-not-use).
 
 #### Scenario: 双语触发路由
 

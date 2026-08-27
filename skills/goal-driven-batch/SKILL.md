@@ -1,14 +1,14 @@
 ---
-name: goal-queue-workflow
-version: "0.1.0"
+name: goal-driven-batch
+version: "0.2.0"
 user-invocable: true
-description: "Triggers when the user says「跑队列」「goal 队列」「任务队列」「无人值守队列」「把需求加入队列」「空闲时段跑任务」/ goal queue, run queue, unattended task queue. Orchestrates a persistent backlog of pre-approved goal tasks: serial consumption delegating each task to the goal-driven long-run engine, with intake-time approval capture, per-task branch isolation, queue-level budget caps, and an acceptance package for human review when the run ends. Use whenever the user wants requirements enqueued now and executed unattended later, or wants to start, inspect, or review a queue run — even casually phrased (「今晚让它自己跑」「我回来验收一下」). Do NOT use for a single ad-hoc long run (use goal-driven-workflow directly), Jira multi-issue fixes (jira-fix-batch), or setting up cron/schedulers themselves."
+description: "Batch orchestrator layer over the goal-driven-workflow engine. Triggers when the user says「goal 批量」「跑队列」「任务队列」「无人值守队列」「把需求加入队列」「空闲时段跑任务」/ goal-driven-batch, goal batch, run queue, unattended task queue. Orchestrates a persistent backlog of pre-approved goal tasks: serial consumption delegating each task to the goal-driven long-run engine, with intake-time approval capture, per-task branch isolation, queue-level budget caps, and an acceptance package for human review when the run ends. Use whenever the user wants requirements enqueued now and executed unattended later, or wants to start, inspect, or review a queue run — even casually phrased (「今晚让它自己跑」「我回来验收一下」). Do NOT use for a single ad-hoc long run (use goal-driven-workflow directly), Jira multi-issue fixes (jira-fix-batch), or setting up cron/schedulers themselves."
 dependencies:
   - goal-driven-workflow
   - design-approval-gate
 ---
 
-# Goal Queue Workflow
+# Goal-Driven Batch
 
 > This skill owns the **queue lifecycle**: persistent backlog, intake-time approval capture, serial consumption, queue-level caps, progress document, acceptance package.
 > Single-run methodology lives in `goal-driven-workflow` (the engine); merge decisions stay human. Loading this skill MUST NOT start consumption by itself — consumption starts only on an explicit queue request or a scheduled pull.
