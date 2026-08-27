@@ -22,7 +22,7 @@ Run at startup against frontmatter `dependencies`: scan available skills; abort 
 ## Queue Layout
 
 ```
-.goal-queue/
+.goal-driven/
 ├── <task-card>.md          # one pre-approved goal per file
 └── runs/<batch-id>/progress.md   # per-run status document
 ```
@@ -36,9 +36,9 @@ Card format and all output templates live in [reference.md](reference.md).
 
 | Stage | Tool permissions | Manual stop | Required output |
 |-------|------------------|-------------|-----------------|
-| 1 Enqueue & Pre-approve | ✅ Read; Write limited to `.goal-queue/` cards | ⛔ stop before starting any run | validated task card(s) |
+| 1 Enqueue & Pre-approve | ✅ Read; Write limited to `.goal-driven/` cards | ⛔ stop before starting any run | validated task card(s) |
 | 2 Run the Queue | ✅ Everything, per child-run contract | auto-advance; stops at caps or empty queue | updated progress doc |
-| 3 Acceptance Package | ✅ Bash; Write limited to `.goal-queue/runs/` | ⛔ stop, hand back to human | package path + summary |
+| 3 Acceptance Package | ✅ Bash; Write limited to `.goal-driven/runs/` | ⛔ stop, hand back to human | package path + summary |
 
 ## Stage 1: Enqueue & Pre-approve
 
@@ -69,7 +69,7 @@ When caps hit or the queue empties: stop cleanly — stopping mid-backlog is a f
 
 ## Stage 3: Acceptance Package
 
-Assemble into `.goal-queue/runs/<batch-id>/`: the progress document, each executed task's engine completion report (its report-template output, referenced by path), and the branch list awaiting review. Then hand back:
+Assemble into `.goal-driven/runs/<batch-id>/`: the progress document, each executed task's engine completion report (its report-template output, referenced by path), and the branch list awaiting review. Then hand back:
 
 - Present the summary: per-task result, evidence location, branch tip, and the outcome-type items only a human can judge (the engine separates those; never self-certify them).
 - Stop at the branch list. Merge authority is exclusively human — propose an order and highlight conflicts, but do not merge, push to protected branches, or close anything irreversible.

@@ -4,7 +4,7 @@ Support file for SKILL.md. All templates are starting shapes; keep field names s
 
 ## Task Card
 
-File name: `.goal-queue/<slug>.md` (slug = kebab-case goal summary; date prefix optional for ordering).
+File name: `.goal-driven/<slug>.md` (slug = kebab-case goal summary; date prefix optional for ordering).
 
 ```markdown
 # Goal: <one-line measurable goal>
@@ -31,7 +31,7 @@ The estimate is advisory only: caps and the per-card budget stay authoritative, 
 
 ## Progress Document
 
-Path: `.goal-queue/runs/<batch-id>/progress.md` (`batch-id` = run start timestamp `YYYYMMDD-HHMM`). Create at batch start; update on every status change.
+Path: `.goal-driven/runs/<batch-id>/progress.md` (`batch-id` = run start timestamp `YYYYMMDD-HHMM`). Create at batch start; update on every status change.
 
 | Field | Meaning |
 |-------|---------|
@@ -60,4 +60,4 @@ Path: `.goal-queue/runs/<batch-id>/progress.md` (`batch-id` = run start timestam
 ## Defaults
 
 - Queue caps when the trigger states none: stop after **3 tasks** or **2 hours**, whichever comes first. State the resolved cap in the first progress-doc entry so the stopping rule is auditable.
-- Gitignore hint when cards may contain private info: suggest `.goal-queue/` in the user project's `.gitignore` — queue content belongs to the local project owner.
+- Gitignore hint when cards may contain private info: suggest `.goal-driven/` in the user project's `.gitignore` — queue content belongs to the local project owner.
