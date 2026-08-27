@@ -1,4 +1,4 @@
-# Goal Queue Workflow — Templates & Defaults
+# Goal-Driven Batch — Templates & Defaults
 
 Support file for SKILL.md. All templates are starting shapes; keep field names stable because the progress document and the acceptance package both reference them.
 

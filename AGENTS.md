@@ -85,7 +85,7 @@ open-skills/
 | write-workflow | 工作流 | clarifying-question-discipline、tech-review-doc、workflow-mode-lifecycle、humanizer（外置）、humanizer-zh（外置） |
 | brainstorm-workflow | 工作流 | brainstorming（外置）、solve-workflow |
 | goal-driven-workflow | 工作流 | clarifying-question-discipline、completion-evidence-discipline、design-approval-gate |
-| goal-queue-workflow | 工作流 | goal-driven-workflow、design-approval-gate |
+| goal-driven-batch | 工作流 | goal-driven-workflow、design-approval-gate |
 | tech-review-doc | 内容创作 | clarifying-question-discipline |
 | android-webview-debug | 工具 | 无 |
 | figma-pixel-implement | 工具 | 无（被 solve / opsx-solve / jira-fix / opsx-jira-fix 强依赖） |

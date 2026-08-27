@@ -1,5 +1,5 @@
 {
-  "skill_name": "goal-queue-workflow",
+  "skill_name": "goal-driven-batch",
   "evals": [
     {
       "id": 1,
@@ -30,7 +30,7 @@
     {
       "id": 3,
       "name": "loaded-without-request-stays-idle",
-      "prompt": "你装了 goal-queue-workflow 吧？先帮我看看现在队列里都有些什么，别跑任何东西，我就想知道现状。",
+      "prompt": "你装了 goal-driven-batch 吧？先帮我看看现在队列里都有些什么，别跑任何东西，我就想知道现状。",
       "expected_output": "加载≠消费：应只输出队列概览（pending/in-progress 计数、剩余任务预估总耗时、下一张可执行卡片），等待明确的队列操作指令，不派发任何任务、不改任何文件状态。",
       "files": [],
       "assertions": [
