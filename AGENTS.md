@@ -247,7 +247,7 @@ Invoke the <skill-name> skill and follow it exactly
 
 - **执行计划前先开分支**：开始修改代码前，先创建 feature 分支
 - **禁止直接推送 main**：必须先创建 feature 分支
-- **合并 PR 时**：默认使用「Create a merge commit」。是否 Squash 由 merge-discipline Part D 合并前 squash 决策按 MR commit 质量给推荐并经用户确认：琐碎堆积（fixup/typo/wip/CI 重试）的 MR 可 Squash；将续开发的分支避免 Squash——Squash 会切断 main 与 feature 分支的提交图，后续在同一分支继续开发再合并 main 时易产生冲突。
+- **合并 PR 时**：默认使用「Create a merge commit」。是否 Squash 由 merge-discipline Part D 合并前 squash 决策按 MR commit 质量给推荐并经用户确认（决策空间收敛时不发问：恰好一个 commit 或平台仅允许一种合并方式时，直接给出结论与理由执行）：琐碎堆积（fixup/typo/wip/CI 重试）的 MR 可 Squash；将续开发的分支避免 Squash——Squash 会切断 main 与 feature 分支的提交图，后续在同一分支继续开发再合并 main 时易产生冲突。
 - **PR 合并后同步主分支**：合并 PR 后，主动执行 `git checkout main && git pull origin main` 同步当前仓库主分支（即「Merge PR 与发布流程」第 4 步）。
 - **PR 合并后继续开发**：若上游已用 Squash 合并过，在本地继续提交前必须先 `git merge origin/main` 或 `git pull origin main`，再开发。
 - **长周期变更双点同步检查**：跨天/跨阶段的变更，在动手前（制定计划时）和执行中期（如 opsx 阶段 5 执行前）各做一次 `git fetch origin main` 并查看 `git log HEAD..origin/main --oneline`，尽早感知并行合并的 PR；发现 main 已动到自己在改的区域时，提前小步同步（rebase/merge），把冲突消解在早期而非攒到最后一次 rebase 爆发
