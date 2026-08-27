@@ -2,7 +2,7 @@
 name: merge-discipline
 version: "1.6.0"
 user-invocable: true
-description: "Hard gate before merging into a protected branch: run Parts A→B→C→R→D (OpenSpec archive association, rebase/conflict pre-check, coverage preference, pr-code-review with optional light depth via pr-review-gate, squash decision from commit quality + tip-pin merge). Do NOT merge while an associated OpenSpec change is still active; do NOT skip on a direct \"merge MR\" command; do NOT auto-select squash — always ask with a commit-quality recommendation. Triggers — 「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」「合并前 code-review」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, pr code review before merge."
+description: "Hard gate before merging into a protected branch: run Parts A→B→C→R→D (OpenSpec archive association, rebase/conflict pre-check, coverage preference, pr-code-review with optional light depth via pr-review-gate, squash decision from commit quality + tip-pin merge). Do NOT merge while an associated OpenSpec change is still active; do NOT skip on a direct \"merge MR\" command; do NOT auto-select squash when two viable strategies exist — ask with a commit-quality recommendation; a single-commit or single-permitted-strategy MR concludes without prompting. Triggers — 「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」「合并前 code-review」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, pr code review before merge."
 dependencies:
   - pr-code-review
 ---
@@ -272,7 +272,7 @@ Part D owns everything between review pass and the merge command: the **squash d
 
 ### Step 0 — Squash decision (mandatory, before the merge command)
 
-Prevents **merge-strategy-by-default**: the GitLab "Squash commits when merge request is accepted" checkbox and GitHub's squash merge method must be a surfaced, user-confirmed choice — never a platform default or a silent AI pick.
+Prevents **merge-strategy-by-default**: the GitLab "Squash commits when merge request is accepted" checkbox and GitHub's squash merge method must be a surfaced, user-confirmed choice — never a platform default or a silent AI pick. Prompting exists for divergent outcomes; when fewer than two viable strategies exist there is nothing to choose, so Step 0 concludes instead of asking.
 
 1. **List the commits** on the tip about to merge (same tip Step 1 will pin):
 
@@ -281,7 +281,11 @@ Prevents **merge-strategy-by-default**: the GitLab "Squash commits when merge re
    glab mr commits <id>                  # GitLab (or the MR commits API)
    ```
 
-2. **Classify and recommend** — apply the decision table, state the recommendation with its rationale:
+2. **Collapse pre-check** — if either holds, state the conclusion plus a one-line reason and skip ahead to execution (the user may still override from the stated conclusion):
+   - Exactly one commit ahead of base → "single commit: no-squash" (nothing to consolidate).
+   - Repo/platform policy permits only one merge method → adopt that method and note the enforced policy.
+
+3. **Classify and recommend** (two or more commits) — apply the decision table, state the recommendation with its rationale:
 
    | Commit history | Recommendation |
    |---|---|
@@ -289,9 +293,9 @@ Prevents **merge-strategy-by-default**: the GitLab "Squash commits when merge re
    | Trivial accumulation (fixup / typo / wip / CI-retry noise, no standalone value) | **Squash** — collapse into one commit |
    | Source branch will keep receiving development | **Lean no-squash** — squash cuts the commit graph shared with the target and breeds conflicts on later merges |
 
-3. **Ask and wait** — present the recommendation and require an explicit user choice (squash / no-squash). Never auto-select: direct merge commands and auto-mode host workflows all stop here (this ask is a sub-step of the merge flow, not a mode reversion). The user's explicit choice overrides the recommendation.
+4. **Ask and wait** — present the recommendation and require an explicit user choice (squash / no-squash). Never auto-select between two viable strategies: direct merge commands and auto-mode host workflows all stop here (this ask is a sub-step of the merge flow, not a mode reversion). The user's explicit choice overrides the recommendation.
 
-4. **Execute with the chosen strategy** — the strategy flows into Step 1's merge command (`gh pr merge <id> --merge|--squash …` / `glab mr merge <id> [--squash] …`, flags per your CLI version). A platform without squash support: state the gap and merge with the available method.
+5. **Execute with the chosen strategy** — the strategy flows into Step 1's merge command (`gh pr merge <id> --merge|--squash …` / `glab mr merge <id> [--squash] …`, flags per your CLI version). A platform without squash support: state the gap and merge with the available method.
 
 ### Steps 1–4 — Tip pinning
 

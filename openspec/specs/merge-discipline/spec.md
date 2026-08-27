@@ -244,7 +244,9 @@ Frontmatter `description` for `merge-discipline` MUST use English for the routin
 
 ### Requirement: Part D SHALL run a squash decision step before the merge command
 
-After Part R passes and before any merge command executes, merge-discipline MUST run a squash decision step: (1) list the MR/PR's commits, (2) classify commit quality, (3) present a recommendation — squash or no-squash — with rationale, and (4) obtain explicit user confirmation of the merge strategy. The step MUST NOT be skipped on a direct merge command, and MUST NOT auto-select a strategy on the user's behalf. Tip-pinning semantics are unchanged by this step.
+After Part R passes and before any merge command executes, merge-discipline MUST run a squash decision step: (1) list the MR/PR's commits, (2) classify commit quality, (3) present a recommendation — squash or no-squash — with rationale, and (4) obtain explicit user confirmation of the merge strategy. The step MUST NOT be skipped on a direct merge command. When two or more viable strategies exist, the step MUST NOT auto-select one on the user's behalf. Tip-pinning semantics are unchanged by this step.
+
+**Collapse pre-check**: when fewer than two viable strategies exist, the step SHALL state its conclusion plus a one-line reason and adopt it WITHOUT prompting. A decision space collapses in exactly these cases: the MR contains exactly one commit ahead of base (nothing to consolidate; equivalent outcomes), or repo/platform policy permits only one merge method (no alternative to choose). The stated conclusion keeps the choice overridable by the user, preserving the anti-default rationale: prompting is for divergent outcomes, not for confirming what cannot be otherwise.
 
 Recommendation semantics MUST be dynamic, based on the MR's commit history:
 - Atomic commits with individual value (feature + reviewable enhancement + archive as separate meaningful commits) → recommend **no-squash** (merge commit preserves history).
@@ -267,6 +269,16 @@ The step MUST be platform-neutral: GitHub executes via `gh pr merge <id> --merge
 
 - **WHEN** the source branch will continue to receive development after this merge (even if commits look tidy)
 - **THEN** the recommendation leans no-squash, citing that squashing cuts the commit graph shared with the target and breeds conflicts on later merges
+
+#### Scenario: Single-commit MR adopts no-squash without prompting
+
+- **WHEN** the MR contains exactly one commit ahead of its base branch
+- **THEN** the collapse pre-check states "single commit: no-squash" with a one-line reason and proceeds without asking, and the user may still override from the stated conclusion
+
+#### Scenario: Single-viable-strategy platform policy skips the ask
+
+- **WHEN** the repository or platform settings permit only one merge method (e.g. squash-only merges)
+- **THEN** the collapse pre-check adopts that single permitted strategy without prompting and notes the enforced policy in its output
 
 #### Scenario: Direct merge command cannot skip the decision
 
