@@ -8,17 +8,17 @@ Persistent goal-backlog queue lifecycle owned by the user-invocable `goal-driven
 
 ### Requirement: 持久 backlog 载体
 
-The system SHALL maintain the queue as a persistent project-local directory (default `.goal-queue/`) holding one markdown task card per goal, where each card records: measurable goal condition, mandatory turn/time budget clause, constraints, priority, a coarse advisory duration estimate, status, and acceptance summary fields. Cards MUST be git-trackable so backlog state survives sessions and reviewable in diffs.
+The system SHALL maintain the queue as a persistent project-local directory (default `.goal-driven/`) holding one markdown task card per goal, where each card records: measurable goal condition, mandatory turn/time budget clause, constraints, priority, a coarse advisory duration estimate, status, and acceptance summary fields. Cards MUST be git-trackable so backlog state survives sessions and reviewable in diffs.
 
 #### Scenario: 需求入库
 
 - **WHEN** 用户在空闲时段提交一个需求并要求入队（如「goal 队列加个任务：修复登录超时 bug」）
-- **THEN** 系统将其加工为含可验证目标条件、预算子句与粗粒度耗时预估（仅供参考，偏差不作废预审批）的任务卡片写入 `.goal-queue/`，状态标记为待审批项，人确认条件与预算后入库完成
+- **THEN** 系统将其加工为含可验证目标条件、预算子句与粗粒度耗时预估（仅供参考，偏差不作废预审批）的任务卡片写入 `.goal-driven/`，状态标记为待审批项，人确认条件与预算后入库完成
 
 #### Scenario: 队列跨会话存续
 
 - **WHEN** 一个会话结束而后新会话被拉起消费队列
-- **THEN** 系统从 `.goal-queue/` 读取存量任务卡片继续按优先级消费，不依赖任何对话历史
+- **THEN** 系统从 `.goal-driven/` 读取存量任务卡片继续按优先级消费，不依赖任何对话历史
 
 ### Requirement: 入库即预审批（高危启动门禁的队列级化解）
 
@@ -91,7 +91,7 @@ The system SHALL enforce queue-level caps independent of per-task budgets: a max
 
 ### Requirement: 进度文档与验收包
 
-The system SHALL maintain a persistent progress document updated on every status change (suggested path `.goal-queue/runs/<batch-id>/progress.md`, minimum fields: task, mode, status, result summary, branch name, notes), and SHALL end every run with an acceptance package: the batch progress document plus each executed task's engine completion report plus the branch list awaiting human review. Merge decisions remain exclusively human; the package labels claims per `completion-evidence-discipline` inherited from the engine reports.
+The system SHALL maintain a persistent progress document updated on every status change (suggested path `.goal-driven/runs/<batch-id>/progress.md`, minimum fields: task, mode, status, result summary, branch name, notes), and SHALL end every run with an acceptance package: the batch progress document plus each executed task's engine completion report plus the branch list awaiting human review. Merge decisions remain exclusively human; the package labels claims per `completion-evidence-discipline` inherited from the engine reports.
 
 #### Scenario: 人回归验收
 
