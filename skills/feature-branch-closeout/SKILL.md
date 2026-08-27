@@ -31,7 +31,7 @@ Present intent clearly; agent picks native structured-question capability or pro
 3. **Keep branch** — leave branch as-is; no merge
 4. **Continue development** — stay on branch for more work; no merge
 
-Optional (when applicable): detect worktree / detached HEAD / isolation created via `git-worktree-discipline` and offer cleanup; **discard** only with explicit strong confirmation (user must clearly affirm discard). Do **not** create new isolation here — create/detect lives in `git-worktree-discipline`.
+Optional (when applicable): detect worktree / detached HEAD / isolation created via `git-worktree-discipline` and offer cleanup; **discard** only with explicit strong confirmation (user must clearly affirm discard). Do **not** create new isolation here — create/detect lives in `git-worktree-discipline`. Post-merge local workspace sync is owned by `merge-discipline` Part D, not this menu.
 
 ## Merge path
 

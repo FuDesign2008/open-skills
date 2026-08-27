@@ -2,7 +2,7 @@
 name: merge-discipline
 version: "1.6.0"
 user-invocable: true
-description: "Hard gate before merging into a protected branch: run Parts A→B→C→R→D (OpenSpec archive association, rebase/conflict pre-check, coverage preference, pr-code-review with optional light depth via pr-review-gate, squash decision from commit quality + tip-pin merge). Do NOT merge while an associated OpenSpec change is still active; do NOT skip on a direct \"merge MR\" command; do NOT auto-select squash when two viable strategies exist — ask with a commit-quality recommendation; a single-commit or single-permitted-strategy MR concludes without prompting. Triggers — 「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」「合并前 code-review」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, pr code review before merge."
+description: "Hard gate before merging into a protected branch: run Parts A→B→C→R→D (OpenSpec archive association, rebase/conflict pre-check, coverage preference, pr-code-review with optional light depth via pr-review-gate, squash decision from commit quality + tip-pin merge). Do NOT merge while an associated OpenSpec change is still active; do NOT skip on a direct \"merge MR\" command; do NOT auto-select squash when two viable strategies exist — ask with a commit-quality recommendation; a single-commit or single-permitted-strategy MR concludes without prompting; after merging, sync the local workspace onto the resolved target branch. Triggers — 「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」「合并前 code-review」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, pr code review before merge."
 dependencies:
   - pr-code-review
 ---
@@ -321,6 +321,15 @@ Prevents the **stale-tip merge race**: archive/fix commits pushed seconds before
 4. **Dual strategy & fallback.**
    - **Strategy A (default):** MR is open and mergeable; any associated OpenSpec change is already archived (or there is no association) → merge implementation + archive on the **same** tip with tip pinned (run steps 1-3).
    - **Strategy B (recovery only):** implementation MR was **already merged accidentally** and archive is still pending → open a separate docs MR for archive; list explicitly "archive pending !N" with 留痕; never pretend archive is already on the target. **MUST NOT** be recommended while the MR is still open and associated with an **active** change — that case is Part A block, not Strategy B.
+
+### Post-merge workspace sync (after the ancestor check passes)
+
+The merge is only half the loop — the local workspace must return to the integration line before the next task starts. Resolve the target from the MR's base metadata (`gh pr view <id> --json baseRefName` / GitLab `target_branch`), reusing the base Part B already resolved; never assume `main` or `master`, since real targets are often `develop`, `release/*`, or integration branches.
+
+1. **Target exists locally** → check it out and fast-forward: `git checkout <target> && git pull --ff-only origin <target>`; report one sync line (branch + new tip).
+2. **Target missing locally** → give the fetch command to obtain it (`git fetch origin <target>:<target>`); a missing local copy is a reported outcome, not a silent skip.
+3. **Fast-forward blocked** (diverged history) → report the divergence and hand the decision to the user; do not rebase or force-update on your own.
+4. Offer to delete the merged source branch (local and remote) as explicit follow-up — cleanup ownership stays with `feature-branch-closeout`.
 
 ---
 
