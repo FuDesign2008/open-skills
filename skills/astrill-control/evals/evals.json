@@ -1,0 +1,41 @@
+{
+  "skill_name": "astrill-control",
+  "evals": [
+    {
+      "id": 1,
+      "name": "direct-connection-preflight",
+      "prompt": "马上要往一个对代理网络很敏感的平台传文件，之前挂着代理时上传总是失败。帮我把网络环境确认一下，需要直连，现在是不是还挂着 VPN？",
+      "expected_output": "应先运行 astrill.sh status 读取四路信号（app/隧道/GUI 菜单/出口 IP）再下结论；若判定已连接，用 off 断开（Toggle 方式保活 app，不用 quit），等待双探针确认直连（隧道进程消失 + 出口 IP 变为本地直连）后再放行上传步骤；若已断开则直接确认直连状态。",
+      "files": [],
+      "assertions": [
+        {"text": "先跑 status 读探针，不凭感觉断言 VPN 状态"},
+        {"text": "断开用 off（Toggle 方式），不杀 app 进程"},
+        {"text": "断开后以隧道进程消失与出口 IP 双信号确认直连，再进行后续步骤"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "connect-request",
+      "prompt": "有个海外站点直连打不开，帮我把 Astrill 连上再访问。",
+      "expected_output": "应运行 astrill.sh on：脚本幂等（已连接则直接成功返回）；未连接时点击 Toggle ON 并轮询隧道进程，连通后报告出口 IP（前后对比）；若 app 未运行会自动启动并等 GUI 就绪；GUI 不可达时指出宿主 app 需要辅助功能授权。",
+      "files": [],
+      "assertions": [
+        {"text": "调用 astrill.sh on 而不是手写 osascript 或让用户手动点菜单"},
+        {"text": "连接成功以隧道进程出现 + 出口 IP 变化为证据，而不是只看 UI 反馈"},
+        {"text": "遇到 GUI 不可达时归因到宿主 app 的辅助功能授权缺失"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "openweb-probe-mismatch",
+      "prompt": "Astrill 显示已连接，但我 curl 查出口 IP 还是国内的，是不是 VPN 没生效？",
+      "expected_output": "应识别 OpenWeb（仅浏览器代理）与 OpenVPN（全局隧道）模式差异：OpenWeb 下 asovpnc 隧道探针不适用、curl 出口 IP 可能不反映浏览器代理状态；应以 GUI 菜单文本为主判据，并建议确认 Astrill 当前模式后再下结论，而不是直接判定 VPN 失效。",
+      "files": [],
+      "assertions": [
+        {"text": "指出 curl 出口 IP 在 OpenWeb 模式下不代表浏览器代理状态这一边界"},
+        {"text": "以 GUI 菜单文本（Toggle ON/OFF 在场）为主判据核对连接态"},
+        {"text": "不直接断言 VPN 失效，先区分连接模式再给结论"}
+      ]
+    }
+  ]
+}
