@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.18.0"
+version: "1.18.1"
 user-invocable: true
 description: "Eight-stage PDCA problem-solving workflow that persists analysis, proposal, design review, plan, execution, and verification into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context. Use for feature work, bug fixes, refactors, and complex engineering tasks that need long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick one-off edit with no traceability need — use solve-workflow instead. Triggers：「opsx解决」「OpenSpec解决」「规范化解决」「创建OpenSpec变更」「创建opsx变更」「用OpenSpec分析」「用OpenSpec修复」「opsx自动解决」「OpenSpec自动解决」「opsx-solve」「opsx-solve-workflow」 / opsx solve, OpenSpec solve workflow, create an OpenSpec change."
 dependencies:
@@ -190,7 +190,7 @@ If the existence check fails or the description mismatches the code, pause for u
 
 > Principle: based on the stage-2 analysis, offer 2-5 solutions; strip non-essential features and over-engineering from every solution (YAGNI). If the path is still foggy, follow `decision-fog-discipline` before the solution table / proposal.
 
-> **Architecture-boundary precheck** (decision order): when a candidate solution crosses process or layer boundaries, answer the precheck before short-term costs (change size / reuse / single-repo) are weighed — (1) runtime initialization location: which process/layer initializes the called capability; (2) boundary legality: would a cross-layer import pull the callee's dependency tree into the caller's bundle graph (bundler static pre-scanning defeats dynamic `require`/`import` as a workaround); (3) ownership classification: system vs data/product capability vs the calling layer's positioning. The boundary verdict surfaces with the comparison table and gates auto-mode selection. Methodology: `code-design-review` Layer B dependency-direction dimension. Single-layer solutions do not trigger this precheck.
+> **Architecture-boundary precheck** (decision order): when a candidate solution crosses process or layer boundaries, answer the precheck before short-term costs (change size / reuse / single-repo) are weighed — (1) runtime initialization location: which process/layer initializes the called capability; (2) boundary legality: would a cross-layer import pull the callee's dependency tree into the caller's bundle graph (bundler static pre-scanning defeats dynamic `require`/`import` as a workaround); (3) ownership classification: system vs data/product capability vs the calling layer's positioning. The boundary verdict surfaces with the comparison table and gates auto-mode selection. Methodology: `code-design-review` Layer A dependency-direction dimension. Single-layer solutions do not trigger this precheck.
 
 Produce 2-5 solutions based on stage 2, each including:
 
@@ -228,7 +228,7 @@ Delta-spec conventions (enforced by the `openspec-continue-change` skill):
 
 Load `staged-review-flow` and execute its full review contract. This workflow's mapping: `{next-stage}` = Stage 5 "Make the plan"; `{artifact-sink}` = `design.md` created via `openspec-continue-change`; `{extra-dimensions}` = spec compliance (proposal's why, delta specs' behavior, design's risk, tasks' coverage of requirements); `{batch-overcap-behavior}` = `N/A`. After the review passes, create `design.md` via the native skill.
 
-**Non-blocking issues** (may be noted as suggestions but don't block passing; **never** treat "a better architecture exists but the near-term one is maintainable" as blocking):
+**Non-blocking issues** (may be noted as suggestions but don't block passing; blocking/non-blocking criteria are owned by `solution-review` and, for code solutions, `code-design-review` — a marginally better architecture with no material long-term maintainability gain does not block; a clearly superior feasible one does, per those skills):
 
 - Low-risk items with an existing mitigation
 - Code-style preferences that don't affect correctness or structure
