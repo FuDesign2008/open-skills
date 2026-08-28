@@ -1,6 +1,6 @@
 ---
 name: staged-review-flow
-version: "1.2.0"
+version: "1.3.0"
 user-invocable: false
 description: "Shared review-stage flow for PDCA hosts: full decision review, code-design review for code-affecting solutions, Standards∥Spec dual-axis verdicts (no cross-axis merge rank), binary pass/fail, bounded auto optimization, design summary, and verification-report honesty composed with completion-evidence-discipline. Used by PDCA workflows. Triggers — 「阶段审查流程」「方案审查编排」「审查闭环」「验证报告诚实」「双轴审查」 / staged review flow, dual-axis review, verification honesty. Do NOT use as a standalone task workflow."
 dependencies:
@@ -28,8 +28,8 @@ Never hardcode a host workflow's stage numbers, OpenSpec paths, Jira state trans
 
 ## Review contract
 
-1. Always load and run the complete `solution-review` framework: all core dimensions and strategic dimensions at the depth determined by reversibility.
-2. When the solution affects code, also load and run `code-design-review` Layer A/B/C according to its applicability rules.
+1. Always load and run the complete `solution-review` framework: all core dimensions and strategic dimensions at the depth determined by reversibility. For code-affecting solutions, the strategic dimensions that carry long-term cost (cost-vs-value, team cognitive fit) run at least at standard depth, regardless of reversibility classification.
+2. When the solution affects code — writing or modifying source files, including scripts and generated config code — also load and run `code-design-review` Layer A/B/C according to its applicability rules.
 3. Apply `{extra-dimensions}` after the shared reviews. These checks supplement, never replace, `solution-review`.
 4. Keep **two axes** separate in the report (labels MAY vary; meaning MUST NOT):
    - **Standards** — design / quality / smell / security fitness (`solution-review` strategic+core quality aspects and `code-design-review` when applicable).
