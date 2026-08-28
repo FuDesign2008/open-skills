@@ -1,4 +1,4 @@
-# teach-me — Worked Examples
+# explain-simply — Worked Examples
 
 Two complete examples calibrated from real Q&A sessions (de-identified: project details replaced with generic placeholders). Example 1 is a "what is X" mechanism question; Example 2 is a "can A talk to B" topology question.
 

@@ -96,7 +96,7 @@ open-skills/
 | jira-status-writeback | Jira 工具 | 无（被 jira-fix / opsx-jira-fix 强依赖） |
 | jira-read | Jira 工具 | 无 |
 | typescript-check | 工具 | 无 |
-| teach-me | 工具 | 无（与全局第三方 `teach` 靠 description 边界区分：概念问答归 teach-me，上机教学归 teach） |
+| explain-simply | 工具 | 无（与全局第三方 `teach` 靠 description 边界区分：概念问答归 explain-simply，上机教学归 teach） |
 | article-writer | 内容创作 | 无 |
 | xquik-social-data | 数据采集 | 无 |
 | essence-diagnosis | 工作流 | multi-agent-debate |
