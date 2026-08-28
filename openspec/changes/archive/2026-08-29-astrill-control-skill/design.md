@@ -24,3 +24,7 @@ The source skill was field-tested in a private workspace on 2026-08-28 (OpenVPN 
 4. **Accessibility prerequisite generalized** — the source named a specific host app; the public version says "the app hosting the agent (terminal, IDE, or desktop app)" per the platform-neutrality rule (铁律 6).
 5. **English body, Chinese triggers** (铁律 3); single-line double-quoted description with trigger block and Do-NOT-use boundary (铁律 7).
 6. **Eval scope** — three scenario prompts + assertions in `evals/evals.json` encode the deep knowledge (preflight ordering, probe-based evidence, OpenWeb boundary). The statistical loop (trigger-rate optimization via `run_loop.py`) is deferred with a note in tasks.md; independent review is provided by a reviewer subagent (writer/reviewer separation) instead of the interactive viewer.
+
+## Verification Notes
+
+- 【覆盖率门控跳过】工程偏好 coverage-gate: never。时间:2026-08-29T09:30+08:00。决策人:项目配置。(merge-discipline Part C)
