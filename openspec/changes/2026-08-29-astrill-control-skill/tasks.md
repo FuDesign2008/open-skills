@@ -24,5 +24,5 @@
 
 ## 5. Delivery
 
-- [ ] 5.1 Feature branch `feat/astrill-control-skill`; commit (`feat:` prefix); push
-- [ ] 5.2 Open PR (merge decision left to human acceptance — unattended run guardrail)
+- [x] 5.1 Feature branch `feat/astrill-control-skill`; commit (`feat:` prefix, ceb65c6, 10 files +309); push
+- [x] 5.2 Open PR #291 (merge decision left to human acceptance — unattended run guardrail)
