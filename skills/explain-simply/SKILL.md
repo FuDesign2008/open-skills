@@ -11,7 +11,7 @@ description: "Make hard concepts easy to grasp — dual-track explanation: a rat
 
 ## Design root
 
-The skill's promise — explain it simply — presupposes depth: the rational track (deep) is the precondition of the intuitive track (simple). A simple explanation is earned by deep understanding, never by skipping it.
+The skill's promise — explain it simply — presupposes depth: the rational track (deep) is the precondition of the intuitive track (simple). A simple explanation is earned by deep understanding, never by skipping it. The enemy is the Curse of Knowledge — once we know something, we find it hard to imagine what it was like not to know it (Chip & Dan Heath, *Made to Stick*, 2007); the dual-track structure forces the explainer back into the learner's frame.
 
 - The circulating aphorism "If you can't explain it simply, you don't understand it well enough" — attributed to Einstein and Feynman, no verified source (Wikiquote marks the attribution unsubstantiated).
 - The documented Feynman version: asked to prepare a freshman lecture on why spin-½ particles obey Fermi–Dirac statistics, Feynman returned days later conceding "I couldn't do it. I couldn't reduce it to the freshman level. That means we really don't understand it." — David & Judith Goodstein, *Feynman's Lost Lecture* (1996), p. 52.
@@ -40,11 +40,11 @@ Route elsewhere and exit when the request is:
 
 ## Fidelity criterion (hard rule for the intuitive track)
 
-An analogy may simplify, but it must never contradict the rational track's defining constraints. Before delivering, check the analogy against each key constraint of the mechanism; if a constraint would be lost or inverted by the mapping, adjust or replace the analogy. A vivid analogy that teaches a wrong intuition is worse than no analogy.
+Build analogies on relational structure, not surface similarity — map how the parts relate, not how they look (Gentner's structure-mapping theory, 1983). A relationally faithful analogy survives the constraint check by construction. An analogy may simplify, but it must never contradict the rational track's defining constraints. Before delivering, check the analogy against each key constraint of the mechanism; if a constraint would be lost or inverted by the mapping, adjust or replace the analogy. A vivid analogy that teaches a wrong intuition is worse than no analogy.
 
 ## Evidence rule (hard rule for rational step 3)
 
-Every file path, line number, and API cited must come from files actually read in this session. If you have not read the code, either read it or drop to a labeled generic/public example. Fabricated evidence is a hard failure of this skill.
+Every file path, line number, and API cited must come from files actually read in this session. If you have not read the code, either read it or drop to a labeled generic/public example. When even a canonical public example is unavailable, ground the concrete-shape step in the concept's definition and why-it-exists, and label the absence of a concrete example. Fabricated evidence is a hard failure of this skill.
 
 ## Visual aids
 
@@ -71,7 +71,7 @@ Keep visuals honest the same way as analogies: draw only relationships that actu
 - **One-line memory anchor**: ...
 ```
 
-Render the headers and content in the user's language. A narrower question ("can A talk to B") still gets both tracks, but the rational track leads with the direct answer before the four steps. The visual slot is optional — leave it empty when the concept has no shape worth drawing.
+Render the headers and content in the user's language. A narrower question — one a single fact answers, such as "can A talk to B" — still gets both tracks, but the rational track leads with the direct answer before the four steps. The visual slot is optional — leave it empty when the concept has no shape worth drawing.
 
 ## Worked examples
 
