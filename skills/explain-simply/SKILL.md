@@ -1,13 +1,20 @@
 ---
-name: teach-me
+name: explain-simply
 version: "1.0.0"
 user-invocable: true
-description: "Dual-track technical concept explanation — answer concept/mechanism questions with two complementary tracks: a rational track (one-sentence definition → why it exists → concrete shape in the user's codebase with real file/line evidence → key design implication) and an intuitive track (everyday analogy + one-line memory anchor). Use whenever the user asks 「X 是什么」「为什么需要 X」「A 和 B 能不能/怎么通信」「给我讲讲 X」「用大白话解释 X」「帮我理解 X」, \"what is X\", \"how does X work\", \"why does X exist\", \"explain X\", \"teach me X\" about mechanisms, architecture, protocols, or processes — even if they never say \"explain\". Analogies must not introduce wrong intuitions; code evidence must be real, never invented. Do NOT use for hands-on tool tutorials or onboarding walkthroughs (use teach), marketing articles (article-writer), or design-doc rewriting (tech-review-doc)."
+description: "Make hard concepts easy to grasp — dual-track explanation: a rational track that goes deep (one-sentence definition → why it exists → concrete shape in the user's codebase with real file/line evidence → key design implication) and an intuitive track that keeps it simple (everyday analogy + one-line memory anchor); the simple output is earned by the deep process. Use whenever the user asks 「X 是什么」「为什么需要 X」「A 和 B 能不能/怎么通信」「给我讲讲 X」「用大白话解释 X」「帮我理解 X」, \"what is X\", \"how does X work\", \"why does X exist\", \"explain X\", \"teach me X\" about mechanisms, architecture, protocols, or processes — even if they never say \"explain\". Analogies must not introduce wrong intuitions; code evidence must be real, never invented. Do NOT use for hands-on tool tutorials or onboarding walkthroughs (use teach), marketing articles (article-writer), or design-doc rewriting (tech-review-doc)."
 ---
 
-# Teach Me — Dual-Track Concept Explanation
+# Explain Simply — Dual-Track Concept Explanation
 
 > Explain a technical concept on two complementary tracks: a **rational track** that builds an accurate mental model, and an **intuitive track** that lowers the comprehension barrier and gives the user something memorable and repeatable. The two tracks reinforce each other; deliver both in one answer, in the user's language.
+
+## Design root
+
+The skill's promise — explain it simply — presupposes depth: the rational track (deep) is the precondition of the intuitive track (simple). A simple explanation is earned by deep understanding, never by skipping it.
+
+- The circulating aphorism "If you can't explain it simply, you don't understand it well enough" — attributed to Einstein and Feynman, no verified source (Wikiquote marks the attribution unsubstantiated).
+- The documented Feynman version: asked to prepare a freshman lecture on why spin-½ particles obey Fermi–Dirac statistics, Feynman returned days later conceding "I couldn't do it. I couldn't reduce it to the freshman level. That means we really don't understand it." — David & Judith Goodstein, *Feynman's Lost Lecture* (1996), p. 52.
 
 ## When to use
 
