@@ -9,6 +9,6 @@
 
 ## 2. Spec sync & verification
 
-- [ ] 2.1 Archive change (sync MODIFIED requirement 2 into `openspec/specs/explain-simply/spec.md`)
-- [ ] 2.2 `openspec validate refine-explain-simply-research` + `openspec validate --specs` + `npm run lint:skill-description` all pass
-- [ ] 2.3 Commit to `refactor/rename-teach-me-to-explain-simply` and push (updates PR #289)
+- [x] 2.1 Archive change (sync MODIFIED requirement 2 into `openspec/specs/explain-simply/spec.md`)
+- [x] 2.2 `openspec validate refine-explain-simply-research` + `openspec validate --specs` + `npm run lint:skill-description` all pass
+- [x] 2.3 Commit to `refactor/rename-teach-me-to-explain-simply` and push (updates PR #289)
