@@ -1,12 +1,13 @@
 ---
 name: goal-driven-workflow
-version: "0.2.0"
+version: "0.3.0"
 user-invocable: true
-description: "Goal-Driven long-run workflow: run an agent autonomously for hours toward a verifiable goal. Five stages — ① clarify requirements & output contract ② layer acceptance criteria + design the /goal condition (measurable end state, stated check, constraints, turn/time cap) ③ sub-agent division & context management (context-rot mitigation) ④ launch the long run (/goal, claude -p non-interactive, or manual-loop fallback) ⑤ completion report & human acceptance. Built on top of Claude Code's native /goal harness, with a generic fallback for environments without /goal. Triggers — 「goal 长跑」「goal run」「goal-driven」「目标驱动长跑」「一个 goal 下去跑」「长跑目标」「无人值守跑任务」「goal-run」 / goal run, goal-driven, long-run goal, autonomous run, run until done."
+description: "Goal-Driven long-run workflow: run an agent autonomously for hours toward a verifiable goal. Five stages — ① deep intake interview & output contract (approach frozen before launch) ② layer acceptance criteria + design the /goal condition (measurable end state, stated check, constraints, turn/time cap) ③ sub-agent division & context management (context-rot mitigation) ④ launch the long run (/goal, claude -p non-interactive, or manual-loop fallback) ⑤ completion report & human acceptance. Built on top of Claude Code's native /goal harness, with a generic fallback for environments without /goal. Triggers — 「goal 长跑」「goal run」「goal-driven」「目标驱动长跑」「一个 goal 下去跑」「长跑目标」「无人值守跑任务」「goal-run」 / goal run, goal-driven, long-run goal, autonomous run, run until done."
 dependencies:
   - clarifying-question-discipline
   - completion-evidence-discipline
   - design-approval-gate
+  - intake-interview-discipline
 ---
 
 # Goal-Driven Long-Run Workflow
@@ -29,6 +30,7 @@ Frontmatter `dependencies`; prerequisite check must pass or the flow aborts:
 - `clarifying-question-discipline` — stage 1 clarification
 - `completion-evidence-discipline` — stage 2/5 acceptance evidence
 - `design-approval-gate` — stage 4 launch approval pattern (see long-run divergence below)
+- `intake-interview-discipline` — stage 1 deep intake (fog-bounded interview → approach comparison → freeze → pre-launch self-review); stage 4 in-run self-answer rules; stage 5 ledger surfacing
 
 **Related (informational)**: `solve-workflow` (full PDCA); handbook §8 of `docs/7x24-agent-reliability-handbook.md`.
 
@@ -67,18 +69,24 @@ Long-run scale is already expressed by the goal condition and budget in stage 2.
 ## Stage 1: Clarify Requirements & Output Contract
 
 > ⚠️ Follow `clarifying-question-discipline` (one question per turn; multi-round until clear; clarify first, do not rush to answer).
+> 🔒 Deep intake: follow `intake-interview-discipline` §A (deep interview → approach freeze → bounded pre-launch self-review).
 
 1. **Restate the goal**; extract goal / deliverables / constraints / expected outcome.
-2. **Ask exactly ONE most critical question per turn** until the goal is unambiguous (selection per `clarifying-question-discipline`). Prefer structured single-select with a recommended answer; fall back to prose if the host has no structured UI.
-3. **Output contract**: agree on deliverable(s) and what "done" looks like.
-4. **Pre-judge output vs outcome** (see stage 2): mark which standards the agent can self-verify (output-type) vs which need human judgment (outcome-type).
-5. Fill **Template 1** ([reference.md](reference.md) § Stage 1).
+2. **Ask exactly ONE most critical question per turn** until no blocking fog remains (selection per `clarifying-question-discipline`; graduation per `intake-interview-discipline`). Prefer structured single-select with a recommended answer; fall back to prose if the host has no structured UI.
+3. **Approach comparison & freeze** — run `intake-interview-discipline` §A steps 4–6 (approach comparison → freeze → pre-launch self-review); the frozen-decisions block lands in Template 1 ([reference.md](reference.md) § Stage 1).
+4. **Output contract**: agree on deliverable(s) and what "done" looks like.
+5. **Pre-judge output vs outcome** (see stage 2): mark which standards the agent can self-verify (output-type) vs which need human judgment (outcome-type).
+6. Fill **Template 1** ([reference.md](reference.md) § Stage 1), including the frozen-decisions block.
 
-**Red Flags**: dumping multiple clarifying questions/open points in one message; rushing to answer during clarification; rushing past clarification into the run; fuzzy "just make it good" goals; skipping scope/out-of-scope boundaries.
+> **Unattended intake** (no human present, e.g. a batch child run): the task card's frozen decisions supply this stage; if absent, run the interview in self-answer mode (`intake-interview-discipline` integration guide §4 — auto-mode self-answer intake) and flag every answer as an assumption.
+
+**Red Flags**: dumping multiple clarifying questions/open points in one message; rushing to answer during clarification; rushing past clarification into the run; fuzzy "just make it good" goals; skipping scope/out-of-scope boundaries; launching without a frozen approach + self-review (deep-intake freeze skipped).
 
 ---
 
 ## Stage 2: Acceptance Criteria + Goal Condition
+
+> The goal condition derives from the frozen approach (stage 1 freeze): this stage layers acceptance criteria on top of it — it does not revisit the direction. If the frozen approach looks wrong here, say so before launch, not after.
 
 1. **Layer acceptance criteria** into three tiers ([reference.md](reference.md) § Stage 2 — Template 2):
    - **Hard** (machine-verifiable) → agent self-verifies; these become the goal-harness condition
@@ -125,15 +133,17 @@ Long-run scale is already expressed by the goal condition and budget in stage 2.
    - **Per-turn project convention file** at repo root (e.g. `CLAUDE.md`) — encode architecture, coding conventions, acceptance rules for multi-turn consistency.
    - **Post-edit validation hooks** (e.g. PostToolUse lint/type-check) — catch issues mid-run.
    - **Auto-approval mode** for routine tool writes — without it, long runs stall on every file write.
+   - **Frozen decisions ride along**: the run prompt/contract carries the frozen approach + ticket ledger path (`intake-interview-discipline`), so the run can answer "what was frozen" without the human.
    - Confirm budget (turns/time/token) from stage 2.
 2. **Launch** (choose by environment):
    - Interactive goal harness: e.g. `/goal <condition>` when available.
    - Non-interactive agent CLI wrapping the harness: e.g. `claude -p "/goal <condition>" --output-format stream-json --verbose`.
    - **Fallback** (no goal harness): manual bounded loop — do work → verify against acceptance checklist → continue if unmet (budget-bounded) → else stop; explicit stop clause required.
-3. **Monitor**: check harness status (elapsed, turns, tokens, latest evaluator reason); interrupt early via the environment's cancel control (e.g. Ctrl+C / `/goal clear`).
-4. Output **Template 4** and start the run.
+3. **In-run decision rules**: mid-run decisions follow `intake-interview-discipline` §B (self-answer priority: frozen contract → investigated fact → conservative default; evidence falsifying the frozen approach → **clean stop + ticket report**, never a silent pivot).
+4. **Monitor**: check harness status (elapsed, turns, tokens, latest evaluator reason); interrupt early via the environment's cancel control (e.g. Ctrl+C / `/goal clear`).
+5. Output **Template 4** and start the run.
 
-**Red Flags**: skipping auto-approval mode (run stalls on writes); no budget; no per-turn convention file; one giant goal instead of a chain.
+**Red Flags**: skipping auto-approval mode (run stalls on writes); no budget; no per-turn convention file; one giant goal instead of a chain; silent mid-run approach pivot (violates `intake-interview-discipline` iron rule 2).
 
 ---
 
@@ -141,7 +151,7 @@ Long-run scale is already expressed by the goal condition and budget in stage 2.
 
 > Follow `completion-evidence-discipline`: any "done / pass" claim needs **fresh current-turn evidence** (command output / test results / file diffs). Label each item `Executed` (command + output summary) or `Pending` (manual action required).
 
-1. Main agent produces a **structured completion report** ([reference.md](reference.md) § Stage 5 — Template 5): goal recap, acceptance status (hard/soft/human), deliverables + verification evidence, leftovers/risks, spend.
+1. Main agent produces a **structured completion report** ([reference.md](reference.md) § Stage 5 — Template 5): goal recap, acceptance status (hard/soft/human), deliverables + verification evidence, leftovers/risks, spend, and the **decision/assumption ledger** (`intake-interview-discipline` §C — surface unresolved tickets, low-confidence assumptions, and high-impact-if-wrong entries for human judgment; clean-stop tickets included).
 2. **Human acceptance**:
    - Machine-verifiable items: reported by agent + spot-check.
    - Outcome-level items: **judged by the human** — harness evaluators verify output, never outcome.

@@ -84,8 +84,8 @@ open-skills/
 | perf-optimize-workflow | 工作流 | clarifying-question-discipline、known-issue-research（证据纪律为文内节；迭代循环为运行时环境强依赖） |
 | write-workflow | 工作流 | clarifying-question-discipline、tech-review-doc、workflow-mode-lifecycle、humanizer（外置）、humanizer-zh（外置） |
 | brainstorm-workflow | 工作流 | brainstorming（外置）、solve-workflow |
-| goal-driven-workflow | 工作流 | clarifying-question-discipline、completion-evidence-discipline、design-approval-gate |
-| goal-driven-batch | 工作流 | goal-driven-workflow、design-approval-gate |
+| goal-driven-workflow | 工作流 | clarifying-question-discipline、completion-evidence-discipline、design-approval-gate、intake-interview-discipline |
+| goal-driven-batch | 工作流 | goal-driven-workflow、design-approval-gate、intake-interview-discipline |
 | tech-review-doc | 内容创作 | clarifying-question-discipline |
 | android-webview-debug | 工具 | 无 |
 | astrill-control | 工具 | 无 |
@@ -117,6 +117,7 @@ open-skills/
 | feature-branch-closeout | 工作流纪律 | merge-discipline、delivery-discipline |
 | delivery-discipline | 工作流纪律 | git-commit |
 | decision-fog-discipline | 工作流纪律 | 无 |
+| intake-interview-discipline | 工作流纪律 | clarifying-question-discipline、decision-fog-discipline |
 | git-worktree-discipline | 工作流纪律 | 无 |
 | merge-discipline | 合并纪律 | pr-code-review |
 | pr-code-review | 审查 | 无 |
