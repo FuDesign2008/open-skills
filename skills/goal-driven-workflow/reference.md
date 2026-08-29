@@ -9,6 +9,7 @@ Per-stage output templates for `goal-driven-workflow`, plus a primary-harness ch
 ```
 【Goal restatement】I understand the goal as: ...
 【Key elements】Deliverables: ... / Constraints: ... / Background: ... / Expected outcome: ...
+【Frozen decisions】(per intake-interview-discipline: chosen approach one-liner; resolved tickets; deferred tickets + reason; initial assumptions; pre-launch self-review pass/blocking doubt)
 【Output vs Outcome pre-judge】
 - Output-type (agent can self-verify): <e.g. build passes, tests green, no TODO>
 - Outcome-type (needs human acceptance): <e.g. design fits team architecture norms>
@@ -20,6 +21,7 @@ Per-stage output templates for `goal-driven-workflow`, plus a primary-harness ch
 | Item | Content |
 |------|---------|
 | Goal (one paragraph) | ... |
+| Frozen approach (intake freeze) | ... |
 | Deliverables | ... |
 | Success criteria (machine-verifiable) | ... |
 | Success criteria (human judgment) | ... |
@@ -126,6 +128,10 @@ Example: all tests in test/auth pass and the lint step is clean, stop after 20 t
 - Incomplete items / known risks / decisions needed
 - Next-step suggestions
 
+### Decision & assumption ledger (from intake-interview-discipline)
+- Surface for human judgment: unresolved tickets, low-confidence assumptions, high-impact-if-wrong entries, clean-stop tickets
+- Remaining entries listed for spot-check; humans MAY overturn any entry
+
 ### Notes
 - Wall time / turns / tokens / plan deviations
 ```
@@ -186,6 +192,7 @@ goal-driven-workflow strongly depends on (missing = abort):
 - `clarifying-question-discipline`: stage 1 requirement clarification
 - `completion-evidence-discipline`: stage 2/5 acceptance evidence
 - `design-approval-gate`: stage 4 launch approval pattern (long-run high-impact still pauses under auto)
+- `intake-interview-discipline`: stage 1 deep intake (interview → approach freeze → pre-launch self-review); stage 4 in-run self-answer rules; stage 5 ledger surfacing
 
 【Install】
   npx skills add FuDesign2008/open-skills -g --skill <name> --yes

@@ -18,6 +18,13 @@ File name: `.goal-driven/<slug>.md` (slug = kebab-case goal summary; date prefix
 ## Goal Condition
 <measurable end state> + <stated check how it is proven> + <constraints that must not change> + <budget clause "or stop after N turns / N minutes">
 
+## Frozen Decisions (intake)
+- Chosen approach: <one line> (comparison table recorded at: <where>)
+- Resolved tickets: <ticket → decision, one per line>
+- Deferred tickets: <ticket — reason>
+- Initial assumptions: <assumption — impact if wrong>
+- Pre-launch self-review: pass / blocking doubt raised: <what>
+
 ## Constraints
 - <files/dirs/scope boundaries; things the run must not touch>
 
@@ -25,7 +32,7 @@ File name: `.goal-driven/<slug>.md` (slug = kebab-case goal summary; date prefix
 <filled after the run: engine report path, branch name, result tier (done/failed/...), outcome items awaiting human judgment>
 ```
 
-The budget clause mirrors the engine's own mandatory-budget rule — a card without one fails the consumption-entry check.
+The budget clause mirrors the engine's own mandatory-budget rule — a card without one fails the consumption-entry check. The Frozen Decisions section mirrors `intake-interview-discipline` — it answers the child engine's stage 1 intake so the child never re-asks what was frozen; falsifying evidence mid-run produces a clean stop + ticket, not a silent pivot.
 
 The estimate is advisory only: caps and the per-card budget stay authoritative, and estimate drift never invalidates an approval. Derive it from the card's budget ceiling plus visible scope (files/dirs touched, constraint complexity); prefer coarse bands over false precision.
 
@@ -54,6 +61,7 @@ Path: `.goal-driven/runs/<batch-id>/progress.md` (`batch-id` = run start timesta
   - <branch> — <task slug> — <result tier> — report: <path>
 - Needs your judgment:
   - <outcome-type item per engine report>
+  - <ledger rollup per intake-interview-discipline: unresolved tickets / low-confidence assumptions / high-impact-if-wrong entries; clean-stop tickets with options>
 - Suggested merge order / conflicts: <short list>
 ```
 
