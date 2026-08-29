@@ -69,16 +69,16 @@ Long-run scale is already expressed by the goal condition and budget in stage 2.
 ## Stage 1: Clarify Requirements & Output Contract
 
 > ⚠️ Follow `clarifying-question-discipline` (one question per turn; multi-round until clear; clarify first, do not rush to answer).
-> 🔒 Deep intake: follow `intake-interview-discipline` §A — fog-bounded interview (destination → tickets → one-per-turn resolution) → approach comparison → **freeze** into the output contract → bounded pre-launch self-review.
+> 🔒 Deep intake: follow `intake-interview-discipline` §A (deep interview → approach freeze → bounded pre-launch self-review).
 
 1. **Restate the goal**; extract goal / deliverables / constraints / expected outcome.
 2. **Ask exactly ONE most critical question per turn** until no blocking fog remains (selection per `clarifying-question-discipline`; graduation per `intake-interview-discipline`). Prefer structured single-select with a recommended answer; fall back to prose if the host has no structured UI.
-3. **Approach comparison & freeze** (per `intake-interview-discipline` §A steps 4–6): 2–5 approaches in one comparison table (lean path: 1 + risk note) → human picks → frozen-decisions block into Template 1 → checklist-level self-review; a remaining blocking doubt goes back to the human **now** — after launch there is no one to ask.
+3. **Approach comparison & freeze** — run `intake-interview-discipline` §A steps 4–6 (approach comparison → freeze → pre-launch self-review); the frozen-decisions block lands in Template 1 ([reference.md](reference.md) § Stage 1).
 4. **Output contract**: agree on deliverable(s) and what "done" looks like.
 5. **Pre-judge output vs outcome** (see stage 2): mark which standards the agent can self-verify (output-type) vs which need human judgment (outcome-type).
 6. Fill **Template 1** ([reference.md](reference.md) § Stage 1), including the frozen-decisions block.
 
-> **Unattended intake** (no human present, e.g. a batch child run): the task card's frozen decisions supply this stage; if absent, run the interview in self-answer mode (`intake-interview-discipline` integration guide §4) and flag every answer as an assumption.
+> **Unattended intake** (no human present, e.g. a batch child run): the task card's frozen decisions supply this stage; if absent, run the interview in self-answer mode (`intake-interview-discipline` integration guide §4 — auto-mode self-answer intake) and flag every answer as an assumption.
 
 **Red Flags**: dumping multiple clarifying questions/open points in one message; rushing to answer during clarification; rushing past clarification into the run; fuzzy "just make it good" goals; skipping scope/out-of-scope boundaries; launching without a frozen approach + self-review (deep-intake freeze skipped).
 

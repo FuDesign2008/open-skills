@@ -1,7 +1,7 @@
 # intake-deep-interview Specification
 
 ## Purpose
-TBD - created by archiving change 2026-08-29-goal-driven-deep-intake. Update Purpose after archive.
+Single source of truth for interactive-grade question depth in unattended long-run hosts: deep intake interview with approach freeze (run while the human is present), runtime self-answer rules with clean-stop tickets, and the acceptance ledger — composed from `clarifying-question-discipline` + `decision-fog-discipline`, referenced by hosts via frontmatter dependencies only.
 
 ## Requirements
 
