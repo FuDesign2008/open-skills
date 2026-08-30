@@ -43,10 +43,10 @@ Card format and all output templates live in [reference.md](reference.md).
 
 ## Stage 1: Enqueue & Pre-approve
 
-This stage exists because both **questions and approval** are cheapest while the human is present. The deep intake interview runs here per `intake-interview-discipline` §A (deep interview → approach freeze → pre-launch self-review), and the card freezes exactly what will run, which way it will go, and what it may cost. That frozen text is what makes unattended launches safe later, standing in for the launch approval the engine would otherwise demand from a person who is no longer there (`design-approval-gate` named-escape pattern; record the intake confirmation as the 留痕, e.g. in the card's approval line plus the git commit).
+This stage exists because both **questions and approval** are cheapest while the human is present. **Load `intake-interview-discipline`** and run its §A here (deep interview → approach freeze → pre-launch self-review); the card freezes exactly what will run, which way it will go, and what it may cost. That frozen text is what makes unattended launches safe later, standing in for the launch approval the engine would otherwise demand from a person who is no longer there (`design-approval-gate` named-escape pattern; record the intake confirmation as the 留痕, e.g. in the card's approval line plus the git commit).
 
-1. **Deep intake interview** — run `intake-interview-discipline` §A (deep interview → approach freeze → pre-launch self-review); the frozen-decisions block lands in the task card ([reference.md](reference.md) § Task Card). Explicit-skip escapes are the discipline's own (recorded assumptions).
-2. Shape the result into a task card ([reference.md](reference.md) § Task Card): measurable goal condition with a mandatory budget clause, frozen-decisions block, constraints, priority, status `pending`, plus a coarse duration estimate (advisory; derivation in [reference.md](reference.md)).
+1. **Deep intake interview** — per the loaded discipline, run its §A: (a) destination; (b) open-decision tickets, resolved **one question per turn until fog graduates** (ask exactly ONE most critical question this turn; ask the next only after the answer); (c) approach comparison — the human picks; (d) freeze into the task card ([reference.md](reference.md) § Task Card). Explicit-skip escapes are the discipline's own (recorded assumptions).
+2. Shape the result into a task card ([reference.md](reference.md) § Task Card): measurable goal condition with a mandatory budget clause, frozen-decisions block (incl. the ticket list), constraints, priority, status `pending`, plus a coarse duration estimate (advisory; derivation in [reference.md](reference.md)).
 3. Confirm condition + budget with the human **once, now** — "once" means one approval event closing the interview, not one question total; record approval in the card. Do not start a run unless they asked for one in the same breath.
 4. Suggest committing the card so backlog changes stay reviewable.
 
@@ -82,6 +82,7 @@ Assemble into `.goal-driven/runs/<batch-id>/`: the progress document, each execu
 
 - Starting consumption just because the skill was loaded, or letting a child launch re-pause for approval the card already froze (silently re-approving changed conditions is worse than pausing)
 - Shallow one-question intake ("confirm once" read as "ask once") that defers direction ambiguity into the unattended run; a child silently re-deciding or re-asking what the card froze
+- Interviewing from the pointer line alone — `intake-interview-discipline` never loaded, so depth collapses to its five-word summary
 - Reading the queue into memory once and never noticing mid-run that code state shifted under the remaining cards
 - Running two children concurrently or letting one failed card cancel the rest
 - Treating "budget exhausted" as task success — the report must say which acceptance tiers actually passed

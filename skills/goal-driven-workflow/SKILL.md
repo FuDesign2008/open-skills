@@ -69,11 +69,11 @@ Long-run scale is already expressed by the goal condition and budget in stage 2.
 ## Stage 1: Clarify Requirements & Output Contract
 
 > ⚠️ Follow `clarifying-question-discipline` (one question per turn; multi-round until clear; clarify first, do not rush to answer).
-> 🔒 Deep intake: follow `intake-interview-discipline` §A (deep interview → approach freeze → bounded pre-launch self-review).
+> 🔒 Deep intake: **load `intake-interview-discipline`** and run its §A (deep interview → approach freeze → bounded pre-launch self-review).
 
 1. **Restate the goal**; extract goal / deliverables / constraints / expected outcome.
 2. **Ask exactly ONE most critical question per turn** until no blocking fog remains (selection per `clarifying-question-discipline`; graduation per `intake-interview-discipline`). Prefer structured single-select with a recommended answer; fall back to prose if the host has no structured UI.
-3. **Approach comparison & freeze** — run `intake-interview-discipline` §A steps 4–6 (approach comparison → freeze → pre-launch self-review); the frozen-decisions block lands in Template 1 ([reference.md](reference.md) § Stage 1).
+3. **Approach comparison & freeze** — per the loaded discipline, §A steps 4–6 (approach comparison → freeze → pre-launch self-review); the frozen-decisions block lands in Template 1 ([reference.md](reference.md) § Stage 1).
 4. **Output contract**: agree on deliverable(s) and what "done" looks like.
 5. **Pre-judge output vs outcome** (see stage 2): mark which standards the agent can self-verify (output-type) vs which need human judgment (outcome-type).
 6. Fill **Template 1** ([reference.md](reference.md) § Stage 1), including the frozen-decisions block.
