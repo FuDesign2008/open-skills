@@ -9,7 +9,7 @@ Per-stage output templates for `goal-driven-workflow`, plus a primary-harness ch
 ```
 【Goal restatement】I understand the goal as: ...
 【Key elements】Deliverables: ... / Constraints: ... / Background: ... / Expected outcome: ...
-【Frozen decisions】(per intake-interview-discipline: chosen approach one-liner; resolved tickets; deferred tickets + reason; initial assumptions; pre-launch self-review pass/blocking doubt)
+【Frozen decisions】(per intake-interview-discipline: chosen approach one-liner; resolved tickets; deferred tickets + reason; initial assumptions; Decisions-I-made-for-you — self-answered decisions with impact tiers, shown at the approval event; pre-launch self-review pass/blocking doubt)
 【Output vs Outcome pre-judge】
 - Output-type (agent can self-verify): <e.g. build passes, tests green, no TODO>
 - Outcome-type (needs human acceptance): <e.g. design fits team architecture norms>
@@ -94,6 +94,7 @@ Example: all tests in test/auth pass and the lint step is clean, stop after 20 t
 - Approval: <approved / pending> (high-impact: unattended / large budget / irreversible — must approve before start; auto mode does not bypass)
 - Environment: interactive / non-interactive CLI / manual-loop fallback
 - Goal condition: <4 parts, including budget>
+- Traceability: none | openspec/<change-name> (opt-in; the change path rides the launch contract)
 - Companions:
   - [ ] Per-turn project convention file at repo root (e.g. CLAUDE.md)
   - [ ] Post-edit validation hooks (e.g. lint/typecheck on each edit)
@@ -104,7 +105,7 @@ Example: all tests in test/auth pass and the lint step is clean, stop after 20 t
   - Non-interactive: claude -p "/goal <condition>" --output-format stream-json --verbose
 ```
 
-**Run log** (during execution): turn count / tokens spent / latest evaluator reason / anomalies.
+**Run log** (during execution): turn count / tokens spent / latest evaluator reason / anomalies — one line per budget milestone (every half/third of the budget), with early-interrupt flags on sustained no-progress.
 
 ---
 
@@ -120,6 +121,13 @@ Example: all tests in test/auth pass and the lint step is clean, stop after 20 t
 - Soft: <self-check conclusion>
 - Human: <items left for human judgment>
 
+### Verification checklist (numbered — one line per item, no merged "looks fine" verdict)
+1. Goal achievement vs restated contract: <met / partial — gap>
+2. Frozen-approach comparison: <frozen vs actual, deviations + reasons>
+3. Tests & verification evidence: <per acceptance tier, Executed/Pending labels>
+4. Side effects — functional: <unexpected behavior changes elsewhere> / non-functional: <performance / security / maintainability>
+5. Logic & end-to-end review: <gaps or omissions found>
+
 ### Actual deliverables
 - Change/artifact list (path + one-line note)
 - Verification evidence (build/test output summaries, coverage, etc.) — per completion-evidence-discipline
@@ -134,6 +142,7 @@ Example: all tests in test/auth pass and the lint step is clean, stop after 20 t
 
 ### Notes
 - Wall time / turns / tokens / plan deviations
+- Traceability (opt-in): openspec validate <result>; archived <yes/no — evidence complete>
 ```
 
 ---
