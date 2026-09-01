@@ -163,12 +163,12 @@
     {
       "id": 9,
       "name": "counterpart-absent-intake-bounded",
-      "prompt": "我今晚不在，把『给搜索接口加缓存』排进队列自己跑，开 AI 对手方把交互关。缓存策略选 Redis 还是进程内你来定，但别动线上配置。",
-      "expected_output": "卡片记 counterpart: on；缺席档深谈由对手方按章程应答（缓存策略在预批准选项内挑选，决策入账本标记 counterpart-made）；「不动线上配置」为不可逆/保留类约束——对手方不得批准任何触碰线上配置的事项，命中即出票搁置。",
+      "prompt": "我今晚不在，把『给搜索接口加缓存』排进队列自己跑，交互预算票选 B（AI 对手方代理）。缓存策略选 Redis 还是进程内你来定，但别动线上配置。",
+      "expected_output": "卡片记 Stage-exit policy: counterpart；缺席档深谈由对手方按章程应答（缓存策略在预批准选项内挑选，决策入账本标记 counterpart-made）；「不动线上配置」为不可逆/保留类约束——对手方不得批准任何触碰线上配置的事项，命中即出票搁置。",
       "files": [],
       "assertions": [
         {
-          "text": "卡片记录 counterpart: on 与检查点章程"
+          "text": "卡片记录 Stage-exit policy: counterpart 与检查点章程"
         },
         {
           "text": "缓存策略由对手方在选项内挑选并标注 counterpart-made 入账"
@@ -181,7 +181,7 @@
     {
       "id": 10,
       "name": "counterpart-report-check-rejects",
-      "prompt": "队列里 counterpart: on 的任务子运行刚提交完成报告，声称测试全过但没附命令输出。",
+      "prompt": "队列里 Stage-exit policy: counterpart 的任务子运行刚提交完成报告，声称测试全过但没附命令输出。",
       "expected_output": "record 步将核对清单交盲上下文对手方质询；无证据标签的『通过』视为无效裁决，打回重验或出票，绝不静默记 done。",
       "files": [],
       "assertions": [
@@ -200,7 +200,7 @@
       "id": 11,
       "name": "engine-dispatch-solve-child",
       "prompt": "把『重构支付模块并出评审文档』排进队列，引擎用 solve-workflow，今晚无人值守跑。",
-      "expected_output": "卡片记 Engine: solve-workflow（skill 精确名）+ counterpart: on；派发时以卡片问题+冻结决策作为 solve-workflow 阶段 1 输入，auto 模式传播；其阶段出口按 ai-counterpart 章程由对手方坐席；队列契约（隔离/记录/配额）不变。",
+      "expected_output": "卡片记 Engine: solve-workflow（skill 精确名）+ Stage-exit policy: counterpart；派发时以卡片问题+冻结决策作为 solve-workflow 阶段 1 输入，auto 模式传播；其阶段出口按 ai-counterpart 章程由对手方坐席；队列契约（隔离/记录/配额）不变。",
       "files": [],
       "assertions": [
         {
@@ -229,6 +229,42 @@
         },
         {
           "text": "其余 pending 任务继续正常消费"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "name": "interaction-budget-first-ticket",
+      "prompt": "把这个需求排进队列今晚跑：迁移老服务到新网关。子运行过程怎么走我没空盯。",
+      "expected_output": "深谈第一票为交互预算三选一（A 全程真人 / B AI 对手方代理 / C 自动逃逸，含推荐与后果说明），选定值写入 Stage-exit policy 字段；输出明示决策域分层（任务级已冻结/过程级分叉归属由本票决定）；policy 覆盖触发词模式传播。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "第一票是交互预算三选一而非范围票"
+        },
+        {
+          "text": "选定值落 Stage-exit policy 字段并说明覆盖触发词规则"
+        },
+        {
+          "text": "明示任务级/过程级决策域分层"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "name": "factual-answer-gate-intercept",
+      "prompt": "队列卡片 Decisions-I-made 里代答了分支基线 feat/old-base，但当前工作区实际在 release/new 上且 feat/old-base 落后近百提交。",
+      "expected_output": "消费入口检查对 factual 代答做廉价实证（merge-base/branch --contains/符号存在性），发现基线证伪即将卡片搁置为 conflict pending confirmation 并注记证据，不派发、不留到运行中 clean stop。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "factual 代答在派发前被实证核查"
+        },
+        {
+          "text": "证伪卡片被搁置在门口而非运行中出票"
+        },
+        {
+          "text": "其余任务消费不受影响"
         }
       ]
     }

@@ -13,7 +13,7 @@ File name: `.goal-driven/<slug>.md` (slug = kebab-case goal summary; date prefix
 - Priority: P1
 - Engine: goal-driven-workflow | solve-workflow | opsx-solve-workflow (default when absent: goal-driven-workflow; fixed at freeze)
 - Traceability: none | openspec/<change-name> (only when the user opted into OpenSpec sedimentation at enqueue)
-- Counterpart: on | off (only when the user opted into AI-counterpart checkpoints; charter per ai-counterpart-discipline)
+- Stage-exit policy: manual-pause | counterpart | auto-escape (set by the interaction-budget first ticket; a legacy `Counterpart: on` line reads as `counterpart`)
 - Estimate: <coarse duration band, e.g. "<30min" / "~1h" / ">2h">
 - Created: YYYY-MM-DD HH:MM
 - Approved: <who/how the human confirmed condition + budget, e.g. "chat confirm 2026-08-26" / commit sha>
@@ -82,4 +82,5 @@ Path: `.goal-driven/runs/<batch-id>/progress.md` (`batch-id` = run start timesta
 - Mid-run discovery: a re-scanned card missing its approval record stays `pending` with the progress note `awaiting approval (added mid-run)`; malformed cards likewise stay `pending` without stalling the loop; discovery events land in the progress document's Notes.
 - Presence tiers: intake depth follows `intake-interview-discipline` §A — present (default) per-decision questioning with the three-part base; declared/structural absence keeps the once-confirm mode unchanged.
 - OpenSpec archive timing (when `Traceability` is set): archive that task's change after its machine-verifiable evidence is complete; outcome-type findings flow back as new or revised cards, not as archive blockers.
-- Counterpart mode (when `Counterpart: on`): checkpoints per the card's charter — absent-mode intake Q&A, approval event, record-step report check, conflict re-adjudication; every counterpart decision is ledger-marked `counterpart-made` and human-overturnable at acceptance.
+- Stage-exit policy absent → legacy trigger-word mode propagation + counterpart off (behavior identical to pre-policy versions). With `counterpart`: checkpoints per the card's charter — absent-mode intake Q&A, approval event, record-step report check, conflict re-adjudication; every counterpart decision is ledger-marked `counterpart-made` and human-overturnable at acceptance.
+- Factual Decisions-I-made entries are verified at the consumption-entry check (symbol-exists / branch-contains / merge-base); falsified entries park the card at the gate.
