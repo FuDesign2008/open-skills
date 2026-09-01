@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.20.0"
+version: "1.21.0"
 user-invocable: true
 description: "Eight-stage PDCA problem-solving workflow that persists analysis, proposal, design review, plan, execution, and verification into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context. Use for feature work, bug fixes, refactors, and complex engineering tasks that need long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick one-off edit with no traceability need — use solve-workflow instead. Triggers：「opsx解决」「OpenSpec解决」「规范化解决」「创建OpenSpec变更」「创建opsx变更」「用OpenSpec分析」「用OpenSpec修复」「opsx自动解决」「OpenSpec自动解决」「opsx-solve」「opsx-solve-workflow」 / opsx solve, OpenSpec solve workflow, create an OpenSpec change."
 dependencies:
@@ -30,7 +30,7 @@ dependencies:
   - figma-pixel-implement
   - figma-pixel-verify
   - runtime-verification-discipline
-  - ai-counterpart-discipline
+  - ai-proxy-discipline
 ---
 
 # OPSX Eight-Stage Problem-Solving Workflow
@@ -60,7 +60,7 @@ Not a replacement for plain `solve-workflow`:
 - **Manual mode**: the key exits of stages 1, 2, 3, 4, 5, 7, 8 must wait for user confirmation.
 - **Auto mode**: auto-advances through to verification; the stage 4 review loop caps at 3 rounds, then pauses.
 
-**Unattended counterpart exits**: as a queue child with `Stage-exit policy: counterpart` (child auto mode), each manual exit above becomes a counterpart checkpoint per `ai-counterpart-discipline` — fresh context, that stage's output as artifact-only input, evidence-tagged verdict, ledger-marked; the pre-execution approval point takes the counterpart's bounded pre-authorization instead of the bare auto escape of `design-approval-gate`; merge, irreversible, and protected-branch decisions stay human-only (park + ticket). Any other policy value or none → behavior identical to today.
+**Unattended proxy exits**: as a queue child with `Stage-exit policy: ai-proxy` (child auto mode), each manual exit above becomes a proxy checkpoint per `ai-proxy-discipline` — fresh context, that stage's output as artifact-only input, evidence-tagged verdict, ledger-marked; the pre-execution approval point takes the proxy's bounded pre-authorization instead of the bare auto escape of `design-approval-gate`; merge, irreversible, and protected-branch decisions stay human-only (park + ticket). Any other policy value or none → behavior identical to today.
 
 **Stop-point forecast**: starting as a queue child (problem + frozen decisions supplied), open with a forecast table — every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket — before analysis begins.
 

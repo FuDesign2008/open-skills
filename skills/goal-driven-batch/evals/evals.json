@@ -162,16 +162,16 @@
     },
     {
       "id": 9,
-      "name": "counterpart-absent-intake-bounded",
-      "prompt": "我今晚不在，把『给搜索接口加缓存』排进队列自己跑，交互预算票选 B（AI 对手方代理）。缓存策略选 Redis 还是进程内你来定，但别动线上配置。",
-      "expected_output": "卡片记 Stage-exit policy: counterpart；缺席档深谈由对手方按章程应答（缓存策略在预批准选项内挑选，决策入账本标记 counterpart-made）；「不动线上配置」为不可逆/保留类约束——对手方不得批准任何触碰线上配置的事项，命中即出票搁置。",
+      "name": "proxy-absent-intake-bounded",
+      "prompt": "我今晚不在，把『给搜索接口加缓存』排进队列自己跑，交互预算票选 B（AI 代理代理）。缓存策略选 Redis 还是进程内你来定，但别动线上配置。",
+      "expected_output": "卡片记 Stage-exit policy: ai-proxy；缺席档深谈由代理按章程应答（缓存策略在预批准选项内挑选，决策入账本标记 proxy-made）；「不动线上配置」为不可逆/保留类约束——代理不得批准任何触碰线上配置的事项，命中即出票搁置。",
       "files": [],
       "assertions": [
         {
-          "text": "卡片记录 Stage-exit policy: counterpart 与检查点章程"
+          "text": "卡片记录 Stage-exit policy: ai-proxy 与检查点章程"
         },
         {
-          "text": "缓存策略由对手方在选项内挑选并标注 counterpart-made 入账"
+          "text": "缓存策略由代理在选项内挑选并标注 proxy-made 入账"
         },
         {
           "text": "触碰线上配置的事项被识别为保留项，出票搁置而非批准"
@@ -180,13 +180,13 @@
     },
     {
       "id": 10,
-      "name": "counterpart-report-check-rejects",
-      "prompt": "队列里 Stage-exit policy: counterpart 的任务子运行刚提交完成报告，声称测试全过但没附命令输出。",
-      "expected_output": "record 步将核对清单交盲上下文对手方质询；无证据标签的『通过』视为无效裁决，打回重验或出票，绝不静默记 done。",
+      "name": "proxy-report-check-rejects",
+      "prompt": "队列里 Stage-exit policy: ai-proxy 的任务子运行刚提交完成报告，声称测试全过但没附命令输出。",
+      "expected_output": "record 步将核对清单交盲上下文代理质询；无证据标签的『通过』视为无效裁决，打回重验或出票，绝不静默记 done。",
       "files": [],
       "assertions": [
         {
-          "text": "对手方以盲上下文（仅章程+报告工件）质询"
+          "text": "代理以盲上下文（仅章程+报告工件）质询"
         },
         {
           "text": "无证据支撑的通过声明被打回或出票"
@@ -200,14 +200,14 @@
       "id": 11,
       "name": "engine-dispatch-solve-child",
       "prompt": "把『重构支付模块并出评审文档』排进队列，引擎用 solve-workflow，今晚无人值守跑。",
-      "expected_output": "卡片记 Engine: solve-workflow（skill 精确名）+ Stage-exit policy: counterpart；派发时以卡片问题+冻结决策作为 solve-workflow 阶段 1 输入，auto 模式传播；其阶段出口按 ai-counterpart 章程由对手方坐席；队列契约（隔离/记录/配额）不变。",
+      "expected_output": "卡片记 Engine: solve-workflow（skill 精确名）+ Stage-exit policy: ai-proxy；派发时以卡片问题+冻结决策作为 solve-workflow 阶段 1 输入，auto 模式传播；其阶段出口按 ai-proxy 章程由代理坐席；队列契约（隔离/记录/配额）不变。",
       "files": [],
       "assertions": [
         {
           "text": "卡片 Engine 字段值为 skill 精确名 solve-workflow"
         },
         {
-          "text": "说明子运行阶段出口由对手方按章程坐席（auto × counterpart 组合）"
+          "text": "说明子运行阶段出口由代理按章程坐席（auto × proxy 组合）"
         },
         {
           "text": "队列级契约（分支隔离/逐状态记录/caps）对任意引擎不变"
@@ -236,7 +236,7 @@
       "id": 13,
       "name": "interaction-budget-first-ticket",
       "prompt": "把这个需求排进队列今晚跑：迁移老服务到新网关。子运行过程怎么走我没空盯。",
-      "expected_output": "深谈第一票为交互预算三选一（A 全程真人 / B AI 对手方代理 / C 自动逃逸，含推荐与后果说明），选定值写入 Stage-exit policy 字段；输出明示决策域分层（任务级已冻结/过程级分叉归属由本票决定）；policy 覆盖触发词模式传播。",
+      "expected_output": "深谈第一票为交互预算三选一（A 全程真人 / B AI 代理代理 / C 自动逃逸，含推荐与后果说明），选定值写入 Stage-exit policy 字段；输出明示决策域分层（任务级已冻结/过程级分叉归属由本票决定）；policy 覆盖触发词模式传播。",
       "files": [],
       "assertions": [
         {
@@ -272,7 +272,7 @@
       "id": 15,
       "name": "jira-fix-engine-pr-open-terminal",
       "prompt": "把『修复 PROJ-1234 导出乱码』排进队列，引擎 jira-fix-workflow，今晚无人值守跑。",
-      "expected_output": "卡片 Engine: jira-fix-workflow、goal 条件携带 Jira 链接、Stage-exit policy 由交互预算第一票选定；子运行以显式 queue-child 标志启动、冻结决策供 stage 0–1、按 policy 处理出口（counterpart 则对手方坐席+停点预告）；止于 stage 9 PR-open——合并与 Jira 回写作为待办进验收包留人，绝不无人代理；🔴 分级终止记为非阻塞失败。",
+      "expected_output": "卡片 Engine: jira-fix-workflow、goal 条件携带 Jira 链接、Stage-exit policy 由交互预算第一票选定；子运行以显式 queue-child 标志启动、冻结决策供 stage 0–1、按 policy 处理出口（proxy 则代理坐席+停点预告）；止于 stage 9 PR-open——合并与 Jira 回写作为待办进验收包留人，绝不无人代理；🔴 分级终止记为非阻塞失败。",
       "files": [],
       "assertions": [
         {

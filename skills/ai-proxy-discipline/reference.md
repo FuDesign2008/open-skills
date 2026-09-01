@@ -35,7 +35,7 @@ Verdict format — every conclusion carries a tag, or it is not a verdict:
 - [UNRESOLVED] for what you cannot settle — escalate, never guess
 
 Output: verdict (approve / reject + what to re-verify / ticket) + one ledger entry draft
-(decision, rationale, tags, impact tier, counterpart-made).
+(decision, rationale, tags, impact tier, proxy-made).
 ```
 
 ## Ledger marking
@@ -44,8 +44,8 @@ Counterpart entries use the `intake-interview-discipline` §C field set, plus:
 
 | Extra field | Value |
 |---|---|
-| Source | counterpart-made |
+| Source | proxy-made |
 | Checkpoint | <which enumerated checkpoint> |
 | Evidence tags | [FACT:…] / [INFERENCE] / [UNRESOLVED] |
 
-Surfacing rule is §C's own: counterpart-made entries ride the normal acceptance rollup; the human MAY overturn any of them.
+Surfacing rule is §C's own: proxy-made entries ride the normal acceptance rollup; the human MAY overturn any of them.
