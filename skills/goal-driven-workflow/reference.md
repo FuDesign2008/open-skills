@@ -13,7 +13,7 @@ Per-stage output templates for `goal-driven-workflow`, plus a primary-harness ch
 【Output vs Outcome pre-judge】
 - Output-type (agent can self-verify): <e.g. build passes, tests green, no TODO>
 - Outcome-type (needs human acceptance): <e.g. design fits team architecture norms>
-【Options】traceability: openspec | none (default off) · stage-exit policy: manual-pause | counterpart | auto-escape (default absent = legacy trigger rule; per ai-counterpart-discipline charter)
+【Options】traceability: openspec | none (default off) · stage-exit policy: manual | ai-proxy | auto (default absent = legacy trigger rule; per ai-proxy-discipline charter)
 【Points to confirm】(ask ONE question per turn, per clarifying-question-discipline)
 ```
 

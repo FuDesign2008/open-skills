@@ -116,7 +116,7 @@ The system SHALL require each queued task to execute on its own branch (or linke
 
 ### Requirement: 模式向子运行传播
 
-The system SHALL propagate batch-level mode explicitly into every child long-run invocation: a card's `Stage-exit policy` field, when present, overrides trigger-word propagation (manual-pause → child manual mode; counterpart → child auto mode + counterpart checkpoints; auto-escape → child auto mode with named escapes); with no field, the legacy trigger rule applies (queue trigger containing 「自动」/"auto" runs children in auto mode; default trigger leaves children in their manual defaults). Child skills' auto-revert-to-manual behavior MUST NOT break queue continuity between tasks. The orchestrator states mode propagation once and does not rely on ambient inheritance.
+The system SHALL propagate batch-level mode explicitly into every child long-run invocation: a card's `Stage-exit policy` field, when present, overrides trigger-word propagation (manual → child manual mode; proxy → child auto mode + proxy checkpoints; auto → child auto mode with named escapes); with no field, the legacy trigger rule applies (queue trigger containing 「自动」/"auto" runs children in auto mode; default trigger leaves children in their manual defaults). Child skills' auto-revert-to-manual behavior MUST NOT break queue continuity between tasks. The orchestrator states mode propagation once and does not rely on ambient inheritance.
 
 #### Scenario: 自动批次持续自动
 
@@ -214,18 +214,9 @@ The queue SHALL offer OpenSpec sedimentation as an **opt-in enqueue-time decisio
 - **WHEN** 用户未选择 openspec 沉淀（或工程无 openspec/）
 - **THEN** 选项不出现或不生效，队列全流程行为与无此能力时逐字一致
 
-### Requirement: goal-queue 对手方检查点接线
-
-`goal-driven-batch` SHALL declare `ai-counterpart-discipline` in frontmatter `dependencies` (prerequisite check with install guidance; abort on missing when the card's Stage-exit policy is `counterpart`) and wire it, when the card records `Stage-exit policy: counterpart`, at these thin-pointer checkpoints: enqueue intake Q&A (absent human), the card approval event (counterpart approval = bounded pre-authorization, Decisions-I-made section displayed to it), the record-step verification-checklist check on each child report, and conflict re-adjudication (whether a parked card's constraints re-validate within the original frozen scope). Checkpoint invocations count against the queue budget. With any other policy value or none, queue behavior is identical to today.
-
-#### Scenario: 对手方批准事件
-
-- **WHEN** 卡片 Stage-exit policy: counterpart 且批准事件到达而真人缺席
-- **THEN** 对手方在展示 Decisions-I-made-for-you 段后给有界预授权批准，决策入账本标记 counterpart-made
-
 ### Requirement: 子任务引擎可选调度
 
-Task cards SHALL support an optional `Engine` field with exact-skill-name vocabulary: `goal-driven-workflow` (default when absent) | `solve-workflow` | `opsx-solve-workflow` | `jira-fix-workflow`, fixed per card at freeze time. The Delegate step SHALL dispatch by this field and pass the card's `Stage-exit policy` along: a `solve-workflow` child receives the card's problem statement + frozen-decisions block as its stage-1 input and runs per the policy (counterpart → auto mode with counterpart-occupied exits; manual-pause → manual mode; auto-escape → auto with named escapes); an `opsx-solve-workflow` child additionally passes the openspec environment gate (`openspec/` directory + usable CLI detection) — a card whose engine requires a missing environment parks at the consumption-entry check as `conflict pending confirmation`, never degrading to another engine silently. A `jira-fix-workflow` child receives the Jira issue link/key as the card's goal condition, the frozen-decisions block as its stage 0–1 supply, an explicit `queue-child` context flag, and a **PR-open terminal**: the child runs through stage 9 (PR open) and a record-only closeout — stage 10 (merge + Jira writeback) is deferred to the human, whose merge authority the queue never proxies; the acceptance package lists the awaiting PR and the pending merge + writeback as explicit follow-ups. Queue-level contracts (caps, branch isolation, per-status recording, relationship pass) apply to every engine unchanged. Cards without the fields behave identically to today.
+Task cards SHALL support an optional `Engine` field with exact-skill-name vocabulary: `goal-driven-workflow` (default when absent) | `solve-workflow` | `opsx-solve-workflow` | `jira-fix-workflow`, fixed per card at freeze time. The Delegate step SHALL dispatch by this field and pass the card's `Stage-exit policy` along: a `solve-workflow` child receives the card's problem statement + frozen-decisions block as its stage-1 input and runs per the policy (proxy → auto mode with proxy-occupied exits; manual → manual mode; auto → auto with named escapes); an `opsx-solve-workflow` child additionally passes the openspec environment gate (`openspec/` directory + usable CLI detection) — a card whose engine requires a missing environment parks at the consumption-entry check as `conflict pending confirmation`, never degrading to another engine silently. A `jira-fix-workflow` child receives the Jira issue link/key as the card's goal condition, the frozen-decisions block as its stage 0–1 supply, an explicit `queue-child` context flag, and a **PR-open terminal**: the child runs through stage 9 (PR open) and a record-only closeout — stage 10 (merge + Jira writeback) is deferred to the human, whose merge authority the queue never proxies; the acceptance package lists the awaiting PR and the pending merge + writeback as explicit follow-ups. Queue-level contracts (caps, branch isolation, per-status recording, relationship pass) apply to every engine unchanged. Cards without the fields behave identically to today.
 
 #### Scenario: 派发给 solve-workflow 子运行
 
@@ -249,7 +240,7 @@ Task cards SHALL support an optional `Engine` field with exact-skill-name vocabu
 
 ### Requirement: 交互预算票与阶段出口策略
 
-The enqueue interview SHALL open with a fixed first ticket — the **interaction budget** — before scope tickets: A. full-human (child manual mode, every stage exit asks the user) / B. AI-counterpart proxy (`Stage-exit policy: counterpart`: child auto mode + counterpart checkpoints per charter, ledger trail, human reviews only the final acceptance package) / C. auto-escape (child auto mode, named escapes + self-answer). The chosen value lands on the card's `Stage-exit policy: manual-pause | counterpart | auto-escape` field (a legacy `Counterpart: on` line reads as `counterpart`; the field replaces the former counterpart decision item), is passed to the child along with `Engine`, and overrides trigger-word mode propagation for every engine. The enqueue output SHALL state the layer split explicitly: intake tickets freeze task-level WHAT; process-level forks that only emerge during analysis (approach picks, verdicts, plan confirmation) belong to the layer this ticket assigns.
+The enqueue interview SHALL open with a fixed first ticket — the **interaction budget** — before scope tickets: A. full-human (child manual mode, every stage exit asks the user) / B. AI-proxy proxy (`Stage-exit policy: ai-proxy`: child auto mode + proxy checkpoints per charter, ledger trail, human reviews only the final acceptance package) / C. auto (child auto mode, named escapes + self-answer). The chosen value lands on the card's `Stage-exit policy: manual | ai-proxy | auto` field (a legacy `Counterpart: on` line reads as `proxy`; the field replaces the former proxy decision item), is passed to the child along with `Engine`, and overrides trigger-word mode propagation for every engine. The enqueue output SHALL state the layer split explicitly: intake tickets freeze task-level WHAT; process-level forks that only emerge during analysis (approach picks, verdicts, plan confirmation) belong to the layer this ticket assigns.
 
 #### Scenario: 第一票知情选择
 
@@ -258,8 +249,8 @@ The enqueue interview SHALL open with a fixed first ticket — the **interaction
 
 #### Scenario: policy 覆盖触发词
 
-- **WHEN** 卡片 Stage-exit policy: counterpart 且触发语为「启动」（不含「自动」）
-- **THEN** 子运行以 auto 模式 + 对手方检查点执行，触发词规则被覆盖；无字段时保持现行触发词规则，行为与历史版本逐字一致
+- **WHEN** 卡片 Stage-exit policy: ai-proxy 且触发语为「启动」（不含「自动」）
+- **THEN** 子运行以 auto 模式 + 代理检查点执行，触发词规则被覆盖；无字段时保持现行触发词规则，行为与历史版本逐字一致
 
 ### Requirement: 消费入口事实性代答实证
 
@@ -269,4 +260,13 @@ Decisions-I-made entries SHALL be marked `factual` (branch baselines, dependency
 
 - **WHEN** 冻结的分支基线代答经实证与当前代码世界不符（如基线为现工作区的陈旧祖先、所依赖的 MR 基座不存在其上）
 - **THEN** 消费入口检查即将该卡搁置为 conflict pending confirmation 并注记证伪证据，不派发、不留到运行中 clean stop
+
+### Requirement: goal-queue 代理检查点接线
+
+`goal-driven-batch` SHALL declare `ai-proxy-discipline` in frontmatter `dependencies` (prerequisite check with install guidance; abort on missing when the card's Stage-exit policy is `proxy`) and wire it, when the card records `Stage-exit policy: ai-proxy`, at these thin-pointer checkpoints: enqueue intake Q&A (absent human), the card approval event (proxy approval = bounded pre-authorization, Decisions-I-made section displayed to it), the record-step verification-checklist check on each child report, and conflict re-adjudication (whether a parked card's constraints re-validate within the original frozen scope). Checkpoint invocations count against the queue budget. With any other policy value or none, queue behavior is identical to today.
+
+#### Scenario: 代理批准事件
+
+- **WHEN** 卡片 Stage-exit policy: ai-proxy 且批准事件到达而真人缺席
+- **THEN** 代理在展示 Decisions-I-made-for-you 段后给有界预授权批准，决策入账本标记 proxy-made
 

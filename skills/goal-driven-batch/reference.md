@@ -13,7 +13,7 @@ File name: `.goal-driven/<slug>.md` (slug = kebab-case goal summary; date prefix
 - Priority: P1
 - Engine: goal-driven-workflow | solve-workflow | opsx-solve-workflow | jira-fix-workflow (default when absent: goal-driven-workflow; fixed at freeze; jira-fix queue children terminate at PR-open — merge + writeback stay human)
 - Traceability: none | openspec/<change-name> (only when the user opted into OpenSpec sedimentation at enqueue)
-- Stage-exit policy: manual-pause | counterpart | auto-escape (set by the interaction-budget first ticket; a legacy `Counterpart: on` line reads as `counterpart`)
+- Stage-exit policy: manual | ai-proxy | auto (set by the interaction-budget first ticket; legacy `Counterpart: on` / `counterpart` values read as `ai-proxy`; legacy `manual-pause` / `auto-escape` read as `manual` / `auto`)
 - Estimate: <coarse duration band, e.g. "<30min" / "~1h" / ">2h">
 - Created: YYYY-MM-DD HH:MM
 - Approved: <who/how the human confirmed condition + budget, e.g. "chat confirm 2026-08-26" / commit sha>
@@ -82,5 +82,5 @@ Path: `.goal-driven/runs/<batch-id>/progress.md` (`batch-id` = run start timesta
 - Mid-run discovery: a re-scanned card missing its approval record stays `pending` with the progress note `awaiting approval (added mid-run)`; malformed cards likewise stay `pending` without stalling the loop; discovery events land in the progress document's Notes.
 - Presence tiers: intake depth follows `intake-interview-discipline` §A — present (default) per-decision questioning with the three-part base; declared/structural absence keeps the once-confirm mode unchanged.
 - OpenSpec archive timing (when `Traceability` is set): archive that task's change after its machine-verifiable evidence is complete; outcome-type findings flow back as new or revised cards, not as archive blockers.
-- Stage-exit policy absent → legacy trigger-word mode propagation + counterpart off (behavior identical to pre-policy versions). With `counterpart`: checkpoints per the card's charter — absent-mode intake Q&A, approval event, record-step report check, conflict re-adjudication; every counterpart decision is ledger-marked `counterpart-made` and human-overturnable at acceptance.
+- Stage-exit policy absent → legacy trigger-word mode propagation + proxy off (behavior identical to pre-policy versions). With `proxy`: checkpoints per the card's charter — absent-mode intake Q&A, approval event, record-step report check, conflict re-adjudication; every proxy decision is ledger-marked `proxy-made` and human-overturnable at acceptance.
 - Factual Decisions-I-made entries are verified at the consumption-entry check (symbol-exists / branch-contains / merge-base); falsified entries park the card at the gate.
