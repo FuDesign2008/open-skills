@@ -195,6 +195,42 @@
           "text": "卡片不因此被静默标记 done"
         }
       ]
+    },
+    {
+      "id": 11,
+      "name": "engine-dispatch-solve-child",
+      "prompt": "把『重构支付模块并出评审文档』排进队列，引擎用 solve-workflow，今晚无人值守跑。",
+      "expected_output": "卡片记 Engine: solve-workflow（skill 精确名）+ counterpart: on；派发时以卡片问题+冻结决策作为 solve-workflow 阶段 1 输入，auto 模式传播；其阶段出口按 ai-counterpart 章程由对手方坐席；队列契约（隔离/记录/配额）不变。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "卡片 Engine 字段值为 skill 精确名 solve-workflow"
+        },
+        {
+          "text": "说明子运行阶段出口由对手方按章程坐席（auto × counterpart 组合）"
+        },
+        {
+          "text": "队列级契约（分支隔离/逐状态记录/caps）对任意引擎不变"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "opsx-engine-env-gate-parks",
+      "prompt": "队列里有张卡写了 Engine: opsx-solve-workflow，但这仓库没有 openspec 目录。",
+      "expected_output": "消费入口检查发现 opsx 引擎所需 openspec 环境缺失，卡片被搁置为 conflict pending confirmation 并注记环境缺失，不静默降级为其它引擎、不影响其余任务消费。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "识别环境门（openspec/ + CLI）缺失"
+        },
+        {
+          "text": "卡片搁置为 conflict pending confirmation 而非静默换引擎"
+        },
+        {
+          "text": "其余 pending 任务继续正常消费"
+        }
+      ]
     }
   ]
 }

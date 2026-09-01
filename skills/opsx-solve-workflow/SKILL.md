@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.18.1"
+version: "1.19.0"
 user-invocable: true
 description: "Eight-stage PDCA problem-solving workflow that persists analysis, proposal, design review, plan, execution, and verification into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context. Use for feature work, bug fixes, refactors, and complex engineering tasks that need long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick one-off edit with no traceability need — use solve-workflow instead. Triggers：「opsx解决」「OpenSpec解决」「规范化解决」「创建OpenSpec变更」「创建opsx变更」「用OpenSpec分析」「用OpenSpec修复」「opsx自动解决」「OpenSpec自动解决」「opsx-solve」「opsx-solve-workflow」 / opsx solve, OpenSpec solve workflow, create an OpenSpec change."
 dependencies:
@@ -30,6 +30,7 @@ dependencies:
   - figma-pixel-implement
   - figma-pixel-verify
   - runtime-verification-discipline
+  - ai-counterpart-discipline
 ---
 
 # OPSX Eight-Stage Problem-Solving Workflow
@@ -58,6 +59,8 @@ Not a replacement for plain `solve-workflow`:
 - **Mode**: a trigger containing "自动" (auto) enters auto mode; otherwise manual mode by default.
 - **Manual mode**: the key exits of stages 1, 2, 3, 4, 5, 7, 8 must wait for user confirmation.
 - **Auto mode**: auto-advances through to verification; the stage 4 review loop caps at 3 rounds, then pauses.
+
+**Unattended counterpart exits**: in auto mode with `counterpart: on` (e.g. a goal-driven-batch child), each manual exit above becomes a counterpart checkpoint per `ai-counterpart-discipline` — fresh context, that stage's output as artifact-only input, evidence-tagged verdict, ledger-marked; the pre-execution approval point takes the counterpart's bounded pre-authorization instead of the bare auto escape of `design-approval-gate`; merge, irreversible, and protected-branch decisions stay human-only (park + ticket). Not opted in → behavior identical to today.
 
 **Strong-dependency skills** (frontmatter `dependencies`; must pass the "Prerequisite skill check" at startup — abort if any is missing):
 - `staged-review-flow` (stage 4 review orchestration; depends on `solution-review` and `code-design-review`)
