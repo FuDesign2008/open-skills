@@ -1,6 +1,6 @@
 ---
 name: jira-fix-workflow
-version: "3.27.1"
+version: "3.28.0"
 user-invocable: true
 description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」 / fix this bug, jira-fix, auto fix, force fix, resume fix. Do NOT use for batch fixes across multiple issues — use jira-fix-batch instead."
 dependencies:
@@ -30,6 +30,7 @@ dependencies:
   - figma-pixel-implement
   - figma-pixel-verify
   - runtime-verification-discipline
+  - ai-counterpart-discipline
 ---
 
 # Jira Bug-Fix Workflow
@@ -60,6 +61,10 @@ Strong dependencies are listed in frontmatter `dependencies`. After stage 0 pass
 Core rules live in `workflow-mode-lifecycle`. "Full flow complete" means stages 0-10 finished normally (including any stage's final termination); failure abort / 🔴 extremely-hard termination / user stop / review-cap intervention-termination all revert to manual. Re-entering auto requires an **explicit** trigger; implicit continuation ("继续修复", "再改一下") does **not** reactivate it.
 
 **Workflow-specific differences**: stage 9 complete / stage 10 merge complete / 🔴 extremely-hard termination (auto) → revert to manual; stage 8 under-threshold rollback keeps the current mode (auto, capped at 2 rollbacks); `--retry` → reset to manual; `--resume` → keep the checkpoint's mode.
+
+## Queue-child mode (goal-driven-batch dispatch)
+
+When dispatched by `goal-driven-batch` (explicit `queue-child` context flag in the invocation — never guessed from ambient signals), this flow adapts: the card's goal condition carries the Jira issue link; its frozen-decisions block supplies stage 0–1; `Stage-exit policy` decides the stop-point handling exactly as for solve/opsx children (`counterpart` → auto mode with counterpart-occupied exits per `ai-counterpart-discipline` — abort at prerequisite check only under this policy; `manual-pause` → manual; `auto-escape` → auto with named escapes); open with a stop-point forecast (every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket). The terminal is **PR-open**: stop after stage 9 with a record-only closeout — stage 10 (merge + Jira writeback) is deferred to the human (merge authority and external-tracker writebacks are never proxied); the queue's acceptance package carries them as pending follow-ups. Independent use of this skill (no flag) is unchanged.
 
 ## ⚡ Quick Reference (read before executing)
 
