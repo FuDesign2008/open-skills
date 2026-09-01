@@ -19,8 +19,9 @@ Every decision self-answered during intake, with its impact tier — the human s
 
 ```
 ## Decisions I made for you
-- <decision> — impact: low (rationale: <one line>)
-- <decision> — impact: high (kept only when no human touchpoint allowed a question; rationale: <one line>)
+- <decision> — kind: factual | preference — impact: low (rationale: <one line>)
+- <decision> — kind: factual — impact: high (kept only when no human touchpoint allowed a question; rationale: <one line>)
+(empty when the intake had no self-answers; kind defaults to factual; hosts verify factual entries at dispatch)
 ```
 
 ## Runtime ticket report (clean stop)

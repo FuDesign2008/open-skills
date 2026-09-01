@@ -1,6 +1,6 @@
 ---
 name: solve-workflow
-version: "1.25.0"
+version: "1.26.0"
 user-invocable: true
 description: "Eight-stage PDCA workflow for systematically solving bugs, refactors, and feature-development tasks: clarify → analyze → explore solutions → review → plan → execute → verify → retrospect. Manual mode (default) pauses for user confirmation at each stage exit; auto mode runs end-to-end. Triggers — 「明确问题」「分析问题」「探索方案」「审查方案」「制定计划」「执行计划」「检查验证」「复盘改进」(alias「回顾总结」)；「继续分析」「深入分析」「修改方案」「完善方案」「优化方案」「更新计划」「修订计划」「修改计划」；「自动模式」「自动分析」「自动解决」 / clarify problem, analyze problem, explore solutions, review solution, make plan, execute plan, verify, retrospective, auto mode."
 dependencies:
@@ -133,7 +133,9 @@ On the lean path, stage 3 (explore solutions) may output just 1 solution + a ris
 
 ## Unattended counterpart exits
 
-When this workflow runs in **auto mode with `counterpart: on`** (e.g. as a goal-driven-batch child or any unattended invocation), each manual stop point above becomes a counterpart checkpoint per `ai-counterpart-discipline` — fresh context, that stage's output as artifact-only input, evidence-tagged verdict, ledger-marked. At the pre-execution approval point the counterpart's bounded pre-authorization replaces the bare auto escape of `design-approval-gate`; merge, irreversible, and protected-branch decisions stay human-only (park + ticket on hit). Not opted in → behavior identical to today.
+When this workflow runs as a queue child with **`Stage-exit policy: counterpart`** (child auto mode; e.g. a goal-driven-batch dispatch), each manual stop point above becomes a counterpart checkpoint per `ai-counterpart-discipline` — fresh context, that stage's output as artifact-only input, evidence-tagged verdict, ledger-marked. At the pre-execution approval point the counterpart's bounded pre-authorization replaces the bare auto escape of `design-approval-gate`; merge, irreversible, and protected-branch decisions stay human-only (park + ticket on hit). Any other policy value or none → behavior identical to today.
+
+Starting as a queue child (problem + frozen decisions supplied), open with a **stop-point forecast**: list every manual exit of this workflow, each marked covered-by-frozen-decisions or will-form-a-new-ticket — the interaction count is known before analysis begins.
 
 ---
 

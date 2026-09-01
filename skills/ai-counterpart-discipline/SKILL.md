@@ -2,7 +2,7 @@
 name: ai-counterpart-discipline
 version: "1.1.0"
 user-invocable: false
-description: "Bounded-authority AI counterpart that occupies the human seat at interactive checkpoints of unattended runs: answers intake questions, picks among pre-approved approaches, grants bounded pre-authorization approvals, and adversarially checks completion reports — fresh context, artifact-only inputs, evidence-tagged verdicts, every decision ledger-marked and human-overturnable. Reserved for real humans: irreversible actions, over-budget, protected-branch merges, outcome acceptance, high-impact gates. Referenced by goal-driven hosts via frontmatter dependencies; activate per-run with counterpart: on. Triggers — 「AI 对手方」「模拟人把关」「对手方质询」「无人值守交互核对」 / AI counterpart, simulated reviewer, bounded proxy. Do NOT use as a substitute for a present human (presence tier 1 wins), for auto-mode stage advancement (workflow-mode-lifecycle owns that), or as approval authority for the reserved list."
+description: "Bounded-authority AI counterpart that occupies the human seat at interactive checkpoints of unattended runs: answers intake questions, picks among pre-approved approaches, grants bounded pre-authorization approvals, and adversarially checks completion reports — fresh context, artifact-only inputs, evidence-tagged verdicts, every decision ledger-marked and human-overturnable. Reserved for real humans: irreversible actions, over-budget, protected-branch merges, outcome acceptance, high-impact gates. Referenced by hosts via frontmatter dependencies; activated per-run by Stage-exit policy: counterpart. Triggers — 「AI 对手方」「模拟人把关」「对手方质询」「无人值守交互核对」 / AI counterpart, simulated reviewer, bounded proxy. Do NOT use as a substitute for a present human (presence tier 1 wins), for auto-mode stage advancement (workflow-mode-lifecycle owns that), or as approval authority for the reserved list."
 dependencies:
   - intake-interview-discipline
 ---
@@ -60,13 +60,13 @@ Enumerated in the host contract at opt-in (default set: intake Q&A, approval eve
 ## Integration guide (for referencing hosts)
 
 1. Declare `ai-counterpart-discipline` in frontmatter `dependencies`; prerequisite-check it — abort with install guidance when missing **and the run opted in**; a missing dependency with no opt-in is not a failure.
-2. Record `counterpart: on | off` in the run contract / task card (default off). Not opted in → host behavior identical to today.
+2. Record `Stage-exit policy: manual-pause | counterpart | auto-escape` in the run contract / task card (set by the queue's interaction-budget ticket; default absent = host legacy behavior). Any value other than counterpart → behavior identical to today.
 3. Wire thin pointers at the enumerated checkpoints ("counterpart per `ai-counterpart-discipline`") — never restate the charter or protocol prose.
 4. Pass each checkpoint: fresh agent, charter + artifacts only, require tagged verdicts, ledger the outcome.
 
 ### PDCA host exits
 
-For stage-gated PDCA hosts (`solve-workflow` / `opsx-solve-workflow`): when the host runs in **auto mode with `counterpart: on`**, each manual stop point (stage exit) becomes a counterpart checkpoint under the same charter — fresh context, that stage's output as the artifact-only input, evidence-tagged verdict, ledger-marked `counterpart-made`. At the pre-execution approval point, the counterpart's **bounded pre-authorization replaces the bare auto-mode escape** of `design-approval-gate` — strictly stronger, because the charter bounds, ledger entry, and human overturn replace a 留痕-only pass-through. Merge decisions, irreversible actions, and protected-branch operations stay human-only; a hit parks the item with a ticket. Hosts integrate with one thin pointer section plus the frontmatter dependency — never restating this prose.
+For stage-gated PDCA hosts (`solve-workflow` / `opsx-solve-workflow`): when the host runs as a queue child with **`Stage-exit policy: counterpart`** (child auto mode), each manual stop point (stage exit) becomes a counterpart checkpoint under the same charter. PDCA hosts starting as queue children also open with a **stop-point forecast** — every manual exit marked covered-by-frozen-decisions or will-form-a-new-ticket — so the interaction budget's owner knows the interaction count before analysis begins — fresh context, that stage's output as the artifact-only input, evidence-tagged verdict, ledger-marked `counterpart-made`. At the pre-execution approval point, the counterpart's **bounded pre-authorization replaces the bare auto-mode escape** of `design-approval-gate` — strictly stronger, because the charter bounds, ledger entry, and human overturn replace a 留痕-only pass-through. Merge decisions, irreversible actions, and protected-branch operations stay human-only; a hit parks the item with a ticket. Hosts integrate with one thin pointer section plus the frontmatter dependency — never restating this prose.
 
 ## Forbidden
 
