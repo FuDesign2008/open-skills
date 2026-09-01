@@ -13,6 +13,16 @@ Support file for SKILL.md. Hosts point here for the three artifacts this skill p
 - Pre-launch self-review: pass (gaps fixed: ...) / blocking doubt raised to human: <what>
 ```
 
+## Decisions-I-made-for-you section (rides the host contract; displayed at the approval event)
+
+Every decision self-answered during intake, with its impact tier — the human sees what was decided without them at the moment they can still overturn it, instead of discovering it at acceptance. Empty section when the intake had no self-answers.
+
+```
+## Decisions I made for you
+- <decision> — impact: low (rationale: <one line>)
+- <decision> — impact: high (kept only when no human touchpoint allowed a question; rationale: <one line>)
+```
+
 ## Runtime ticket report (clean stop)
 
 ```

@@ -12,6 +12,7 @@
 | [git-worktree-multi-repo-local-verify-case.md](git-worktree-multi-repo-local-verify-case.md) | 贡献者 / Skill 作者 | 多仓 git worktree 本地验证真案例：兄弟路径断裂、联调分层、对 `git-worktree-discipline` 的启示 |
 | [merge-coverage-gate-bypass-incident.md](merge-coverage-gate-bypass-incident.md) | 贡献者 / Skill 作者 | 合并前覆盖率门控被绕过的事件复盘 |
 | [concept-explanation-dual-track.md](concept-explanation-dual-track.md) | 贡献者 / Skill 作者 | 双轨讲解法（理性+感性认识）方法论与两个脱敏 IPC 问答范例；`explain-simply` skill 的素材来源 |
+| [goal-driven-intake-depth-analysis.md](goal-driven-intake-depth-analysis.md) | 贡献者 / Skill 作者 | 真实案例对照分析：goal-driven-* 与 solve-workflow 的核对粒度差距（6 个结构性根因 + 5 条改进建议）；granularity-alignment 变更的素材来源 |
 
 ### 给维护者与贡献者
 

@@ -11,6 +11,8 @@ File name: `.goal-driven/<slug>.md` (slug = kebab-case goal summary; date prefix
 
 - Status: pending
 - Priority: P1
+- Traceability: none | openspec/<change-name> (only when the user opted into OpenSpec sedimentation at enqueue)
+- Counterpart: on | off (only when the user opted into AI-counterpart checkpoints; charter per ai-counterpart-discipline)
 - Estimate: <coarse duration band, e.g. "<30min" / "~1h" / ">2h">
 - Created: YYYY-MM-DD HH:MM
 - Approved: <who/how the human confirmed condition + budget, e.g. "chat confirm 2026-08-26" / commit sha>
@@ -27,6 +29,11 @@ File name: `.goal-driven/<slug>.md` (slug = kebab-case goal summary; date prefix
 
 ## Constraints
 - <files/dirs/scope boundaries; things the run must not touch>
+
+## Decisions I Made for You
+- <self-answered decision> — impact: low (rationale: <one line>)
+- <self-answered decision> — impact: high (kept only when no human touchpoint allowed a question)
+(empty when the intake had no self-answers; the approval event displays this section)
 
 ## Acceptance Summary
 <filled after the run: engine report path, branch name, result tier (done/failed/...), outcome items awaiting human judgment>
@@ -72,3 +79,6 @@ Path: `.goal-driven/runs/<batch-id>/progress.md` (`batch-id` = run start timesta
 - Queue caps when the trigger states none: stop after **3 tasks** or **2 hours**, whichever comes first. State the resolved cap in the first progress-doc entry so the stopping rule is auditable.
 - Gitignore hint when cards may contain private info: suggest `.goal-driven/` in the user project's `.gitignore` — queue content belongs to the local project owner.
 - Mid-run discovery: a re-scanned card missing its approval record stays `pending` with the progress note `awaiting approval (added mid-run)`; malformed cards likewise stay `pending` without stalling the loop; discovery events land in the progress document's Notes.
+- Presence tiers: intake depth follows `intake-interview-discipline` §A — present (default) per-decision questioning with the three-part base; declared/structural absence keeps the once-confirm mode unchanged.
+- OpenSpec archive timing (when `Traceability` is set): archive that task's change after its machine-verifiable evidence is complete; outcome-type findings flow back as new or revised cards, not as archive blockers.
+- Counterpart mode (when `Counterpart: on`): checkpoints per the card's charter — absent-mode intake Q&A, approval event, record-step report check, conflict re-adjudication; every counterpart decision is ledger-marked `counterpart-made` and human-overturnable at acceptance.
