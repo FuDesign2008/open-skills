@@ -11,6 +11,7 @@ File name: `.goal-driven/<slug>.md` (slug = kebab-case goal summary; date prefix
 
 - Status: pending
 - Priority: P1
+- Engine: goal-driven-workflow | solve-workflow | opsx-solve-workflow (default when absent: goal-driven-workflow; fixed at freeze)
 - Traceability: none | openspec/<change-name> (only when the user opted into OpenSpec sedimentation at enqueue)
 - Counterpart: on | off (only when the user opted into AI-counterpart checkpoints; charter per ai-counterpart-discipline)
 - Estimate: <coarse duration band, e.g. "<30min" / "~1h" / ">2h">
