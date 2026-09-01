@@ -159,6 +159,42 @@
           "text": "归档时机表述为机器可验证证据齐全后（outcome 不阻塞归档）"
         }
       ]
+    },
+    {
+      "id": 9,
+      "name": "counterpart-absent-intake-bounded",
+      "prompt": "我今晚不在，把『给搜索接口加缓存』排进队列自己跑，开 AI 对手方把交互关。缓存策略选 Redis 还是进程内你来定，但别动线上配置。",
+      "expected_output": "卡片记 counterpart: on；缺席档深谈由对手方按章程应答（缓存策略在预批准选项内挑选，决策入账本标记 counterpart-made）；「不动线上配置」为不可逆/保留类约束——对手方不得批准任何触碰线上配置的事项，命中即出票搁置。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "卡片记录 counterpart: on 与检查点章程"
+        },
+        {
+          "text": "缓存策略由对手方在选项内挑选并标注 counterpart-made 入账"
+        },
+        {
+          "text": "触碰线上配置的事项被识别为保留项，出票搁置而非批准"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "counterpart-report-check-rejects",
+      "prompt": "队列里 counterpart: on 的任务子运行刚提交完成报告，声称测试全过但没附命令输出。",
+      "expected_output": "record 步将核对清单交盲上下文对手方质询；无证据标签的『通过』视为无效裁决，打回重验或出票，绝不静默记 done。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "对手方以盲上下文（仅章程+报告工件）质询"
+        },
+        {
+          "text": "无证据支撑的通过声明被打回或出票"
+        },
+        {
+          "text": "卡片不因此被静默标记 done"
+        }
+      ]
     }
   ]
 }

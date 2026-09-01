@@ -1,6 +1,6 @@
 ---
 name: intake-interview-discipline
-version: "0.2.0"
+version: "0.3.0"
 user-invocable: false
 description: "Deep intake discipline for unattended long-run hosts: interview with interactive-workflow depth while the human is present (destination → fog tickets → one-per-turn resolution → approach comparison), freeze the chosen approach plus open assumptions into the run contract with a bounded pre-launch self-review, self-answer mid-run decisions with recorded assumptions (clean stop + ticket report when the frozen approach is falsified — never a silent pivot), and roll the decision/assumption ledger into human acceptance. Referenced by goal-driven hosts via frontmatter dependencies. Triggers — 「深谈入库」「入库深谈」「前置深谈」「无人值守深谈」「决策冻结」「冻结方向」「自答留痕」「票台账」「方向证伪」 / deep intake interview, freeze the approach, runtime self-answer ledger, falsified-approach clean stop. Do NOT use as a name alias for clarifying-question-discipline or decision-fog-discipline, or for interactive attended workflows (solve-workflow owns those pauses)."
 dependencies:
@@ -26,6 +26,7 @@ dependencies:
 
 - **Present (default)** — resolve open decisions as per-decision questions until fog graduates. Self-answers are reserved for explicitly low-impact items; anything whose impact-if-wrong is high (positioning that trusts an upstream MR, verification strategy, external contracts) gets asked, not defaulted. Open the intake output with a three-part base — restatement / key elements / open questions — so the human checks the AI's unfolded understanding before anything is frozen into a compact contract.
 - **Declared or structural absence** (「无人值守」/ "I'm off", batch child runs, scheduled pulls, card-inherited intake) — the once-confirm + full-ledger mode applies unchanged: freeze what investigation and conservative defaults support, flag everything as assumptions, close the loop at ledger review when the human returns.
+- **AI counterpart (opt-in third source)** — when the host run opted in (`counterpart: on` per `ai-counterpart-discipline`), present-mode methodology runs with the counterpart as answer source at the enumerated checkpoints, every answer ledger-marked `counterpart-made`. Reserved-list items stay human-only at every touchpoint.
 
 1. **Destination** — one short success picture (what "done" looks like).
 2. **Fog map & tickets** — list open decisions as tickets per `decision-fog-discipline`; keep the list short; mark blocking vs deferrable.
@@ -43,7 +44,7 @@ When a decision arises mid-run, take the **first branch that closes it**:
 | 1 | The frozen contract answers it | Follow the contract; no ledger entry needed |
 | 2 | Investigable fact | Investigate (read-only), decide, record assumption in the ledger |
 | 3 | Reversible choice whose impact-if-wrong is explicitly **low**, no contract guidance | Pick the conservative default; record in the ledger |
-| 4 | High impact-if-wrong, unanswerable by 1–2 | Escalate at the next human touchpoint (a present intake, a queue discovery boundary); with no touchpoint ahead, clean stop — never a silent default |
+| 4 | High impact-if-wrong, unanswerable by 1–2 | Escalate at the next human touchpoint (a present intake, a queue discovery boundary, an opted-in counterpart checkpoint); with no touchpoint ahead, clean stop — never a silent default |
 | 5 | Blocks progress AND unanswerable by 1–4, or evidence falsifies the frozen approach | **Clean stop**: halt this task at a safe point (no half-edits, budget respected), write a ticket report (what was falsified/blocked, evidence, options with trade-offs), set status per the host's vocabulary; never improvise a new direction |
 
 Batch/queue hosts: a clean stop on one task never cancels the others (non-blocking failure).
