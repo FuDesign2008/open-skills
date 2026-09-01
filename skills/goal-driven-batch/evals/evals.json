@@ -267,6 +267,24 @@
           "text": "其余任务消费不受影响"
         }
       ]
+    },
+    {
+      "id": 15,
+      "name": "jira-fix-engine-pr-open-terminal",
+      "prompt": "把『修复 PROJ-1234 导出乱码』排进队列，引擎 jira-fix-workflow，今晚无人值守跑。",
+      "expected_output": "卡片 Engine: jira-fix-workflow、goal 条件携带 Jira 链接、Stage-exit policy 由交互预算第一票选定；子运行以显式 queue-child 标志启动、冻结决策供 stage 0–1、按 policy 处理出口（counterpart 则对手方坐席+停点预告）；止于 stage 9 PR-open——合并与 Jira 回写作为待办进验收包留人，绝不无人代理；🔴 分级终止记为非阻塞失败。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Engine 值为 skill 精确名 jira-fix-workflow 且 goal 携带 Jira 链接"
+        },
+        {
+          "text": "无人值守终态为 PR-open：不代理合并与 Jira 回写，两者列为验收包待办"
+        },
+        {
+          "text": "显式 queue-child 标志触发适配，独立使用语义不变"
+        }
+      ]
     }
   ]
 }
