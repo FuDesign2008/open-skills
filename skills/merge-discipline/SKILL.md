@@ -1,8 +1,8 @@
 ---
 name: merge-discipline
-version: "1.6.1"
+version: "1.7.0"
 user-invocable: true
-description: "Hard gate before merging into a protected branch: run Parts A→B→C→R→D (OpenSpec archive association, rebase/conflict pre-check, coverage preference, pr-code-review with optional light depth via pr-review-gate, squash decision from commit quality + tip-pin merge). Do NOT merge while an associated OpenSpec change is still active; do NOT skip on a direct \"merge MR\" command; do NOT auto-select squash when two viable strategies exist — ask with a commit-quality recommendation; a single-commit or single-permitted-strategy MR concludes without prompting; after merging, sync the local workspace onto the resolved target branch. Triggers — 「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」「合并前 code-review」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, pr code review before merge."
+description: "Hard gate before merging into a protected branch: run Parts A→B→C→R→D (OpenSpec archive association, rebase/conflict pre-check, coverage preference, pr-code-review with content-matched depth via pr-review-gate (unset ≡ auto), squash decision from commit quality + tip-pin merge). Do NOT merge while an associated OpenSpec change is still active; do NOT skip on a direct \"merge MR\" command; do NOT auto-select squash when two viable strategies exist — ask with a commit-quality recommendation; a single-commit or single-permitted-strategy MR concludes without prompting; after merging, sync the local workspace onto the resolved target branch. Triggers — 「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」「合并前 code-review」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, pr code review before merge."
 dependencies:
   - pr-code-review
 ---
@@ -218,22 +218,35 @@ Prevents **merge-without-PR-review**: coverage/CI can be green while the diff st
 
 Scan `AGENTS.md` then `CLAUDE.md` (first match wins) for:
 
-`pr-review-gate:\s*(always|never|ask|non-code-light)\b`
+`pr-review-gate:\s*(always|never|ask|non-code-light|auto)\b`
 
 | Value | Behavior |
 |---|---|
-| *(unset)* | Treat as `always` (full-depth review — preserves prior default) |
+| *(unset)* | Treat as `auto` (content-matched depth — surface classification + scale/risk escalation) |
 | `always` | Run `pr-code-review` at `depth=full` |
+| `auto` | Content-matched depth: classify surface (§2) + scale/risk escalation (§2.5) — non-application-code **and** no escalation hit → `light`; application-code **or** any escalation hit → `full` |
 | `never` | Skip `pr-code-review`; write project-preference 留痕; proceed to Part D |
 | `ask` | Ask the user: full / light / skip for this merge; MUST NOT auto-pick; skip needs user-explicit skip 留痕 |
 | `non-code-light` | Classify the PR surface (§2); non-application-code → `depth=light`; application-code → `depth=full` |
 
 ### 2. Classify PR surface (when needed)
 
-When preference is `non-code-light` (or the user chose light under `ask`), classify the open PR/MR **three-dot** changed paths using the allow/deny table in [reference.md](reference.md)「Non-application-code surface」.
+When preference is `non-code-light`, `auto`, or unset (or the user chose light under `ask`), classify the open PR/MR **three-dot** changed paths using the allow/deny table in [reference.md](reference.md)「Non-application-code surface」.
 
 - **All paths allowlisted and none denylisted** → non-application-code
 - **Any denylisted path** (or mixed) → application-code
+
+### 2.5 Scale/risk escalation (auto only)
+
+When preference is `auto` (or unset), apply **after** surface classification. Any single hit forces `depth=full` regardless of surface:
+
+| Signal | Source | Rule |
+|---|---|---|
+| Large diff | three-dot diff stats | Total changed lines > 400 **or** changed files > 20 → full |
+| Breaking-change signal | PR title / description / commit messages, case-insensitive | Matches `migration`, `schema`, `breaking`, `API contract`, `deprecat` → full |
+| Post-fail re-entry | Part R history on this tip | A prior Part R **fail** on the same tip, re-presented after fixes → full |
+
+No escalation hit + non-application-code → `light`. Application-code always → `full` (escalation is irrelevant). Thresholds are repo-tunable constants (see reference.md「Content-matched depth ladder」).
 
 ### 3. Run or skip
 
@@ -254,12 +267,12 @@ When preference is `non-code-light` (or the user chose light under `ask`), class
 |------|----------|
 | User explicit skip | `【PR code-review 门控跳过】用户显式跳过 Part R（pr-code-review）。时间：<ISO>。决策人：用户。PR：<url or id>。` |
 | Project preference never | `【PR code-review 门控跳过】工程偏好 pr-review-gate: never。时间：<ISO>。决策人：项目配置。` |
-| Light path used | Optional note in the review comment: `pr-review-gate: non-code-light; surface=non-application-code; depth=light` |
+| Light path used | Optional note in the review comment: `pr-review-gate: <non-code-light\|auto>; surface=<non-application-code\|application-code>; scale=<ok\|escalated>` (scale recorded for `auto` only); `depth=<light\|full>` |
 
 ### Red flags
 
 - Skipping Part R because “CI is green” or “coverage-gate never” (coverage skip is not a Part R skip)
-- Treating unset `pr-review-gate` as light or never (unset MUST be `always`)
+- Treating unset `pr-review-gate` as a blanket depth without classification — unset ≡ `auto` (content-matched: surface + scale/risk escalation); blanket `full`/`light`/`skip` all forbidden
 - Calling Claude Code `/code-review` plugin as a substitute without loading `pr-code-review`
 - Collapsing Standards and Spec into one ranked list and treating “overall look fine” as Part R pass
 - Using light depth on a mixed/application-code surface under `non-code-light`
