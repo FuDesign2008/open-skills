@@ -4,7 +4,7 @@ Support file for SKILL.md. All templates are starting shapes; keep field names s
 
 ## Task Card
 
-File name: `.goal-driven/<slug>.md` (slug = kebab-case goal summary; date prefix optional for ordering).
+File name: `.goal-driven/queues/<queue-id>/<slug>.md` (slug = kebab-case goal summary; date prefix optional for ordering). Legacy cards may still sit at `.goal-driven/<slug>.md` as queue-id `default`.
 
 ```markdown
 # Goal: <one-line measurable goal>
@@ -48,7 +48,7 @@ Priority uses a three-level vocabulary: `P0` (urgent — consumed first), `P1` (
 
 ## Progress Document
 
-Path: `.goal-driven/runs/<batch-id>/progress.md` (`batch-id` = run start timestamp `YYYYMMDD-HHMM`). Create at batch start; update on every status change.
+Path: `.goal-driven/queues/<queue-id>/runs/<batch-id>/progress.md` (`batch-id` = run start timestamp `YYYYMMDD-HHMM`). Create at batch start; update on every status change. Legacy runs may still sit at `.goal-driven/runs/` when the bound id is `default`.
 
 | Field | Meaning |
 |-------|---------|
@@ -79,7 +79,7 @@ Path: `.goal-driven/runs/<batch-id>/progress.md` (`batch-id` = run start timesta
 
 - Queue caps when the trigger states none: stop after **3 tasks** or **2 hours**, whichever comes first. State the resolved cap in the first progress-doc entry so the stopping rule is auditable.
 - Gitignore hint when cards may contain private info: suggest `.goal-driven/` in the user project's `.gitignore` — queue content belongs to the local project owner.
-- Mid-run discovery: a re-scanned card missing its approval record stays `pending` with the progress note `awaiting approval (added mid-run)`; malformed cards likewise stay `pending` without stalling the loop; discovery events land in the progress document's Notes.
+- Mid-run discovery: a re-scanned card in the **bound** queue directory missing its approval record stays `pending` with the progress note `awaiting approval (added mid-run)`; malformed cards likewise stay `pending` without stalling the loop; sibling queues are not admitted; discovery events land in the progress document's Notes.
 - Presence tiers: intake depth follows `intake-interview-discipline` §A — present (default) per-decision questioning with the three-part base; declared/structural absence keeps the once-confirm mode unchanged.
 - OpenSpec archive timing (when `Traceability` is set): archive that task's change after its machine-verifiable evidence is complete; outcome-type findings flow back as new or revised cards, not as archive blockers.
 - Stage-exit policy absent → legacy trigger-word mode propagation + proxy off (behavior identical to pre-policy versions). With `proxy`: checkpoints per the card's charter — absent-mode intake Q&A, approval event, record-step report check, conflict re-adjudication; every proxy decision is ledger-marked `proxy-made` and human-overturnable at acceptance.

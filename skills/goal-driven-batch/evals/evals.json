@@ -5,14 +5,14 @@
       "id": 1,
       "name": "enqueue-two-requirements-tonight",
       "prompt": "我下班前想把两个需求排进任务队列今晚自己跑：① 修复导出 CSV 出现重复行的问题；② 给设置页加一个深色模式开关。跑完我回来验收。",
-      "expected_output": "应先做雾为界的入库深谈（一次一问，问清方向后给出方案对比让人选定），把两个需求各加工成一张含可验证目标条件、预算子句、冻结决策区与粗粒度耗时预估的任务卡片写入 .goal-driven/，与人确认一次条件+预算（一次=一个审批事件，非一个问题）后入库留痕；预估仅供排队参考、允许偏差；应说明定时拉起由平台原生调度能力承担、skill 不内置调度器；除非用户同时要求立即开跑，否则不应启动任何长跑或修改业务代码。",
+      "expected_output": "应先做雾为界的入库深谈（一次一问，问清方向后给出方案对比让人选定），把两个需求各加工成一张含可验证目标条件、预算子句、冻结决策区与粗粒度耗时预估的任务卡片写入本对话自动绑定的 .goal-driven/queues/<queue-id>/（未绑定则自动铸造，不问队列名），与人确认一次条件+预算（一次=一个审批事件，非一个问题）后入库留痕；预估仅供排队参考、允许偏差；应说明定时拉起由平台原生调度能力承担、skill 不内置调度器；除非用户同时要求立即开跑，否则不应启动任何长跑或修改业务代码。",
       "files": [],
       "assertions": [
         {
           "text": "入库前进行深谈：以决策雾为界多轮问清（含方案对比与人的选定），不是只问一个问题"
         },
         {
-          "text": "为每个需求生成一张含可测量目标条件、预算子句与冻结决策区（选定方向/已决票/延后票/初始假设）的任务卡片，落盘 .goal-driven/"
+          "text": "为每个需求生成一张含可测量目标条件、预算子句与冻结决策区（选定方向/已决票/延后票/初始假设）的任务卡片，落盘本对话绑定的 .goal-driven/queues/<queue-id>/"
         },
         {
           "text": "为每张卡片给出粗粒度耗时预估，并明示仅供参考（偏差不影响已批准的预算与止损）"
@@ -31,7 +31,7 @@
     {
       "id": 2,
       "name": "stale-card-parked-on-run",
-      "prompt": "我的 .goal-driven/ 里有一张卡片要重构 payments-service 的退款接口校验逻辑，但那个模块昨晚刚被同事整体重合并进了 main（旧接口已删除）。刚才我说「跑队列」，现在该怎么办？",
+      "prompt": "本对话队列里有一张卡片要重构 payments-service 的退款接口校验逻辑，但那个模块昨晚刚被同事整体重合并进了 main（旧接口已删除）。刚才我说「跑队列」，现在该怎么办？",
       "expected_output": "消费入口检查应发现卡片约束已失效：冻结的预审批条件不再成立，应将该卡片标记为 conflict pending confirmation 并说明需人重新确认后才能跑，而不是带着过期条件直接启动引擎，也不是让整条队列停摆——其余合法 pending 任务仍按序继续消费。",
       "files": [],
       "assertions": [
@@ -50,14 +50,14 @@
       "id": 3,
       "name": "loaded-without-request-stays-idle",
       "prompt": "你装了 goal-driven-batch 吧？先帮我看看现在队列里都有些什么，别跑任何东西，我就想知道现状。",
-      "expected_output": "加载≠消费：应只输出队列概览（pending/in-progress 计数、剩余任务预估总耗时、下一张可执行卡片），等待明确的队列操作指令，不派发任何任务、不改任何文件状态。",
+      "expected_output": "加载≠消费：未绑定则说明本对话尚无队列、不列出兄弟队列供点名、不铸造；已绑定则输出该队列概览（pending/in-progress 计数、剩余任务预估总耗时、下一张可执行卡片）。不派发任何任务、不改任何文件状态。",
       "files": [],
       "assertions": [
         {
           "text": "只输出队列概览信息，不开始消费循环"
         },
         {
-          "text": "概览包含剩余 pending 任务的预估总耗时"
+          "text": "未绑定时不列出兄弟队列供点名；已绑定则概览含剩余 pending 任务的预估总耗时"
         },
         {
           "text": "明确停在等待指令状态，不主动建议立即开跑并推进"
@@ -217,7 +217,7 @@
     {
       "id": 12,
       "name": "opsx-engine-env-gate-parks",
-      "prompt": "队列里有张卡写了 Engine: opsx-solve-workflow，但这仓库没有 openspec 目录。",
+      "prompt": "本对话队列里有张卡写了 Engine: opsx-solve-workflow，但这仓库没有 openspec 目录。",
       "expected_output": "消费入口检查发现 opsx 引擎所需 openspec 环境缺失，卡片被搁置为 conflict pending confirmation 并注记环境缺失，不静默降级为其它引擎、不影响其余任务消费。",
       "files": [],
       "assertions": [
@@ -253,7 +253,7 @@
     {
       "id": 14,
       "name": "factual-answer-gate-intercept",
-      "prompt": "队列卡片 Decisions-I-made 里代答了分支基线 feat/old-base，但当前工作区实际在 release/new 上且 feat/old-base 落后近百提交。",
+      "prompt": "本对话队列卡片 Decisions-I-made 里代答了分支基线 feat/old-base，但当前工作区实际在 release/new 上且 feat/old-base 落后近百提交。",
       "expected_output": "消费入口检查对 factual 代答做廉价实证（merge-base/branch --contains/符号存在性），发现基线证伪即将卡片搁置为 conflict pending confirmation 并注记证据，不派发、不留到运行中 clean stop。",
       "files": [],
       "assertions": [
@@ -307,7 +307,7 @@
     {
       "id": 17,
       "name": "opsx-jira-engine-archive-pr-open",
-      "prompt": "队列里 Engine: opsx-jira-fix-workflow 的卡今晚无人值守跑，这仓库有 openspec/。",
+      "prompt": "本对话队列里 Engine: opsx-jira-fix-workflow 的卡今晚无人值守跑，这仓库有 openspec/。",
       "expected_output": "环境门通过后子运行以 queue-child 标志启动：Jira 链接供血、冻结决策供 stage 0-1、policy 决定出口（ai-proxy 则坐席+预告）；终态为归档+PR-open——OpenSpec change 必归档，合并与 Jira 回写作为待办进验收包留人。",
       "files": [],
       "assertions": [
@@ -352,6 +352,60 @@
         },
         {
           "text": "opsx-jira 子运行把关系写入 design.md Related Issues"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "name": "two-conversations-isolated-queues",
+      "prompt": "这个文件夹里另一个 Agent 会话已经在跑它自己的队列。我这边要把『修导出 CSV 重复行』排进队列，别动它的卡。",
+      "expected_output": "本对话自动铸造或复用自己的 queue-id，卡片写入 .goal-driven/queues/<本对话 id>/，不读取、不改写兄弟队列目录；不问人队列名。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "卡片落在本对话绑定的 .goal-driven/queues/<queue-id>/ 而非工程根共享目录"
+        },
+        {
+          "text": "不消费、不重扫兄弟队列中的 pending 卡"
+        },
+        {
+          "text": "不问人队列名、不列出兄弟队列供选择"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "name": "unbound-run-auto-mints",
+      "prompt": "跑队列。我没说过用哪个队列。",
+      "expected_output": "本对话尚未绑定：自动铸造本对话 queue-id 并只消费该目录（可为空后收尾），不向人点名，不抽干兄弟队列。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "自动铸造本对话队列且不问队列名"
+        },
+        {
+          "text": "不串行消费全部兄弟队列"
+        },
+        {
+          "text": "不把已有队列列成选项等人挑选"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "name": "new-conversation-ignores-sibling-leftovers",
+      "prompt": "新开的对话。隔壁会话的队列里还堆着 pending 卡。我说跑队列。",
+      "expected_output": "为本对话铸造新队列并只消费它；不读取、不抽干隔壁会话残留的 pending 卡，也不请人从列表里选。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "新对话铸造自己的队列"
+        },
+        {
+          "text": "不消费兄弟队列残留 pending"
+        },
+        {
+          "text": "不向人索要队列名"
         }
       ]
     }
