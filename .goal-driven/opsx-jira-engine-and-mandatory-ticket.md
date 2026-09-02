@@ -1,6 +1,6 @@
 # Goal: goal-driven-batch 增补 opsx-jira-fix-workflow 引擎 + 引擎必问票（无默认）
 
-- Status: in progress
+- Status: done
 - Priority: P1
 - Engine: opsx-solve-workflow
 - Stage-exit policy: ai-proxy
@@ -28,4 +28,7 @@ PR 开好且五门禁全绿（索引 diff / lint --staged 0 / openspec validate+
 ## Approved: chat confirm 2026-09-01（批准与开跑两独立事件，同刻完成）
 
 ## Acceptance Summary
-(待子运行完成回填)
+- 结果: done — PR open（archive+PR-open 终态）；合并+本仓回写留人
+- 证据: 索引 3 版本行 / lint 0 / validate+归档(+2 MODIFIED+1 scenario) / 语义 grep archive+PR-open 双侧 / 残留 0 / proxy 两轮 BOUNCE→修复→APPROVE-with-condition→验证 BOUNCE→修复（ Delegate 默认值残留，选择性引用被抓）→预授权放行
+- proxy 台账: 2×REJECT(surgical) + 1×APPROVE-with-condition，全部 proxy-made 可推翻
+- 预算: 远低于 40t/60m 封顶（wall-clock 含 proxy 等待 ~15m）

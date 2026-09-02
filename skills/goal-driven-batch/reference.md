@@ -11,7 +11,7 @@ File name: `.goal-driven/<slug>.md` (slug = kebab-case goal summary; date prefix
 
 - Status: pending
 - Priority: P1
-- Engine: goal-driven-workflow | solve-workflow | opsx-solve-workflow | jira-fix-workflow (default when absent: goal-driven-workflow; fixed at freeze; jira-fix queue children terminate at PR-open — merge + writeback stay human)
+- Engine: goal-driven-workflow | solve-workflow | opsx-solve-workflow | jira-fix-workflow | opsx-jira-fix-workflow (REQUIRED — set by the mandatory engine ticket, no default; fixed at freeze; jira-fix children terminate at PR-open, opsx-jira children at archive+PR-open — merge + writeback stay human; a card without the field parks awaiting engine decision)
 - Traceability: none | openspec/<change-name> (only when the user opted into OpenSpec sedimentation at enqueue)
 - Stage-exit policy: manual | ai-proxy | auto (set by the interaction-budget first ticket; legacy `Counterpart: on` / `counterpart` values read as `ai-proxy`; legacy `manual-pause` / `auto-escape` read as `manual` / `auto`)
 - Estimate: <coarse duration band, e.g. "<30min" / "~1h" / ">2h">
