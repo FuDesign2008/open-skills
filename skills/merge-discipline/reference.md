@@ -56,7 +56,6 @@ Authoritative path classifier for Part R when `pr-review-gate: non-code-light` (
 | `skills/**` | Skill packages (Markdown + skill-local assets that are not denylisted below) |
 | `openspec/**` | Specs, changes, archive |
 | `AGENTS.md`, `CLAUDE.md`, `CONTEXT.md` | Project guidance at repo root (or documented equivalents) |
-| `.claude-plugin/**`, `.cursor-plugin/**` | Plugin marketplace / plugin metadata JSON |
 | `docs/generated/**` | Generated indexes (e.g. skills-index) |
 | Root `package.json` / lockfiles (`package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`) | Only when **no** denylisted paths appear in the same PR |
 
@@ -66,8 +65,6 @@ Skill-local non-Markdown under `skills/<name>/` that is documentation/assets onl
 
 | Pattern | Notes |
 |---------|--------|
-| `hooks/**` | Hook shell/scripts |
-| `.opencode/**` | OpenCode plugins (JS/TS) |
 | `.github/workflows/**` | CI workflow definitions |
 | `scripts/**` | Repo tooling scripts |
 | `**/*.{ts,tsx,js,jsx,mjs,cjs,py,go,java,rs,swift,kt}` | Runtime/source extensions **except** when the only matches are under a pure docs tree that does not execute them (conservative default: **any** such extension path forces application-code) |

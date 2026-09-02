@@ -19,7 +19,7 @@
 
 > 本仓库为 Markdown skills 库，合并前不默认跑 `test-coverage-analyzer`。其他工程可在 `AGENTS.md` / `CLAUDE.md` 声明 `coverage-gate: always` | `never` | `ask`（未声明 ≡ 每次合并询问）。
 >
-> `pr-review-gate`：`always`（全量 `pr-code-review`）| `never`（跳过 Part R，须留痕）| `ask`（每次询问 full/light/skip）| `non-code-light`（非应用代码表面用 light 深度，否则 full）。**未声明 ≡ `always`**（保持历史默认，不全仓静默变轻）。本仓默认 `non-code-light`：docs/skills/openspec 等表面走轻量双轴审查；含 hooks / `.opencode` / workflows / 运行时源码扩展则仍 full。
+> `pr-review-gate`：`always`（全量 `pr-code-review`）| `never`（跳过 Part R，须留痕）| `ask`（每次询问 full/light/skip）| `non-code-light`（非应用代码表面用 light 深度，否则 full）。**未声明 ≡ `always`**（保持历史默认，不全仓静默变轻）。本仓默认 `non-code-light`：docs/skills/openspec 等表面走轻量双轴审查；含 workflows / `scripts/` / 运行时源码扩展则仍 full。
 >
 > `worktree-gate`：`always` | `never` | `ask`（未声明 ≡ `ask`）。由 `git-worktree-discipline` 在首个非平凡持久化写入（文档或代码）之前解析；`ask` 下先按仓库状态给出适合度推荐再询问是否创建隔离工作区。
 
@@ -31,7 +31,7 @@
 | **共享纪律 / 方法论** | 默认 `false`，经 frontmatter `dependencies` 加载 | `*-discipline`、`analysis-core`、`staged-review-flow`、`design-approval-gate`、`feature-branch-closeout` |
 | **可独立触发的横切动作** | 显式 `true`（例外） | `merge-discipline`、`delivery-discipline`、`test-suite-ensure`、`solution-review`、`learn-and-improve`、`pr-code-review` |
 
-`commands/*.md` 对快捷命令使用 `disable-model-invocation: true`（用户专属入口）。新增 skill 时按上表选型；`user-invocable: false` 的 skill 必须被其他 skill 引用，否则视为死 skill。
+新增 skill 时按上表选型；`user-invocable: false` 的 skill 必须被其他 skill 引用，否则视为死 skill。本仓库不分发斜杠命令文件；用户靠 skill 名与触发词唤起。贡献者本仓 OpenSpec 入口在 `.claude/commands/opsx/`。
 
 ---
 
@@ -39,7 +39,7 @@
 
 ## 概述
 
-AI 编码助手的开放 Skills 库。Markdown + JSON + 少量 JS 构成的多平台插件项目。支持 Claude Code、Cursor、OpenCode 三个平台。安装对外统一为 **通用安装**（`npx`，SKILL.md，可多选）与 **全能力安装**（Hooks、Commands、平台集成）；见根目录 `README.md` § 安装。
+AI 编码助手的开放 Skills 库。对外只分发 **SKILL.md**（`npx skills` / `scripts/install-skills.mjs`），适用于 Claude Code、Cursor、OpenCode 及其他支持 skills CLI 的助手。见根目录 `README.md` § 安装。
 
 ## 结构
 
@@ -47,15 +47,10 @@ AI 编码助手的开放 Skills 库。Markdown + JSON + 少量 JS 构成的多�
 open-skills/
 ├── skills/                 # 核心：Skill 定义（每个子目录 = 一个 skill）
 │   └── <name>/SKILL.md     # 必需文件，含 frontmatter 元数据
-├── commands/               # 快捷命令（.md 文件，调用对应 skill）
-├── hooks/                  # Claude Code/Cursor 钩子（shell 脚本 + hooks.json）
-├── .claude-plugin/         # Claude Code 平台配置（plugin.json + marketplace.json）
-├── .cursor-plugin/         # Cursor 平台配置（plugin.json）
-├── .opencode/              # OpenCode 平台（ES Module 插件 + 安装脚本）→ 见 .opencode/AGENTS.md
 ├── docs/                   # 安装指南、实现文档（含 generated/ 自动生成索引）
 ├── scripts/                # gen-skill-docs.mjs：由 skills 生成 docs/generated/skills-index.md；lint-skill-description.mjs：description ≤1024 校验（见铁律 7）；lint-skill-deidentification.mjs：内部标识符脱敏门禁（见铁律 2）
 ├── openspec/               # OpenSpec 规范治理（changes/ 变更提案、specs/ 主行为契约；opsx 沉淀落点，见铁律 5）
-├── .claude/                # OpenSpec OPSX 原生 skills（openspec-*）+ opsx/* 快捷命令
+├── .claude/                # 本仓 OpenSpec OPSX 原生 skills（openspec-*）+ opsx/* 快捷命令（不分发）
 └── .github/workflows/      # CI：版本递增（release.yml）、skills 索引校验（docs-skills-verify.yml）
 ```
 
@@ -64,12 +59,8 @@ open-skills/
 | 任务 | 位置 | 注意事项 |
 |------|------|---------|
 | 新增/修改 Skill | `skills/<name>/SKILL.md` | 格式和分类见下方「代码规范」章节 |
-| 新增快捷命令 | `commands/<name>.md` | 固定格式：`disable-model-invocation: true` + `Invoke the <skill> skill` |
-| 修改钩子行为 | `hooks/hooks.json` + 对应 shell 脚本 | Shell 脚本必须静默失败 |
-| OpenCode 插件开发 | `.opencode/plugins/` 和 `.opencode/plugin/` | 见 .opencode/AGENTS.md |
-| 平台配置 | `.claude-plugin/`、`.cursor-plugin/` | 仅元数据，不含逻辑 |
-| CI/版本管理 | `.github/workflows/release.yml` | **禁止手动改版本号** |
-| 安装文档 | `docs/INSTALL.md`、`.opencode/INSTALL.md` | **通用安装**（npx）与 **全能力安装**（插件 / OpenCode 符号链接）口径见 `README.md` § 安装；总览见 `docs/README.md`；OpenCode 架构见 `.opencode/AGENTS.md` |
+| CI/版本管理 | `.github/workflows/release.yml` | **禁止手动改版本号**；版本源为根 `package.json` |
+| 安装文档 | `docs/INSTALL.md` | **通用安装**（npx）口径见 `README.md` § 安装；总览见 `docs/README.md` |
 | Skill 完整列表 | `docs/generated/skills-index.md` | **自动生成**，勿手改；改 skill 后由 pre-commit hook 自动更新（需先 `npm install`），或手动 `node scripts/gen-skill-docs.mjs` |
 | OpenSpec 规范治理 | `openspec/` | `changes/` 变更提案（归档于 `changes/archive/`）、`specs/` 主行为契约；用 `/opsx-solve-workflow` 沉淀 skill 变更（铁律 5） |
 
@@ -133,11 +124,7 @@ open-skills/
 
 ## 钩子机制
 
-三种钩子类型（定义在 `hooks/hooks.json`）：
-
-Hooks 已随 coding-fangirl 迁移至 [oh-my-fangirl](https://github.com/FuDesign2008/oh-my-fangirl)，本仓库不再包含 hooks。
-
-OpenCode 平台使用 JS/TS 插件替代 shell 脚本实现相同功能。
+Hooks 已随 coding-fangirl 迁移至 [oh-my-fangirl](https://github.com/FuDesign2008/oh-my-fangirl)，本仓库不再包含 hooks，也不再提供 OpenCode 插件作为安装面。
 
 ## 代码规范
 
@@ -172,13 +159,10 @@ Skill 内容...
 
 1. 目录名 kebab-case
 2. `SKILL.md` frontmatter 完整（name、version、description 含触发词；如声明了 dependencies，需实现前置检查）
-3. 如需命令入口 → 在 `commands/` 添加对应 `.md`
-4. 如需 Hook 触发 → 在 `hooks/hooks.json` 添加配置
-5. 如需 OpenCode 支持 → 在 `.opencode/plugins/` 或 `.opencode/plugin/` 添加 JS/TS 代码
-6. 确认 `docs/generated/skills-index.md` 已更新并纳入提交（commit 时 pre-commit hook 自动处理；未安装 hook 则手动运行 `node scripts/gen-skill-docs.mjs` 后再提交）
-7. 确认正文正向描述流程（检查是否有「不得 XXX」/「❌ 反例」堆砌——正向流程讲清楚后反例即冗余）
-8. 确认正文无版本标记等历史包袱（无「v1→v2」「（v2 新增）」等变更日志——变更历史由 git/archive 承载）
-9. 确认 SKILL.md 摘要不重复 reference.md 完整规范（SKILL.md 是摘要 + 指向 reference.md，不是复制）
+3. 确认 `docs/generated/skills-index.md` 已更新并纳入提交（commit 时 pre-commit hook 自动处理；未安装 hook 则手动运行 `node scripts/gen-skill-docs.mjs` 后再提交）
+4. 确认正文正向描述流程（检查是否有「不得 XXX」/「❌ 反例」堆砌——正向流程讲清楚后反例即冗余）
+5. 确认正文无版本标记等历史包袱（无「v1→v2」「（v2 新增）」等变更日志——变更历史由 git/archive 承载）
+6. 确认 SKILL.md 摘要不重复 reference.md 完整规范（SKILL.md 是摘要 + 指向 reference.md，不是复制）
 
 ### Skill 精简原则
 
@@ -194,30 +178,9 @@ Skill 内容...
 - **同一规则用不同措辞重复表述是冗余，不是加强**：若「触发时机」已说清「即将执行 X 时启动」，再独立写一段「X 前置检查（强制）：调用 X 前自问是否已做 Y」就是同一件事的重复——换个说法再强调一遍不增加信息量，只降低信噪比
 - **有序列表的书写顺序与执行/产生顺序一致**：输出项、步骤、检查项等有序列表，其书写顺序应与实际执行或产生的先后顺序一致——AI 读列表时按列表顺序理解执行顺序，顺序不一致会产生认知映射开销且容易出错
 
-### 命令文件格式（`commands/*.md`）
-
-```markdown
----
-description: "命令描述"
-disable-model-invocation: true
----
-
-Invoke the <skill-name> skill and follow it exactly
-```
-
-### JS 插件规范（`.opencode/` 专用）
-
-- ES Module（`export const`）
-- 导出命名：`<Name>Plugin`
-- Hook = mutation 模式：直接修改 `output` 对象
-
 ### JSON
 
 - 2 空格缩进，camelCase 属性名，无尾空行
-
-### Shell 脚本（`hooks/`）
-
-- `#!/usr/bin/env bash`，用 `printf` 输出 JSON，静默失败
 
 ## 命名约定
 
@@ -225,9 +188,6 @@ Invoke the <skill-name> skill and follow it exactly
 |------|------|------|
 | Skill 目录 | kebab-case；目录名 = frontmatter `name` | `solve-workflow/` |
 | Skill 文件 | 固定 `SKILL.md` | |
-| 命令文件 | kebab-case | `solve.md`、`perf.md` |
-| Hook 脚本 | kebab-case | `session-start`、`emotion-comfort` |
-| 插件导出 | PascalCase + Plugin | `OpenSkillsPlugin` |
 
 ### Skill 角色命名（语义）
 
@@ -264,30 +224,20 @@ Invoke the <skill-name> skill and follow it exactly
 
 1. **合并 PR**：`gh pr merge <编号> --merge`
 2. **检查版本发布**：等待 CI 完成（约 15–20 秒），`gh release list -L 3` 确认新版本
-3. **更新本地安装**：
-   - **通用安装**（`~/.agents/skills`，每次发布后必做）：在仓库根执行 `node scripts/install-skills.mjs`（内部为 `npx skills add … -g -y --skill '*' --agent claude-code cursor opencode`，排除无全局目录的 PromptScript/Eve，避免 ✗ 噪音）。需要更多 agent 时设 `OPEN_SKILLS_AGENTS`。全量安装后自动 **prune 陈旧副本**：`skills add` 只增不删，本脚本按 `.open-skills-manifest.json` 归因，仅删除本仓库曾安装且已从仓库移除的 skill 目录（外来 skill 不受影响；部分安装 `--skill <name>` 与 `--no-prune` 均跳过）。根因是上游 CLI 无 sync 删除语义（见 [vercel-labs/skills#1352](https://github.com/vercel-labs/skills/issues/1352) 同仓相关），**不是**本仓库某些 skill「不支持全局安装」。裸命令 `npx skills add FuDesign2008/open-skills -g` 会进入交互式多选（AI/CI 无法应答），不要用于自动化。
-   - **全能力安装** 路径：
-     - **OpenCode**：`cd ~/.config/opencode/open-skills && git pull`，然后 `for cmd in commands/*.md; do ln -sf "$(pwd)/$cmd" ~/.config/opencode/commands/; done`
-     - **Claude Code**：`claude plugin update open-skills@open-skills-marketplace`（该环境未安装插件时报「Plugin not found」，跳过即可）
+3. **更新本地安装**：在仓库根执行 `node scripts/install-skills.mjs`（内部为 `npx skills add … -g -y --skill '*' --agent claude-code cursor opencode`，排除无全局目录的 PromptScript/Eve，避免 ✗ 噪音）。需要更多 agent 时设 `OPEN_SKILLS_AGENTS`。全量安装后自动 **prune 陈旧副本**：`skills add` 只增不删，本脚本按 `.open-skills-manifest.json` 归因，仅删除本仓库曾安装且已从仓库移除的 skill 目录（外来 skill 不受影响；部分安装 `--skill <name>` 与 `--no-prune` 均跳过）。根因是上游 CLI 无 sync 删除语义（见 [vercel-labs/skills#1352](https://github.com/vercel-labs/skills/issues/1352) 同仓相关），**不是**本仓库某些 skill「不支持全局安装」。裸命令 `npx skills add FuDesign2008/open-skills -g` 会进入交互式多选（AI/CI 无法应答），不要用于自动化。
 4. **工作区同步**：`git checkout main && git pull origin main`
 
 ## 版本管理
 
-- 版本号在 `.claude-plugin/plugin.json` 和 `marketplace.json`
+- 版本号在根目录 `package.json` 的 `version` 字段
 - **禁止手动修改**：CI（`.github/workflows/release.yml`）自动递增
 - 规则：`feat:` → MINOR、`fix:` → PATCH、`BREAKING CHANGE` → MAJOR
-- 触发条件：`hooks/`、`skills/`、`commands/`、`.opencode/`、`.cursor-plugin/` 有变更时
+- 触发条件：`skills/` 有变更时（或手动 `workflow_dispatch`）
 - **受保护 main**：release workflow 在 main 上直接提交版本号变更（`git push origin HEAD:main`，提交标题带 `[skip ci]` 避免再次触发）、打 tag、发 Release。**不再走 version-bump PR**——bot 用 `GITHUB_TOKEN` 开的 PR 触发的 `verify` workflow 会被 GitHub 标记为 `action_required`（防 workflow 自注入），导致 branch policy 永远拒绝 `gh pr merge`。
 
-## 多平台差异
+## 安装面
 
-对外安装口径统一为两类：**通用安装**（`SKILL.md`，`npx skills`，可多选）与 **全能力安装**（Hooks、Commands、平台集成）。详见根目录 `README.md` § 安装与 `docs/INSTALL.md`。
-
-| 平台 | 全能力安装（推荐） | 配置目录 | 钩子实现 |
-|------|-------------------|---------|---------|
-| Claude Code | Marketplace 插件 | `.claude-plugin/` | Shell 脚本（hooks/） |
-| Cursor | `/plugin-add` | `.cursor-plugin/` | Shell 脚本（hooks/） |
-| OpenCode | raw + 符号链接（见 `.opencode/INSTALL.md`） | `.opencode/` | ES Module 插件 |
+对外只提供 **通用安装**（`SKILL.md`，`npx skills` / `scripts/install-skills.mjs`）。Claude Code、Cursor、OpenCode 均走同一条 skill 分发；不提供 Marketplace 插件、斜杠命令或 OpenCode 仓库 clone 安装。详见根目录 `README.md` § 安装与 `docs/INSTALL.md`。
 
 ## 反模式（禁止）
 
@@ -307,8 +257,6 @@ Invoke the <skill-name> skill and follow it exactly
 - ❌ `description` 用 `|` 块标量或多行字符串，被 `gen-skill-docs.mjs` 简易解析器解析成 `"|"`，导致 skills-index 描述列变 `|`（见 frontmatter YAML 陷阱）
 - ❌ 新建 skill 不走 `/skill-creator` 直接手写（见 AI 铁律 4）
 - ❌ 声明了 frontmatter `dependencies` 却不做前置检查，或缺失依赖时静默降级而不提示安装（强依赖必须中止流程并给出安装命令）
-- ❌ Hook 脚本阻塞主流程（必须静默失败）
-- ❌ OpenCode 插件用 CommonJS（必须 ES Module）
 - ❌ 中文内容混用英文标点
 - ❌ Skill 正文堆砌「不得 XXX」/「❌ 反例」等否定式（应正向描述流程——AI 理解正向流程后自然不会犯错，反例堆砌降低信噪比）
 - ❌ Skill 正文写「v1→v2」「（v2 新增）」等版本标记或变更日志（变更历史由 git/archive 承载，Skill 正文活在当下）
@@ -316,15 +264,11 @@ Invoke the <skill-name> skill and follow it exactly
 ## 验证命令
 
 ```bash
-# JSON 格式
-node -e "JSON.parse(require('fs').readFileSync('.claude-plugin/plugin.json'))"
-node -e "JSON.parse(require('fs').readFileSync('hooks/hooks.json'))"
+# package.json
+node -e "JSON.parse(require('fs').readFileSync('package.json'))"
 
 # SKILL.md frontmatter
 grep -r "^---$" skills/*/SKILL.md
-
-# OpenCode 插件语法
-node --check .opencode/plugins/open-skills.js
 
 # Skills 索引生成脚本语法
 node --check scripts/gen-skill-docs.mjs
@@ -348,4 +292,4 @@ git diff -U0 <改动文件> | grep '^-' | grep -v '^---'
 
 ## 子目录知识库
 
-- `.opencode/AGENTS.md` — OpenCode 插件架构、API 模式、安装机制
+- `docs/SKILL_DISTRIBUTION.md` — 分发 skill vs 本仓 `.claude/skills/openspec-*` 工程级配置

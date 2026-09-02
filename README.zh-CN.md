@@ -5,7 +5,6 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/FuDesign2008/open-skills)
 [![Version](https://img.shields.io/github/v/release/FuDesign2008/open-skills?style=flat-square)](https://github.com/FuDesign2008/open-skills/releases)
 ![Skills](https://img.shields.io/badge/skills-11-informational?style=flat-square)
-![Commands](https://img.shields.io/badge/commands-2-informational?style=flat-square)
 
 **[English](README.md)** | 中文
 
@@ -28,7 +27,7 @@
 ```
 <!-- /banner -->
 
-开放技能库：工作流、性能、Jira、Git 等 **Skills**，支持 **Claude Code**、**Cursor**、**OpenCode**。完整 skill 列表（版本与触发说明）见 **[技能索引](docs/generated/skills-index.md)**。
+开放技能库：工作流、性能、Jira、Git 等 **Skills**。通过 `npx skills` 安装 **SKILL.md**，适用于 **Claude Code**、**Cursor**、**OpenCode** 及其他支持 skills CLI 的助手。完整 skill 列表（版本与触发说明）见 **[技能索引](docs/generated/skills-index.md)**。
 
 > 💕 **AI 编码陪伴小迷妹** 已独立为 **[oh-my-fangirl](https://github.com/FuDesign2008/oh-my-fangirl)**，拥有独立版本迭代与更丰富的模式生态。
 
@@ -56,7 +55,7 @@ npx skills add FuDesign2008/open-skills -g
 npx skills update
 ```
 
-> 需要 **快捷命令、Hook、平台原生集成**（Claude Code / Cursor / OpenCode 全能力安装）？见 **[详细安装指南](docs/INSTALL.md)**。
+参数与排错见 **[详细安装指南](docs/INSTALL.md)**。本仓库不分发斜杠命令、Hooks 或 Marketplace 插件。
 
 
 ## Contributing

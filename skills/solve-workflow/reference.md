@@ -66,8 +66,6 @@ Without them, stage gates lose their single sources of truth — running anyway 
   (repeat once per missing name)
 - Or install every open-skills skill:
   npx skills add FuDesign2008/open-skills -g --skill '*' --yes
-- Full-capability install (Hooks/Commands/platform integration):
-  see docs/INSTALL.md
 
 Re-trigger this workflow after installing.
 ```

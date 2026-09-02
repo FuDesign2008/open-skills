@@ -5,7 +5,6 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/FuDesign2008/open-skills)
 [![Version](https://img.shields.io/github/v/release/FuDesign2008/open-skills?style=flat-square)](https://github.com/FuDesign2008/open-skills/releases)
 ![Skills](https://img.shields.io/badge/skills-11-informational?style=flat-square)
-![Commands](https://img.shields.io/badge/commands-2-informational?style=flat-square)
 
 **English** | **[中文](README.zh-CN.md)**
 
@@ -28,7 +27,7 @@
 ```
 <!-- /banner -->
 
-An open library of agent skills — workflows, performance, Jira, Git, and more. Supports **Claude Code**, **Cursor**, and **OpenCode**. Full skill list (versions and triggers) at **[Skills Index](docs/generated/skills-index.md)**.
+An open library of agent skills — workflows, performance, Jira, Git, and more. Install as **SKILL.md** via `npx skills` on **Claude Code**, **Cursor**, **OpenCode**, and other agents that support the skills CLI. Full skill list (versions and triggers) at **[Skills Index](docs/generated/skills-index.md)**.
 
 > 💕 **AI Coding Companion** (coding-fangirl) has moved to **[oh-my-fangirl](https://github.com/FuDesign2008/oh-my-fangirl)** with independent versioning and a richer mode ecosystem.
 
@@ -56,7 +55,7 @@ Update:
 npx skills update
 ```
 
-> Need **slash commands, hooks, or native platform integration** (Claude Code / Cursor / OpenCode full install)? See **[Installation Guide](docs/INSTALL.md)**.
+Details, parameters, and troubleshooting: **[Installation Guide](docs/INSTALL.md)**. This repo does not ship slash commands, hooks, or marketplace plugins.
 
 
 ## Contributing

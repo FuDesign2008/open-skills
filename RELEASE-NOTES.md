@@ -1,5 +1,15 @@
 # Release Notes
 
+## Unreleased
+
+### ⚠️ BREAKING CHANGES
+
+**Claude / Cursor 插件、OpenCode 全能力安装、仓库根 `commands/` 斜杠命令已删除。** 本仓库只分发 `SKILL.md`：用 `node scripts/install-skills.mjs` 或 `npx skills add FuDesign2008/open-skills -g`。GitHub Release 版本源改为根 `package.json`。
+
+**迁移**：卸掉 Marketplace / `/plugin-add` / OpenCode clone 后改走 npx。唤起方式改为触发词或 skill 名（不再提供 `/solve` 等）。历史 git tag 仍含插件文件，新 `main` 不维护。
+
+---
+
 ## [2.0.0] - 2026-08-14
 
 ### ⚠️ BREAKING CHANGES

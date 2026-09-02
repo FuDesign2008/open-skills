@@ -45,15 +45,6 @@ Before and during delegated writing, `write-workflow` MUST follow `clarifying-qu
 - **WHEN** background or goals for the review document are unclear
 - **THEN** the host or delegated skill asks exactly one clarifying question at a time until §1 can be drafted for user approval
 
-### Requirement: Command entry for write workflow
-
-The repository SHALL provide `commands/write.md` with `disable-model-invocation: true` that instructs the agent to invoke `write-workflow` and follow it exactly.
-
-#### Scenario: User runs /write
-
-- **WHEN** the user invokes the write command entry
-- **THEN** the agent starts `write-workflow`
-
 ### Requirement: Write-workflow SHALL use an eight-stage writing host skeleton
 
 `write-workflow` MUST orchestrate eight stages in order: (1) clarify intent, (2) analyze sources, (3) explore writing approach, (4) review writing approach, (5) make outline, (6) execute via writer skill, (7) verify output, (8) retrospect. Document-type methodology MUST remain in writer skills (default `tech-review-doc`); the host MUST NOT inline the writer's full five-step body.
