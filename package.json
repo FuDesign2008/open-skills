@@ -9,7 +9,7 @@
     "lint:deid": "node scripts/lint-skill-deidentification.mjs",
     "mark:openspec-internal": "node scripts/mark-openspec-internal.mjs",
     "install:skills": "node scripts/install-skills.mjs",
-    "test": "node --test scripts/*.test.mjs"
+    "test": "node --test"
   },
   "devDependencies": {
     "husky": "^9.1.7"

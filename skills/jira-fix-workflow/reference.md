@@ -105,7 +105,8 @@ Stop points are in the SKILL.md "Quick Reference". When a fixed closing line is 
 **Issue Title**: [title] (existence confirmed)
 **Priority**: P1
 **Execution Mode**: 🤖 Auto / 👤 Manual
-**mcp-atlassian**: ✅ Connected
+**Credential chain**: ✅ / ⚠️ asked user to persist
+**MCP (optional)**: ✅ available / ⚠️ missing (using cache or `jira-read`)
 **Git Repository**: ✅
 
 ---

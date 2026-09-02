@@ -77,7 +77,7 @@ This Jira has not been downloaded locally. Please run:
 
 **Jira ID**: PROJ-12167
 **Status**: Local cache not found, auto-downloaded
-**Data source**: mcp-atlassian API
+**Data source**: API (mcp-atlassian if present, or after the `jira-read` credential chain)
 
 ---
 
@@ -149,7 +149,7 @@ Execution rule: fetch from API one by one; single failure doesn't block subseque
 | 3 | PROJ-12169 | [title 3] | - | ❌ Failed |
 
 **Success**: 2/3, **Failed**: 1/3
-**Data source**: mcp-atlassian API
+**Data source**: API (mcp-atlassian if present, or after the `jira-read` credential chain)
 ```
 
 ---
@@ -183,8 +183,8 @@ When an issue has attachments and the user asks to download them, report the res
 | 1 | app-log.zip | 2.0 MB | ✅ Downloaded & extracted | issues/{type}/jira-bug/PROJ-12345-app-log/ |
 | 2 | screenshot-1.png | 181 KB | 📌 Screenshot not archived (state if needed) | — |
 
-**Method**: scripts/download_jira_attachments.sh (Bearer + mTLS + -k)
+**Method**: `scripts/download_jira_attachments.mjs` (Schannel/Windows) or `scripts/download_jira_attachments.sh` (OpenSSL curl + PEM). PAT from env or `~/.config/jira-certs/jira-pat.txt` — never on argv.
 **Note**: files like setting.json contain sensitive data (deviceId/cookies); sanitize before committing or sharing externally.
 ```
 
-> Attachments are always downloaded to local disk via the script, never into the Agent context (see SKILL.md "Attachment Download").
+> Attachments are always downloaded to local disk via the script, never into the Agent context (see SKILL.md "Attachment Download"). Resolve the PAT with the credential chain before download; do not paste the token into chat or sample commands.

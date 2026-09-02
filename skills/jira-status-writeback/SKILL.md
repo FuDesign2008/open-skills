@@ -1,13 +1,13 @@
 ---
 name: jira-status-writeback
-version: "1.0.0"
+version: "1.0.1"
 user-invocable: false
 description: "Post-merge Jira writeback SOP: transition only to「已修复」, then independent jira_add_comment with body. Triggers — 「Jira 状态回写」「回写已修复」「合并后写 Jira」「jira writeback」「jira status writeback」. Do NOT use for reading issues, creating issues, or pre-merge comments. Loaded by Jira fix hosts after merge via frontmatter dependencies."
 ---
 
 # Jira Status Writeback
 
-> Internal shared skill. Single source of truth for **post-merge** Jira status update + repair comment. Hosts declare it in `dependencies`, abort if missing, and pass a field map; they MUST NOT restate the two-step API or status boundary inline.
+> Internal shared skill. Single source of truth for **post-merge** Jira status update + repair comment. Hosts declare it in `dependencies`, abort if missing, and pass a field map; they MUST NOT restate the two-step API or status boundary inline. This skill does not resolve PAT files; session or MCP auth follows `jira-read`.
 
 ## When to run
 
