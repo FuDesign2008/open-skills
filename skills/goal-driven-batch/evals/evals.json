@@ -285,6 +285,42 @@
           "text": "显式 queue-child 标志触发适配，独立使用语义不变"
         }
       ]
+    },
+    {
+      "id": 16,
+      "name": "mandatory-engine-ticket-no-default",
+      "prompt": "把这个需求排进队列今晚跑：给设置页加导出功能。",
+      "expected_output": "深谈必含引擎必问票（第二张固定票，无默认）：五值逐一呈现（goal-driven-workflow/solve-workflow/opsx-solve-workflow/jira-fix-workflow/opsx-jira-fix-workflow）+ 选型指引 + 推荐答案，用户显式选定后写入 Engine 字段；输出明示无字段卡片将在派发时搁置、绝不静默默认。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "引擎票为必问且无默认值，五值全列 + 指引/推荐"
+        },
+        {
+          "text": "选定值写入卡片 Engine 字段（skill 精确名）"
+        },
+        {
+          "text": "明示无字段卡在消费入口搁置而非默认派发"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "name": "opsx-jira-engine-archive-pr-open",
+      "prompt": "队列里 Engine: opsx-jira-fix-workflow 的卡今晚无人值守跑，这仓库有 openspec/。",
+      "expected_output": "环境门通过后子运行以 queue-child 标志启动：Jira 链接供血、冻结决策供 stage 0-1、policy 决定出口（ai-proxy 则坐席+预告）；终态为归档+PR-open——OpenSpec change 必归档，合并与 Jira 回写作为待办进验收包留人。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "终态为 archive+PR-open 且归档永不延迟"
+        },
+        {
+          "text": "合并与 Jira 回写列为验收包待办，不代理"
+        },
+        {
+          "text": "环境门（openspec/ + CLI）缺失时卡片搁置"
+        }
+      ]
     }
   ]
 }
