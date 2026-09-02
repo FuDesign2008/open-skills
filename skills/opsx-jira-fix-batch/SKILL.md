@@ -1,58 +1,35 @@
 ---
 name: opsx-jira-fix-batch
-version: "1.3.0"
+version: "2.0.0"
 user-invocable: true
 category: development
 tags: [jira, openspec, batch, workflow]
-description: "Triggers when the user says「opsx 批量修复」「批量 opsx-jira-fix」「opsx-jira-fix-batch」「批量 OpenSpec Jira 修复」/ opsx batch fix, batch OpenSpec Jira fix. Orchestrates multi-issue end-to-end fixes and records relationship judgments in OpenSpec artifacts."
+description: "Triggers when the user says「opsx 批量修复」「批量 opsx-jira-fix」「opsx-jira-fix-batch」「批量 OpenSpec Jira 修复」/ opsx batch fix, batch OpenSpec Jira fix. Thin trigger shell: parse Jira IDs/URLs and enqueue them into goal-driven-batch with Engine opsx-jira-fix-workflow. Does not run fixes or merge. Do NOT use for a single issue (opsx-jira-fix-workflow) or a non-Jira queue (goal-driven-batch)."
+dependencies:
+  - goal-driven-batch
 ---
 
-# OPSX Jira Bug Batch Fix
+# OPSX Jira Bug Batch Enqueue Shell
 
-> OpenSpec-flavored **batch orchestration**. Per-issue flow (stages 0–8) lives in `opsx-jira-fix-workflow`. Responsibilities here: split issues, detect relationships, invoke `opsx-jira-fix-workflow` in order, and persist relationship judgments into OpenSpec artifacts.
+> Trigger-only shell. Queue lifecycle, relationship pass, isolation, caps, and acceptance live in `goal-driven-batch`. This skill parses a Jira list and hands it to that skill's **Jira list-enqueue shortcut** with `Engine: opsx-jira-fix-workflow` already frozen.
 >
-> **Activate only when the user explicitly requests a batch fix.** Loading this skill MUST NOT start orchestration by itself.
->
-> Unlike plain `jira-fix-batch`, relationship judgments MUST land in OpenSpec artifacts — not only in a temp progress file or chat context.
+> Related-issue persistence in OpenSpec `design.md` is the **child engine's** job after dispatch (`opsx-jira-fix-workflow` receives relationship-pass notes in the card supply). This shell does not write OpenSpec artifacts.
 
-## Batch orchestration duties
+**Activate only when the user explicitly requests an OPSX batch Jira fix.** Loading this skill MUST NOT start a queue run.
 
-1. Split input Jira IDs/URLs into independent issue tasks.
-2. Before execution, detect duplicate / dependency / overlap / conflict / derived relationships.
-3. For each issue that needs a fix: **locate the target project root** first (multi-workspace; see `opsx-jira-fix-workflow` stage 0), then confirm or create an independent OpenSpec change in that project. If several issues share one root cause **and** one project, they MAY reuse one change, but `design.md` MUST state coverage. Cross-project issues get separate changes and cross-link in each `design.md`.
-4. Invoke `opsx-jira-fix-workflow` per issue; do not skip OpenSpec recording, verification, or archive requirements of stages 0–8.
-5. After each issue, re-evaluate remaining issues using latest code, PR/MR diff, and OpenSpec artifacts.
-6. One failure MUST NOT block later issues; **conflict pending confirmation** MUST pause for human product/tech direction.
-7. At batch end, summarize each issue’s Jira status, OpenSpec change, PR/MR, verification, and archive state.
+## Prerequisite Skill Check
 
-## Batch mode propagation
+Scan available skills. If `goal-driven-batch` is missing, abort immediately with install guidance (`npx skills add FuDesign2008/open-skills -g --skill goal-driven-batch --yes`). No silent fallback.
 
-Per-issue mode is set **explicitly** from batch-level user intent. Child “auto reverts to manual” MUST NOT break batch continuity.
+## Duties
 
-| Batch trigger | Orchestrator behavior | Child mode |
-|---------------|----------------------|------------|
-| Contains「自动」/ "auto" (e.g.「opsx 批量自动修复」) | Attach `--auto` on each child call | Auto |
-| No「自动」/ "auto" (e.g.「opsx 批量修复」) | Do not attach `--auto` | Manual |
+1. Split the input into distinct Jira IDs/URLs.
+2. Load `goal-driven-batch` and run its **Jira list-enqueue shortcut** with `Engine: opsx-jira-fix-workflow` frozen on every card.
+3. Stop when that shortcut stops (cards written, one batch approval event). Do not start consumption. Do not call `opsx-jira-fix-workflow`. Do not write a parallel progress file.
 
-- **Separation of concerns**: `opsx-jira-fix-workflow` need not know batch context.
-- **Explicit over implicit**: orchestrator passes mode parameters.
+## Red Flags
 
-Optionally note the mode used in each change’s `design.md`.
-
-## Issue relationship detection
-
-1. **Duplicate / equivalent** — Same symptom, root cause, behavior contract, or fix point; A’s fix covers B → mark B **skipped (covered by duplicate)** with “covered by A / `<change-name>`”; do not open another fix PR.
-2. **Dependency** — B needs A’s code, behavior, or spec → mark **waiting on dependency**; continue B only after A verifies and archive strategy is clear; when running B, read A’s `design.md`, `tasks.md`, PR/MR diff, and verification evidence.
-3. **Overlap but not equivalent** — Same module/capability, different root cause/contract/scenarios → analyze separately; cross-link in each `design.md` Risks/Dependencies; prefer serial handling.
-4. **Conflict** — Contradictory expected behaviors or scenarios → pause, **conflict pending confirmation**, wait for human direction.
-5. **Derived** — Fixing A reveals B as follow-on, deeper root cause, or new scenario on the same capability → record derivation; decide merge into one change, depend, or split Jira/OpenSpec change.
-
-Write relationships into the corresponding `design.md` at least as:
-
-```text
-## Related Issues
-
-- <JIRA-ID>: duplicate / dependency / overlap / conflict / derived; conclusion; related PR/MR or OpenSpec change.
-```
-
-If the orchestrator also keeps a progress file, suggested statuses: pending / in progress / done / skipped (duplicate) / waiting dependency / conflict pending / review failed (cap) / failed.
+- Looping `opsx-jira-fix-workflow` from this skill
+- Starting the queue because the list was parsed
+- Sharing one OpenSpec change or one branch across in-progress cards (the queue forbids that)
+- Re-implementing relationship detection here

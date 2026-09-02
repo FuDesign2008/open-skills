@@ -321,6 +321,39 @@
           "text": "环境门（openspec/ + CLI）缺失时卡片搁置"
         }
       ]
+    },
+    {
+      "id": 18,
+      "name": "jira-list-enqueue-shortcut-no-run",
+      "prompt": "批量修复 PROJ-101、PROJ-102、PROJ-103，用 jira-fix-batch。",
+      "expected_output": "jira-fix-batch 只解析三票并调用 goal-driven-batch 的 Jira list-enqueue：Engine 冻结为 jira-fix-workflow、整批一张交互预算票、每票一张卡、批次三段式后一次批准；批准不等于开跑，不调用 jira-fix-workflow、不写 .jira-fix/ 进度文件。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "每票一张卡且 Engine 冻结为 jira-fix-workflow"
+        },
+        {
+          "text": "整批一次交互预算票与一次批准事件"
+        },
+        {
+          "text": "不启动消费、不循环调用 jira-fix-workflow"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "name": "derived-no-shared-change-or-branch",
+      "prompt": "队列里两张 opsx-jira 卡同源因：A 已完成，B 是修复 A 时发现的衍生。怎么处理？",
+      "expected_output": "关系检测记 derived；B 依赖或跳过覆盖，绝不把两张进行中的卡合并到同一分支或同一个 OpenSpec change；判断写入进度 Notes，opsx-jira 子运行在各自 design.md 写 Related Issues。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "derived 类型被记录且不共用分支/change"
+        },
+        {
+          "text": "opsx-jira 子运行把关系写入 design.md Related Issues"
+        }
+      ]
     }
   ]
 }
