@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.19.0"
+version: "1.20.0"
 user-invocable: true
 description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」 / opsx jira fix, OpenSpec Jira fix workflow."
 dependencies:
@@ -101,7 +101,7 @@ Not a replacement for plain `jira-fix-workflow`:
 
 ## Queue-child mode (goal-driven-batch dispatch)
 
-When dispatched by `goal-driven-batch` (explicit `queue-child` context flag in the invocation — never guessed from ambient signals), this flow adapts: the card's goal condition carries the Jira issue link; its frozen-decisions block supplies stage 0–1; `Stage-exit policy` decides the stop-point handling exactly as for the other PDCA engines (`ai-proxy` → auto mode with proxy-occupied exits per `ai-proxy-discipline` — abort at prerequisite check only under this policy; `manual` → manual; `auto` → auto with named escapes); open with a stop-point forecast (every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket). The terminal is **archive + PR-open**: archive the OpenSpec change (native to this model, never deferred), then stop at PR open — merge + Jira writeback are deferred to the human (merge authority and external-tracker writebacks are never proxied); the queue's acceptance package carries them as pending follow-ups. Independent use of this skill (no flag) is unchanged.
+When dispatched by `goal-driven-batch` (explicit `queue-child` context flag in the invocation — never guessed from ambient signals), this flow adapts: the card's goal condition carries the Jira issue link; its frozen-decisions block supplies stage 0–1; `Stage-exit policy` decides the stop-point handling exactly as for the other PDCA engines (`ai-proxy` → auto mode with proxy-occupied exits per `ai-proxy-discipline` — abort at prerequisite check only under this policy; `manual` → manual; `auto` → auto with named escapes); open with a stop-point forecast (every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket). The terminal is **archive + PR-open**: archive the OpenSpec change (native to this model, never deferred), then stop at PR open — merge + Jira writeback are deferred to the human (merge authority and external-tracker writebacks are never proxied); the queue's acceptance package carries them as pending follow-ups. Independent use of this skill (no flag) is unchanged. When the card supply includes queue relationship-pass notes, write them as `## Related Issues` in this change's `design.md`.
 
 ## Stage 0: Prerequisite check
 
@@ -416,7 +416,7 @@ Once archiving and branch closeout are complete (and Jira writeback when merge r
 
 ## Batch OPSX Jira fixes
 
-For batch fixes, use the `opsx-jira-fix-batch` skill.
+Use the `opsx-jira-fix-batch` skill (thin shell: parses the Jira list and enqueues into `goal-driven-batch` with `Engine: opsx-jira-fix-workflow`; does not loop this workflow or merge). Relationship judgments the queue already recorded are written here as `## Related Issues` in each change's `design.md`.
 
 ## Common mistakes
 

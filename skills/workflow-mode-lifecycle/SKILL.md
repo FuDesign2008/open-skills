@@ -1,6 +1,6 @@
 ---
 name: workflow-mode-lifecycle
-version: "1.0.0"
+version: "1.0.1"
 user-invocable: false
 description: "Shared lifecycle contract for manual/auto modes in PDCA-style workflow skills: auto mode always reverts to manual on completion or interruption, re-entering auto requires an explicit trigger, implicit continuation never re-activates it, and batch orchestrators pass mode explicitly. Referenced by PDCA hosts via frontmatter dependencies; load when a host delegates its mode rules."
 ---
@@ -36,7 +36,7 @@ Implicit continuation — "继续", "再改一下", "深入分析" — **must NO
 
 ## Batch scenarios
 
-In batch orchestration (e.g. jira-fix-batch, opsx-jira-fix-batch), the orchestrator passes the mode **explicitly per sub-invocation** based on the user's batch-level intent. The single-run revert rule above does not propagate across sub-invocations.
+In batch orchestration (e.g. `goal-driven-batch`; `jira-fix-batch` / `opsx-jira-fix-batch` are trigger shells that enqueue into it), the orchestrator passes the mode **explicitly per sub-invocation** based on the user's batch-level intent. The single-run revert rule above does not propagate across sub-invocations.
 
 ## Integration guide (for referencing workflows)
 
