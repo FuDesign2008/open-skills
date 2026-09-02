@@ -1,6 +1,6 @@
 ---
 name: jira-fix-workflow
-version: "3.30.0"
+version: "3.31.0"
 user-invocable: true
 description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」 / fix this bug, jira-fix, auto fix, force fix, resume fix. Do NOT use for batch fixes across multiple issues — use jira-fix-batch instead (it enqueues into goal-driven-batch; confirm, then run the queue)."
 dependencies:
@@ -37,7 +37,7 @@ dependencies:
 
 > End-to-end Jira bug-fix flow; stages 1-6 are read-only. Manual mode (default) requires confirmation between stages.
 >
-> **Prerequisites**: mcp-atlassian is configured with a valid PAT; the Git environment is healthy.
+> **Prerequisites**: PAT/auth follows the `jira-read` credential contract (env `JIRA_PERSONAL_TOKEN`, alias `JIRA_PAT`, or `~/.config/jira-certs/jira-pat.txt`); mcp-atlassian is optional. The Git environment is healthy.
 > **Format reference**: output templates, the state directory, commit format, and exit scripts are in [reference.md](reference.md).
 
 ## Triggers and Modes
@@ -117,7 +117,7 @@ Upgrading in manual mode requires user confirmation.
 Any failure aborts the flow.
 
 1. Detect the mode (including `--force` / `--resume`); before the first persistent write (`state.json`, docs, or code), load `git-worktree-discipline` (worktree gate + optional isolation); then write the mode to `state.json`
-2. `jira_get_issue` (title/priority) connectivity check; abort on failure
+2. Resolve credentials per `jira-read` (do not abort solely because mcp-atlassian is missing). Prefer MCP `jira_get_issue` for a connectivity check when that tool exists; if it does not, degrade to local `jira-read` cache. Abort only when issue data cannot be obtained at all.
 3. **P0 interception** (auto only): P0 → abort, switch to manual
 4. Git: 🤖 dirty→stash; 👤 dirty→prompt to handle
 
@@ -127,7 +127,7 @@ Output: [reference.md](reference.md) § Stage 0. On success, proceed directly to
 
 ## Stage 1: Read Jira Info
 
-Call `jira-read {JIRA-ID} --live` (degrade to cache → degrade further to manual/abort). Save `01-jira-info.md`. Extract: ID, title, priority, status, description, repro steps, expected/actual result, attachments, comments. Output: reference.md § Stage 1. Tools: ✅ mcp / jira-read; ❌ Edit/Write/Bash. Proceed directly to stage 2.
+Call `jira-read {JIRA-ID} --live` after the `jira-read` credential chain (degrade to cache → degrade further to manual/abort). Save `01-jira-info.md`. Extract: ID, title, priority, status, description, repro steps, expected/actual result, attachments, comments. Output: reference.md § Stage 1. Tools: ✅ mcp / jira-read; ❌ Edit/Write/Bash. Proceed directly to stage 2.
 
 > **Performance-domain issue** (slow / jank / resource growth): run the analysis, optimization, and verification work under `perf-optimize-workflow`'s evidence-gated paradigm (benchmark baseline → evidence gate → one-target iteration → A/B verdict) and fold its conclusions back into this workflow's stages; the Jira orchestration (branch, MR, writeback) stays here. Note: its campaigns create per-project artifacts in the repo (benchmark log + harness, and seeded `code-insight`/`code-optimizer` skills) — commit them alongside the fix; the optimize-verify loop additionally requires an environment loop runner (analysis stages always run). Informational reference, not a dependency.
 
