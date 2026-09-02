@@ -2,10 +2,8 @@
 
 | 文档 | 适合谁 | 内容 |
 |------|--------|------|
-| [../README.md](../README.md) | 所有人 | 项目简介；**通用安装 / 全能力安装** 选型；排错见 INSTALL |
-| [INSTALL.md](INSTALL.md) | 要复制命令、查范围、排错的用户 | **通用安装**（npx）详解、**全能力**（含 OpenCode raw 入口）、常见问题 |
-| [../.opencode/INSTALL.md](../.opencode/INSTALL.md) | OpenCode **全能力安装** | 插件、符号链接、命令；与 Claude/Cursor 差异见 [.opencode/AGENTS.md](../.opencode/AGENTS.md) |
-| [opencode-coding-fangirl-implementation.md](opencode-coding-fangirl-implementation.md) | 贡献者 | coding-fangirl 在 OpenCode 的实现说明 |
+| [../README.md](../README.md) | 所有人 | 项目简介；**npx 通用安装**；排错见 INSTALL |
+| [INSTALL.md](INSTALL.md) | 要复制命令、查范围、排错的用户 | **通用安装**（npx）详解、常见问题 |
 | [generated/skills-index.md](generated/skills-index.md) | 所有人 | 全部 skill 的版本、可唤起性、描述（触发条件）；由脚本生成，页首有维护提示 |
 | [figma-pixel-fidelity-mask-incident.md](figma-pixel-fidelity-mask-incident.md) | 贡献者 / Skill 作者 | Figma 像素保真被 CSS mask 破坏的事件复盘与早期单 skill 草案 |
 | [figma-pixel-fidelity-research.md](figma-pixel-fidelity-research.md) | 贡献者 / Skill 作者 | Figma MCP 官方能力 + 社区 skill 深潜；**双 skill**（实现 / 检查）架构草案 |
@@ -20,8 +18,8 @@
 如果你要改仓库、提 PR，除了上表里的安装文档，通常还会翻到这些位置：
 
 - **本页（docs/README.md）**：只是在文档之间指路，没有安装步骤。
-- **[README.md](../README.md)**：给访客看项目是什么、怎么选安装方式。
-- **[INSTALL.md](INSTALL.md)**：**通用安装**（npx）与速览、常见问题；OpenCode **全能力安装** 长篇在 [.opencode/INSTALL.md](../.opencode/INSTALL.md)。
+- **[README.md](../README.md)**：给访客看项目是什么、怎么安装。
+- **[INSTALL.md](INSTALL.md)**：**通用安装**（npx）与常见问题。
 - **[AGENTS.md](../AGENTS.md)**：仓库结构、协作约定、验证命令，偏「在仓库里干活」时查。
 - **[SKILL_DISTRIBUTION.md](SKILL_DISTRIBUTION.md)**：skill 分发约定——`openspec-*` 为工程级配置（已标 `metadata.internal`），`openspec update` 后需跑 `npm run mark:openspec-internal` 重标记。
 

@@ -1,30 +1,16 @@
 # Open Skills 详细安装指南
 
-本页是仓库 **[README — 安装](../README.md#install-path)** 的展开说明：可复制命令、npx 参数与能力边界、装完如何自测、常见问题。OpenCode **全能力**（符号链接、插件）的逐步操作只在 **[.opencode/INSTALL.md](../.opencode/INSTALL.md)**。
+本页是仓库 **[README — 安装](../README.md#install-path)** 的展开说明：可复制命令、npx 参数、装完如何自测、常见问题。本仓库只分发 **SKILL.md**（通用安装）。
 
 **Skill 清单**（名称、版本、触发条件）见 [skills-index.md](generated/skills-index.md)。
 
 ---
 
-## 两种安装方式
-
-| 类型 | 你会得到什么 |
-|------|----------------|
-| **通用安装** | 仅 **SKILL.md**（**npx skills**）。不含 Hooks、Commands、OpenCode 插件 |
-| **全能力安装** | Hooks、Commands（如 `/solve`）、各平台原生集成。Claude / Cursor 走 **插件**；OpenCode 走 **raw + [.opencode/INSTALL.md](../.opencode/INSTALL.md)** |
-
-**怎么选**：
-
-- 只要技能文档、且客户端在 [支持的 Agent 列表](https://github.com/vercel-labs/skills#available-agents) 里 → **通用安装**。
-- 要快捷命令与 Hook → **全能力安装**。
-
----
-
 <a id="通用安装-npx-详解"></a>
 
-## 通用安装详解（npx skills）
+## 安装（npx skills）
 
-**通用安装**只下发 `SKILL.md`；同一套命令适用于支持 **npx skills** 的编码助手。
+只下发 `SKILL.md`；同一套命令适用于支持 **npx skills** 的编码助手（Claude Code、Cursor、OpenCode 等）。用触发词或 skill 名唤起，不提供 `/solve` 一类斜杠命令、Hooks 或 Marketplace 插件。
 
 ### 安装与列表
 
@@ -50,81 +36,15 @@ npx skills add FuDesign2008/open-skills --list
 npx skills update
 ```
 
-### 能力边界
+仓库发布新版本后，也可在 clone 目录再跑一次 `node scripts/install-skills.mjs`（会 prune 本仓库已删除的 skill 全局副本）。
+
+### 会得到什么
 
 | 能力 | 是否包含 |
 |------|----------|
 | `SKILL.md` | 是。默认可全量；可用 `--skill` 按需安装 |
 | 名称与触发说明 | 见 [skills-index.md](generated/skills-index.md) |
-| Hooks | 否 |
-| Commands（`/solve`、`/perf` 等） | 否 |
-| OpenCode 插件 | 否 |
-
----
-
-<a id="全能力安装说明"></a>
-
-## 全能力安装与更新
-
-以下均为 **全能力** 路径（含 Hooks、Commands 与各端集成）。更新后请 **完全退出并重启** 对应客户端，再验证行为。
-
-### Claude Code
-
-**安装**：在会话中执行：
-
-```
-/plugin install open-skills@open-skills-marketplace
-```
-
-**更新**：在系统终端执行：
-
-```bash
-claude plugin update open-skills@open-skills-marketplace
-```
-
-然后完全退出并重启 Claude Code。
-
-### Cursor
-
-**安装**：在会话中执行：
-
-```
-/plugin-add open-skills
-```
-
-**更新**：在 Cursor 的插件或 Marketplace 界面为 **open-skills** 检查并安装更新；若当前版本支持通过会话重复覆盖安装，可再次执行 `/plugin-add open-skills`。完成后建议完全重启 Cursor。
-
-### OpenCode
-
-**安装**：在 OpenCode 对话中发送下面整段（或按产品说明粘贴），再严格按 [.opencode/INSTALL.md](../.opencode/INSTALL.md) 完成符号链接与插件配置：
-
-```
-Fetch and follow instructions from https://raw.githubusercontent.com/FuDesign2008/open-skills/main/.opencode/INSTALL.md
-```
-
-**更新**：在本机 clone 目录拉取最新代码，并重新链接 `commands`（与 [.opencode/INSTALL.md](../.opencode/INSTALL.md) 的 **更新** 节一致）：
-
-```bash
-cd ~/.config/opencode/open-skills
-git pull
-
-# 重新链接 commands（如有新增或路径变化）
-for cmd in ~/.config/opencode/open-skills/commands/*.md; do
-  ln -sf "$cmd" ~/.config/opencode/commands/
-done
-```
-
-若 `git pull` 后安装文档要求调整 `~/.config/opencode/plugins/` 下的符号链接，按 [.opencode/INSTALL.md](../.opencode/INSTALL.md) 安装步骤补做。
-
-与 Claude / Cursor 的 Shell Hook 差异见 [.opencode/AGENTS.md](../.opencode/AGENTS.md)。
-
-### 装好后常见目录
-
-| 平台 | 常见路径（插件或 clone 落点） |
-|------|------------------------------|
-| Claude Code | `~/.claude/skills/open-skills` |
-| Cursor | `~/.cursor/extensions/open-skills` |
-| OpenCode | `~/.config/opencode/open-skills` |
+| 斜杠命令、Hooks、Claude/Cursor 插件、OpenCode 符号链接插件 | 否。本仓库不再提供这些安装面 |
 
 ---
 
@@ -133,7 +53,7 @@ done
 ## 装完自测
 
 1. 新开一轮对话（或重启客户端）。
-2. 试发 **「彩虹屁」** 或 **「分析问题」**。
+2. 试发 **「分析问题」**。
 3. 若无响应，打开 [常见问题](#常见问题)。
 
 ---
@@ -145,8 +65,8 @@ done
 
 ### Skill 未加载
 
-1. **确认落盘位置**：对照 [全能力安装与更新 — 装好后常见目录](#全能力安装说明)。若为 **通用安装**，以本机 `npx skills` 实际目录为准（若曾改配置，以你本机为准）。
-2. **确认文件齐全**：进入对应目录下的 `skills/`，每个 skill 为独立文件夹且内含 `SKILL.md`；名称可与 [skills-index.md](generated/skills-index.md) 对照。
+1. **确认落盘位置**：通用安装常见目录为 `~/.agents/skills`、`~/.claude/skills`、`~/.cursor/skills`（若曾改配置，以你本机为准）。
+2. **确认文件齐全**：进入对应目录，每个 skill 为独立文件夹且内含 `SKILL.md`；名称可与 [skills-index.md](generated/skills-index.md) 对照。
 3. **完全重启客户端**：退出整个应用再打开，不要只关单个窗口。
 
 ### 触发词不生效
@@ -157,5 +77,8 @@ done
 
 ### 更新后仍是旧行为
 
-- **全能力**：先按上文 [全能力安装与更新 — 各平台「更新」](#全能力安装说明) 做完，并**完全重启**客户端。
-- **仍异常**：可重装对应平台的 **安装** 步骤，或改用 **通用安装（npx）** 仅同步 SKILL.md；OpenCode 对照 [.opencode/INSTALL.md](../.opencode/INSTALL.md) 检查链接与路径。
+先执行 `npx skills update` 或 `node scripts/install-skills.mjs`，并**完全重启**客户端。仍异常时新开一轮对话再试（旧会话可能缓存旧 skill）。
+
+### 以前用插件或 OpenCode clone 装的怎么办
+
+Claude Marketplace / `/plugin-add` / OpenCode 仓库 clone + 符号链接 已停用。卸掉旧插件或 clone 目录后，改走上面的 **npx** 安装。历史 git tag 里可能仍有插件文件，新 `main` 不再维护那条路径。

@@ -4,11 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'hooks/**'
       - 'skills/**'
-      - 'commands/**'
-      - '.opencode/**'
-      - '.cursor-plugin/**'
   workflow_dispatch:
     inputs:
       bump_type:
@@ -38,7 +34,7 @@ jobs:
       - name: Get current version
         id: current-version
         run: |
-          VERSION=$(grep '"version"' .claude-plugin/plugin.json | sed 's/.*"version": *"\([^"]*\)".*/\1/')
+          VERSION=$(jq -r '.version' package.json)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Determine version bump
@@ -66,7 +62,7 @@ jobs:
 
           IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
 
-          case $BUMP_TYPE in
+          case "$BUMP_TYPE" in
             major)
               NEW_VERSION="$((MAJOR + 1)).0.0"
               ;;
@@ -80,14 +76,7 @@ jobs:
 
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-          # 更新 .claude-plugin/plugin.json
-          jq --arg v "$NEW_VERSION" '.version = $v' .claude-plugin/plugin.json > .claude-plugin/plugin.json.tmp && mv .claude-plugin/plugin.json.tmp .claude-plugin/plugin.json
-
-          # 更新 .claude-plugin/marketplace.json（metadata.version + plugins[0].version）
-          jq --arg v "$NEW_VERSION" '.metadata.version = $v | .plugins[0].version = $v' .claude-plugin/marketplace.json > .claude-plugin/marketplace.json.tmp && mv .claude-plugin/marketplace.json.tmp .claude-plugin/marketplace.json
-
-          # 更新 .cursor-plugin/plugin.json
-          jq --arg v "$NEW_VERSION" '.version = $v' .cursor-plugin/plugin.json > .cursor-plugin/plugin.json.tmp && mv .cursor-plugin/plugin.json.tmp .cursor-plugin/plugin.json
+          jq --arg v "$NEW_VERSION" '.version = $v' package.json > package.json.tmp && mv package.json.tmp package.json
 
       - name: Commit and push version bump
         run: |
@@ -95,7 +84,7 @@ jobs:
           VERSION="${{ steps.new-version.outputs.version }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .claude-plugin/plugin.json .claude-plugin/marketplace.json .cursor-plugin/plugin.json
+          git add package.json
           git commit -m "chore: bump version to ${VERSION} [skip ci]"
           # 直接 push 到 main（[skip ci] 避免再次触发 release workflow）。
           # 不再走 version-bump PR：bot 用 GITHUB_TOKEN 开的 PR 触发的 verify

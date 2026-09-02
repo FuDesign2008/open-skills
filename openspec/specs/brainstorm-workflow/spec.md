@@ -73,12 +73,7 @@ After the user approves the written design spec, `brainstorm-workflow` MUST hard
 
 ### Requirement: Command entry and catalog registration
 
-The repository MUST provide `commands/brainstorm.md` that invokes `brainstorm-workflow` with `disable-model-invocation: true`. `AGENTS.md` MUST list `brainstorm-workflow` in the skill relationship table. `docs/generated/skills-index.md` MUST include the skill after regeneration.
-
-#### Scenario: Command invokes the host
-
-- **WHEN** a user runs the brainstorm command entry
-- **THEN** the command file instructs invoking `brainstorm-workflow` and following it exactly
+`AGENTS.md` MUST list `brainstorm-workflow` in the skill relationship table. `docs/generated/skills-index.md` MUST include the skill after regeneration. The repository MUST NOT require a repo-root `commands/brainstorm.md` slash-command file.
 
 #### Scenario: Catalogs list the skill
 

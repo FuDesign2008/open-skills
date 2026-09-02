@@ -36,4 +36,4 @@ When a project skill is renamed, the directory, frontmatter `name`, OpenSpec cap
 #### Scenario: Old id has zero in-repo hits after rename
 
 - **WHEN** the rename change is ready to merge
-- **THEN** a repository search for the old skill id in `skills/`, `commands/`, `AGENTS.md`, and active OpenSpec specs returns no remaining references (archive history excluded as needed)
+- **THEN** a repository search for the old skill id in `skills/`, `AGENTS.md`, and active OpenSpec specs returns no remaining references (archive history excluded as needed)

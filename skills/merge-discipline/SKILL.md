@@ -1,6 +1,6 @@
 ---
 name: merge-discipline
-version: "1.6.0"
+version: "1.6.1"
 user-invocable: true
 description: "Hard gate before merging into a protected branch: run Parts A→B→C→R→D (OpenSpec archive association, rebase/conflict pre-check, coverage preference, pr-code-review with optional light depth via pr-review-gate, squash decision from commit quality + tip-pin merge). Do NOT merge while an associated OpenSpec change is still active; do NOT skip on a direct \"merge MR\" command; do NOT auto-select squash when two viable strategies exist — ask with a commit-quality recommendation; a single-commit or single-permitted-strategy MR concludes without prompting; after merging, sync the local workspace onto the resolved target branch. Triggers — 「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」「合并前 code-review」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, pr code review before merge."
 dependencies:

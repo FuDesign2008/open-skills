@@ -193,7 +193,7 @@ Part R MUST classify the open PR/MR three-dot diff as **non-application-code** w
 
 #### Scenario: Mixed runtime source forces full surface
 
-- **WHEN** the PR also changes a denylisted path (e.g. `.opencode/**`, `hooks/**`, or runtime source extensions per the reference table)
+- **WHEN** the PR also changes a denylisted path (e.g. `.github/workflows/**`, `scripts/**`, or runtime source extensions per the reference table)
 - **THEN** the surface is application-code
 
 ### Requirement: non-code-light preference SHALL use light review on non-application-code surfaces

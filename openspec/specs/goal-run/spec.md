@@ -151,15 +151,6 @@ Instructional body text in `goal-driven-workflow` (`SKILL.md` and `reference.md`
 - **WHEN** an agent reads `goal-driven-workflow` stage sections and `reference.md` templates
 - **THEN** instructional sentences and template labels are English; Chinese appears only as description/invocation triggers where required
 
-### Requirement: Goal-run command entry SHALL follow command-file conventions when present
-
-When `commands/goal-run.md` is added, it MUST set `disable-model-invocation: true` and MUST instruct the agent to invoke `goal-driven-workflow` and follow it exactly. The repository SHOULD add this command as part of this change.
-
-#### Scenario: Command file invokes the skill
-
-- **WHEN** `commands/goal-run.md` exists
-- **THEN** it sets `disable-model-invocation: true` and instructs the agent to invoke `goal-driven-workflow` and follow it exactly
-
 ### Requirement: Goal-run SHALL strong-depend on design-approval-gate for launch approval
 
 `goal-driven-workflow` MUST declare `design-approval-gate` in frontmatter `dependencies`, verify it at startup, and thin-reference it at the long-run launch gate. Long-run-specific rule: high-impact launches (unattended / over-budget / irreversible) MUST still pause for explicit user approval even when the host is in auto mode — this is an intentional divergence from `design-approval-gate`'s generic auto-mode escape and MUST be stated at the host launch gate.
