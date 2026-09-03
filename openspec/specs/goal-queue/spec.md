@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Persistent goal-backlog queue lifecycle owned by the user-invocable `goal-driven-batch` skill: durable task-card backlog, intake-time high-impact pre-approval with 留痕, serial consumption delegating each task to the `goal-driven-workflow` engine (`goal-run` capability), per-task branch/worktree isolation, queue-level budget and stopping rules, a per-run progress document, and a batch acceptance package that hands merge decisions back to the human. Scheduling stays platform-native; this layer treats any trigger — manual or scheduled — as "consume the queue until it drains or caps hit".
+Persistent goal-backlog queue lifecycle owned by the user-invocable `goal-driven-queue` skill: durable task-card backlog, intake-time high-impact pre-approval with 留痕, serial consumption delegating each task to the `goal-driven-workflow` engine (`goal-run` capability), per-task branch/worktree isolation, queue-level budget and stopping rules, a per-run progress document, and a batch acceptance package that hands merge decisions back to the human. Scheduling stays platform-native; this layer treats any trigger — manual or scheduled — as "consume the queue until it drains or caps hit".
 ## Requirements
 ### Requirement: 持久 backlog 载体
 
@@ -32,7 +32,7 @@ The system SHALL maintain the queue as a persistent project-local tree under `.g
 
 The system SHALL isolate the backlog per conversation with a minted kebab-case **queue-id** (not a platform session UUID and not a name the human must pick). Card files and run progress documents for a bound queue-id SHALL live under `.goal-driven/queues/<queue-id>/`. Enqueue, consumption, the relationship pass, mid-run re-scan, and the acceptance package MUST operate only on this conversation's bound directory; sibling queues MUST remain invisible to those operations. The system MUST NOT write a project-level current-queue pointer file that another conversation could overwrite. The system MUST NOT ask the human to choose among queues.
 
-Bind order, evaluated at every enqueue, Jira list-enqueue shortcut, and consume entry: (1) reuse the queue-id already bound in this conversation; (2) else mint `q-YYYYMMDD-HHMMSS` (append `-` plus four hex digits when that directory already exists), bind it for this conversation, and use it — first enqueue or 「跑队列」 mints, including an empty consume that then stops cleanly; (3) a mere load with no queue request MUST NOT mint and MUST NOT list sibling queues as a picker. A **new** conversation MUST mint a fresh queue and MUST NOT auto-bind `default` or any sibling `q-*` directory. A scheduled or unattended pull with no conversation bind SHALL consume `default` only; it MUST NOT mint and MUST NOT drain every queue in the folder. `jira-fix-batch` and `opsx-jira-fix-batch` inherit this bind through `goal-driven-batch`.
+Bind order, evaluated at every enqueue, Jira list-enqueue shortcut, and consume entry: (1) reuse the queue-id already bound in this conversation; (2) else mint `q-YYYYMMDD-HHMMSS` (append `-` plus four hex digits when that directory already exists), bind it for this conversation, and use it — first enqueue or 「跑队列」 mints, including an empty consume that then stops cleanly; (3) a mere load with no queue request MUST NOT mint and MUST NOT list sibling queues as a picker. A **new** conversation MUST mint a fresh queue and MUST NOT auto-bind `default` or any sibling `q-*` directory. A scheduled or unattended pull with no conversation bind SHALL consume `default` only; it MUST NOT mint and MUST NOT drain every queue in the folder. `jira-fix-queue` and `opsx-jira-fix-queue` inherit this bind through `goal-driven-queue`.
 
 Markdown task cards placed directly under `.goal-driven/` (not under `queues/` or `runs/`) together with `.goal-driven/runs/` SHALL belong to queue-id `default`. Binding `default` SHALL read that legacy layout and `.goal-driven/queues/default/` when present. New card and progress-document writes SHALL go to `.goal-driven/queues/<queue-id>/`. The system MUST NOT auto-move legacy files.
 
@@ -150,30 +150,30 @@ The system SHALL consume queued tasks strictly serially in priority order per th
 
 ### Requirement: Jira 列表入队捷径
 
-When `goal-driven-batch` is invoked by `jira-fix-batch` or `opsx-jira-fix-batch`, or when the enqueue input is a list of Jira IDs/URLs with Engine already frozen to `jira-fix-workflow` or `opsx-jira-fix-workflow`, the system SHALL use a list-enqueue shortcut: parse distinct issues into **one card per issue**; ask **one** interaction-budget ticket for the whole list and write the same `Stage-exit policy` on every new card; skip the mandatory engine ticket (Engine frozen by the caller); set each Goal Condition to that issue's Jira link and freeze "run the named engine as `queue-child`, remaining product/tech fog deferred to the child per Stage-exit policy"; open with a batch three-part base (issue table); close with **one** approval event covering all new cards. Approval MUST NOT start consumption. Cards MUST NOT share a branch or one OpenSpec change.
+When `goal-driven-queue` is invoked by `jira-fix-queue` or `opsx-jira-fix-queue`, or when the enqueue input is a list of Jira IDs/URLs with Engine already frozen to `jira-fix-workflow` or `opsx-jira-fix-workflow`, the system SHALL use a list-enqueue shortcut: parse distinct issues into **one card per issue**; ask **one** interaction-budget ticket for the whole list and write the same `Stage-exit policy` on every new card; skip the mandatory engine ticket (Engine frozen by the caller); set each Goal Condition to that issue's Jira link and freeze "run the named engine as `queue-child`, remaining product/tech fog deferred to the child per Stage-exit policy"; open with a batch three-part base (issue table); close with **one** approval event covering all new cards. Approval MUST NOT start consumption. Cards MUST NOT share a branch or one OpenSpec change.
 
 #### Scenario: 三票列表只入队不开跑
 
-- **WHEN** 用户说「批量修复 PROJ-101、PROJ-102、PROJ-103」且 `jira-fix-batch` 将列表交给 `goal-driven-batch`
+- **WHEN** 用户说「批量修复 PROJ-101、PROJ-102、PROJ-103」且 `jira-fix-queue` 将列表交给 `goal-driven-queue`
 - **THEN** 系统写入三张 `Engine: jira-fix-workflow` 卡片，整批一张交互预算票与一次批准，不调用 `jira-fix-workflow`、不启动队列消费
 
 #### Scenario: opsx 壳冻结引擎
 
-- **WHEN** 调用方是 `opsx-jira-fix-batch`
+- **WHEN** 调用方是 `opsx-jira-fix-queue`
 - **THEN** 每张新卡 Engine 为 `opsx-jira-fix-workflow`，不再询问引擎必问票
 
 ### Requirement: Jira 批量触发壳
 
-`jira-fix-batch` and `opsx-jira-fix-batch` SHALL remain user-invocable trigger skills whose only duties are: split Jira IDs/URLs, declare `goal-driven-batch` as a frontmatter dependency (abort if missing), and invoke that skill's Jira list-enqueue shortcut with Engine frozen (`jira-fix-workflow` / `opsx-jira-fix-workflow` respectively). They MUST NOT loop the single-issue engines, MUST NOT write `.jira-fix/` progress files, MUST NOT start queue consumption, and MUST NOT merge.
+`jira-fix-queue` and `opsx-jira-fix-queue` SHALL remain user-invocable trigger skills whose only duties are: split Jira IDs/URLs, declare `goal-driven-queue` as a frontmatter dependency (abort if missing), and invoke that skill's Jira list-enqueue shortcut with Engine frozen (`jira-fix-workflow` / `opsx-jira-fix-workflow` respectively). They MUST NOT loop the single-issue engines, MUST NOT write `.jira-fix/` progress files, MUST NOT start queue consumption, and MUST NOT merge.
 
 #### Scenario: 壳缺依赖即中止
 
-- **WHEN** `jira-fix-batch` 启动且 `goal-driven-batch` 不可用
+- **WHEN** `jira-fix-queue` 启动且 `goal-driven-queue` 不可用
 - **THEN** 立即中止并给出安装命令，不降级为自行循环 `jira-fix-workflow`
 
 #### Scenario: 加载壳不消费
 
-- **WHEN** `opsx-jira-fix-batch` 被加载但用户未给出 Jira 列表与入队意图
+- **WHEN** `opsx-jira-fix-queue` 被加载但用户未给出 Jira 列表与入队意图
 - **THEN** 不启动队列消费
 
 ### Requirement: derived 关系且禁止共用 change/分支
@@ -242,7 +242,7 @@ The skill body MUST thin-reference `goal-driven-workflow` for single-run methodo
 
 ### Requirement: 正文语言与触发词
 
-Instructional body text of `goal-driven-batch` MUST be written in English; Chinese MUST appear in the frontmatter description and trigger list (including queue-operation triggers like 「跑队列」「goal 队列」with English equivalents). The frontmatter `description` MUST stay within the repo's character limit and carry only routing information (what/when/triggers/do-not-use).
+Instructional body text of `goal-driven-queue` MUST be written in English; Chinese MUST appear in the frontmatter description and trigger list (including queue-operation triggers like 「跑队列」「goal 队列」with English equivalents). The frontmatter `description` MUST stay within the repo's character limit and carry only routing information (what/when/triggers/do-not-use).
 
 #### Scenario: 双语触发路由
 
@@ -353,7 +353,7 @@ Decisions-I-made entries SHALL be marked `factual` (branch baselines, dependency
 
 ### Requirement: goal-queue 代理检查点接线
 
-`goal-driven-batch` SHALL declare `ai-proxy-discipline` in frontmatter `dependencies` (prerequisite check with install guidance; abort on missing when the card's Stage-exit policy is `proxy`) and wire it, when the card records `Stage-exit policy: ai-proxy`, at these thin-pointer checkpoints: enqueue intake Q&A (absent human), the card approval event (proxy approval = bounded pre-authorization, Decisions-I-made section displayed to it), the record-step verification-checklist check on each child report, and conflict re-adjudication (whether a parked card's constraints re-validate within the original frozen scope). Checkpoint invocations count against the queue budget. With any other policy value or none, queue behavior is identical to today.
+`goal-driven-queue` SHALL declare `ai-proxy-discipline` in frontmatter `dependencies` (prerequisite check with install guidance; abort on missing when the card's Stage-exit policy is `proxy`) and wire it, when the card records `Stage-exit policy: ai-proxy`, at these thin-pointer checkpoints: enqueue intake Q&A (absent human), the card approval event (proxy approval = bounded pre-authorization, Decisions-I-made section displayed to it), the record-step verification-checklist check on each child report, and conflict re-adjudication (whether a parked card's constraints re-validate within the original frozen scope). Checkpoint invocations count against the queue budget. With any other policy value or none, queue behavior is identical to today.
 
 #### Scenario: 代理批准事件
 

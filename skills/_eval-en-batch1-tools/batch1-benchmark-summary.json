@@ -104,7 +104,7 @@
     ]
   },
   {
-    "skill": "jira-fix-batch",
+    "skill": "jira-fix-queue",
     "with_skill_mean": 0.6666666666666666,
     "old_skill_mean": 0.5555555555555555,
     "delta_mean": 0.11111111111111116,
@@ -130,7 +130,7 @@
     ]
   },
   {
-    "skill": "opsx-jira-fix-batch",
+    "skill": "opsx-jira-fix-queue",
     "with_skill_mean": 0.8888888888888888,
     "old_skill_mean": 0.3333333333333333,
     "delta_mean": 0.5555555555555556,

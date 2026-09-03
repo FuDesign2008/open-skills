@@ -47,7 +47,7 @@ Implicit continuation — "继续", "再改一下", "深入分析" — **must NO
 
 ## Batch scenarios
 
-In batch orchestration (e.g. `goal-driven-batch`; `jira-fix-batch` / `opsx-jira-fix-batch` are trigger shells that enqueue into it), the orchestrator passes **`Stage-exit policy` (and thus overlay vs auto vs manual) explicitly per sub-invocation**. The single-run revert rule above does not propagate across sub-invocations.
+In batch orchestration (e.g. `goal-driven-queue`; `jira-fix-queue` / `opsx-jira-fix-queue` are trigger shells that enqueue into it), the orchestrator passes **`Stage-exit policy` (and thus overlay vs auto vs manual) explicitly per sub-invocation**. The single-run revert rule above does not propagate across sub-invocations.
 
 ## Integration guide (for referencing workflows)
 

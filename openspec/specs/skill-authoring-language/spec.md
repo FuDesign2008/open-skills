@@ -9,7 +9,7 @@ Non-exception skills under `skills/<name>/` MUST write instructional body conten
 
 #### Scenario: Batch-1 workflow hosts are English-bodied
 
-- **WHEN** an agent reads `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, `opsx-jira-fix-workflow`, `jira-fix-batch`, or `opsx-jira-fix-batch` after this change
+- **WHEN** an agent reads `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, `opsx-jira-fix-workflow`, `jira-fix-queue`, or `opsx-jira-fix-queue` after this change
 - **THEN** the instructional body (excluding quoted Chinese triggers/slogans) is English-primary, and `description` still contains Chinese trigger phrases
 
 ### Requirement: Chinese-only exception skills MAY keep Chinese bodies

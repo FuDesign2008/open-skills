@@ -76,9 +76,9 @@ open-skills/
 | write-workflow | 工作流 | clarifying-question-discipline、tech-review-doc、workflow-mode-lifecycle、humanizer（外置）、humanizer-zh（外置） |
 | brainstorm-workflow | 工作流 | brainstorming（外置）、solve-workflow |
 | goal-driven-workflow | 工作流 | clarifying-question-discipline、completion-evidence-discipline、design-approval-gate、intake-interview-discipline、ai-proxy-discipline |
-| goal-driven-batch | 工作流 | goal-driven-workflow、design-approval-gate、intake-interview-discipline、ai-proxy-discipline、jira-fix-workflow、opsx-jira-fix-workflow |
-| jira-fix-batch | Jira 编排壳 | goal-driven-batch（解析多票 Jira，列表入队；不跑修复） |
-| opsx-jira-fix-batch | Jira 编排壳 | goal-driven-batch（解析多票 Jira，Engine 冻结为 opsx-jira-fix-workflow） |
+| goal-driven-queue | 工作流 | goal-driven-workflow、design-approval-gate、intake-interview-discipline、ai-proxy-discipline、jira-fix-workflow、opsx-jira-fix-workflow |
+| jira-fix-queue | Jira 编排壳 | goal-driven-queue（解析多票 Jira，列表入队；不跑修复） |
+| opsx-jira-fix-queue | Jira 编排壳 | goal-driven-queue（解析多票 Jira，Engine 冻结为 opsx-jira-fix-workflow） |
 | tech-review-doc | 内容创作 | clarifying-question-discipline |
 | android-webview-debug | 工具 | 无 |
 | astrill-control | 工具 | 无 |

@@ -1,10 +1,10 @@
 # 入队深谈后子运行仍反复提问 —— 事件复盘与 Skill 优化建议
 
-> **用途**：本文档记录一次 goal-driven-batch（Engine: opsx-solve-workflow）的真实会话中，用户在入队深谈阶段已逐票回答 5 个问题并获得卡片批准，但子运行推进过程中仍被多次要求回答问题的现象，分析根因并给出 Skill 优化建议。与 `goal-driven-intake-depth-analysis.md`（入队**深度不足**问题）互补：本文分析的是**入队深度足够时，子运行仍泄漏提问**的问题。
+> **用途**：本文档记录一次 goal-driven-queue（Engine: opsx-solve-workflow）的真实会话中，用户在入队深谈阶段已逐票回答 5 个问题并获得卡片批准，但子运行推进过程中仍被多次要求回答问题的现象，分析根因并给出 Skill 优化建议。与 `goal-driven-intake-depth-analysis.md`（入队**深度不足**问题）互补：本文分析的是**入队深度足够时，子运行仍泄漏提问**的问题。
 >
 > **事件日期**：2026-09-01
 > **涉及工程**：笔记桌面端（Electron 多进程，主进程薄壳 + Server 子进程），工作区 `/Users/user/workspace/app/special-agent`，子仓 `note-desktop`（分支 `release/8.2.90` / `feat/agent-ipc-server-migration`）
-> **涉及 Skill**：`goal-driven-batch`、`opsx-solve-workflow`、`intake-interview-discipline`、`ai-counterpart-discipline`
+> **涉及 Skill**：`goal-driven-queue`、`opsx-solve-workflow`、`intake-interview-discipline`、`ai-counterpart-discipline`
 > **数据脱敏**：内部平台/仓库名已替换为通用占位（git.example.com 等），分支与方法名（agent:ipc 等）为通用技术名词，予以保留。
 
 ---
@@ -13,7 +13,7 @@
 
 ### 1.1 背景
 
-用户通过三轮 `/solve-workflow` 只读分析梳理出「7 个 agent:ipc 工具仍走主进程直连 SQLite 旧模式」的改造需求，随后 `/goal-driven-batch 添加到目标` 入队一张任务卡（Engine 指定 `opsx-solve-workflow`），再以「启动」触发队列消费。
+用户通过三轮 `/solve-workflow` 只读分析梳理出「7 个 agent:ipc 工具仍走主进程直连 SQLite 旧模式」的改造需求，随后 `/goal-driven-queue 添加到目标` 入队一张任务卡（Engine 指定 `opsx-solve-workflow`），再以「启动」触发队列消费。
 
 ### 1.2 提问时序实录
 
@@ -55,7 +55,7 @@
 
 ### 根因 2：模式传播默认值与队列价值主张冲突
 
-`goal-driven-batch` 规程：触发语句含「自动」子运行才用 auto 模式，否则子运行保持默认（手动）。用户说「启动」→ 子运行手动模式 → opsx 手动模式**按规程**在 1/3/4/5/7 每个出口停等用户。而 goal-driven-batch 的核心价值主张是 detach-run-accept（「人在时入队、离开后无人值守跑、回来收验收包」「nothing may stall waiting for an absent human」）。**矛盾：队列的价值主张是无人值守，子运行的模式却由触发词的一个字决定。** 用户已经通过 5 票 + 批准事件完成了全部「人在场时的对齐投资」，启动时却被默认回了手动档。
+`goal-driven-queue` 规程：触发语句含「自动」子运行才用 auto 模式，否则子运行保持默认（手动）。用户说「启动」→ 子运行手动模式 → opsx 手动模式**按规程**在 1/3/4/5/7 每个出口停等用户。而 goal-driven-queue 的核心价值主张是 detach-run-accept（「人在时入队、离开后无人值守跑、回来收验收包」「nothing may stall waiting for an absent human」）。**矛盾：队列的价值主张是无人值守，子运行的模式却由触发词的一个字决定。** 用户已经通过 5 票 + 批准事件完成了全部「人在场时的对齐投资」，启动时却被默认回了手动档。
 
 ### 根因 3：counterpart 默认 off，且批准时展示的后果描述是错的
 
@@ -82,7 +82,7 @@
 
 ## 四、Skill 优化建议
 
-### 4.1 `goal-driven-batch`：把「交互预算」提升为入队第一票
+### 4.1 `goal-driven-queue`：把「交互预算」提升为入队第一票
 
 入队深谈增加一张固定票（在 scope 票之前或并列）：
 
@@ -93,11 +93,11 @@
 
 这张票把「根因 1（决策域分层预期）+ 根因 2（模式默认）+ 根因 3（counterpart 配置）」一次性解决：用户在人在场时**知情地选择**了子运行期间的提问行为，而非依赖触发词措辞和隐式默认。同时入队输出应明确告知：「入队票冻结任务级方向；分析期仍可能浮现过程级分叉（如通道选型），其归属由本票决定」。
 
-### 4.2 `goal-driven-batch`：消费派发时显式传递阶段出口策略
+### 4.2 `goal-driven-queue`：消费派发时显式传递阶段出口策略
 
 Task Card 格式增加字段 `Stage-exit policy: manual-pause | counterpart | auto-escape`，Stage 2 派发时随 Engine 一并传递给子运行；子运行按该字段执行自身的 unattended-counterpart-exits 分支。消除「队列知道要无人值守、子运行不知道」的信息断层（根因 5）。
 
-### 4.3 `goal-driven-batch`：消费入口检查增加「事实性代答决策」复核
+### 4.3 `goal-driven-queue`：消费入口检查增加「事实性代答决策」复核
 
 Decisions-I-made-for-you 中**事实性**决策（分支基线、依赖 MR 存在性、目标文件路径等——区别于偏好性决策）在消费入口检查时必须廉价实证（符号存在性 grep / `git branch --contains` / merge-base 拓扑检查）。本案例一条 `git rev-list --count` 或「目标 service 文件在基线分支上是否存在」即可在派发前拦截根因 4，省掉一次中途 clean stop 交互与重建分支的返工。
 
@@ -109,7 +109,7 @@ Decisions-I-made-for-you 中**事实性**决策（分支基线、依赖 MR 存�
 
 自答决策的影响列不是免责声明，是用户批准的依据。写法约束：按**当前实际配置**推演后果（本案例中 counterpart off + 子运行手动模式的真实后果是「各阶段出口会停下来问你」，而非「按冻结决策走」）。建议在纪律中加一条自查：对每个自答决策，沿「入队配置 → 子运行默认行为」推演一次真实路径后再落笔；配置组合的后果写错比不写更糟。
 
-### 4.6（可选）`goal-driven-batch`：触发词「启动」的歧义消解
+### 4.6（可选）`goal-driven-queue`：触发词「启动」的歧义消解
 
 队列启动确认时（caps 已解析、首卡将派发前），若 Engine 为阶段门控型流程且卡内无 Stage-exit policy，向用户做一次二选一确认：「子运行以手动模式（每阶段问你）还是自动模式（无人值守，AI 对手方/具名逃逸）执行？」——把根因 2 的默认值风险收敛为一次显式交互。
 

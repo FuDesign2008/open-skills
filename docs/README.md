@@ -11,7 +11,7 @@
 | [merge-coverage-gate-bypass-incident.md](merge-coverage-gate-bypass-incident.md) | 贡献者 / Skill 作者 | 合并前覆盖率门控被绕过的事件复盘 |
 | [concept-explanation-dual-track.md](concept-explanation-dual-track.md) | 贡献者 / Skill 作者 | 双轨讲解法（理性+感性认识）方法论与两个脱敏 IPC 问答范例；`explain-simply` skill 的素材来源 |
 | [goal-driven-intake-depth-analysis.md](goal-driven-intake-depth-analysis.md) | 贡献者 / Skill 作者 | 真实案例对照分析：goal-driven-* 与 solve-workflow 的核对粒度差距（6 个结构性根因 + 5 条改进建议）；granularity-alignment 变更的素材来源 |
-| [goal-driven-batch-child-question-leak-incident.md](goal-driven-batch-child-question-leak-incident.md) | 贡献者 / Skill 作者 | v2.14 首战复盘：入队深谈后子运行仍泄漏提问（5 根因 + 6 建议，stage-exit-policy 变更的素材来源；与上文互补：深度不足 vs 深度足够仍泄漏） |
+| [goal-driven-queue-child-question-leak-incident.md](goal-driven-queue-child-question-leak-incident.md) | 贡献者 / Skill 作者 | v2.14 首战复盘：入队深谈后子运行仍泄漏提问（5 根因 + 6 建议，stage-exit-policy 变更的素材来源；与上文互补：深度不足 vs 深度足够仍泄漏） |
 
 ### 给维护者与贡献者
 
