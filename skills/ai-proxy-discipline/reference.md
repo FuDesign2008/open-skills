@@ -2,6 +2,18 @@
 
 Support file for SKILL.md. Hosts instantiate these; they never inline the prose.
 
+## Thin freeze (independent opt-in — conversation-local this-run contract)
+
+Hosts output this block, wait for confirm, then occupy. Do not occupy on the verbal trigger alone.
+
+```
+## This-run contract (thin freeze)
+- Destination: <one short success picture>
+- Constraints: <must not change; reserved list stays human-only>
+- Stage-exit policy: ai-proxy
+- Stop-point forecast: <each manual exit × covered-by-frozen-decisions | will-form-a-new-ticket>
+```
+
 ## Charter (per run, filled at opt-in)
 
 ```

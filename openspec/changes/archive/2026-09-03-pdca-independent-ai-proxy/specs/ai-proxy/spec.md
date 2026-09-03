@@ -1,53 +1,4 @@
-# ai-proxy Specification
-
-## Purpose
-TBD - created by archiving change ai-proxy-rename. Update Purpose after archive.
-## Requirements
-### Requirement: 有界授权章程
-
-The skill SHALL define an authority charter for the AI proxy occupying the human seat at interactive checkpoints when no human is present. All proxy authority SHALL derive from the initial human delegation (trigger + budget + frozen contract) plus a bounded list: intake answers grounded in project context and constraints; approach picks among pre-approved options; quality verdicts at enumerated checkpoints (including rejecting and demanding re-verification); card/contract approval as bounded pre-authorization within already-delegated scope; continuation of the original frozen scope after constraint re-validation. A reserved list SHALL stay human-only: irreversible actions, over-budget extensions, protected-branch merges, outcome-type acceptance, `design-approval-gate` high-impact gates, and any scope change beyond the frozen contract — a proxy hit on any reserved item MUST produce a ticket and park the work item, never a self-approval.
-
-#### Scenario: 授权派生
-
-- **WHEN** 代理在检查点上做出批准/挑选
-- **THEN** 该决定的效力范围不超过初始人委托（触发语义 + 预算 + 冻结契约）已授权的边界；超出即无效并出票
-
-#### Scenario: 保留项命中即出票
-
-- **WHEN** 检查点涉及不可逆操作、超预算、受保护合并、outcome 验收或高影响门
-- **THEN** 代理停止行使权力，产出票据并搁置该事项留待真人，绝不自我批准放行
-
-### Requirement: 对抗性协议（防迎合）
-
-The proxy SHALL be instantiated per checkpoint under an adversarial protocol isomorphic to `multi-agent-debate`: a fresh context with no access to the executor's reasoning transcript; inputs limited to the charter plus the artifacts under review (card / plan / report / diff); an explicit challenge-not-please mandate (ask the question the executor hopes won't be asked; demand evidence for claims); and verdicts that MUST carry evidence tags (`[FACT] / [INFERENCE] / [UNRESOLVED]`) — an untagged verdict is invalid and treated as no verdict.
-
-#### Scenario: 盲上下文质询
-
-- **WHEN** 代理被唤起核查一份完成报告
-- **THEN** 其输入仅含章程与报告工件（及可引用的仓库事实），不含执行者推理过程；质询基于工件证据而非执行者框架
-
-#### Scenario: 无标签裁决无效
-
-- **WHEN** 代理输出未带证据标签的"通过"
-- **THEN** 该裁决视为未作出，检查点不得据此推进
-
-### Requirement: 账本集成与推翻权
-
-Every proxy decision SHALL enter the host's existing acceptance ledger marked `proxy-made` (fields per `intake-interview-discipline` §C), surfaced at acceptance with the same rules as other entries; the human MAY overturn any proxy-made entry at acceptance, and overturned findings feed the next run's intake.
-
-#### Scenario: 代理决策入账
-
-- **WHEN** 代理在 intake 或批准检查点做出应答/批准
-- **THEN** 账本新增 proxy-made 条目（决策、理由、证据标签、影响分级），验收时呈报且可被真人推翻
-
-### Requirement: 检查点枚举与成本约束
-
-The set of proxy checkpoints SHALL be enumerated in the frozen contract at opt-in time (default set: intake Q&A, approval event, high-impact escalation touchpoint, completion-report check, conflict re-adjudication), and each proxy invocation SHALL count against the run budget. Between checkpoints the `intake-interview-discipline` §B ladder governs as usual — the proxy is not continuously present.
-
-#### Scenario: 检查点外的自答照常
-
-- **WHEN** 运行期决策发生在两个检查点之间
-- **THEN** 按 §B 影响分级梯处理（低影响保守默认入账；高影响升格至下一检查点或干净停止），代理不参与
+## MODIFIED Requirements
 
 ### Requirement: 宿主接线契约
 
@@ -97,6 +48,8 @@ The skill's integration guide SHALL define the seat-filling rules for PDCA hosts
 - **WHEN** jira-fix-workflow 或 opsx-jira-fix-workflow 被独立唤起且 Stage-exit policy 为 ai-proxy、调用方未给显式 queue-child 标志
 - **THEN** 停点由代理占位，但 PR-open / archive+PR-open 队列终点不启用；独立路径的收尾仍按该技能非队列契约
 
+## ADDED Requirements
+
 ### Requirement: 独立 opt-in 薄冻结
 
 PDCA hosts that list ai-proxy triggers in frontmatter `description` SHALL treat those triggers (and mid-run 「切换 ai-proxy」 / "switch to ai-proxy") as a request to enter the overlay path, not as occupancy. Occupancy MUST NOT begin until a **thin freeze** has written this-run contract fields: destination (one short success picture), constraints (including reserved-list items remaining human-only), and `Stage-exit policy: ai-proxy`. The contract MAY live in the conversation output (no extra file required). After the freeze is confirmed, each manual stop point becomes a proxy checkpoint per the PDCA host-exit rules. A present human who explicitly opted in and completed the freeze MAY have the proxy occupy subsequent checkpoints (presence tier 1 does not veto that explicit grant). Implicit continuation phrases MUST NOT start freeze or occupancy.
@@ -115,4 +68,3 @@ PDCA hosts that list ai-proxy triggers in frontmatter `description` SHALL treat 
 
 - **WHEN** write-workflow 被唤起且用户说「ai-proxy 模式」
 - **THEN** 不启动薄冻结、不占位；模式仍仅按该宿主已有的自动/手动规则
-

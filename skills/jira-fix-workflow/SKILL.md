@@ -1,8 +1,8 @@
 ---
 name: jira-fix-workflow
-version: "3.31.0"
+version: "3.32.0"
 user-invocable: true
-description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」 / fix this bug, jira-fix, auto fix, force fix, resume fix. Do NOT use for batch fixes across multiple issues — use jira-fix-batch instead (it enqueues into goal-driven-batch; confirm, then run the queue)."
+description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end; ai-proxy overlay (thin freeze then occupy) is available independently. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / fix this bug, jira-fix, auto fix, force fix, resume fix, ai-proxy mode, switch to ai-proxy. Do NOT use for batch fixes across multiple issues — use jira-fix-batch instead (it enqueues into goal-driven-batch; confirm, then run the queue)."
 dependencies:
   - solution-review
   - code-design-review
@@ -49,8 +49,15 @@ dependencies:
 | "强制修复 [URL]", "跳过分级修复 [URL]", `jira-fix [URL] --force` | 🤖 Auto | Skips difficulty grading, forces auto execution |
 | "继续修复 [URL]", "再次修复 [URL]", `jira-fix [URL] --retry` | 👤 Manual | Skips stages 0/1, re-analyzes from **stage 3** |
 | "从上次继续", "恢复修复 [URL]", `jira-fix [URL] --resume` | Current mode | Resumes from the last checkpoint |
+| "ai-proxy 模式", "AI 代理模式", "切换 ai-proxy" | overlay | Auto carrier; thin freeze then occupy per `ai-proxy-discipline` |
 
-**Mode detection**: contains "自动" / `--auto` → auto; contains "强制" / "跳过分级" → skip grading (auto); contains "继续修复" / "再次修复" / `--retry` → re-enter at stage 3; contains "从上次继续" / "恢复" / `--resume` → resume from checkpoint; otherwise manual.
+**Mode detection**: overlay triggers (「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / "ai-proxy mode" / "switch to ai-proxy") request overlay per `workflow-mode-lifecycle` — if both auto and overlay appear, overlay+freeze wins. Else contains "自动" / `--auto` → auto; contains "强制" / "跳过分级" → skip grading (auto); contains "继续修复" / "再次修复" / `--retry` → re-enter at stage 3; contains "从上次继续" / "恢复" / `--resume` → resume from checkpoint; otherwise manual.
+
+## Unattended proxy exits
+
+When this-run contract or task card records **`Stage-exit policy: ai-proxy`** (auto carrier; queue child is sufficient but not required), each manual stop point becomes a proxy checkpoint per `ai-proxy-discipline`. Thin freeze (verbal trigger ≠ occupancy) lives there. Merge, irreversible, protected-branch, and Jira writeback stay human-only (park + ticket). Any other policy value or none → today's non-proxy behavior.
+
+**Stop-point forecast**: if this run **starts** with a frozen contract (queue child with problem + frozen decisions, or independent thin freeze already written), open with a forecast table before analysis — every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket. If overlay is requested **mid-run**, after thin freeze output a forecast of **remaining** exits, then continue the current stage (do not restart from analysis).
 
 ## Strong Dependencies & Prerequisite Check
 
@@ -64,7 +71,7 @@ Core rules live in `workflow-mode-lifecycle`. "Full flow complete" means stages 
 
 ## Queue-child mode (goal-driven-batch dispatch)
 
-When dispatched by `goal-driven-batch` (explicit `queue-child` context flag in the invocation — never guessed from ambient signals), this flow adapts: the card's goal condition carries the Jira issue link; its frozen-decisions block supplies stage 0–1; `Stage-exit policy` decides the stop-point handling exactly as for solve/opsx children (`proxy` → auto mode with proxy-occupied exits per `ai-proxy-discipline` — abort at prerequisite check only under this policy; `manual` → manual; `auto` → auto with named escapes); open with a stop-point forecast (every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket). The terminal is **PR-open**: stop after stage 9 with a record-only closeout — stage 10 (merge + Jira writeback) is deferred to the human (merge authority and external-tracker writebacks are never proxied); the queue's acceptance package carries them as pending follow-ups. Independent use of this skill (no flag) is unchanged.
+When dispatched by `goal-driven-batch` (explicit `queue-child` context flag in the invocation — never guessed from ambient signals), this flow adapts: the card's goal condition carries the Jira issue link; its frozen-decisions block supplies stage 0–1; `Stage-exit policy` rides along (occupancy is the Unattended pointer above, not unique to this flag); open with a stop-point forecast (every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket). The terminal is **PR-open**: stop after stage 9 with a record-only closeout — stage 10 (merge + Jira writeback) is deferred to the human (merge authority and external-tracker writebacks are never proxied); the queue's acceptance package carries them as pending follow-ups. Independent use (no flag): overlay/occupancy still follow `Stage-exit policy` and the Unattended pointer; the **PR-open** terminal does **not** apply; closeout stays this skill's stage 9–10 (overlay is not naked auto through merge/writeback).
 
 ## ⚡ Quick Reference (read before executing)
 
@@ -116,7 +123,7 @@ Upgrading in manual mode requires user confirmation.
 
 Any failure aborts the flow.
 
-1. Detect the mode (including `--force` / `--resume`); before the first persistent write (`state.json`, docs, or code), load `git-worktree-discipline` (worktree gate + optional isolation); then write the mode to `state.json`
+1. Detect the mode (including `--force` / `--resume` / overlay). Overlay triggers request thin freeze then occupancy per `ai-proxy-discipline`. Before the first persistent write (`state.json`, docs, or code), load `git-worktree-discipline` (worktree gate + optional isolation); then write the mode to `state.json`
 2. Resolve credentials per `jira-read` (do not abort solely because mcp-atlassian is missing). Prefer MCP `jira_get_issue` for a connectivity check when that tool exists; if it does not, degrade to local `jira-read` cache. Abort only when issue data cannot be obtained at all.
 3. **P0 interception** (auto only): P0 → abort, switch to manual
 4. Git: 🤖 dirty→stash; 👤 dirty→prompt to handle

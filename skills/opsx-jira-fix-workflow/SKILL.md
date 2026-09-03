@@ -1,8 +1,8 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.20.0"
+version: "1.21.0"
 user-invocable: true
-description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」 / opsx jira fix, OpenSpec Jira fix workflow."
+description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / opsx jira fix, OpenSpec Jira fix workflow, ai-proxy mode, switch to ai-proxy."
 dependencies:
   - solution-review
   - code-design-review
@@ -57,8 +57,9 @@ Not a replacement for plain `jira-fix-workflow`:
 
 ## Invocation conventions
 
-- **Triggers**: opsx-jira-fix, OpenSpec Jira 修复, 规范化修复 Jira, opsx修复Jira, Jira OpenSpec 修复, opsx自动修复Jira, 用OpenSpec修复Jira, opsx-jira-fix-workflow
-- **Auto mode**: a trigger containing "自动" or `--auto` enters auto mode.
+- **Triggers**: opsx-jira-fix, OpenSpec Jira 修复, 规范化修复 Jira, opsx修复Jira, Jira OpenSpec 修复, opsx自动修复Jira, 用OpenSpec修复Jira, opsx-jira-fix-workflow; ai-proxy 模式, AI 代理模式, 切换 ai-proxy
+- **Overlay**: 「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / "ai-proxy mode" / "switch to ai-proxy" request overlay per `workflow-mode-lifecycle` (overlay+freeze wins if an auto trigger is also present). Thin freeze then occupy per `ai-proxy-discipline`.
+- **Auto mode**: else a trigger containing "自动" or `--auto` enters auto mode.
 - **Force mode**: a trigger containing "强制" or `--force` may skip the difficulty-based stop, but never skips verification or archive checks.
 - **Continue fixing**: a trigger containing "继续修复", "再次修复", "从上次继续", or `--retry` first locates the existing OpenSpec change, then recovers context from `design.md`, `tasks.md` checkboxes, the current Git branch, and PR/MR status.
 
@@ -99,15 +100,21 @@ Not a replacement for plain `jira-fix-workflow`:
 - `--resume` (checkpoint recovery): keeps the mode from the checkpoint.
 - An OpenSpec archive failure counts as a flow interruption — revert to manual.
 
+## Unattended proxy exits
+
+When this-run contract or task card records **`Stage-exit policy: ai-proxy`** (auto carrier; queue child is sufficient but not required), each manual stop point becomes a proxy checkpoint per `ai-proxy-discipline`. Thin freeze (verbal trigger ≠ occupancy) lives there. Merge, irreversible, protected-branch, and Jira writeback stay human-only (park + ticket). Any other policy value or none → today's non-proxy behavior.
+
+**Stop-point forecast**: if this run **starts** with a frozen contract (queue child with problem + frozen decisions, or independent thin freeze already written), open with a forecast table before analysis — every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket. If overlay is requested **mid-run**, after thin freeze output a forecast of **remaining** exits, then continue the current stage (do not restart from analysis).
+
 ## Queue-child mode (goal-driven-batch dispatch)
 
-When dispatched by `goal-driven-batch` (explicit `queue-child` context flag in the invocation — never guessed from ambient signals), this flow adapts: the card's goal condition carries the Jira issue link; its frozen-decisions block supplies stage 0–1; `Stage-exit policy` decides the stop-point handling exactly as for the other PDCA engines (`ai-proxy` → auto mode with proxy-occupied exits per `ai-proxy-discipline` — abort at prerequisite check only under this policy; `manual` → manual; `auto` → auto with named escapes); open with a stop-point forecast (every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket). The terminal is **archive + PR-open**: archive the OpenSpec change (native to this model, never deferred), then stop at PR open — merge + Jira writeback are deferred to the human (merge authority and external-tracker writebacks are never proxied); the queue's acceptance package carries them as pending follow-ups. Independent use of this skill (no flag) is unchanged. When the card supply includes queue relationship-pass notes, write them as `## Related Issues` in this change's `design.md`.
+When dispatched by `goal-driven-batch` (explicit `queue-child` context flag in the invocation — never guessed from ambient signals), this flow adapts: the card's goal condition carries the Jira issue link; its frozen-decisions block supplies stage 0–1; `Stage-exit policy` rides along (occupancy per `ai-proxy-discipline` when policy is ai-proxy — queue child is sufficient but not required); open with a stop-point forecast (every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket). The terminal is **archive + PR-open**: archive the OpenSpec change (native to this model, never deferred), then stop at PR open — merge + Jira writeback are deferred to the human (merge authority and external-tracker writebacks are never proxied); the queue's acceptance package carries them as pending follow-ups. Independent use (no flag): overlay/occupancy still follow `Stage-exit policy`; the **archive+PR-open** queue terminal does **not** apply; closeout stays this skill's native archive-then-stage path (overlay is not naked auto through merge/writeback). When the card supply includes queue relationship-pass notes, write them as `## Related Issues` in this change's `design.md`.
 
 ## Stage 0: Prerequisite check
 
 Any key check failing pauses the flow — do not enter the fix:
 
-1. Parse the Jira URL / Jira ID; detect mode (manual / auto / force / retry).
+1. Parse the Jira URL / Jira ID; detect mode (manual / auto / force / retry / overlay). Overlay triggers request thin freeze then occupancy per `ai-proxy-discipline`.
 2. Check Jira data is readable: prefer `jira-read {JIRA-ID} --live` or mcp-atlassian; fall back to local cache; abort if both fail.
 3. Check Git status: auto mode may stash; manual mode prompts the user to handle it.
 4. **OpenSpec workspace and native-skill gate**: load `opsx-workspace-gate` and run its project-root location, `openspec/` check, and exact native-OPSX-skill gate; continue this workflow once it passes.

@@ -1,8 +1,8 @@
 ---
 name: solve-workflow
-version: "1.27.1"
+version: "1.28.0"
 user-invocable: true
-description: "Eight-stage PDCA workflow for systematically solving bugs, refactors, and feature-development tasks: clarify → analyze → explore solutions → review → plan → execute → verify → retrospect. Manual mode (default) pauses for user confirmation at each stage exit; auto mode runs end-to-end. Triggers — 「明确问题」「分析问题」「探索方案」「审查方案」「制定计划」「执行计划」「检查验证」「复盘改进」(alias「回顾总结」)；「继续分析」「深入分析」「修改方案」「完善方案」「优化方案」「更新计划」「修订计划」「修改计划」；「自动模式」「自动分析」「自动解决」 / clarify problem, analyze problem, explore solutions, review solution, make plan, execute plan, verify, retrospective, auto mode."
+description: "Eight-stage PDCA workflow for systematically solving bugs, refactors, and feature-development tasks: clarify → analyze → explore solutions → review → plan → execute → verify → retrospect. Manual mode (default) pauses for user confirmation at each stage exit; auto mode runs end-to-end; ai-proxy overlay (thin freeze then occupy) is available independently. Triggers — 「明确问题」「分析问题」「探索方案」「审查方案」「制定计划」「执行计划」「检查验证」「复盘改进」(alias「回顾总结」)；「继续分析」「深入分析」「修改方案」「完善方案」「优化方案」「更新计划」「修订计划」「修改计划」；「自动模式」「自动分析」「自动解决」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / clarify problem, analyze problem, explore solutions, review solution, make plan, execute plan, verify, retrospective, auto mode, ai-proxy mode, switch to ai-proxy."
 dependencies:
   - solution-review
   - code-design-review
@@ -38,7 +38,7 @@ dependencies:
 
 ## Invocation Conventions
 
-- **Trigger words** (per `description`): 明确问题, 分析问题, 探索方案, 审查方案, 制定计划, 执行计划, 检查验证, 复盘改进 (alias 回顾总结); 继续分析, 深入分析, 修改方案, 完善方案, 优化方案, 更新计划, 修订计划, 修改计划; 自动模式, 自动分析, 自动解决
+- **Trigger words** (per `description`): 明确问题, 分析问题, 探索方案, 审查方案, 制定计划, 执行计划, 检查验证, 复盘改进 (alias 回顾总结); 继续分析, 深入分析, 修改方案, 完善方案, 优化方案, 更新计划, 修订计划, 修改计划; 自动模式, 自动分析, 自动解决; ai-proxy 模式, AI 代理模式, 切换 ai-proxy
 - **Command form**: `/solve-workflow xxx`, `/solve xxx`, where `xxx` is the follow-up content
 - **Default behavior**: when `xxx` contains none of the above triggers, default to stage 1 (clarify the problem), treating `xxx` as the problem description to analyze
 - **Matching rule**: a trigger word appearing anywhere in `xxx` counts as a match — exact phrasing is not required
@@ -81,8 +81,9 @@ dependencies:
 |---------|------|------|
 | "分析问题", "探索方案", `/solve xxx` | 👤 Manual | Default; pauses for confirmation between stages |
 | "自动分析 xxx", "自动解决 xxx", "自动模式" | 🤖 Auto | Runs the full flow with no confirmation |
+| "ai-proxy 模式", "AI 代理模式", "切换 ai-proxy" | overlay | Auto carrier; thin freeze then occupy per `ai-proxy-discipline` |
 
-**Mode detection**: a trigger containing "自动" (auto) selects auto mode; anything else defaults to manual. Say "切换自动模式" / "切换手动模式" to switch mid-run. 👤 Manual pauses at every stage exit for confirmation; 🤖 Auto proceeds throughout, pausing only when stage 4's review loop exceeds 3 rounds. Per-stage [👤]/[🤖] notes cover the differences.
+**Mode detection**: overlay triggers (「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / "ai-proxy mode" / "switch to ai-proxy") request overlay per `workflow-mode-lifecycle` — if both an auto trigger and an overlay trigger appear, overlay+freeze wins over naked auto. Else a trigger containing "自动" (auto) selects auto mode; otherwise manual. Mid-run: "切换自动模式" / "切换手动模式" / "切换 ai-proxy". 👤 Manual pauses at every stage exit for confirmation; 🤖 Auto proceeds throughout, pausing only when stage 4's review loop exceeds 3 rounds; overlay occupies those exits per `ai-proxy-discipline` after thin freeze.
 
 ## Mode Lifecycle
 
@@ -133,9 +134,9 @@ On the lean path, stage 3 (explore solutions) may output just 1 solution + a ris
 
 ## Unattended proxy exits
 
-When this workflow runs as a queue child with **`Stage-exit policy: ai-proxy`** (child auto mode; e.g. a goal-driven-batch dispatch), each manual stop point above becomes a proxy checkpoint per `ai-proxy-discipline` — fresh context, that stage's output as artifact-only input, evidence-tagged verdict, ledger-marked. At the pre-execution approval point the proxy's bounded pre-authorization replaces the bare auto escape of `design-approval-gate`; merge, irreversible, and protected-branch decisions stay human-only (park + ticket on hit). Any other policy value or none → behavior identical to today.
+When this-run contract or task card records **`Stage-exit policy: ai-proxy`** (auto carrier; queue child is sufficient but not required), each manual stop point above becomes a proxy checkpoint per `ai-proxy-discipline`. Thin freeze (verbal trigger ≠ occupancy) lives there. At the pre-execution approval point the proxy's bounded pre-authorization replaces the bare auto escape of `design-approval-gate`; merge, irreversible, and protected-branch decisions stay human-only (park + ticket on hit). Any other policy value or none → behavior identical to today.
 
-Starting as a queue child (problem + frozen decisions supplied), open with a **stop-point forecast**: list every manual exit of this workflow, each marked covered-by-frozen-decisions or will-form-a-new-ticket — the interaction count is known before analysis begins.
+**Stop-point forecast**: if this run **starts** with a frozen contract (queue child with problem + frozen decisions, or independent thin freeze already written), open with a forecast before analysis — every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket. If overlay is requested **mid-run**, after thin freeze output a forecast of **remaining** exits, then continue the current stage (do not restart from analysis).
 
 ---
 
