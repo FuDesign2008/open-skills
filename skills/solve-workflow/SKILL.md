@@ -136,7 +136,7 @@ On the lean path, stage 3 (explore solutions) may output just 1 solution + a ris
 
 When this-run contract or task card records **`Stage-exit policy: ai-proxy`** (auto carrier; queue child is sufficient but not required), each manual stop point above becomes a proxy checkpoint per `ai-proxy-discipline`. Thin freeze (verbal trigger ≠ occupancy) lives there. At the pre-execution approval point the proxy's bounded pre-authorization replaces the bare auto escape of `design-approval-gate`; merge, irreversible, and protected-branch decisions stay human-only (park + ticket on hit). Any other policy value or none → behavior identical to today.
 
-**Stop-point forecast**: starting as a queue child (problem + frozen decisions supplied), **or** after an independent thin freeze has written `Stage-exit policy: ai-proxy`, open with a **stop-point forecast**: list every manual exit of this workflow, each marked covered-by-frozen-decisions or will-form-a-new-ticket — the interaction count is known before analysis begins.
+**Stop-point forecast**: if this run **starts** with a frozen contract (queue child with problem + frozen decisions, or independent thin freeze already written), open with a forecast before analysis — every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket. If overlay is requested **mid-run**, after thin freeze output a forecast of **remaining** exits, then continue the current stage (do not restart from analysis).
 
 ---
 

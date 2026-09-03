@@ -11,8 +11,9 @@ description: "Shared lifecycle contract for manual/auto control-flow plus option
 
 ## Mode recognition
 
-- Trigger contains "自动" (auto) → **auto mode**; otherwise → **manual mode** (default).
-- Mid-run switching: user says "切换自动模式" / "切换手动模式" to switch.
+- On hosts that list ai-proxy triggers, overlay phrases (「ai-proxy 模式」「AI 代理模式」 / "ai-proxy mode", or mid-run 「切换 ai-proxy」 / "switch to ai-proxy") request overlay first (section below). If both an overlay trigger and 「自动*」 appear, overlay+freeze wins over naked auto.
+- Else trigger contains "自动" (auto) → **auto mode**; otherwise → **manual mode** (default).
+- Mid-run switching: user says "切换自动模式" / "切换手动模式" to switch; overlay mid-run switch is 「切换 ai-proxy」 / "switch to ai-proxy".
 - Manual: pause at each stage exit for user confirmation. Auto: proceed end-to-end, pausing only at workflow-defined limits (e.g. review-loop cap).
 
 ## ai-proxy overlay (not a third control-flow mode)

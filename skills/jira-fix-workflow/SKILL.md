@@ -57,7 +57,7 @@ dependencies:
 
 When this-run contract or task card records **`Stage-exit policy: ai-proxy`** (auto carrier; queue child is sufficient but not required), each manual stop point becomes a proxy checkpoint per `ai-proxy-discipline`. Thin freeze (verbal trigger ≠ occupancy) lives there. Merge, irreversible, protected-branch, and Jira writeback stay human-only (park + ticket). Any other policy value or none → today's non-proxy behavior.
 
-**Stop-point forecast**: starting as a queue child (problem + frozen decisions supplied), **or** after an independent thin freeze has written `Stage-exit policy: ai-proxy`, open with a forecast table — every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket — before analysis begins.
+**Stop-point forecast**: if this run **starts** with a frozen contract (queue child with problem + frozen decisions, or independent thin freeze already written), open with a forecast table before analysis — every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket. If overlay is requested **mid-run**, after thin freeze output a forecast of **remaining** exits, then continue the current stage (do not restart from analysis).
 
 ## Strong Dependencies & Prerequisite Check
 

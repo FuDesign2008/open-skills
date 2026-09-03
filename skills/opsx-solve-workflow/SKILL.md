@@ -62,7 +62,7 @@ Not a replacement for plain `solve-workflow`:
 
 **Unattended proxy exits**: when this-run contract or task card records `Stage-exit policy: ai-proxy` (auto carrier; queue child is sufficient but not required), each manual exit above becomes a proxy checkpoint per `ai-proxy-discipline`. Thin freeze (verbal trigger ≠ occupancy) lives there. The pre-execution approval point takes the proxy's bounded pre-authorization instead of the bare auto escape of `design-approval-gate`; merge, irreversible, and protected-branch decisions stay human-only (park + ticket). Any other policy value or none → behavior identical to today.
 
-**Stop-point forecast**: starting as a queue child (problem + frozen decisions supplied), **or** after an independent thin freeze has written `Stage-exit policy: ai-proxy`, open with a forecast table — every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket — before analysis begins.
+**Stop-point forecast**: if this run **starts** with a frozen contract (queue child with problem + frozen decisions, or independent thin freeze already written), open with a forecast table before analysis — every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket. If overlay is requested **mid-run**, after thin freeze output a forecast of **remaining** exits, then continue the current stage (do not restart from analysis).
 
 **Strong-dependency skills** (frontmatter `dependencies`; must pass the "Prerequisite skill check" at startup — abort if any is missing):
 - `staged-review-flow` (stage 4 review orchestration; depends on `solution-review` and `code-design-review`)
