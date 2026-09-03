@@ -1,6 +1,6 @@
 ---
 name: goal-driven-workflow
-version: "0.6.0"
+version: "0.7.0"
 user-invocable: true
 description: "Goal-Driven long-run workflow: run an agent autonomously for hours toward a verifiable goal. Five stages — ① deep intake interview & output contract (approach frozen before launch) ② layer acceptance criteria + design the /goal condition (measurable end state, stated check, constraints, turn/time cap) ③ sub-agent division & context management (context-rot mitigation) ④ launch the long run (/goal, claude -p non-interactive, or manual-loop fallback) ⑤ completion report & human acceptance. Built on top of Claude Code's native /goal harness, with a generic fallback for environments without /goal. Triggers — 「goal 长跑」「goal run」「goal-driven」「目标驱动长跑」「一个 goal 下去跑」「长跑目标」「无人值守跑任务」「goal-run」 / goal run, goal-driven, long-run goal, autonomous run, run until done."
 dependencies:
@@ -14,14 +14,14 @@ dependencies:
 # Goal-Driven Long-Run Workflow
 
 > Run an agent autonomously for hours toward a **verifiable** goal. Primary harness example: Claude Code's native `/goal` (condition + evaluator loop). This skill adds requirement alignment, acceptance layering, sub-agent context management, and post-run reporting — plus a generic fallback when `/goal` is unavailable.
-> Stages 1–3 are read-only **design**; stage 4 is the run; stage 5 is reporting/acceptance. Default is manual mode (pause at each stage exit); say 「自动模式」/「自动跑」 / "auto mode" to advance without confirmation (except the high-impact launch gate).
+> Stages 1–3 are read-only **design**; stage 4 is the run; stage 5 is reporting/acceptance. Default is manual mode (pause at each stage exit). On a **standalone** invocation, 「自动模式」/「自动跑」 / "auto mode" still pauses at stages 1–3 and at Stage 4 launch approval; it does not skip those confirms and does not start the harness. Queue-child invocations follow `Stage-exit policy` (see below).
 > **Output templates**: [reference.md](reference.md).
 
 ## Invocation Conventions
 
 - **Trigger words** (per `description`): 「goal 长跑」「goal run」「goal-driven」「目标驱动长跑」「一个 goal 下去跑」「长跑目标」「无人值守跑任务」「goal-run」 / goal run, goal-driven, long-run goal, autonomous run, run until done
 - **Command form**: `/goal-driven-workflow xxx`, `/goal-run xxx`
-- **Default behavior**: treat `xxx` as the task to run as a goal; enter stage 1 (clarify). If `xxx` already has a concrete verifiable goal + acceptance criteria, skip ahead to stage 2.
+- **Default behavior**: treat `xxx` as the task to run as a goal; enter stage 1 (clarify). If `xxx` already has a concrete verifiable goal + acceptance criteria, skip ahead to stage 2 after outputting Template 1 (frozen block or an explicit stage-1-N/A line) and obtaining one confirmation of it — that confirmation counts as stage 1 complete for Design-checked.
 - **Not applicable**: single-step edits, tasks with no verifiable end state, or tasks better served by recurring `/loop`-style polling or plain single-turn auto approvals. Single-run tasks shaped for stage-gated PDCA (per-stage artifacts and verdicts rather than a run-to-completion loop) route to `solve-workflow` / `opsx-solve-workflow` directly — engine selection at dispatch belongs to the queue layer (`goal-driven-batch`).
 
 ## Strong dependencies
@@ -30,9 +30,9 @@ Frontmatter `dependencies`; prerequisite check must pass or the flow aborts:
 
 - `clarifying-question-discipline` — stage 1 clarification
 - `completion-evidence-discipline` — stage 2/5 acceptance evidence
-- `design-approval-gate` — stage 4 launch approval pattern (see long-run divergence below)
+- `design-approval-gate` — standalone Stage 4 launch-approval pause that enters Armed (see long-run divergence below)
 - `intake-interview-discipline` — stage 1 deep intake (fog-bounded interview → approach comparison → freeze → pre-launch self-review); stage 4 in-run self-answer rules; stage 5 ledger surfacing
-- `ai-proxy-discipline` — proxy checkpoints (`Stage-exit policy: ai-proxy`): absent-mode intake Q&A, bounded contract approval, stage 5 report check; abort only when a card carries that policy and the skill is missing
+- `ai-proxy-discipline` — proxy checkpoints (`Stage-exit policy: ai-proxy`): absent-mode intake Q&A, bounded contract approval (Arm, not Launch), stage 5 report check; abort only when a card carries that policy and the skill is missing
 
 **Related (informational)**: `solve-workflow` (full PDCA); handbook §8 of `docs/7x24-agent-reliability-handbook.md`.
 
@@ -61,10 +61,21 @@ Long-run scale is already expressed by the goal condition and budget in stage 2.
 | 1 Clarify & output contract | ❌ Read/Write | ⛔ stop, wait confirm | restatement + Template 1 |
 | 2 Acceptance + goal condition | ✅ Read; ❌ Edit/Write | ⛔ stop, wait confirm | Template 2 + 4-part condition |
 | 3 Sub-agent division & context | ✅ Read; ❌ Edit/Write | ⛔ stop, wait confirm | Template 3 |
-| 4 Launch the long run | ✅ Everything | auto-advance when clean | Template 4 + run log |
+| 4 Launch the long run | ✅ Everything | standalone: ⛔ Armed, wait for Launch / queue child: start when card supplies the run | Template 4 + run log |
 | 5 Report & acceptance | ✅ Bash; ❌ Edit/Write | ⛔ stop, wait confirm | Template 5 |
 
-> Manual mode pauses at each ⛔. Auto mode advances 1→2→3→4→5; stage 5 always ends with human acceptance (the agent cannot self-verify outcome-level standards). Stage 4 high-impact launch still pauses under auto.
+> Manual mode pauses at each ⛔. On **standalone** invocations, auto mode still pauses at stages 1, 2, 3, and the Stage 4 launch-approval pause (Armed); it does not start the harness until an explicit Launch instruction; stage 5 always ends with human acceptance. Queue-child invocations follow `Stage-exit policy` and do not enter the standalone Armed wait.
+
+### Queue child vs standalone
+
+This invocation is a **queue child** only when **this turn's** user/orchestrator dispatch message already **inlined** a frozen task card (at least the frozen-decisions block) as stage 1 input. Conversation history and on-disk `.goal-driven/` cards do **not** count. Do not scan `.goal-driven/queues/`. Do not require a `queue-child` flag the caller did not send. All other invocations are **standalone**.
+
+### Standalone pre-run states
+
+- **Design-checked**: stages 1–3 confirmed at the human seat **and** Stage 4 launch approval (final goal condition + budget + companion checklist) confirmed. Skip-ahead still needs Template 1 + one confirm (above).
+- **Armed**: Design-checked is complete. Announce that the long run will not start until an explicit Launch instruction. Do not start Stage 4 execute.
+- **Launch**: start Stage 4 execute only on 「开跑」 / "launch" / "start the run" / 「开始长跑」 (and obvious same-phrase translations). **Not** Launch: 「自动模式」 / 「自动跑」 / "auto mode"; bare 「好的」 / "ok" / 「继续」 / "confirm". After Launch, do not re-ask stages 1–4. Incomplete Design-checked **refuses** Launch and continues the remaining checks.
+- Queue children skip this state machine; the card's recorded approval is the 留痕 for the launch-approval gate.
 
 ---
 
@@ -73,7 +84,7 @@ Long-run scale is already expressed by the goal condition and budget in stage 2.
 > ⚠️ Follow `clarifying-question-discipline` (one question per turn; multi-round until clear; clarify first, do not rush to answer).
 > 🔒 Deep intake: **load `intake-interview-discipline`** and run its §A (deep interview → approach freeze → bounded pre-launch self-review). Its **presence tiers** govern depth: present (default) = per-decision questioning with high-impact escalation and the three-part base; declared/structural absence = once-confirm + full ledger, unchanged.
 > 📦 **Optional traceability**: when the project has an `openspec/` directory and a usable openspec CLI (or equivalent), offer `traceability: openspec | none` as an intake decision — default off; project policy may mandate on; the user's explicit choice wins. Record it in Template 1.
-> 🎭 **Stage-exit policy**: record `manual | ai-proxy | auto` in Template 1 (queue children inherit it from the card's interaction-budget ticket; it overrides trigger-word mode propagation). `proxy` = `ai-proxy-discipline` occupies the human seat at the enumerated checkpoints (absent-mode intake Q&A, contract approval as bounded pre-authorization, stage 5 report check) under its charter; `manual` = manual mode pauses; `auto` = auto with named escapes (legacy default).
+> 🎭 **Stage-exit policy**: record `manual | ai-proxy | auto` in Template 1 (queue children inherit it from the card's interaction-budget ticket; it overrides trigger-word mode propagation). `proxy` = `ai-proxy-discipline` occupies the human seat at the enumerated checkpoints (absent-mode intake Q&A, contract approval as bounded pre-authorization **that Arms, not Launches**, stage 5 report check) under its charter; `manual` = manual mode pauses; `auto` = who answers mid-run questions (named escapes + §B). On standalone, `auto` MUST NOT skip stages 1–3 confirmation, MUST NOT skip the Stage 4 launch-approval pause, and MUST NOT count as Launch.
 
 1. **Restate the goal**; extract goal / deliverables / constraints / expected outcome.
 2. **Ask exactly ONE most critical question per turn** until no blocking fog remains (selection per `clarifying-question-discipline`; graduation per `intake-interview-discipline`). Prefer structured single-select with a recommended answer; fall back to prose if the host has no structured UI.
@@ -82,9 +93,9 @@ Long-run scale is already expressed by the goal condition and budget in stage 2.
 5. **Pre-judge output vs outcome** (see stage 2): mark which standards the agent can self-verify (output-type) vs which need human judgment (outcome-type).
 6. Fill **Template 1** ([reference.md](reference.md) § Stage 1), including the frozen-decisions block.
 
-> **Unattended intake** (no human present, e.g. a batch child run): the task card's frozen decisions supply this stage; if absent, run the interview in self-answer mode (`intake-interview-discipline` integration guide §4 — auto-mode self-answer intake) and flag every answer as an assumption.
+> **Unattended intake**: when the queue-child predicate holds, the inlined card's frozen decisions supply this stage; if that card has no frozen decisions, run the interview in self-answer mode (`intake-interview-discipline` integration guide §4) and flag every answer as an assumption. Standalone invocations MUST NOT complete Design-checked via self-answer — absent human-seat confirmation, refuse Launch.
 
-**Red Flags**: dumping multiple clarifying questions/open points in one message; rushing to answer during clarification; rushing past clarification into the run; fuzzy "just make it good" goals; skipping scope/out-of-scope boundaries; launching without a frozen approach + self-review (deep-intake freeze skipped).
+**Red Flags**: dumping multiple clarifying questions/open points in one message; rushing to answer during clarification; rushing past clarification into the run; fuzzy "just make it good" goals; skipping scope/out-of-scope boundaries; launching without a frozen approach + self-review (deep-intake freeze skipped); treating on-disk `.goal-driven/` cards as queue-child supply.
 
 ---
 
@@ -133,7 +144,9 @@ Long-run scale is already expressed by the goal condition and budget in stage 2.
 
 ## Stage 4: Launch the Long Run
 
-> **Launch approval**: load `design-approval-gate` for the approval pattern. **Long-run divergence**: when the launch is high-impact — unattended/scheduled, budget over threshold (e.g. >30 turns / >1h / large token), or irreversible (deploy / outbound messages / bulk production data) — **auto mode does not bypass**; pause and get explicit user approval of final goal condition + budget + companion checklist before starting. Low-impact launches may proceed after prior stage confirms without this high-impact pause.
+> **Launch approval** (standalone): load `design-approval-gate` for the approval pattern. Confirm the final goal condition + budget + companion checklist. That confirmation enters **Armed** and MUST NOT start the harness — including for low-impact runs and including in auto mode (`design-approval-gate`'s generic auto escape does not skip this pause). High-impact conditions (unattended / large budget / irreversible) are covered by the same pause; they do not create a second fire-on-approve step. Queue children use the inlined card's recorded approval as 留痕 and do not take this standalone pause.
+>
+> **Launch instruction** (standalone): start execute only after Armed **and** an explicit Launch phrase from the closed list above. 「自动跑」 / "auto mode" / bare confirm are not Launch. The proxy MAY complete Design-checked; it MUST NOT issue Launch.
 
 1. **Pre-flight** (intent-first; [reference.md](reference.md) § Stage 4). Primary-harness examples in parentheses:
    - **Per-turn project convention file** at repo root (e.g. `CLAUDE.md`) — encode architecture, coding conventions, acceptance rules for multi-turn consistency.
@@ -147,9 +160,9 @@ Long-run scale is already expressed by the goal condition and budget in stage 2.
    - **Fallback** (no goal harness): manual bounded loop — do work → verify against acceptance checklist → continue if unmet (budget-bounded) → else stop; explicit stop clause required.
 3. **In-run decision rules**: mid-run decisions follow `intake-interview-discipline` §B (self-answer priority: frozen contract → investigated fact → conservative default; evidence falsifying the frozen approach → **clean stop + ticket report**, never a silent pivot).
 4. **Monitor**: check harness status (elapsed, turns, tokens, latest evaluator reason); interrupt early via the environment's cancel control (e.g. Ctrl+C / `/goal clear`). At each budget milestone (every half/third of the budget), record one run-log line — evaluator reason, remaining budget, anomalies; sustained no-progress triggers the early interrupt instead of burning the full budget.
-5. Output **Template 4** and start the run.
+5. Output **Template 4**. On standalone: if Design-checked is incomplete, refuse Launch and continue checks; if Armed, wait for a closed-list Launch instruction; only then start the harness. On a queue child, start execute per `Stage-exit policy` (card approval already 留痕).
 
-**Red Flags**: skipping auto-approval mode (run stalls on writes); no budget; no per-turn convention file; one giant goal instead of a chain; silent mid-run approach pivot (violates `intake-interview-discipline` iron rule 2).
+**Red Flags**: skipping auto-approval mode (run stalls on writes); no budget; no per-turn convention file; one giant goal instead of a chain; silent mid-run approach pivot (violates `intake-interview-discipline` iron rule 2); starting the harness while Design-checked is incomplete; treating 「自动跑」 or bare "ok"/"confirm" as Launch; bundling launch approval with starting the run.
 
 ---
 
@@ -170,8 +183,8 @@ Long-run scale is already expressed by the goal condition and budget in stage 2.
 
 ## Mode Lifecycle
 
-- **Manual (default)**: pauses at stages 1, 2, 3, the stage-4 high-impact approval gate, and stage 5.
-- **Auto** (「自动模式」/「自动跑」 / "auto mode"): advances 1→2→3→4→5 without confirmation, **except** the stage-4 high-impact gate; stage 5 always ends at human acceptance.
+- **Manual (default)**: pauses at stages 1, 2, 3, the Stage 4 launch-approval pause (Armed), and stage 5. Launch still needs a closed-list instruction.
+- **Auto** (「自动模式」/「自动跑」 / "auto mode"): on **standalone**, still pauses at stages 1, 2, 3, and the Stage 4 launch-approval pause; does not skip those confirms; does not start the harness (auto-mode words are not Launch); stage 5 always ends at human acceptance. On a **queue child**, follow `Stage-exit policy` for who answers mid-run questions; do not insert a second Armed wait.
 - **Revert-to-manual**: auto always reverts to manual on completion (including after stage-5 acceptance) or on any interruption. Re-entering auto requires an explicit trigger; implicit continuation never re-activates it.
 - **Long-run specific**: when a run ends (goal met or budget exhausted), return control to the human — do not auto-start a new goal or auto-extend the budget without explicit confirmation.
 

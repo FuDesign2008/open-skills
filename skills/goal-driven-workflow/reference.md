@@ -92,7 +92,9 @@ Example: all tests in test/auth pass and the lint step is clean, stop after 20 t
 
 ```
 ## Long-run launch sheet
-- Approval: <approved / pending> (high-impact: unattended / large budget / irreversible — must approve before start; auto mode does not bypass)
+- State: Design-checked / Armed / Launch (standalone only; queue child: N/A — card approval is 留痕)
+- Approval: <approved / pending> (standalone: condition + budget + companion → Armed; auto mode does not skip; approval does not start the harness)
+- Launch instruction: <waiting / received 「开跑」|"launch"|"start the run"|「开始长跑」> (not 「自动跑」 / "ok" / "confirm")
 - Environment: interactive / non-interactive CLI / manual-loop fallback
 - Goal condition: <4 parts, including budget>
 - Traceability: none | openspec/<change-name> (opt-in; the change path rides the launch contract)
@@ -201,7 +203,7 @@ When a skill declared in frontmatter `dependencies` is missing, print the follow
 goal-driven-workflow strongly depends on (missing = abort):
 - `clarifying-question-discipline`: stage 1 requirement clarification
 - `completion-evidence-discipline`: stage 2/5 acceptance evidence
-- `design-approval-gate`: stage 4 launch approval pattern (long-run high-impact still pauses under auto)
+- `design-approval-gate`: standalone Stage 4 launch-approval pause that enters Armed (does not start the harness)
 - `intake-interview-discipline`: stage 1 deep intake (interview → approach freeze → pre-launch self-review); stage 4 in-run self-answer rules; stage 5 ledger surfacing
 
 【Install】
