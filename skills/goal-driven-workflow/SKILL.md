@@ -22,7 +22,7 @@ dependencies:
 - **Trigger words** (per `description`): 「goal 长跑」「goal run」「goal-driven」「目标驱动长跑」「一个 goal 下去跑」「长跑目标」「无人值守跑任务」「goal-run」 / goal run, goal-driven, long-run goal, autonomous run, run until done
 - **Command form**: `/goal-driven-workflow xxx`, `/goal-run xxx`
 - **Default behavior**: treat `xxx` as the task to run as a goal; enter stage 1 (clarify). If `xxx` already has a concrete verifiable goal + acceptance criteria, skip ahead to stage 2 after outputting Template 1 (frozen block or an explicit stage-1-N/A line) and obtaining one confirmation of it — that confirmation counts as stage 1 complete for Design-checked.
-- **Not applicable**: single-step edits, tasks with no verifiable end state, or tasks better served by recurring `/loop`-style polling or plain single-turn auto approvals. Single-run tasks shaped for stage-gated PDCA (per-stage artifacts and verdicts rather than a run-to-completion loop) route to `solve-workflow` / `opsx-solve-workflow` directly — engine selection at dispatch belongs to the queue layer (`goal-driven-batch`).
+- **Not applicable**: single-step edits, tasks with no verifiable end state, or tasks better served by recurring `/loop`-style polling or plain single-turn auto approvals. Single-run tasks shaped for stage-gated PDCA (per-stage artifacts and verdicts rather than a run-to-completion loop) route to `solve-workflow` / `opsx-solve-workflow` directly — engine selection at dispatch belongs to the queue layer (`goal-driven-queue`).
 
 ## Strong dependencies
 

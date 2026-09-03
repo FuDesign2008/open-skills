@@ -1,8 +1,8 @@
 ---
-name: goal-driven-batch
-version: "0.13.0"
+name: goal-driven-queue
+version: "0.14.0"
 user-invocable: true
-description: "Queue orchestrator over child engines (goal-driven / solve / opsx-solve / jira-fix / opsx-jira-fix). Triggers when the user says「goal 批量」「跑队列」「任务队列」「无人值守队列」「把需求加入队列」「空闲时段跑任务」/ goal-driven-batch, goal batch, run queue, unattended task queue. Each conversation auto-isolates its backlog under .goal-driven/queues/; intake pre-approval, serial consumption, caps, acceptance. Jira lists enqueue here (also via jira-fix-batch / opsx-jira-fix-batch). Use to enqueue now and run later, or to start/inspect/review this conversation's queue. Do NOT use for a single ad-hoc long run (goal-driven-workflow), a single Jira issue (jira-fix-workflow / opsx-jira-fix-workflow), or setting up cron/schedulers themselves."
+description: "Queue orchestrator over child engines (goal-driven / solve / opsx-solve / jira-fix / opsx-jira-fix). Triggers when the user says「goal 批量」「跑队列」「任务队列」「无人值守队列」「把需求加入队列」「空闲时段跑任务」/ goal-driven-queue, goal-driven-batch, goal batch, run queue, unattended task queue. Each conversation auto-isolates its backlog under .goal-driven/queues/; intake pre-approval, serial consumption, caps, acceptance. Jira lists enqueue here (also via jira-fix-queue / opsx-jira-fix-queue; legacy triggers jira-fix-batch / opsx-jira-fix-batch). Use to enqueue now and run later, or to start/inspect/review this conversation's queue. Do NOT use for a single ad-hoc long run (goal-driven-workflow), a single Jira issue (jira-fix-workflow / opsx-jira-fix-workflow), or setting up cron/schedulers themselves."
 dependencies:
   - goal-driven-workflow
   - design-approval-gate
@@ -12,7 +12,7 @@ dependencies:
   - opsx-jira-fix-workflow
 ---
 
-# Goal-Driven Batch
+# Goal-Driven Queue
 
 > This skill owns the **queue lifecycle**: persistent backlog, intake-time approval capture, serial consumption, queue-level caps, progress document, acceptance package.
 > Single-run methodology lives in `goal-driven-workflow` (the engine); merge decisions stay human. Loading this skill MUST NOT start consumption by itself — consumption starts only on an explicit queue request or a scheduled pull.
@@ -68,7 +68,7 @@ This stage exists because both **questions and approval** are cheapest while the
 
 ### Jira list-enqueue shortcut
 
-When invoked by `jira-fix-batch` or `opsx-jira-fix-batch`, or when the enqueue input is a list of Jira IDs/URLs with Engine already frozen to `jira-fix-workflow` or `opsx-jira-fix-workflow`, use this shortcut instead of one full deep-intake per issue:
+When invoked by `jira-fix-queue` or `opsx-jira-fix-queue`, or when the enqueue input is a list of Jira IDs/URLs with Engine already frozen to `jira-fix-workflow` or `opsx-jira-fix-workflow`, use this shortcut instead of one full deep-intake per issue:
 
 1. Parse distinct issue IDs/URLs — **one card per issue**.
 2. Ask **one** interaction-budget ticket for the whole list; write the same `Stage-exit policy` on every new card.
@@ -123,5 +123,5 @@ Assemble into `.goal-driven/queues/<queue-id>/runs/<batch-id>/`: the progress do
 - Treating "budget exhausted" as task success — the report must say which acceptance tiers actually passed
 - Running a mid-run discovered card that lacks an approval record, or letting a malformed half-written card stall the loop
 - Consuming or re-scanning a sibling queue, asking the human to pick among queues, or writing a project-level current-queue pointer another conversation could overwrite
-- Starting consumption from a Jira list-enqueue (or from `jira-fix-batch` / `opsx-jira-fix-batch`) without a separate run instruction
+- Starting consumption from a Jira list-enqueue (or from `jira-fix-queue` / `opsx-jira-fix-queue`) without a separate run instruction
 - Sharing one OpenSpec change or one branch across two in-progress Jira cards "because they share a root cause"

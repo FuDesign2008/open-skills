@@ -4,7 +4,7 @@
 >
 > **事件日期**：2026-09-01 ~ 2026-09-02
 > **涉及环境**：Windows 11（PowerShell 5.1 + Git Bash），内网 Jira（TLS 1.3 only + mTLS 客户端证书），本机未配置 mcp-atlassian
-> **涉及 Skill**：`jira-read`、`jira-fix-workflow`、`jira-fix-batch`、`jira-status-writeback`（同族，认证假设相同）
+> **涉及 Skill**：`jira-read`、`jira-fix-workflow`、`jira-fix-queue`、`jira-status-writeback`（同族，认证假设相同）
 > **数据脱敏**：内网域名已替换为 `jira.example.com`；PAT 值全文不出现，仅描述格式特征。
 
 ---

@@ -106,9 +106,9 @@ When this-run contract or task card records **`Stage-exit policy: ai-proxy`** (a
 
 **Stop-point forecast**: if this run **starts** with a frozen contract (queue child with problem + frozen decisions, or independent thin freeze already written), open with a forecast table before analysis — every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket. If overlay is requested **mid-run**, after thin freeze output a forecast of **remaining** exits, then continue the current stage (do not restart from analysis).
 
-## Queue-child mode (goal-driven-batch dispatch)
+## Queue-child mode (goal-driven-queue dispatch)
 
-When dispatched by `goal-driven-batch` (explicit `queue-child` context flag in the invocation — never guessed from ambient signals), this flow adapts: the card's goal condition carries the Jira issue link; its frozen-decisions block supplies stage 0–1; `Stage-exit policy` rides along (occupancy per `ai-proxy-discipline` when policy is ai-proxy — queue child is sufficient but not required); open with a stop-point forecast (every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket). The terminal is **archive + PR-open**: archive the OpenSpec change (native to this model, never deferred), then stop at PR open — merge + Jira writeback are deferred to the human (merge authority and external-tracker writebacks are never proxied); the queue's acceptance package carries them as pending follow-ups. Independent use (no flag): overlay/occupancy still follow `Stage-exit policy`; the **archive+PR-open** queue terminal does **not** apply; closeout stays this skill's native archive-then-stage path (overlay is not naked auto through merge/writeback). When the card supply includes queue relationship-pass notes, write them as `## Related Issues` in this change's `design.md`.
+When dispatched by `goal-driven-queue` (explicit `queue-child` context flag in the invocation — never guessed from ambient signals), this flow adapts: the card's goal condition carries the Jira issue link; its frozen-decisions block supplies stage 0–1; `Stage-exit policy` rides along (occupancy per `ai-proxy-discipline` when policy is ai-proxy — queue child is sufficient but not required); open with a stop-point forecast (every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket). The terminal is **archive + PR-open**: archive the OpenSpec change (native to this model, never deferred), then stop at PR open — merge + Jira writeback are deferred to the human (merge authority and external-tracker writebacks are never proxied); the queue's acceptance package carries them as pending follow-ups. Independent use (no flag): overlay/occupancy still follow `Stage-exit policy`; the **archive+PR-open** queue terminal does **not** apply; closeout stays this skill's native archive-then-stage path (overlay is not naked auto through merge/writeback). When the card supply includes queue relationship-pass notes, write them as `## Related Issues` in this change's `design.md`.
 
 ## Stage 0: Prerequisite check
 
@@ -423,7 +423,7 @@ Once archiving and branch closeout are complete (and Jira writeback when merge r
 
 ## Batch OPSX Jira fixes
 
-Use the `opsx-jira-fix-batch` skill (thin shell: parses the Jira list and enqueues into `goal-driven-batch` with `Engine: opsx-jira-fix-workflow`; does not loop this workflow or merge). Relationship judgments the queue already recorded are written here as `## Related Issues` in each change's `design.md`.
+Use the `opsx-jira-fix-queue` skill (thin shell: parses the Jira list and enqueues into `goal-driven-queue` with `Engine: opsx-jira-fix-workflow`; does not loop this workflow or merge). Relationship judgments the queue already recorded are written here as `## Related Issues` in each change's `design.md`.
 
 ## Common mistakes
 

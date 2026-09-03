@@ -1,5 +1,5 @@
 {
-  "skill_name": "goal-driven-batch",
+  "skill_name": "goal-driven-queue",
   "evals": [
     {
       "id": 1,
@@ -49,7 +49,7 @@
     {
       "id": 3,
       "name": "loaded-without-request-stays-idle",
-      "prompt": "你装了 goal-driven-batch 吧？先帮我看看现在队列里都有些什么，别跑任何东西，我就想知道现状。",
+      "prompt": "你装了 goal-driven-queue 吧？先帮我看看现在队列里都有些什么，别跑任何东西，我就想知道现状。",
       "expected_output": "加载≠消费：未绑定则说明本对话尚无队列、不列出兄弟队列供点名、不铸造；已绑定则输出该队列概览（pending/in-progress 计数、剩余任务预估总耗时、下一张可执行卡片）。不派发任何任务、不改任何文件状态。",
       "files": [],
       "assertions": [
@@ -325,8 +325,8 @@
     {
       "id": 18,
       "name": "jira-list-enqueue-shortcut-no-run",
-      "prompt": "批量修复 PROJ-101、PROJ-102、PROJ-103，用 jira-fix-batch。",
-      "expected_output": "jira-fix-batch 只解析三票并调用 goal-driven-batch 的 Jira list-enqueue：Engine 冻结为 jira-fix-workflow、整批一张交互预算票、每票一张卡、批次三段式后一次批准；批准不等于开跑，不调用 jira-fix-workflow、不写 .jira-fix/ 进度文件。",
+      "prompt": "批量修复 PROJ-101、PROJ-102、PROJ-103，用 jira-fix-queue。",
+      "expected_output": "jira-fix-queue 只解析三票并调用 goal-driven-queue 的 Jira list-enqueue：Engine 冻结为 jira-fix-workflow、整批一张交互预算票、每票一张卡、批次三段式后一次批准；批准不等于开跑，不调用 jira-fix-workflow、不写 .jira-fix/ 进度文件。",
       "files": [],
       "assertions": [
         {

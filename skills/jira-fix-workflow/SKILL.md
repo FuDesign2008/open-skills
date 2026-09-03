@@ -2,7 +2,7 @@
 name: jira-fix-workflow
 version: "3.32.0"
 user-invocable: true
-description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end; ai-proxy overlay (thin freeze then occupy) is available independently. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / fix this bug, jira-fix, auto fix, force fix, resume fix, ai-proxy mode, switch to ai-proxy. Do NOT use for batch fixes across multiple issues — use jira-fix-batch instead (it enqueues into goal-driven-batch; confirm, then run the queue)."
+description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end; ai-proxy overlay (thin freeze then occupy) is available independently. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / fix this bug, jira-fix, auto fix, force fix, resume fix, ai-proxy mode, switch to ai-proxy. Do NOT use for batch fixes across multiple issues — use jira-fix-queue instead (it enqueues into goal-driven-queue; confirm, then run the queue)."
 dependencies:
   - solution-review
   - code-design-review
@@ -69,9 +69,9 @@ Core rules live in `workflow-mode-lifecycle`. "Full flow complete" means stages 
 
 **Workflow-specific differences**: stage 9 complete / stage 10 merge complete / 🔴 extremely-hard termination (auto) → revert to manual; stage 8 under-threshold rollback keeps the current mode (auto, capped at 2 rollbacks); `--retry` → reset to manual; `--resume` → keep the checkpoint's mode.
 
-## Queue-child mode (goal-driven-batch dispatch)
+## Queue-child mode (goal-driven-queue dispatch)
 
-When dispatched by `goal-driven-batch` (explicit `queue-child` context flag in the invocation — never guessed from ambient signals), this flow adapts: the card's goal condition carries the Jira issue link; its frozen-decisions block supplies stage 0–1; `Stage-exit policy` rides along (occupancy is the Unattended pointer above, not unique to this flag); open with a stop-point forecast (every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket). The terminal is **PR-open**: stop after stage 9 with a record-only closeout — stage 10 (merge + Jira writeback) is deferred to the human (merge authority and external-tracker writebacks are never proxied); the queue's acceptance package carries them as pending follow-ups. Independent use (no flag): overlay/occupancy still follow `Stage-exit policy` and the Unattended pointer; the **PR-open** terminal does **not** apply; closeout stays this skill's stage 9–10 (overlay is not naked auto through merge/writeback).
+When dispatched by `goal-driven-queue` (explicit `queue-child` context flag in the invocation — never guessed from ambient signals), this flow adapts: the card's goal condition carries the Jira issue link; its frozen-decisions block supplies stage 0–1; `Stage-exit policy` rides along (occupancy is the Unattended pointer above, not unique to this flag); open with a stop-point forecast (every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket). The terminal is **PR-open**: stop after stage 9 with a record-only closeout — stage 10 (merge + Jira writeback) is deferred to the human (merge authority and external-tracker writebacks are never proxied); the queue's acceptance package carries them as pending follow-ups. Independent use (no flag): overlay/occupancy still follow `Stage-exit policy` and the Unattended pointer; the **PR-open** terminal does **not** apply; closeout stays this skill's stage 9–10 (overlay is not naked auto through merge/writeback).
 
 ## ⚡ Quick Reference (read before executing)
 
@@ -284,4 +284,4 @@ Stash before changing; warn at >10 files or >500 lines; block at >20 files or >1
 
 ## Batch Fix
 
-Use the `jira-fix-batch` skill (thin shell: parses the Jira list and enqueues into `goal-driven-batch` with `Engine: jira-fix-workflow`; does not loop this workflow or merge).
+Use the `jira-fix-queue` skill (thin shell: parses the Jira list and enqueues into `goal-driven-queue` with `Engine: jira-fix-workflow`; does not loop this workflow or merge).

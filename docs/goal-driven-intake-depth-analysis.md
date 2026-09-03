@@ -1,6 +1,6 @@
 # goal-driven-* 系列的 Intake 深度问题分析
 
-> 「为什么 /goal-driven-batch 和 /goal-driven-workflow 与我核对的问题不如 /solve-workflow 时细致？」
+> 「为什么 /goal-driven-queue 和 /goal-driven-workflow 与我核对的问题不如 /solve-workflow 时细致？」
 > 本文基于一次真实工作流会话的第一手对照体验（两种 skill 系列在同一天、同一项目、同一执行者上先后使用），分析结构性根因并给出改进建议。
 
 ---
@@ -15,7 +15,7 @@
 
 同一会话中两种 skill 的提问与确认行为统计：
 
-| 维度 | solve-workflow（MR 分析轮） | goal-driven-batch（守卫轮） |
+| 维度 | solve-workflow（MR 分析轮） | goal-driven-queue（守卫轮） |
 |---|---|---|
 | 用户参与的确认事件 | **6 次**（阶段 1/3/4/5/7/8 各出口） | **2 次**（1 个问题 + 1 次卡片批准） |
 | 提问聚焦度 | 每次一个具体决策（修复对象 4 选 1、方案 3 选 1、审查裁决、计划确认） | 一次「守卫 vs MR !3」后，其余决策全部自答冻结 |
@@ -31,7 +31,7 @@
 
 ### 根因 1：确认事件数量——「一次」对「每阶段」
 
-solve-workflow 手动模式的 Quick Reference 表**逐阶段强制停等**（⛔ 出现在 1/3/4/5/7/8 每个出口），且每个出口有必选输出模板。goal-driven-batch 的 Stage 1 明文要求「Confirm condition + budget with the human **once, now**」——"once" 是设计意图：一次批准事件闭合整个访谈，之后就是无人值守跑。Stage 2/3 天然 auto-advance。
+solve-workflow 手动模式的 Quick Reference 表**逐阶段强制停等**（⛔ 出现在 1/3/4/5/7/8 每个出口），且每个出口有必选输出模板。goal-driven-queue 的 Stage 1 明文要求「Confirm condition + budget with the human **once, now**」——"once" 是设计意图：一次批准事件闭合整个访谈，之后就是无人值守跑。Stage 2/3 天然 auto-advance。
 
 **核对粒度在规程层面就差一个数量级**，与 AI 的自觉无关。
 
@@ -75,7 +75,7 @@ solve-workflow 的阶段出口相当于强制了最小交互轮次（≥5 轮）
 
 intake 阶段的自答假设按 **impact-if-wrong** 分级：高影响假设（守卫定位依赖上游 MR 可信度、验证策略、对外契约等）**必须提问**，不得默认冻结；仅低影响（命名、临时格式、可逆小选择）走保守默认 + 账本。落点：`§B` 优先级表的梯 3 前插入「高影响假设 → 升格为 intake 提问」的闸门，并在 §A 冻结前复核一遍所有自答项的影响分级。
 
-### 建议 2：在场感知的 intake 深度（改 goal-driven-batch Stage 1 / workflow Stage 1）
+### 建议 2：在场感知的 intake 深度（改 goal-driven-queue Stage 1 / workflow Stage 1）
 
 trigger 语义区分两档：
 - 用户声明离开（「我下班了」「无人值守」「自动跑」）→ 现行「一次确认」+ 全账本模式（保持不变，这是该系列的核心价值）；
@@ -101,4 +101,4 @@ trigger 语义区分两档：
 
 ---
 
-*分析素材：2026-09-01 会话实拍（solve-workflow MR 分析轮 6 次确认 / goal-driven-batch 守卫轮 2 次确认 + 一次 MR !3 假设返工）。*
+*分析素材：2026-09-01 会话实拍（solve-workflow MR 分析轮 6 次确认 / goal-driven-queue 守卫轮 2 次确认 + 一次 MR !3 假设返工）。*
