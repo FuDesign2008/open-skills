@@ -1,8 +1,8 @@
 ---
 name: opsx-solve-workflow
-version: "1.21.0"
+version: "1.22.0"
 user-invocable: true
-description: "Eight-stage PDCA problem-solving workflow that persists analysis, proposal, design review, plan, execution, and verification into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context. Use for feature work, bug fixes, refactors, and complex engineering tasks that need long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick one-off edit with no traceability need — use solve-workflow instead. Triggers：「opsx解决」「OpenSpec解决」「规范化解决」「创建OpenSpec变更」「创建opsx变更」「用OpenSpec分析」「用OpenSpec修复」「opsx自动解决」「OpenSpec自动解决」「opsx-solve」「opsx-solve-workflow」 / opsx solve, OpenSpec solve workflow, create an OpenSpec change."
+description: "Eight-stage PDCA problem-solving workflow that persists analysis, proposal, design review, plan, execution, and verification into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context. Use for feature work, bug fixes, refactors, and complex engineering tasks that need long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick one-off edit with no traceability need — use solve-workflow instead. Triggers：「opsx解决」「OpenSpec解决」「规范化解决」「创建OpenSpec变更」「创建opsx变更」「用OpenSpec分析」「用OpenSpec修复」「opsx自动解决」「OpenSpec自动解决」「opsx-solve」「opsx-solve-workflow」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / opsx solve, OpenSpec solve workflow, create an OpenSpec change, ai-proxy mode, switch to ai-proxy."
 dependencies:
   - solution-review
   - code-design-review
@@ -55,14 +55,14 @@ Not a replacement for plain `solve-workflow`:
 
 ## Invocation conventions
 
-- **Triggers**: opsx解决, OpenSpec解决, 规范化解决, 创建OpenSpec变更, 创建opsx变更, 用OpenSpec分析, 用OpenSpec修复, opsx自动解决, OpenSpec自动解决, opsx-solve, opsx-solve-workflow
-- **Mode**: a trigger containing "自动" (auto) enters auto mode; otherwise manual mode by default.
+- **Triggers**: opsx解决, OpenSpec解决, 规范化解决, 创建OpenSpec变更, 创建opsx变更, 用OpenSpec分析, 用OpenSpec修复, opsx自动解决, OpenSpec自动解决, opsx-solve, opsx-solve-workflow; ai-proxy 模式, AI 代理模式, 切换 ai-proxy
+- **Mode**: overlay triggers (「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / "ai-proxy mode" / "switch to ai-proxy") request overlay per `workflow-mode-lifecycle` (overlay+freeze wins if an auto trigger is also present). Else a trigger containing "自动" (auto) enters auto mode; otherwise manual mode by default.
 - **Manual mode**: the key exits of stages 1, 2, 3, 4, 5, 7, 8 must wait for user confirmation.
 - **Auto mode**: auto-advances through to verification; the stage 4 review loop caps at 3 rounds, then pauses.
 
-**Unattended proxy exits**: as a queue child with `Stage-exit policy: ai-proxy` (child auto mode), each manual exit above becomes a proxy checkpoint per `ai-proxy-discipline` — fresh context, that stage's output as artifact-only input, evidence-tagged verdict, ledger-marked; the pre-execution approval point takes the proxy's bounded pre-authorization instead of the bare auto escape of `design-approval-gate`; merge, irreversible, and protected-branch decisions stay human-only (park + ticket). Any other policy value or none → behavior identical to today.
+**Unattended proxy exits**: when this-run contract or task card records `Stage-exit policy: ai-proxy` (auto carrier; queue child is sufficient but not required), each manual exit above becomes a proxy checkpoint per `ai-proxy-discipline`. Thin freeze (verbal trigger ≠ occupancy) lives there. The pre-execution approval point takes the proxy's bounded pre-authorization instead of the bare auto escape of `design-approval-gate`; merge, irreversible, and protected-branch decisions stay human-only (park + ticket). Any other policy value or none → behavior identical to today.
 
-**Stop-point forecast**: starting as a queue child (problem + frozen decisions supplied), open with a forecast table — every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket — before analysis begins.
+**Stop-point forecast**: starting as a queue child (problem + frozen decisions supplied), **or** after an independent thin freeze has written `Stage-exit policy: ai-proxy`, open with a forecast table — every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket — before analysis begins.
 
 **Strong-dependency skills** (frontmatter `dependencies`; must pass the "Prerequisite skill check" at startup — abort if any is missing):
 - `staged-review-flow` (stage 4 review orchestration; depends on `solution-review` and `code-design-review`)
