@@ -19,6 +19,6 @@
 ## 3. Archive, deliver, report
 
 - [x] 3.1 Sync delta spec into main specs and archive the change via `openspec-archive-change` flow (openspec sync/archive CLI); confirm archive dir + main spec landed in git status
-- [ ] 3.2 Commit on `feat/tech-research-workflow-skill` with repo-style prefixes (`feat:` skill + docs index, `docs:` openspec artifacts), push branch
-- [ ] 3.3 Open PR against main via `gh`; stop (merge is human-only)
-- [ ] 3.4 Completion report: numbered verification checklist with real outputs, decision/assumption ledger, human-judgment items, PR URL, branch tip sha, files created
+- [x] 3.2 Commit on `feat/tech-research-workflow-skill` with repo-style prefixes (`feat:` skill + docs index, `docs:` openspec artifacts), push branch
+- [x] 3.3 Open PR against main via `gh`; stop (merge is human-only)
+- [x] 3.4 Completion report: numbered verification checklist with real outputs, decision/assumption ledger, human-judgment items, PR URL, branch tip sha, files created
