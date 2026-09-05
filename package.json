@@ -1,7 +1,7 @@
 {
   "name": "open-skills",
   "private": true,
-  "version": "3.5.0",
+  "version": "3.6.0",
   "scripts": {
     "prepare": "husky || true",
     "gen:skills-index": "node scripts/gen-skill-docs.mjs",
