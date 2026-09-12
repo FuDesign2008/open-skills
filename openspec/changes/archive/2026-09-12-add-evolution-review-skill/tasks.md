@@ -17,3 +17,4 @@
 
 - [x] 3.1 PR #312 Part R 审查（FAIL→修复正文语言→重审）
 - [x] 3.2 归档本变更（记录性归档：实现先于沉淀，见 proposal 尾注）
+- [x] 3.3 delta spec 并入主 specs/evolution-review/spec.md（full 重审 Major 修复：补 Purpose + THEN 配对；同轮修 RELEASE-NOTES 版本号与 design.md 边界如实表述）
