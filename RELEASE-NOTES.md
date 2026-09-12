@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- **新增 `evolution-review`**（v1.0.1）：数据驱动的组合级月度自然选择复盘——盘点（双指标：收益+触达）→ 固定（连续两期胜出才沉淀配方）→ 灭绝（滚动 3 月窗口无验证即砍，记录淘汰配方）→ 突变配额（15~20% 资源给新假设，既是上限也是下限）→ 滚动窗口（单月波动不改方向）→ 多样性盘点（防单一生态位全灭）。源自真实运营 4.5 个月的 AI 音乐副业中验证过的进化机制（307 首上架：词牌线固定 67% 收入、纯音乐线灭绝、买收藏负 ROI 止损）。与 `learn-and-improve`（单任务复盘）互补——本 skill 管组合层的「加码谁、砍谁、预算给谁」。
+
 ### ⚠️ BREAKING CHANGES
 
 **Claude / Cursor 插件、OpenCode 全能力安装、仓库根 `commands/` 斜杠命令已删除。** 本仓库只分发 `SKILL.md`：用 `node scripts/install-skills.mjs` 或 `npx skills add FuDesign2008/open-skills -g`。GitHub Release 版本源改为根 `package.json`。

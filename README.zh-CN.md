@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](https://github.com/FuDesign2008/open-skills)
 [![Version](https://img.shields.io/github/v/release/FuDesign2008/open-skills?style=flat-square)](https://github.com/FuDesign2008/open-skills/releases)
-![Skills](https://img.shields.io/badge/skills-11-informational?style=flat-square)
+![Skills](https://img.shields.io/badge/skills-63-informational?style=flat-square)
 
 **[English](README.md)** | 中文
 
