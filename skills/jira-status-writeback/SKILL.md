@@ -1,13 +1,17 @@
 ---
 name: jira-status-writeback
-version: "1.0.1"
+version: "1.1.0"
 user-invocable: false
 description: "Post-merge Jira writeback SOP: transition only to「已修复」, then independent jira_add_comment with body. Triggers — 「Jira 状态回写」「回写已修复」「合并后写 Jira」「jira writeback」「jira status writeback」. Do NOT use for reading issues, creating issues, or pre-merge comments. Loaded by Jira fix hosts after merge via frontmatter dependencies."
+dependencies:
+  - jira-wiki-markup
 ---
 
 # Jira Status Writeback
 
 > Internal shared skill. Single source of truth for **post-merge** Jira status update + repair comment. Hosts declare it in `dependencies`, abort if missing, and pass a field map; they MUST NOT restate the two-step API or status boundary inline. This skill does not resolve PAT files; session or MCP auth follows `jira-read`.
+>
+> **Prerequisite check**: `jira-wiki-markup` must be available; if it is missing, abort and print the standard install hint (`npx skills add FuDesign2008/open-skills -g --skill '*' --yes`).
 
 ## When to run
 
@@ -22,6 +26,7 @@ Only after the PR/MR has **successfully merged** into the target branch. Never a
    - If no matching transition: skip transition, emit a warning, continue to comment if possible.
 
 2. **Comment (independent call)**  
+   - Load `jira-wiki-markup` and compose `body` from the host field map using that skill's canonical repair-comment skeleton (Wiki markup).  
    - Call `jira_add_comment(issue_key=..., body=...)`.  
    - The comment text parameter name is **`body`** (not `comment`).  
    - Never rely on `jira_transition_issue`'s `comment` parameter for the repair record (it may be silently dropped).

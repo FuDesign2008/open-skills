@@ -73,7 +73,7 @@ PR/MR description must include:
 
 ## Stage 8.4 Jira Comment (after the merge completes)
 
-The Jira comment must include:
+The Jira comment must include (Wiki markup per `jira-wiki-markup`; canonical skeleton in that skill's `reference.md`):
 
 - Fix branch / PR URL / commit
 - Root-cause summary
