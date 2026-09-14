@@ -1,6 +1,6 @@
 ---
 name: jira-fix-workflow
-version: "3.32.0"
+version: "3.33.0"
 user-invocable: true
 description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end; ai-proxy overlay (thin freeze then occupy) is available independently. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / fix this bug, jira-fix, auto fix, force fix, resume fix, ai-proxy mode, switch to ai-proxy. Do NOT use for batch fixes across multiple issues — use jira-fix-queue instead (it enqueues into goal-driven-queue; confirm, then run the queue)."
 dependencies:
@@ -18,6 +18,7 @@ dependencies:
   - merge-discipline
   - staged-review-flow
   - jira-status-writeback
+  - jira-wiki-markup
   - completion-evidence-discipline
   - domain-language-discipline
   - test-first-discipline
@@ -152,7 +153,7 @@ Output: problem restatement (no technical judgment) / key elements / ambiguities
 
 Load `analysis-core` §§1-3; the stage output MUST close with the analysis gate output block (`analysis-core` §5 — red loop / debug entry / scenario supplements / temporary changes; missing block blocks stage 4). Mapping: `{next-stage}` = stage 4 "difficulty grading"; `{root-cause step}` = root-cause analysis; `{impact-assessment step}` = impact scope; `{upstream-eval step}` = upstream-dependency fix evaluation.
 
-**Workflow-specific differences**: ① the industry-wide-issue evaluation is a **gate**; ② 🚫 no viable fix → report + **stop, do not enter stage 5** + write a Jira comment (template in reference.md); ③ existence check ❌ → stop + Jira comment + wait for the user; ④ artifact `02-analysis.md` (includes a difficulty pre-assessment).
+**Workflow-specific differences**: ① the industry-wide-issue evaluation is a **gate**; ② 🚫 no viable fix → report + **stop, do not enter stage 5** + write a Jira comment (load `jira-wiki-markup`; template in reference.md); ③ existence check ❌ → stop + Jira comment (load `jira-wiki-markup`) + wait for the user; ④ artifact `02-analysis.md` (includes a difficulty pre-assessment).
 
 👤 continue directly into stage 4, append the grading to the end of the output, then ⏸️ pause for confirmation before →5. 🤖 → stage 4.
 
@@ -253,7 +254,7 @@ Once merge is selected:
 
 1. `feature-branch-closeout` loads `merge-discipline` (Part A→B→C→R→D; checklist in that skill's reference.md)
 2. Merge (`gh pr merge --merge` / `glab mr merge`) → delete the remote fix branch → sync the default branch → delete the local branch
-3. Load `jira-status-writeback` (field map: branch, commit, PR URL, root cause, solution, files, report, verification scenarios); a writeback failure does not block completion
+3. Load `jira-status-writeback` (field map: branch, commit, PR URL, root cause, solution, files, report, verification scenarios); a writeback failure does not block completion. Direct Jira comments load `jira-wiki-markup` before `jira_add_comment`.
 
 Write `08-merge.md`; state `current_phase: "completed"`.
 
@@ -271,7 +272,7 @@ Stash before changing; warn at >10 files or >500 lines; block at >20 files or >1
 
 ## Common Mistakes
 
-> Only non-obvious pitfalls are listed here. Merging → `merge-discipline`; writeback → `jira-status-writeback`; industry-wide/upstream issues → `known-issue-research` / `upstream-dependency-debug`. Rules already stated in the stage body are not repeated.
+> Only non-obvious pitfalls are listed here. Merging → `merge-discipline`; writeback → `jira-status-writeback`; comment Wiki markup → `jira-wiki-markup`; industry-wide/upstream issues → `known-issue-research` / `upstream-dependency-debug`. Rules already stated in the stage body are not repeated.
 
 | Mistake | Fix |
 |------|------|

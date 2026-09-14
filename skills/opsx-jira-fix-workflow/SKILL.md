@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.21.0"
+version: "1.22.0"
 user-invocable: true
 description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / opsx jira fix, OpenSpec Jira fix workflow, ai-proxy mode, switch to ai-proxy."
 dependencies:
@@ -19,6 +19,7 @@ dependencies:
   - staged-review-flow
   - opsx-workspace-gate
   - jira-status-writeback
+  - jira-wiki-markup
   - ai-proxy-discipline
   - completion-evidence-discipline
   - domain-language-discipline
@@ -80,6 +81,7 @@ Not a replacement for plain `jira-fix-workflow`:
 - `merge-discipline` (stage 8 merge discipline — after closeout selects merge)
 - `opsx-workspace-gate` (stage 0 OpenSpec workspace and native-skill gate)
 - `jira-status-writeback` (stage 8 post-merge writeback: status transition + fix-comment SOP, single source)
+- `jira-wiki-markup` (Wiki markup for every Jira comment body; writeback loads it for the repair comment)
 - `learn-and-improve` (stage 8 retrospective and knowledge sediment)
 - `figma-pixel-implement` / `figma-pixel-verify` (Figma export-faithful implement + measured verify; required installed; invoke only when Figma UI work is in scope)
 
@@ -215,7 +217,7 @@ On top of the `analysis-core` skeleton, this stage also completes:
 
 - **Difficulty grading** (easy / medium / hard / very hard) and **path selection** (lean / incremental / full); upgrade the path if scope expands
 - **Artifact landing spot**: write into `design.md`'s Problem Analysis / Root Cause / Impact (a change must already exist — otherwise go back to stage 1)
-- **Existence ❌ / description mismatch**: pause; get user confirmation before writing a Jira comment
+- **Existence ❌ / description mismatch**: pause; get user confirmation before writing a Jira comment (load `jira-wiki-markup`)
 
 Grading and path table:
 
@@ -396,7 +398,7 @@ Once archiving, delivery, and the diff check are complete, load `feature-branch-
 
 ### 8.4 Jira writeback (after the merge completes)
 
-Once the PR/MR has merged and the code is on the main branch, write back the Jira status to reflect that the fix has landed. Load the strong dependency `jira-status-writeback` and follow its SOP for the status transition and fix comment; this workflow supplies the following field map:
+Once the PR/MR has merged and the code is on the main branch, write back the Jira status to reflect that the fix has landed. Load the strong dependency `jira-status-writeback` and follow its SOP for the status transition and fix comment (`jira-wiki-markup` composes the Wiki `body`). This workflow supplies the following field map:
 
 | `jira-status-writeback` field | Value |
 |------|------|
@@ -427,7 +429,7 @@ Use the `opsx-jira-fix-queue` skill (thin shell: parses the Jira list and enqueu
 
 ## Common mistakes
 
-> Only this skill's non-obvious pitfalls are listed here. Merge/coverage/archive → `merge-discipline`; project-root/`openspec/`/native-skill gates → `opsx-workspace-gate`; Jira-writeback SOP → `jira-status-writeback`. Rules already stated in the stage body are not repeated.
+> Only this skill's non-obvious pitfalls are listed here. Merge/coverage/archive → `merge-discipline`; project-root/`openspec/`/native-skill gates → `opsx-workspace-gate`; Jira-writeback SOP → `jira-status-writeback`; comment Wiki markup → `jira-wiki-markup`. Rules already stated in the stage body are not repeated.
 
 | Mistake | Consequence | Fix |
 |------|------|------|

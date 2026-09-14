@@ -349,29 +349,28 @@ Starting code changes
 
 ## Stage 9: Submission Complete
 
-**Jira writeback comment template** (stage 10 step 2.3, rendered with `jira-status-writeback`'s field map):
+**Jira writeback comment template** (stage 10 step 2.3, rendered with `jira-status-writeback`'s field map; Wiki markup per `jira-wiki-markup`, canonical skeleton in that skill's `reference.md`):
 ```
-**AI Auto-Fix Report**
+h3. AI Auto-Fix Report
 
-- **Fix Branch**: fix/jira-fix-{JIRA-ID}
-- **Commit**: {commit_hash}
-- **PR/MR URL**: {pr_mr_url}
-- **Root Cause**: {root_cause_summary}
-- **Fix Solution**: {solution_summary}
-- **Files Changed**: {file_list}
-- **Analysis Report**: reports/{JIRA-ID}-analysis.md
+* *Fix Branch*: fix/jira-fix-{JIRA-ID}
+* *Commit*: {commit_hash}
+* *PR/MR URL*: [{pr_mr_url}|{pr_mr_url}]
+* *Root Cause*: {root_cause_summary}
+* *Fix Solution*: {solution_summary}
+* *Files Changed*: {file_list}
+* *Analysis Report*: reports/{JIRA-ID}-analysis.md
 
-Code has been merged to the main branch; please proceed with QA verification.
+Code has been merged to the target branch; please proceed with QA verification.
 ```
 
 Manual mode additionally includes a "Verification Scenarios" section:
 ```
-### Verification Scenarios
+h4. Verification Scenarios
 
-1. [scenario name]
-   Steps: [specific steps, 1-3 steps]
-   Expected: [user-observable result]
-2. ...
+# *{scenario name}*
+Steps: {specific steps, 1-3 steps}
+Expected: {user-observable result}
 ```
 
 **Completion output [🤖 Auto]**:
