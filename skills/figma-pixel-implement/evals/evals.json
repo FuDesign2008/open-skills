@@ -92,6 +92,59 @@
         "Does not mark implement complete with only a session note and no file path",
         "Treats an unfetched or unimplemented visible section as incomplete"
       ]
+    },
+    {
+      "id": 9,
+      "name": "no-screenshot-inferred-fill",
+      "prompt": "面板节点 structured fill 为空。截图里这块看起来是灰底，颜色来自父级画布。用户「按稿实现」。请按 figma-pixel-implement 写该面板 background 规格行（dry-run）。",
+      "expected_output": "Record fill ownership as transparent/none; do not paint a solid background to match the screenshot.",
+      "expectations": [
+        "Records the panel background as transparent or none when the node has no readable fill",
+        "Does not assign a solid fill just because the screenshot looks filled"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "whole-instance-export-and-geometry",
+      "prompt": "Logo 是一个 instance，下面有多条 vector path。wrapper 在稿上是 18×22。同事想 download 每条 path 再绝对定位拼回去，并放进 24×24 图标壳。用户「按稿实现」。请按 figma-pixel-implement 给出资产方案（dry-run）。",
+      "expected_output": "Export the outer instance as one local file; keep 18×22; do not stack leaf fragments or a generic 24×24 shell.",
+      "expectations": [
+        "Exports or plans to export the outer instance as a single local file",
+        "Rejects stacking per-path fragments with absolute positioning as the delivery",
+        "Keeps the 18×22 wrapper rather than normalizing to 16/24"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "text-color-provenance",
+      "prompt": "标题文字绑定可读 Figma 变量，解析后应对 --text-5。另有一句 helper 只有 raw #888888、没有变量名。同事建议标题用 var(--text-strong)。用户「按稿实现」。请按 figma-pixel-implement 写这两行 token/source（dry-run）。",
+      "expected_output": "Title maps to the readable Figma variable / --text-5; helper is raw-only; do not invent --text-strong.",
+      "expectations": [
+        "Uses the text node's own readable Figma variable (or equivalent --text-5) for the title color",
+        "Records raw-only for the helper with no readable variable name",
+        "Does not replace the readable variable with a self-invented semantic alias such as --text-strong"
+      ]
+    },
+    {
+      "id": 12,
+      "name": "annotation-inventory-not-expected",
+      "prompt": "稿上 Chip 无 Hover 变体。一条 annotation 写「hover 用 #FF0000」。另一条写「间距 12px」，节点 structured gap 是 8px。用户「按稿实现」。请按 figma-pixel-implement 写清单与 expected（dry-run）。",
+      "expected_output": "Inventory the annotations; do not invent hover colors; expected gap stays 8; record the 12 conflict.",
+      "expectations": [
+        "Puts readable annotations on the inventory (state, blocked, or notes)",
+        "Does not invent hover colors when there is no Hover variant",
+        "Keeps Spec expected gap at 8 from the node and records the 12px annotation as a conflict"
+      ]
+    },
+    {
+      "id": 13,
+      "name": "assets-subsection-required",
+      "prompt": "你已把图标导出到 src/assets/icon.svg 并写了 Inventory/Spec。活文档还没有 Assets 小节。用户问 implement 能否算完成。请按 figma-pixel-implement 回答（dry-run）。",
+      "expected_output": "Implement is incomplete without an Assets subsection listing node, local path, and format.",
+      "expectations": [
+        "Requires an Assets subsection (or equivalent table) on the living artifact",
+        "Treats missing Assets rows for implemented visible graphics as incomplete"
+      ]
     }
   ]
 }

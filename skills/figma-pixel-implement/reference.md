@@ -6,7 +6,7 @@ Write the contract in the **target repo**, not only in the session.
 
 1. If the project already has a Figma/design-spec directory, reuse it.
 2. Otherwise use `docs/figma/<safe-frame-name>.md` (`<safe-frame-name>` from the frame name or node id, filesystem-safe).
-3. Default **one file, three sections**: Inventory, Spec, Verify. `figma-pixel-implement` owns Inventory + Spec; `figma-pixel-verify` owns Verify. If the project already keeps a separate verify report, that sibling is allowed—record it as `Spec source` / report path; do not duplicate methodology in hosts.
+3. Default **one file, three sections plus Assets**: Inventory, Spec, Assets, Verify. `figma-pixel-implement` owns Inventory + Spec + Assets; `figma-pixel-verify` owns Verify. If the project already keeps a separate verify report, that sibling is allowed—record it as `Spec source` / report path; do not duplicate methodology in hosts.
 4. Append rows as each visible section is implemented. Implement is incomplete without this path.
 
 ```markdown
@@ -22,7 +22,8 @@ Write the contract in the **target repo**, not only in the session.
 | Welcome / title | default | metadata `760:32908` | |
 | Chip | hover | component variant Hover | |
 | Auto-follow scroll | `out-of-scope: behavior` | prototype | not a computed-style row |
-| Toolbar icon hover | `no-variant-in-design` | no Hover variant | do not invent |
+| Toolbar icon hover | `no-variant-in-design` | annotation; no Hover variant | do not invent |
+| Chip hover color note | `blocked` / note | annotation `#FF0000` | expected stays the node |
 
 ## Spec
 
@@ -31,6 +32,16 @@ Write the contract in the **target repo**, not only in the session.
 | Header / title | default | light | font-size | 24 | px | self | `text-2xl` / `--font-size-24` | Figma text style / variable |
 | Welcome / title | default | light | gap-from-header | 82 | px | bottom of 顶部模块 → top of title | (layout) | metadata y minus header height |
 | Chip | hover | light | background | #F4F6F7 | hex | self | `--color-fill-2` | variant Hover |
+| Panel | default | light | background | none | — | self | (transparent) | no readable fill |
+| Title | default | light | color | #1A1C33 | hex | self | `--text-5` | Figma variable Text/5 |
+| Helper | default | light | color | #888888 | hex | self | `raw-only` | no readable variable name |
+
+## Assets
+
+| node / role | local path | format | notes |
+|-------------|------------|--------|-------|
+| Logo instance `12:40` | `assets/logo.svg` | svg | one file from outer instance |
+| Toolbar icon `12:41` | `assets/toolbar-icon.svg` | svg | wrapper 18×22 |
 
 ## Verify
 
@@ -54,13 +65,17 @@ Write as Markdown **in the living artifact** (Spec section). One row per measura
 - `state` matches the inventory (default, hover, …).
 - Omit properties you cannot observe later (verify will fail overall if they stay critical and unmeasured).
 - When theme is in scope, add a `mode` column (or one row per mode) for theme-varying properties; resolve per-mode values from the design itself (variable `valuesByMode` when exposed, otherwise re-fetch with the file/frame mode switched or via the per-theme frame); shared values stay single-row.
-- Conflicting QA/walkthrough numbers stay in notes; `expected` stays on the Figma node.
+- Conflicting QA/walkthrough/annotation numbers stay in notes; `expected` stays on the Figma node.
+- No readable fill → `expected` is transparent / `none` (screenshot color from a parent does not own the fill).
+- Text color `token` / `source` is the text node’s own readable Figma variable, or `raw-only`.
 
 ## Asset whitelist / blacklist
 
 ### Prefer (whitelist)
 
 - Exported PNG/SVG/WebP from Figma MCP or export APIs
+- **One file per visual unit** from the outer instance / graphic frame (not stacked leaf paths)
+- Instance wrapper size and offsets from that instance (including odd sizes such as 18×22)
 - `<img>` / Next `Image` / equivalent framework image components
 - Inline SVG **only** when fills/strokes match the design without a CSS recolor hack
 - Icon font / design-system icon components when they already map via Code Connect
@@ -73,8 +88,11 @@ Write as Markdown **in the living artifact** (Spec section). One row per measura
 - `currentColor` recolor pipelines that replace the exported flat color
 - Inventing mask theming when the frame only has a light (or single) export — use a design-provided dark export or record pending
 - Recreating multi-color illustrations as a single-alpha mask
+- Stacking leaf-path fragments with absolute positioning to rebuild one icon
+- A generic 16/20/24 (or other) shell that the Figma instance does not use
+- Stretching an SVG off its natural aspect unless the design requires it
 
-**Why:** MCP often exports flat colored assets. Mask + fill reintroduces theme/`currentColor` drift and fails visual parity with the frame.
+**Why:** MCP often exports flat colored assets. Mask + fill reintroduces theme/`currentColor` drift and fails visual parity with the frame. Leaf-path dumps and generic shells drift from instance geometry.
 
 ## Large frames and quota
 
@@ -86,10 +104,11 @@ Write as Markdown **in the living artifact** (Spec section). One row per measura
 ## Hand-off checklist
 
 - [ ] Durable path in the target repo (existing Figma doc dir or `docs/figma/<frame>.md`)
-- [ ] Inventory covers visible sections, documented visual states, and `out-of-scope: behavior` / `no-variant-in-design` lines
-- [ ] Spec table present: geometry, type, color, `state`, `basis`; `mode` when theme is in scope
+- [ ] Inventory covers visible sections, documented visual states, readable annotations, and `out-of-scope: behavior` / `no-variant-in-design` lines
+- [ ] Spec table present: geometry, type, color, fill ownership, `state`, `basis`; `mode` when theme is in scope; text color token or `raw-only`
+- [ ] Assets subsection present: node, local path, format for each in-scope visible graphic
 - [ ] Every visible child section of a large frame was fetched (or unfinished sections are listed); rows were appended per section
-- [ ] Assets use whitelist patterns; no mask-recolor for design-colored glyphs
+- [ ] Assets use whitelist patterns: outer-instance one-file export; instance geometry; no mask-recolor for design-colored glyphs
 - [ ] Theme: in scope when file modes or project theme switch exist; per-mode values and per-theme assets from the design (or pending items noted)
-- [ ] QA/walkthrough conflicts recorded; Figma node remains `expected`
+- [ ] QA/walkthrough/annotation conflicts recorded; Figma node remains `expected`
 - [ ] `figma-pixel-verify` is the next step in this run (or the host verification stage); hand off the **path**
