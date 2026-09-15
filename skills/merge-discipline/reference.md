@@ -28,8 +28,8 @@
 
 - [ ] Project `pr-review-gate` preference resolved? (`AGENTS.md` → `CLAUDE.md`; unset ≡ `auto`)
 - [ ] If `ask`: asked full / light / skip? (must not auto-pick)
-- [ ] If `non-code-light` (or user chose light): surface classified per「Non-application-code surface」below?
-- [ ] If `auto` (or unset): surface classified **and** scale/risk escalation applied per「Content-matched depth ladder」below?
+- [ ] If `non-code-light` (or user chose light): surface classified per「Non-application-code surface」below? Application-code also runs the size/risk ladder?
+- [ ] If `auto` (or unset) **or** `non-code-light` on application-code: scale/risk/sensitive escalation applied per「Content-matched depth ladder」below?
 - [ ] If review **run**: strong dependency `pr-code-review` present? (else abort with per-skill `npx skills add … --skill pr-code-review --yes`)
 - [ ] If review **run**: `pr-code-review` invoked at selected `depth=full|light` on the open PR/MR tip (Standards∥Spec)?
 - [ ] If **skip** (`never` or user-explicit skip): 留痕 written?
@@ -62,7 +62,7 @@ Authoritative path classifier for Part R when `pr-review-gate: non-code-light`, 
 
 Skill-local non-Markdown under `skills/<name>/` that is documentation/assets only (e.g. `reference.md`, images) is allowlisted via `skills/**` **unless** it matches the denylist (e.g. `skills/**/scripts/**/*.js`).
 
-### Denylist (any match → **application-code** → full depth under `non-code-light`)
+### Denylist (any match → **application-code**)
 
 | Pattern | Notes |
 |---------|--------|
@@ -78,16 +78,41 @@ Skill-local non-Markdown under `skills/<name>/` that is documentation/assets onl
 | All paths allowlisted, zero denylist | non-application-code |
 | Empty diff | Do not classify; Part R eligibility / empty-diff rules in `pr-code-review` apply |
 
-## Content-matched depth ladder (auto / unset)
+## Content-matched depth ladder (auto / unset / non-code-light application-code)
 
-The 4-step ladder that decides depth when preference is `auto` (or unset). Applied in order; **first escalation hit wins**:
+Applied in order; **first escalation hit wins**. For `auto` / unset, start at step 1. For `non-code-light` + application-code, start at step 2 (surface is already application-code; skip forcing `full` at step 1). For `non-code-light` + non-application-code, do not use this ladder (`light`).
 
 | Step | Check | Tooling |
 |------|-------|---------|
-| 1. Surface | Allow/deny table above → application-code ⇒ **full**, non-application-code ⇒ continue | path classification |
+| 1. Surface | Allow/deny table above → application-code **or** non-application-code; **does not** by itself select `full` | path classification |
 | 2. Large diff | Total changed lines > 400 **or** changed files > 20 ⇒ **full** | `git diff --stat` (three-dot) |
 | 3. Breaking signal | Title/description/commit messages match `migration\|schema\|breaking\|API contract\|deprecat` (case-insensitive) ⇒ **full** | PR metadata scan |
 | 4. Post-fail re-entry | Prior Part R **fail** on this tip, re-presented after fixes ⇒ **full** | Part R history |
-| No hit | Surface = non-application-code and steps 2–4 clean ⇒ **light** | — |
+| 5. Sensitive path/keyword | Any changed **application-code** path matches a glob below, **or** title/description/commit subject matches a keyword below ⇒ **full** | path + PR metadata vs tables in this file |
+| No hit | Steps 2–5 clean ⇒ **light** (including application-code) | — |
 
-Pass gate is depth-invariant: neither axis retains ≥80 Critical/Important, at either depth (`pr-code-review` hard rule「light MUST NOT weaken the gate」). Thresholds (400 lines / 20 files) are repo-tunable constants — adjust in this file only, SKILL.md points here.
+Pass gate is depth-invariant: neither axis retains ≥80 Critical/Important, at either depth (`pr-code-review` hard rule「light MUST NOT weaken the gate」). Line/file thresholds (400 / 20) and the sensitive tables are repo-tunable constants — adjust in this file only, SKILL.md points here.
+
+## Sensitive paths and keywords
+
+Used only as an **escalation to `full`**, never as a skip. Matching is case-insensitive. Path globs apply to denylisted / application-code changed paths (not to allowlisted docs/skills markdown). Keywords scan PR title, description, and commit subjects.
+
+### Path globs (any changed application-code path)
+
+| Glob |
+|------|
+| `**/*auth*` |
+| `**/*oauth*` |
+| `**/*session*` |
+| `**/*permission*` |
+| `**/*rbac*` |
+| `**/*crypto*` |
+| `**/*jwt*` |
+| `**/*password*` |
+| `**/*secret*` |
+| `**/*payment*` |
+| `**/*billing*` |
+
+### Keywords (title / description / commit subject)
+
+`auth`, `oauth`, `session`, `permission`, `rbac`, `crypto`, `jwt`, `password`, `secret`, `payment`, `billing`, `csrf`
