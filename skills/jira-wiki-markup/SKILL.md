@@ -1,6 +1,6 @@
 ---
 name: jira-wiki-markup
-version: "1.0.0"
+version: "1.1.0"
 user-invocable: false
 description: "Compose Jira wiki-rendered fields (especially comments) in Jira Wiki markup. Use whenever writing jira_add_comment body, a wiki description, or a repair report that will be posted to Jira. Triggers — 「Jira 语法」「Jira Wiki」「写 Jira 评论」「Jira 评论格式」「wiki markup」「jira comment markup」. Do NOT use for reading issues, status transitions, GitHub/PR Markdown, or Jira Cloud ADF. Referenced by Jira comment writers via frontmatter dependencies."
 ---
@@ -29,7 +29,7 @@ Write Wiki markup, not GitHub Markdown. The Wiki renderer is a different dialect
 | New paragraph / forced break / rule | Blank line / `\\` / `----` |
 | Link | `[https://example.com]` or `[label\|https://example.com]` |
 | Attachment / user / anchor | `[^file.ext]` / `[~username]` / `{anchor:name}` then `[#name]` |
-| Bullet / numbered list | Line-start `*` / `#` (more characters = deeper); mix `*#` and `#*` |
+| Bullet / numbered list | Line-start `*` / `#` (more characters = deeper); mix `*#` and `#*`. Wiki `#` is a numbered list; GitHub Markdown `#` is heading 1 — keep list `#`, do not rewrite it as `h1.` |
 | Table | Header `\|\|H1\|\|H2\|\|` then rows `\|c1\|c2\|` |
 | Code / panel / plain | `{code:lang}…{code}` / `{panel:title=…}…{panel}` / `{noformat}…{noformat}` |
 | Escape a Wiki character | `\X` (e.g. `\{`) |
@@ -38,7 +38,7 @@ Links: put a space after a URL when the next character is not part of the URL. I
 
 ## Repair comment
 
-When a host or `jira-status-writeback` posts a post-merge repair comment, format the host field map with the canonical skeleton in [reference.md](reference.md) (headings `h3.`/`h4.`, bold labels `*Field*:`, numbered verification items). Omit a field only when the host marks it N/A.
+When a host or `jira-status-writeback` posts a post-merge repair comment, format the host field map with the canonical skeleton in [reference.md](reference.md): report title `h3.`, verification section `h4.`, bold labels `*Field*:`, each scenario a numbered item `# *{name}*` (bold name, not `_italic_`). Wiki `#` is that numbered list — leave it as `#`, not `h1.`/`h2.`. Omit a field only when the host marks it N/A.
 
 ## Integration
 

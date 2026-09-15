@@ -96,6 +96,8 @@ Lists must start in column 0. More `*` or `#` characters nest deeper. Mix `*#` a
 * bullet
 ```
 
+Wiki `#` at column 0 starts a **numbered list**. GitHub Markdown `#` starts Heading 1. Keep list items as `# *name*`; rewriting them as `h1.` produces the largest heading.
+
 ## Images and embedded media
 
 | Markup | Effect |
@@ -201,4 +203,4 @@ Steps: {steps}
 Expected: {expected}
 ```
 
-Add further numbered `#` items for additional scenarios. If there is no PR URL, write the URL as plain text or omit the line.
+Add further numbered `#` items for additional scenarios. Those `#` lines are list items, not headings — keep `# *{scenario_name}*`; `h1.`/`h2.` are not used for scenario titles. If there is no PR URL, write the URL as plain text or omit the line.

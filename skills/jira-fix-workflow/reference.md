@@ -349,29 +349,19 @@ Starting code changes
 
 ## Stage 9: Submission Complete
 
-**Jira writeback comment template** (stage 10 step 2.3, rendered with `jira-status-writeback`'s field map; Wiki markup per `jira-wiki-markup`, canonical skeleton in that skill's `reference.md`):
+**Jira writeback comment** (stage 10 step 2.3): pass the host field map to `jira-status-writeback`; Wiki shape comes from `jira-wiki-markup` canonical skeleton (`reference.md` there). Do not copy notation tables into this host.
+
+Repair-comment shape reminder (Wiki `#` is a numbered list, not Markdown heading 1 — keep `# *{scenario name}*`, not `h1.`):
+
 ```
 h3. AI Auto-Fix Report
-
-* *Fix Branch*: fix/jira-fix-{JIRA-ID}
-* *Commit*: {commit_hash}
-* *PR/MR URL*: [{pr_mr_url}|{pr_mr_url}]
-* *Root Cause*: {root_cause_summary}
-* *Fix Solution*: {solution_summary}
-* *Files Changed*: {file_list}
-* *Analysis Report*: reports/{JIRA-ID}-analysis.md
-
-Code has been merged to the target branch; please proceed with QA verification.
-```
-
-Manual mode additionally includes a "Verification Scenarios" section:
-```
 h4. Verification Scenarios
-
 # *{scenario name}*
-Steps: {specific steps, 1-3 steps}
-Expected: {user-observable result}
+Steps: …
+Expected: …
 ```
+
+Manual mode still supplies verification scenarios in the field map (same skeleton).
 
 **Completion output [🤖 Auto]**:
 ```

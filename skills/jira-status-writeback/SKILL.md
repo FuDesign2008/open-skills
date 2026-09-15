@@ -1,6 +1,6 @@
 ---
 name: jira-status-writeback
-version: "1.1.0"
+version: "1.2.0"
 user-invocable: false
 description: "Post-merge Jira writeback SOP: transition only to「已修复」, then independent jira_add_comment with body. Triggers — 「Jira 状态回写」「回写已修复」「合并后写 Jira」「jira writeback」「jira status writeback」. Do NOT use for reading issues, creating issues, or pre-merge comments. Loaded by Jira fix hosts after merge via frontmatter dependencies."
 dependencies:
@@ -27,6 +27,7 @@ Only after the PR/MR has **successfully merged** into the target branch. Never a
 
 2. **Comment (independent call)**  
    - Load `jira-wiki-markup` and compose `body` from the host field map using that skill's canonical repair-comment skeleton (Wiki markup).  
+   - If any line of that repair `body` starts with `h1.` or `h2.`, rewrite those titles as numbered `# *name*` items so the comment stays at `h3.`/`h4.` plus lists.  
    - Call `jira_add_comment(issue_key=..., body=...)`.  
    - The comment text parameter name is **`body`** (not `comment`).  
    - Never rely on `jira_transition_issue`'s `comment` parameter for the repair record (it may be silently dropped).
