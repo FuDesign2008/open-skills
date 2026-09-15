@@ -23,7 +23,7 @@ After archive and branch closeout (and Jira writeback when merge ran), `opsx-jir
 
 ### Requirement: OPSX Jira fix workflow SHALL strong-depend on figma-pixel implement and verify
 
-`opsx-jira-fix-workflow` MUST list both `figma-pixel-implement` and `figma-pixel-verify` in frontmatter `dependencies`. At startup prerequisite check, a missing either skill MUST abort (no silent degrade). Execute/verify stages MUST conditionally load implement and verify per the same Figma-scope rules as `jira-fix-workflow` / `figma-pixel-fidelity` host hooks. When this run implemented from Figma, verification MUST treat a missing measured `figma-pixel-verify` report as a failed verification stage. Host prose MUST stay thin and MUST NOT duplicate Figma skill methodology.
+`opsx-jira-fix-workflow` MUST list both `figma-pixel-implement` and `figma-pixel-verify` in frontmatter `dependencies`. At startup prerequisite check, a missing either skill MUST abort (no silent degrade). Execute/verify stages MUST conditionally load implement and verify per the same Figma-scope rules as `jira-fix-workflow` / `figma-pixel-fidelity` host hooks, including the durable living-artifact path. When this run implemented from Figma, verification MUST treat a missing Verify section (or Spec source sibling) as a failed verification stage. A spec-gap FAIL MUST NOT pass verification—re-enter implement to complete the table. Host prose MUST stay thin and MUST NOT duplicate Figma skill methodology.
 
 #### Scenario: Missing figma-pixel-implement aborts opsx-jira-fix startup
 
@@ -37,8 +37,13 @@ After archive and branch closeout (and Jira writeback when merge ran), `opsx-jir
 
 #### Scenario: Missing Figma verify report fails OPSX Jira verification
 
-- **WHEN** this run implemented UI from Figma and verification has no `figma-pixel-verify` report
+- **WHEN** this run implemented UI from Figma and verification has no Verify section (or Spec source sibling)
 - **THEN** the host MUST NOT mark verification as passed
+
+#### Scenario: Spec-gap FAIL re-enters implement
+
+- **WHEN** verify FAILs because Spec is missing critical rows after this-run implement
+- **THEN** the host MUST NOT pass verification and MUST re-enter `figma-pixel-implement`
 
 ### Requirement: 验证环节 SHALL delegate verification execution to runtime-verification-discipline
 

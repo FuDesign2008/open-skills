@@ -42,11 +42,13 @@ JSON.stringify({
 
 ## Report template
 
+Write into the living artifact **Verify** section (same file as Inventory/Spec), or a sibling file if the project already uses a separate report. `expected` in this table is copied for comparison — **do not** edit the Spec section’s `expected`. Spec-gap (critical row missing from Spec) ⇒ Overall FAIL and return to `figma-pixel-implement`. Code DRIFT ⇒ fix UI, then update actual/verdict here.
+
 ```markdown
-## Figma pixel verify report
+## Verify
 
 - Target: <route or story>
-- Spec source: <path or note>
+- Spec source: <path to this file or sibling>
 - Inventory coverage: <measured>/<critical visual rows> (<unmeasured list>)
 - Theme scope: <single default | light+dark | …>
 - Iterations: <n>≤3
@@ -58,7 +60,7 @@ JSON.stringify({
 
 For multi-theme scope: repeat the table per theme (or add a `theme` column); each row under each theme gets its own verdict.
 
-Overall **PASS** (or **PASS-with-accepted-residuals**) requires every critical visual row measured in the correct state/mode and within tolerance, except rows explicitly `accepted-residual` (owner + reason). Unmeasured critical rows, `MISSING-style`, or unaccepted `DRIFT` ⇒ **FAIL**.
+Overall **PASS** (or **PASS-with-accepted-residuals**) requires every critical visual row measured in the correct state/mode and within tolerance, except rows explicitly `accepted-residual` (owner + reason). Unmeasured critical rows, `MISSING-style`, unaccepted `DRIFT`, incomplete Spec, or a missing living artifact after this-run implement ⇒ **FAIL**.
 
 `out-of-scope: behavior` inventory lines are listed under Behavior (not pixel PASS).
 
@@ -69,7 +71,7 @@ Overall **PASS** (or **PASS-with-accepted-residuals**) requires every critical v
 - <row>: owner / reason (e.g. toolbar icon 18 vs Figma 16, design freeze)
 
 ### Root causes (if FAIL)
-- e.g. CSS mask recolor; wrong variant; missing token; sampled subset
+- e.g. CSS mask recolor; wrong variant; missing token; sampled subset; spec-gap (re-enter implement)
 ```
 
 ## Degradation without JS-eval

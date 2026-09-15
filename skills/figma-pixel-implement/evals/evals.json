@@ -29,10 +29,11 @@
       "id": 3,
       "name": "no-pixel-claim-handoff",
       "prompt": "你刚按稿把一个 Card 组件写进了 src/components/PromoCard.tsx，并写好了规格表。用户问：「是不是已经像素级对齐了？」请按 figma-pixel-implement 回答（dry-run）。",
-      "expected_output": "Does not claim verified pixel alignment; points to inventory + design-spec table; requires figma-pixel-verify for measured pass/fail (not optional recommend-only).",
+      "expected_output": "Does not claim verified pixel alignment; points to a durable inventory+spec file path in the target repo; requires figma-pixel-verify for measured pass/fail (not optional recommend-only).",
       "expectations": [
         "Does not assert that pixel alignment is verified complete",
         "Mentions the design-spec table as the measurable contract",
+        "Points to a durable file path in the target repo, not only a session note",
         "Requires or states that figma-pixel-verify must run for pass/fail (not merely optional advice)"
       ]
     },
@@ -78,6 +79,18 @@
         "Keeps Figma font-weight 500 as expected rather than changing it to 400 to match the walkthrough",
         "Records measurement basis relative to the header / 顶部模块 (not only the title node's own padding)",
         "Notes the walkthrough conflict as a residual or comment"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "durable-artifact-incremental",
+      "prompt": "用户「按稿实现」整页。metadata 有 Welcome 与 Composer 两块可见区。目标仓已有 docs/figma/。你刚写完 Welcome 的代码。请按 figma-pixel-implement 说明规格表写在哪、Composer 还没做时能否宣称 implement 完成（dry-run）。",
+      "expected_output": "Write inventory+spec into a durable file under the project's Figma doc dir (or docs/figma/<frame>.md); append per visible section; no path / unfinished section means implement incomplete; session-only table is not done.",
+      "expectations": [
+        "Chooses a durable path in the target repo (existing Figma doc directory or docs/figma/<frame>.md)",
+        "Appends inventory/spec rows as each visible section is implemented, rather than only a chat table at the end",
+        "Does not mark implement complete with only a session note and no file path",
+        "Treats an unfetched or unimplemented visible section as incomplete"
       ]
     }
   ]

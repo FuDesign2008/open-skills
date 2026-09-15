@@ -1,29 +1,49 @@
 # figma-pixel-implement — reference
 
-## Screen × state inventory
+## Living artifact path
 
-Write before the spec table. One line per visual state (and out-of-scope behaviors).
+Write the contract in the **target repo**, not only in the session.
+
+1. If the project already has a Figma/design-spec directory, reuse it.
+2. Otherwise use `docs/figma/<safe-frame-name>.md` (`<safe-frame-name>` from the frame name or node id, filesystem-safe).
+3. Default **one file, three sections**: Inventory, Spec, Verify. `figma-pixel-implement` owns Inventory + Spec; `figma-pixel-verify` owns Verify. If the project already keeps a separate verify report, that sibling is allowed—record it as `Spec source` / report path; do not duplicate methodology in hosts.
+4. Append rows as each visible section is implemented. Implement is incomplete without this path.
+
+```markdown
+# Figma living spec — <frame name>
+
+- Node: <fileKey> / <nodeId>
+- Theme scope: <single | light+dark | …>
+
+## Inventory
 
 | screen / section | state | source | notes |
 |------------------|-------|--------|--------|
 | Welcome / title | default | metadata `760:32908` | |
 | Chip | hover | component variant Hover | |
-| Chip | default | variant Default | |
 | Auto-follow scroll | `out-of-scope: behavior` | prototype | not a computed-style row |
 | Toolbar icon hover | `no-variant-in-design` | no Hover variant | do not invent |
 
-## Design-spec table template
-
-Write as Markdown (session note or artifact). One row per measurable property.
+## Spec
 
 | node / role | state | mode | property | expected | unit | basis | token / class | source |
 |-------------|-------|------|----------|----------|------|-------|---------------|--------|
 | Header / title | default | light | font-size | 24 | px | self | `text-2xl` / `--font-size-24` | Figma text style / variable |
-| Header / title | default | light | font-weight | 600 | — | self | `font-semibold` | typography |
 | Welcome / title | default | light | gap-from-header | 82 | px | bottom of 顶部模块 → top of title | (layout) | metadata y minus header height |
-| Card | default | light | width | 360 | px | self | (one-off — flagged) | layout |
-| Chip | hover | light | background | #F4F6F7 | hex | self | `--yn-fill-2` | variant Hover |
-| Icon / logo | default | light | asset | `assets/logo.svg` | path | self | `<img>` | MCP export |
+| Chip | hover | light | background | #F4F6F7 | hex | self | `--color-fill-2` | variant Hover |
+
+## Verify
+
+_Owned by `figma-pixel-verify`. Leave empty (or omit rows) until measurement._
+```
+
+## Screen × state inventory
+
+Write before the spec table. One line per visual state (and out-of-scope behaviors). Source of the rows is the Inventory section above.
+
+## Design-spec table template
+
+Write as Markdown **in the living artifact** (Spec section). One row per measurable property. The example table is in the living-artifact template above.
 
 **Rules for the table**
 
@@ -65,10 +85,11 @@ Write as Markdown (session note or artifact). One row per measurable property.
 
 ## Hand-off checklist
 
+- [ ] Durable path in the target repo (existing Figma doc dir or `docs/figma/<frame>.md`)
 - [ ] Inventory covers visible sections, documented visual states, and `out-of-scope: behavior` / `no-variant-in-design` lines
 - [ ] Spec table present: geometry, type, color, `state`, `basis`; `mode` when theme is in scope
-- [ ] Every visible child section of a large frame was fetched (or unfinished sections are listed)
+- [ ] Every visible child section of a large frame was fetched (or unfinished sections are listed); rows were appended per section
 - [ ] Assets use whitelist patterns; no mask-recolor for design-colored glyphs
 - [ ] Theme: in scope when file modes or project theme switch exist; per-mode values and per-theme assets from the design (or pending items noted)
 - [ ] QA/walkthrough conflicts recorded; Figma node remains `expected`
-- [ ] `figma-pixel-verify` is the next step in this run (or the host verification stage)
+- [ ] `figma-pixel-verify` is the next step in this run (or the host verification stage); hand off the **path**

@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.22.1"
+version: "1.22.2"
 user-invocable: true
 description: "Eight-stage PDCA problem-solving workflow that persists analysis, proposal, design review, plan, execution, and verification into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context. Use for feature work, bug fixes, refactors, and complex engineering tasks that need long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick one-off edit with no traceability need — use solve-workflow instead. Triggers：「opsx解决」「OpenSpec解决」「规范化解决」「创建OpenSpec变更」「创建opsx变更」「用OpenSpec分析」「用OpenSpec修复」「opsx自动解决」「OpenSpec自动解决」「opsx-solve」「opsx-solve-workflow」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / opsx solve, OpenSpec solve workflow, create an OpenSpec change, ai-proxy mode, switch to ai-proxy."
 dependencies:
@@ -265,7 +265,7 @@ In manual mode, output the plan and pause; wait for user confirmation before ent
 
 Before production edits, follow `design-approval-gate` (manual: user pass; auto/lean: named escape + 留痕).
 
-**Figma pixel fidelity:** When the task includes a Figma URL/node or pixel-restore / design-faithful UI intent, load `figma-pixel-implement` and follow it (export-faithful assets + design-spec table). Do not restate its methodology here.
+**Figma pixel fidelity:** When the task includes a Figma URL/node or pixel-restore / design-faithful UI intent, load `figma-pixel-implement` and follow it. Implement is incomplete without a durable inventory+spec path in the target repo. Do not restate its methodology here.
 
 Read `tasks.md` and implement in order:
 
@@ -296,7 +296,7 @@ Verification must cover three layers:
 2. **Engineering verification**: run the project's tests, type check, lint, or build (under the aligned version).
 3. **Behavior cross-check**: confirm the implementation covers every delta-spec requirement and scenario, one by one.
 4. **Debug-verify loop**: if stage 2 used a debug skill to locate the root cause, verify the fix using that **same** skill per `analysis-core` §4 (not tests alone).
-5. **Figma pixel verify**: when this run implemented from Figma, load `figma-pixel-verify` and follow it; a missing measured report blocks this verification stage from passing. Also load it when the user/plan requires alignment checking without a same-run implement. Do not restate its methodology.
+5. **Figma pixel verify**: when this run implemented from Figma, load `figma-pixel-verify` and follow it; a missing measured report (the living artifact’s Verify section, or the Spec source sibling) blocks this verification stage from passing. A spec-gap FAIL does not pass verification—re-enter `figma-pixel-implement` to complete the table. Also load verify when the user/plan requires alignment checking without a same-run implement. Do not restate its methodology.
 
 Verification conclusions must be based on commands you ran and personally read the output of this round — never report "a scenario was designed" as "passed".
 
