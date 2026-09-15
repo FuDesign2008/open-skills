@@ -13,14 +13,23 @@
 
 Hosts or users may tighten; record overrides in the report.
 
+## Quality channel install gate
+
+Use this gate during verify preflight. Do not paste a third-party browser API here; load that skill’s own install reference.
+
+1. If the host is macOS **and** the `ego-browser` skill (or its install script) is available: if `command -v ego-browser` fails, follow that skill’s install reference, wait for user GUI onboarding when required, then confirm the CLI before measuring.
+2. After the CLI is ready, load the skill and use it for open / pointer state / screenshot / evaluate.
+3. If the host is not macOS, the skill/install path is absent, or install is blocked: continue with another JS-eval channel and record the channel used. Verify still runs.
+
 ## Measurement guidance
 
 1. Resolve a stable selector per `node / role` (test id > role+name > CSS path).
-2. Switch the running UI to the row’s `state` and `mode` before reading.
+2. Switch the running UI to the row’s `state` and `mode` before reading. On macOS with the `ego-browser` skill/install path, finish that install/onboard gate first, then hover/click/theme-switch through that channel and evaluate. When that install is impossible, use another JS-eval channel. Default-state readings do not satisfy a hover row.
 3. Prefer `getComputedStyle` (or equivalent) for colors, fonts, radii, padding.
 4. Prefer `getBoundingClientRect` (or layout APIs) for width/height; compare in CSS pixels. For `basis` rows, measure the named sibling relationship (e.g. header bottom vs title top), not only the node’s own padding.
 5. Normalize colors (`rgb(26, 26, 26)` → `#1A1A1A`) before compare.
 6. Re-run the same script/path after each fix iteration — no “looks fine” shortcuts.
+7. When the model can inspect images, attach UI vs Figma screenshots as supporting notes for composition. They do not replace steps 2–5 when JS-eval exists.
 
 ### Example measurement intent (illustrative)
 
@@ -60,7 +69,7 @@ Write into the living artifact **Verify** section (same file as Inventory/Spec),
 
 For multi-theme scope: repeat the table per theme (or add a `theme` column); each row under each theme gets its own verdict.
 
-Overall **PASS** (or **PASS-with-accepted-residuals**) requires every critical visual row measured in the correct state/mode and within tolerance, except rows explicitly `accepted-residual` (owner + reason). Unmeasured critical rows, `MISSING-style`, unaccepted `DRIFT`, incomplete Spec, or a missing living artifact after this-run implement ⇒ **FAIL**.
+Overall **PASS** (or **PASS-with-accepted-residuals**) requires every critical visual row measured in the correct state/mode and within tolerance, except rows explicitly `accepted-residual` (owner + reason). Unmeasured critical rows, `MISSING-style`, unaccepted `DRIFT`, incomplete Spec, a missing living artifact after this-run implement, invented fill vs Spec `none`, fragment-cut vs a single Assets export, generic-shell size drift, invented text-color alias, or a remote design URL for a visible graphic ⇒ **FAIL**.
 
 `out-of-scope: behavior` inventory lines are listed under Behavior (not pixel PASS).
 
@@ -71,7 +80,7 @@ Overall **PASS** (or **PASS-with-accepted-residuals**) requires every critical v
 - <row>: owner / reason (e.g. toolbar icon 18 vs Figma 16, design freeze)
 
 ### Root causes (if FAIL)
-- e.g. CSS mask recolor; wrong variant; missing token; sampled subset; spec-gap (re-enter implement)
+- e.g. CSS mask recolor; invented fill; fragment-cut icon; generic shell; invented text alias; remote asset URL; wrong variant; missing token; sampled subset; spec-gap (re-enter implement)
 ```
 
 ## Degradation without JS-eval

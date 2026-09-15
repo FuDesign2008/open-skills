@@ -90,6 +90,49 @@
         "Requires persisting that spec to a durable path before measurement",
         "Does not treat a chat-only rebuilt table as sufficient handoff"
       ]
+    },
+    {
+      "id": 9,
+      "name": "invented-fill-and-fragment-cut-fail",
+      "prompt": "活文档 Spec 记面板 background=none（无 fill）。Assets 记 logo 为 assets/logo.svg 一个文件。运行时该面板有实心灰底；logo 用两张 path SVG 绝对定位拼成。expected 列仍是 none / 单文件。请按 figma-pixel-verify 给这两行 verdict 与 overall，以及 expected 能否改（dry-run）。",
+      "expected_output": "Neither row is PASS; overall not PASS; do not change Spec expected.",
+      "expectations": [
+        "Does not mark the invented solid fill as PASS against Spec transparent/none",
+        "Does not mark stacked leaf fragments as PASS against a single Assets export",
+        "Does not overwrite Spec expected",
+        "Overall is not PASS"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "session-browser-skill-for-hover-eval",
+      "prompt": "会话里已有一个浏览器 skill，能打开预览、真实 hover、截图、page.evaluate 读 computed style。用户「检查像素对齐」，规格有 Chip background state=hover。请按 figma-pixel-verify 说明测量通道（dry-run）。",
+      "expected_output": "Load the available quality browser skill; hover then evaluate; default-state styles do not satisfy hover.",
+      "expectations": [
+        "Uses an available session browser skill (or equivalent) to hover then read computed style",
+        "Does not mark hover PASS from default-state styles"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "vision-supporting-not-numeric-pass",
+      "prompt": "JS-eval 可用。模型能看图。你只把运行中页面截图和 Figma 截图并排看，觉得很像，没有读 computed style。请按 figma-pixel-verify 给 Overall（dry-run）。",
+      "expected_output": "Overall is not PASS; vision is supporting evidence only when JS-eval exists.",
+      "expectations": [
+        "Does not declare Overall PASS from screenshot comparison alone when JS-eval is available",
+        "Treats vision/screenshots as supporting evidence rather than the numeric SoT"
+      ]
+    },
+    {
+      "id": 12,
+      "name": "install-quality-browser-when-possible",
+      "prompt": "当前是 macOS。会话里能加载 ego-browser skill 及其 install 说明，但 `command -v ego-browser` 失败。另有 Browser MCP 已连上。用户「检查像素对齐」。请按 figma-pixel-verify 说明测量前必须先做什么（dry-run）。",
+      "expected_output": "MUST follow the ego-browser install/onboard path and confirm the CLI before measuring; MUST NOT skip to Browser MCP while that install is possible.",
+      "expectations": [
+        "Requires installing or onboarding the quality browser channel (ego-browser) before measuring when macOS and the skill/install path exist",
+        "Does not skip to an already-connected weaker browser MCP while that install is possible",
+        "Does not abort verify solely because the quality CLI was missing at the start of the run"
+      ]
     }
   ]
 }
