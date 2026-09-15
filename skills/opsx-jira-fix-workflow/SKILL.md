@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.22.0"
+version: "1.22.1"
 user-invocable: true
 description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / opsx jira fix, OpenSpec Jira fix workflow, ai-proxy mode, switch to ai-proxy."
 dependencies:
@@ -345,7 +345,7 @@ Must cover:
 4. Jira cross-check: are the repro steps and expected/actual results closed out
 5. Side-effect check: are related modules and platforms affected; the verification report must disclose `Node (declared vX) ✅/⚠️ not aligned`
 6. Debug-verify loop: if stage 2 used a debug skill to locate the root cause, verify the fix using that **same** skill per `analysis-core` §4 (not tests alone)
-7. Figma pixel verify: when this run implemented from Figma or alignment checking is required, load `figma-pixel-verify` and follow it for measured pass/fail
+7. Figma pixel verify: when this run implemented from Figma, load `figma-pixel-verify` and follow it; a missing measured report blocks this verification stage from passing. Also load it when alignment checking is required without a same-run implement.
 
 **Verification execution follows `runtime-verification-discipline`** (strong dependency): the AI executes verification itself in an environment, and a step is listed as a manual-verification item only at a classified true hard boundary, with the reason stated.
 

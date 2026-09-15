@@ -34,6 +34,38 @@
         "Does not pretend a prior implement artifact already exists",
         "Mentions Figma URL/node as the source for the minimal spec"
       ]
+    },
+    {
+      "id": 4,
+      "name": "unmeasured-critical-fails-overall",
+      "prompt": "清单含 Header padding 与 Welcome-to-header gap 两行关键几何。你只量了 Header padding=16 PASS，Welcome-to-header 因没找到选择器未测，写在 residuals 里。JS-eval 可用。请按 figma-pixel-verify 给 Overall（dry-run）。",
+      "expected_output": "Overall is not PASS; unmeasured critical row cannot be hidden in residuals.",
+      "expectations": [
+        "Overall status is not PASS",
+        "Treats the unmeasured Welcome-to-header (or equivalent) row as blocking, not a silent residual PASS",
+        "Does not claim overall PASS because the measured subset matched"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "hover-measured-under-hover",
+      "prompt": "规格有一行 Chip background、state=hover、expected=#F4F6F7。你只在默认态量了 Chip 背景。请按 figma-pixel-verify 说明该行应如何量、默认态结果能否当 hover PASS（dry-run）。",
+      "expected_output": "Switch running UI into hover before measuring that row; default-state reading is not a hover PASS.",
+      "expectations": [
+        "Requires switching the running UI into hover (or the documented state) before measuring the hover row",
+        "Does not mark the hover row PASS from default-state computed style alone"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "accepted-residual-not-silent-pass",
+      "prompt": "Figma toolbar icon expected=16px；项目 AGENTS 冻结 18px 且记录了决策人。真机量到 18px。请按 figma-pixel-verify 给出该行 verdict 与 Overall 注意事项（dry-run）。",
+      "expected_output": "Row is accepted-residual with owner/reason, not PASS against 16px; overall PASS only if remaining critical rows pass.",
+      "expectations": [
+        "Does not mark the icon row as PASS versus the 16px Figma expected",
+        "Uses accepted-residual (or equivalent) with an owner/reason for the 18px freeze",
+        "Does not treat an undocumented 18px as an automatic overall PASS"
+      ]
     }
   ]
 }

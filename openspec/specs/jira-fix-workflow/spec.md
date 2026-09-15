@@ -23,7 +23,7 @@ After stage 10 merge path completes (merge + `jira-status-writeback`, or keep/co
 
 ### Requirement: Jira fix workflow SHALL strong-depend on figma-pixel implement and verify
 
-`jira-fix-workflow` MUST list both `figma-pixel-implement` and `figma-pixel-verify` in frontmatter `dependencies`. At startup prerequisite check, a missing either skill MUST abort the workflow (no silent degrade). During execute/verify stages, the host MUST load implement when Figma URL/node or pixel-restore intent is in scope, and MUST load verify when this run implemented from Figma or alignment checking is required.
+`jira-fix-workflow` MUST list both `figma-pixel-implement` and `figma-pixel-verify` in frontmatter `dependencies`. At startup prerequisite check, a missing either skill MUST abort the workflow (no silent degrade). During execute/verify stages, the host MUST load implement when Figma URL/node or pixel-restore intent is in scope, and MUST load verify when this run implemented from Figma or alignment checking is required. When this run implemented from Figma, the verification stage MUST treat a missing measured `figma-pixel-verify` report as a failed verification stage. Host prose MUST stay thin and MUST NOT duplicate Figma skill methodology.
 
 #### Scenario: Missing figma-pixel-verify aborts jira-fix startup
 
@@ -34,6 +34,11 @@ After stage 10 merge path completes (merge + `jira-status-writeback`, or keep/co
 
 - **WHEN** stage execute is applying a UI fix and the issue or plan references a Figma node
 - **THEN** the host loads `figma-pixel-implement` rather than inventing CSS without the fidelity workflow
+
+#### Scenario: Missing Figma verify report fails Jira verification
+
+- **WHEN** this run implemented UI from Figma and verification has no `figma-pixel-verify` report
+- **THEN** the host MUST NOT mark verification as passed
 
 ### Requirement: Stage 8 SHALL delegate verification execution to runtime-verification-discipline
 
