@@ -1,6 +1,6 @@
 ---
 name: merge-discipline
-version: "1.7.0"
+version: "1.8.0"
 user-invocable: true
 description: "Hard gate before merging into a protected branch: run Parts A→B→C→R→D (OpenSpec archive association, rebase/conflict pre-check, coverage preference, pr-code-review with content-matched depth via pr-review-gate (unset ≡ auto), squash decision from commit quality + tip-pin merge). Do NOT merge while an associated OpenSpec change is still active; do NOT skip on a direct \"merge MR\" command; do NOT auto-select squash when two viable strategies exist — ask with a commit-quality recommendation; a single-commit or single-permitted-strategy MR concludes without prompting; after merging, sync the local workspace onto the resolved target branch. Triggers — 「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」「合并前 code-review」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, pr code review before merge."
 dependencies:
@@ -224,10 +224,10 @@ Scan `AGENTS.md` then `CLAUDE.md` (first match wins) for:
 |---|---|
 | *(unset)* | Treat as `auto` (content-matched depth — surface classification + scale/risk escalation) |
 | `always` | Run `pr-code-review` at `depth=full` |
-| `auto` | Content-matched depth: classify surface (§2) + scale/risk escalation (§2.5) — non-application-code **and** no escalation hit → `light`; application-code **or** any escalation hit → `full` |
+| `auto` | Content-matched depth: classify surface (§2) + scale/risk escalation (§2.5) — no escalation hit → `light`; any escalation hit → `full` (application-code included) |
 | `never` | Skip `pr-code-review`; write project-preference 留痕; proceed to Part D |
 | `ask` | Ask the user: full / light / skip for this merge; MUST NOT auto-pick; skip needs user-explicit skip 留痕 |
-| `non-code-light` | Classify the PR surface (§2); non-application-code → `depth=light`; application-code → `depth=full` |
+| `non-code-light` | Classify the PR surface (§2); non-application-code → `depth=light`; application-code → same scale/risk ladder as `auto` |
 
 ### 2. Classify PR surface (when needed)
 
@@ -236,17 +236,18 @@ When preference is `non-code-light`, `auto`, or unset (or the user chose light u
 - **All paths allowlisted and none denylisted** → non-application-code
 - **Any denylisted path** (or mixed) → application-code
 
-### 2.5 Scale/risk escalation (auto only)
+### 2.5 Scale/risk escalation
 
-When preference is `auto` (or unset), apply **after** surface classification. Any single hit forces `depth=full` regardless of surface:
+Apply **after** surface classification when preference is `auto` (or unset), or when preference is `non-code-light` **and** the surface is application-code. (`non-code-light` + non-application-code stays `light` without this table.) Any single hit forces `depth=full`.
 
 | Signal | Source | Rule |
 |---|---|---|
 | Large diff | three-dot diff stats | Total changed lines > 400 **or** changed files > 20 → full |
 | Breaking-change signal | PR title / description / commit messages, case-insensitive | Matches `migration`, `schema`, `breaking`, `API contract`, `deprecat` → full |
 | Post-fail re-entry | Part R history on this tip | A prior Part R **fail** on the same tip, re-presented after fixes → full |
+| Sensitive path/keyword | changed paths + title / description / commits vs [reference.md](reference.md)「Sensitive paths and keywords」 | Any glob or keyword match → full |
 
-No escalation hit + non-application-code → `light`. Application-code always → `full` (escalation is irrelevant). Thresholds are repo-tunable constants (see reference.md「Content-matched depth ladder」).
+No escalation hit → `light` (including application-code). Thresholds and the sensitive table are repo-tunable constants (see reference.md「Content-matched depth ladder」).
 
 ### 3. Run or skip
 
@@ -267,7 +268,7 @@ No escalation hit + non-application-code → `light`. Application-code always �
 |------|----------|
 | User explicit skip | `【PR code-review 门控跳过】用户显式跳过 Part R（pr-code-review）。时间：<ISO>。决策人：用户。PR：<url or id>。` |
 | Project preference never | `【PR code-review 门控跳过】工程偏好 pr-review-gate: never。时间：<ISO>。决策人：项目配置。` |
-| Light path used | Optional note in the review comment: `pr-review-gate: <non-code-light\|auto>; surface=<non-application-code\|application-code>; scale=<ok\|escalated>` (scale recorded for `auto` only); `depth=<light\|full>` |
+| Light path used | Optional note in the review comment: `pr-review-gate: <non-code-light\|auto>; surface=<non-application-code\|application-code>; scale=<ok\|escalated>; sensitive=<ok\|hit>`; `depth=<light\|full>` |
 
 ### Red flags
 
@@ -275,7 +276,7 @@ No escalation hit + non-application-code → `light`. Application-code always �
 - Treating unset `pr-review-gate` as a blanket depth without classification — unset ≡ `auto` (content-matched: surface + scale/risk escalation); blanket `full`/`light`/`skip` all forbidden
 - Calling Claude Code `/code-review` plugin as a substitute without loading `pr-code-review`
 - Collapsing Standards and Spec into one ranked list and treating “overall look fine” as Part R pass
-- Using light depth on a mixed/application-code surface under `non-code-light`
+- Treating application-code as always-`full` under `auto` or `non-code-light` (full requires an escalation hit, or preference `always`)
 
 ---
 

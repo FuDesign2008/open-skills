@@ -69,13 +69,48 @@
     },
     {
       "id": 6,
-      "name": "non-code-light-mixed-full",
-      "prompt": "AGENTS.md 声明 pr-review-gate: non-code-light。PR 同时改 skills/bar/SKILL.md 与 scripts/foo.mjs。Parts A–C 已通过。用户说「合并」。说明 Part R depth（dry-run）。",
-      "expected_output": "表面含 denylist（scripts/**）→ application-code → depth=full 跑 pr-code-review",
+      "name": "non-code-light-small-app-light",
+      "prompt": "AGENTS.md 声明 pr-review-gate: non-code-light。PR 同时改 skills/bar/SKILL.md 与 scripts/foo.mjs（约 12 行，无 auth/crypto/payment 等敏感路径或标题）。Parts A–C 已通过。用户说「合并」。说明 Part R depth（dry-run）。",
+      "expected_output": "表面含 denylist（scripts/**）→ application-code → 规模/风险梯子无升档 → depth=light 跑 pr-code-review（仍双轴 ≥80，不跳过 Part R）",
       "expectations": [
         "识别 scripts/** 为 denylist",
         "判定 application-code 表面",
+        "无规模/风险/敏感升档时以 depth=light 调用 pr-code-review",
+        "不因 application-code 表面而一律 full",
+        "不跳过 Part R"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "auto-large-app-full",
+      "prompt": "AGENTS.md 未声明 pr-review-gate。PR 只改 src/ui/widget.ts，three-dot 统计 520 行 / 3 文件，标题为 Fix widget layout。Parts A–C 已通过。用户说「合并」。说明 Part R depth（dry-run）。",
+      "expected_output": "unset ≡ auto → application-code → 行数超过 reference 阈值 → depth=full",
+      "expectations": [
+        "unset 视为 auto",
+        "判定 application-code",
+        "因 changed lines 超阈值以 depth=full 调用 pr-code-review"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "sensitive-path-small-full",
+      "prompt": "AGENTS.md 声明 pr-review-gate: non-code-light。PR 只改 src/auth/login.ts（8 行）。Parts A–C 已通过。用户说「合并」。说明 Part R depth（dry-run）。",
+      "expected_output": "application-code 且路径命中敏感表 *auth* → 即使行数很小也 depth=full",
+      "expectations": [
+        "判定 application-code",
+        "命中敏感路径表",
         "以 depth=full 调用 pr-code-review"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "always-tiny-app-full",
+      "prompt": "AGENTS.md 声明 pr-review-gate: always。PR 只改 scripts/foo.mjs 共 5 行。Parts A–C 已通过。用户说「合并」。说明 Part R depth（dry-run）。",
+      "expected_output": "always → 一律 depth=full，不因 diff 小而 light",
+      "expectations": [
+        "读取 pr-review-gate: always",
+        "以 depth=full 调用 pr-code-review",
+        "不走规模/风险降档"
       ]
     }
   ]
