@@ -28,11 +28,67 @@
       "id": 3,
       "name": "standalone-needs-spec",
       "prompt": "用户第一次开口：「对照 Figma 验收 https://www.figma.com/design/AbCdEfGhIjKlMnOp/Demo?node-id=12-34 ，预览在 /promo」。本会话没有先前的 implement 规格表产物。请按 figma-pixel-verify 说明你开始测量前必须先做什么（dry-run）。",
-      "expected_output": "Extract or rebuild a minimal design-spec table from Figma before claiming measured verify.",
+      "expected_output": "Persist a minimal inventory+spec to the target-repo living-artifact path first, then measure; do not keep the rebuilt spec only in chat.",
       "expectations": [
         "Requires extracting or rebuilding a minimal design-spec table before measuring",
+        "Persists that table to a durable target-repo path before claiming verify",
         "Does not pretend a prior implement artifact already exists",
         "Mentions Figma URL/node as the source for the minimal spec"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "unmeasured-critical-fails-overall",
+      "prompt": "清单含 Header padding 与 Welcome-to-header gap 两行关键几何。你只量了 Header padding=16 PASS，Welcome-to-header 因没找到选择器未测，写在 residuals 里。JS-eval 可用。请按 figma-pixel-verify 给 Overall（dry-run）。",
+      "expected_output": "Overall is not PASS; unmeasured critical row cannot be hidden in residuals.",
+      "expectations": [
+        "Overall status is not PASS",
+        "Treats the unmeasured Welcome-to-header (or equivalent) row as blocking, not a silent residual PASS",
+        "Does not claim overall PASS because the measured subset matched"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "hover-measured-under-hover",
+      "prompt": "规格有一行 Chip background、state=hover、expected=#F4F6F7。你只在默认态量了 Chip 背景。请按 figma-pixel-verify 说明该行应如何量、默认态结果能否当 hover PASS（dry-run）。",
+      "expected_output": "Switch running UI into hover before measuring that row; default-state reading is not a hover PASS.",
+      "expectations": [
+        "Requires switching the running UI into hover (or the documented state) before measuring the hover row",
+        "Does not mark the hover row PASS from default-state computed style alone"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "accepted-residual-not-silent-pass",
+      "prompt": "Figma toolbar icon expected=16px；项目 AGENTS 冻结 18px 且记录了决策人。真机量到 18px。请按 figma-pixel-verify 给出该行 verdict 与 Overall 注意事项（dry-run）。",
+      "expected_output": "Row is accepted-residual with owner/reason, not PASS against 16px; overall PASS only if remaining critical rows pass.",
+      "expectations": [
+        "Does not mark the icon row as PASS versus the 16px Figma expected",
+        "Uses accepted-residual (or equivalent) with an owner/reason for the 18px freeze",
+        "Does not treat an undocumented 18px as an automatic overall PASS"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "writeback-and-spec-gap-returns",
+      "prompt": "本轮刚跑过 figma-pixel-implement，活文档在 docs/figma/promo.md（有 Inventory/Spec，Verify 段为空）。你量到 Card gap 12px vs expected 8px。另有一行 Welcome gap 规格表里没有。请按 figma-pixel-verify 说明写回哪里、expected 能否改成 12、缺行怎么处理（dry-run）。",
+      "expected_output": "Write actual/verdict into the same file's Verify section (or Spec source sibling); do not change expected; missing spec row is FAIL and re-enter implement; do not silently invent the missing row and claim handoff complete.",
+      "expectations": [
+        "Writes measured actual/verdict into the living artifact Verify section or the Spec source sibling file",
+        "Does not overwrite Figma expected with the measured actual",
+        "Treats a missing critical spec row as FAIL that returns to figma-pixel-implement",
+        "Does not silently add the missing row and then claim the implement handoff was complete"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "standalone-persist-then-measure",
+      "prompt": "用户只说「对照 Figma 验收」，本轮没有跑 implement。你可以从 Figma 抽出最小规格。请按 figma-pixel-verify 说明测量前文件要落在哪（dry-run）。",
+      "expected_output": "Standalone verify may build a minimal spec from Figma but must persist it to the same living-artifact path convention before measuring.",
+      "expectations": [
+        "Allows building a minimal spec when implement did not run this session",
+        "Requires persisting that spec to a durable path before measurement",
+        "Does not treat a chat-only rebuilt table as sufficient handoff"
       ]
     }
   ]

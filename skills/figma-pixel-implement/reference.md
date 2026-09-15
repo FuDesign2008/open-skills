@@ -1,27 +1,60 @@
 # figma-pixel-implement — reference
 
+## Living artifact path
+
+Write the contract in the **target repo**, not only in the session.
+
+1. If the project already has a Figma/design-spec directory, reuse it.
+2. Otherwise use `docs/figma/<safe-frame-name>.md` (`<safe-frame-name>` from the frame name or node id, filesystem-safe).
+3. Default **one file, three sections**: Inventory, Spec, Verify. `figma-pixel-implement` owns Inventory + Spec; `figma-pixel-verify` owns Verify. If the project already keeps a separate verify report, that sibling is allowed—record it as `Spec source` / report path; do not duplicate methodology in hosts.
+4. Append rows as each visible section is implemented. Implement is incomplete without this path.
+
+```markdown
+# Figma living spec — <frame name>
+
+- Node: <fileKey> / <nodeId>
+- Theme scope: <single | light+dark | …>
+
+## Inventory
+
+| screen / section | state | source | notes |
+|------------------|-------|--------|--------|
+| Welcome / title | default | metadata `760:32908` | |
+| Chip | hover | component variant Hover | |
+| Auto-follow scroll | `out-of-scope: behavior` | prototype | not a computed-style row |
+| Toolbar icon hover | `no-variant-in-design` | no Hover variant | do not invent |
+
+## Spec
+
+| node / role | state | mode | property | expected | unit | basis | token / class | source |
+|-------------|-------|------|----------|----------|------|-------|---------------|--------|
+| Header / title | default | light | font-size | 24 | px | self | `text-2xl` / `--font-size-24` | Figma text style / variable |
+| Welcome / title | default | light | gap-from-header | 82 | px | bottom of 顶部模块 → top of title | (layout) | metadata y minus header height |
+| Chip | hover | light | background | #F4F6F7 | hex | self | `--color-fill-2` | variant Hover |
+
+## Verify
+
+_Owned by `figma-pixel-verify`. Leave empty (or omit rows) until measurement._
+```
+
+## Screen × state inventory
+
+Write before the spec table. One line per visual state (and out-of-scope behaviors). Source of the rows is the Inventory section above.
+
 ## Design-spec table template
 
-Write as Markdown (session note or artifact). One row per measurable property.
-
-| node / role | property | expected | unit | token / class | source |
-|-------------|----------|----------|------|---------------|--------|
-| Header / title | font-size | 24 | px | `text-2xl` / `--font-size-24` | Figma text style / variable |
-| Header / title | font-weight | 600 | — | `font-semibold` | typography |
-| Header / title | color | #1A1A1A | hex | `--color-text-primary` | fill / variable |
-| Card | width | 360 | px | (one-off — flagged) | layout |
-| Card | padding | 16 | px | `p-4` | auto-layout |
-| Card | border-radius | 12 | px | `rounded-xl` | corner radius |
-| Card | gap | 8 | px | `gap-2` | item spacing |
-| Icon / logo | asset | `assets/logo.svg` | path | `<img>` | MCP export |
+Write as Markdown **in the living artifact** (Spec section). One row per measurable property. The example table is in the living-artifact template above.
 
 **Rules for the table**
 
 - Prefer **design variables / tokens** in `source` when MCP or Code Connect exposes them.
 - Record **raw numbers** from the design (px, rem only if the project converts consistently — note the conversion).
 - Colors: hex/rgba **or** token name + resolved value if known.
-- Omit properties you cannot observe later (verify will mark residual).
-- Multi-theme scope adds a `mode` column (or one row per mode) for theme-varying properties; resolve per-mode values from the design itself (variable `valuesByMode` when exposed, otherwise re-fetch with the file/frame mode switched or via the per-theme frame); shared values stay single-row.
+- `basis` names the parent or sibling the number is relative to (self padding vs gap from a named module).
+- `state` matches the inventory (default, hover, …).
+- Omit properties you cannot observe later (verify will fail overall if they stay critical and unmeasured).
+- When theme is in scope, add a `mode` column (or one row per mode) for theme-varying properties; resolve per-mode values from the design itself (variable `valuesByMode` when exposed, otherwise re-fetch with the file/frame mode switched or via the per-theme frame); shared values stay single-row.
+- Conflicting QA/walkthrough numbers stay in notes; `expected` stays on the Figma node.
 
 ## Asset whitelist / blacklist
 
@@ -31,7 +64,7 @@ Write as Markdown (session note or artifact). One row per measurable property.
 - `<img>` / Next `Image` / equivalent framework image components
 - Inline SVG **only** when fills/strokes match the design without a CSS recolor hack
 - Icon font / design-system icon components when they already map via Code Connect
-- Per-theme exports when multi-theme scope is explicit: export each theme's assets from its mode or per-theme frame (design-provided), not one export plus a recolor
+- Per-theme exports when theme is in scope: export each theme's assets from its mode or per-theme frame (design-provided), not one export plus a recolor
 
 ### Avoid for Figma-colored glyphs (blacklist)
 
@@ -45,13 +78,18 @@ Write as Markdown (session note or artifact). One row per measurable property.
 
 ## Large frames and quota
 
-- Start with **metadata / structure** for large pages; implement child sections with separate design-context calls.
+- Start with **metadata / structure** for large pages; implement **every visible child section** with separate design-context calls.
+- Unfetched visible sections mean implement is incomplete.
 - Respect Figma MCP **rate limits** for the user’s plan; batch thoughtfully; on limit errors, pause and report rather than spinning.
 - Prefer variables and Code Connect mappings over repeated full-frame fetches.
 
 ## Hand-off checklist
 
-- [ ] Spec table present and covers critical geometry, type, color
+- [ ] Durable path in the target repo (existing Figma doc dir or `docs/figma/<frame>.md`)
+- [ ] Inventory covers visible sections, documented visual states, and `out-of-scope: behavior` / `no-variant-in-design` lines
+- [ ] Spec table present: geometry, type, color, `state`, `basis`; `mode` when theme is in scope
+- [ ] Every visible child section of a large frame was fetched (or unfinished sections are listed); rows were appended per section
 - [ ] Assets use whitelist patterns; no mask-recolor for design-colored glyphs
-- [ ] Theme matches requested frame/variant; multi-theme scope: theme inventory recorded, per-mode spec values and per-theme assets covered (or pending items noted)
-- [ ] User informed that `figma-pixel-verify` owns alignment verdict
+- [ ] Theme: in scope when file modes or project theme switch exist; per-mode values and per-theme assets from the design (or pending items noted)
+- [ ] QA/walkthrough conflicts recorded; Figma node remains `expected`
+- [ ] `figma-pixel-verify` is the next step in this run (or the host verification stage); hand off the **path**

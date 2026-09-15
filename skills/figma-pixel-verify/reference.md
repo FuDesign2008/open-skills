@@ -16,10 +16,11 @@ Hosts or users may tighten; record overrides in the report.
 ## Measurement guidance
 
 1. Resolve a stable selector per `node / role` (test id > role+name > CSS path).
-2. Prefer `getComputedStyle` (or equivalent) for colors, fonts, radii, padding.
-3. Prefer `getBoundingClientRect` (or layout APIs) for width/height; compare in CSS pixels.
-4. Normalize colors (`rgb(26, 26, 26)` → `#1A1A1A`) before compare.
-5. Re-run the same script/path after each fix iteration — no “looks fine” shortcuts.
+2. Switch the running UI to the row’s `state` and `mode` before reading.
+3. Prefer `getComputedStyle` (or equivalent) for colors, fonts, radii, padding.
+4. Prefer `getBoundingClientRect` (or layout APIs) for width/height; compare in CSS pixels. For `basis` rows, measure the named sibling relationship (e.g. header bottom vs title top), not only the node’s own padding.
+5. Normalize colors (`rgb(26, 26, 26)` → `#1A1A1A`) before compare.
+6. Re-run the same script/path after each fix iteration — no “looks fine” shortcuts.
 
 ### Example measurement intent (illustrative)
 
@@ -41,26 +42,36 @@ JSON.stringify({
 
 ## Report template
 
+Write into the living artifact **Verify** section (same file as Inventory/Spec), or a sibling file if the project already uses a separate report. `expected` in this table is copied for comparison — **do not** edit the Spec section’s `expected`. Spec-gap (critical row missing from Spec) ⇒ Overall FAIL and return to `figma-pixel-implement`. Code DRIFT ⇒ fix UI, then update actual/verdict here.
+
 ```markdown
-## Figma pixel verify report
+## Verify
 
 - Target: <route or story>
-- Spec source: <path or note>
+- Spec source: <path to this file or sibling>
+- Inventory coverage: <measured>/<critical visual rows> (<unmeasured list>)
 - Theme scope: <single default | light+dark | …>
 - Iterations: <n>≤3
 - Overall: PASS | PASS-with-accepted-residuals | FAIL
 
-| node / role | property | expected | actual | verdict | notes |
-|-------------|----------|----------|--------|---------|-------|
-| … | … | … | … | PASS/DRIFT/… | |
+| node / role | state | mode | property | expected | actual | verdict | notes |
+|-------------|-------|------|----------|----------|--------|---------|-------|
+| … | … | … | … | … | … | PASS/DRIFT/MISSING-style/accepted-residual/… | basis: … |
 
-For multi-theme scope: repeat the table per theme (or add a `theme` column); each row under each theme gets its own verdict, and overall PASS requires every measured theme within tolerance.
+For multi-theme scope: repeat the table per theme (or add a `theme` column); each row under each theme gets its own verdict.
+
+Overall **PASS** (or **PASS-with-accepted-residuals**) requires every critical visual row measured in the correct state/mode and within tolerance, except rows explicitly `accepted-residual` (owner + reason). Unmeasured critical rows, `MISSING-style`, unaccepted `DRIFT`, incomplete Spec, or a missing living artifact after this-run implement ⇒ **FAIL**.
+
+`out-of-scope: behavior` inventory lines are listed under Behavior (not pixel PASS).
 
 ### Residuals
 - …
 
+### Accepted residuals
+- <row>: owner / reason (e.g. toolbar icon 18 vs Figma 16, design freeze)
+
 ### Root causes (if FAIL)
-- e.g. CSS mask recolor; wrong variant; missing token
+- e.g. CSS mask recolor; wrong variant; missing token; sampled subset; spec-gap (re-enter implement)
 ```
 
 ## Degradation without JS-eval

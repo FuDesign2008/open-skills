@@ -29,11 +29,68 @@
       "id": 3,
       "name": "no-pixel-claim-handoff",
       "prompt": "你刚按稿把一个 Card 组件写进了 src/components/PromoCard.tsx，并写好了规格表。用户问：「是不是已经像素级对齐了？」请按 figma-pixel-implement 回答（dry-run）。",
-      "expected_output": "Does not claim verified pixel alignment; points to design-spec table; recommends figma-pixel-verify for measured pass/fail.",
+      "expected_output": "Does not claim verified pixel alignment; points to a durable inventory+spec file path in the target repo; requires figma-pixel-verify for measured pass/fail (not optional recommend-only).",
       "expectations": [
         "Does not assert that pixel alignment is verified complete",
         "Mentions the design-spec table as the measurable contract",
-        "Recommends figma-pixel-verify (or an equivalent measured check) for pass/fail"
+        "Points to a durable file path in the target repo, not only a session note",
+        "Requires or states that figma-pixel-verify must run for pass/fail (not merely optional advice)"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "large-frame-all-visible-children",
+      "prompt": "Figma MCP 对整页 frame `12:34` 的 design-context 被截断。metadata 显示三个可见子区 Welcome / Composer / History。用户要「按稿实现」整页。请按 figma-pixel-implement 说明完成标准（dry-run）。",
+      "expected_output": "Fetch each visible child section; implement is incomplete until all visible sections are fetched; do not mark complete from a sampled subset.",
+      "expectations": [
+        "Plans to fetch design context per visible child section (Welcome, Composer, History or equivalent)",
+        "Treats unfetched visible sections as incomplete",
+        "Does not declare implement complete after sampling only chrome/header"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "inventory-before-spec-no-invented-hover",
+      "prompt": "稿面 Chip 只有 Default 变体，没有 Hover 变体也没有 prototype hover。用户要「像素级还原」并说「最好把 hover 也做漂亮」。请按 figma-pixel-implement 写出清单与规格表策略（dry-run）。",
+      "expected_output": "Inventory first; record no-variant-in-design for hover; do not invent hover colors; spec table comes after inventory.",
+      "expectations": [
+        "Writes or describes a screen×state inventory before spec rows",
+        "Does not invent hover colors or sizes when the design has no Hover variant",
+        "Records no-variant-in-design or equivalent for the missing hover"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "theme-in-scope-without-user-saying-dark",
+      "prompt": "用户只说「按稿实现这个 frame」，没提暗黑。Figma 文件有 light/dark variable modes；目标仓库根节点用 data-theme 切简白/暗黑。请按 figma-pixel-implement 说明主题范围（dry-run）。",
+      "expected_output": "Theme is in scope; record mode inventory; per-mode values from the design; do not wait for the user to say dark mode.",
+      "expectations": [
+        "Puts light/dark (or file modes) in scope without requiring the user to say 暗黑/dark",
+        "Resolves per-mode values from the design rather than inventing the other theme",
+        "Maps onto the project's data-theme / tokens rather than duplicated guessed hex"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "measurement-basis-and-figma-sot",
+      "prompt": "走查写「标题距顶部模块 82px、字重 400」。Figma 当前 node 标题是 Medium 500，标题框 top 相对顶部模块底边可算出 82px。请按 figma-pixel-implement 写规格行要点（dry-run）。",
+      "expected_output": "Spec expected font-weight 500 from Figma; spacing row names basis as the header/顶部模块 sibling; record the 400 conflict instead of overriding the file.",
+      "expectations": [
+        "Keeps Figma font-weight 500 as expected rather than changing it to 400 to match the walkthrough",
+        "Records measurement basis relative to the header / 顶部模块 (not only the title node's own padding)",
+        "Notes the walkthrough conflict as a residual or comment"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "durable-artifact-incremental",
+      "prompt": "用户「按稿实现」整页。metadata 有 Welcome 与 Composer 两块可见区。目标仓已有 docs/figma/。你刚写完 Welcome 的代码。请按 figma-pixel-implement 说明规格表写在哪、Composer 还没做时能否宣称 implement 完成（dry-run）。",
+      "expected_output": "Write inventory+spec into a durable file under the project's Figma doc dir (or docs/figma/<frame>.md); append per visible section; no path / unfinished section means implement incomplete; session-only table is not done.",
+      "expectations": [
+        "Chooses a durable path in the target repo (existing Figma doc directory or docs/figma/<frame>.md)",
+        "Appends inventory/spec rows as each visible section is implemented, rather than only a chat table at the end",
+        "Does not mark implement complete with only a session note and no file path",
+        "Treats an unfetched or unimplemented visible section as incomplete"
       ]
     }
   ]
