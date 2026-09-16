@@ -145,6 +145,40 @@
         "Requires an Assets subsection (or equivalent table) on the living artifact",
         "Treats missing Assets rows for implemented visible graphics as incomplete"
       ]
+    },
+    {
+      "id": 14,
+      "name": "workbench-exists-stories-cover-inventory",
+      "prompt": "目标工程已有 Storybook（.storybook/ 与 stories 目录齐全）。你按稿实现了一个 Card 组件，Inventory 有 default/hover 两态、320/720 两个 context 检查点。用户问「implement 算完成了吗？」。请按 figma-pixel-implement 回答（dry-run）。",
+      "expected_output": "Implement is incomplete until stories cover every in-scope inventory row (default/hover × 320/720) with declarative entries, a Stories subsection is added, and component tests lock key Spec values.",
+      "expectations": [
+        "Requires stories covering every in-scope Inventory row (state × context) before declaring implement complete",
+        "Stories expose states via declarative entries (test id / knob / auto-action) and follow the project's story conventions",
+        "Requires a Stories subsection mapping story → covered inventory rows → entry",
+        "Requires component tests locking key Spec values when the project has a test setup"
+      ]
+    },
+    {
+      "id": 15,
+      "name": "no-test-infra-advisory",
+      "prompt": "目标工程没有任何测试基建（无 test runner、无测试目录）。你已按稿实现组件并写了 story。用户要把「验收值也锁进测试」。请按 figma-pixel-implement 说明做法（dry-run）。",
+      "expected_output": "Record the missing test setup as an advisory suggestion in the living artifact; do not scaffold a full test stack; implement completion is not blocked.",
+      "expectations": [
+        "Records the missing test setup as an advisory suggestion instead of scaffolding a whole test stack",
+        "Does not block implement completion on the missing test infrastructure",
+        "States that component tests locking Spec expected values are the regression lock once infra exists"
+      ]
+    },
+    {
+      "id": 16,
+      "name": "no-workbench-adoption-suggestion",
+      "prompt": "目标工程是纯 SSR 页面工程，没有 Storybook 或类似组件工作台，组件深嵌宿主容器（依赖注入的全局 store）。用户「按稿实现」后问「接下来怎么检查像素对齐」。请按 figma-pixel-implement 说明实现收尾时对测量面要做什么（dry-run）。",
+      "expected_output": "Make a one-time advisory adoption suggestion; hand off the living artifact path so figma-pixel-verify resolves channels via its ladder; workbench absence is not an implement failure.",
+      "expectations": [
+        "Makes one advisory suggestion to adopt a component workbench (isolated, observable, agent-testable, enables component tests)",
+        "Does not block the handoff on the absence of a workbench; hands off the living artifact path",
+        "States that measurement falls back to the channel ladder in figma-pixel-verify (isolated harness / preview / app launch)"
+      ]
     }
   ]
 }

@@ -6,7 +6,7 @@ Write the contract in the **target repo**, not only in the session.
 
 1. If the project already has a Figma/design-spec directory, reuse it.
 2. Otherwise use `docs/figma/<safe-frame-name>.md` (`<safe-frame-name>` from the frame name or node id, filesystem-safe).
-3. Default **one file, three sections plus Assets**: Inventory, Spec, Assets, Verify. `figma-pixel-implement` owns Inventory + Spec + Assets; `figma-pixel-verify` owns Verify. If the project already keeps a separate verify report, that sibling is allowed—record it as `Spec source` / report path; do not duplicate methodology in hosts.
+3. Default **one file**: Inventory, Spec, Assets, optional **Stories** (when a component workbench exists), Verify. `figma-pixel-implement` owns Inventory + Spec + Assets (+ Stories); `figma-pixel-verify` owns Verify. If the project already keeps a separate verify report, that sibling is allowed—record it as `Spec source` / report path; do not duplicate methodology in hosts.
 4. Append rows as each visible section is implemented. Implement is incomplete without this path.
 
 ```markdown
@@ -17,13 +17,14 @@ Write the contract in the **target repo**, not only in the session.
 
 ## Inventory
 
-| screen / section | state | source | notes |
-|------------------|-------|--------|--------|
-| Welcome / title | default | metadata `760:32908` | |
-| Chip | hover | component variant Hover | |
-| Auto-follow scroll | `out-of-scope: behavior` | prototype | not a computed-style row |
-| Toolbar icon hover | `no-variant-in-design` | annotation; no Hover variant | do not invent |
-| Chip hover color note | `blocked` / note | annotation `#FF0000` | expected stays the node |
+| screen / section | state | context | source | notes |
+|------------------|-------|---------|--------|--------|
+| Welcome / title | default | — | metadata `760:32908` | |
+| Chip | hover | — | component variant Hover | |
+| Composer row | default | width 320 | metadata + product width floor | truncation check |
+| Auto-follow scroll | `out-of-scope: behavior` | — | prototype | not a computed-style row |
+| Toolbar icon hover | `no-variant-in-design` | — | annotation; no Hover variant | do not invent |
+| Chip hover color note | `blocked` / note | — | annotation `#FF0000` | expected stays the node |
 
 ## Spec
 
@@ -43,6 +44,15 @@ Write the contract in the **target repo**, not only in the session.
 | Logo instance `12:40` | `assets/logo.svg` | svg | one file from outer instance |
 | Toolbar icon `12:41` | `assets/toolbar-icon.svg` | svg | wrapper 18×22 |
 
+## Stories
+
+_Present when the project has a component workbench. One row per story; coverage mirrors the Inventory._
+
+| story | covers (inventory rows) | entry |
+|-------|--------------------------|-------|
+| Chip / hover | Chip hover | test id `chip` + auto-hover |
+| Composer / width sweep | Composer row width 320 | width preset 320 / 720 |
+
 ## Verify
 
 _Owned by `figma-pixel-verify`. Leave empty (or omit rows) until measurement._
@@ -51,6 +61,18 @@ _Owned by `figma-pixel-verify`. Leave empty (or omit rows) until measurement._
 ## Screen × state inventory
 
 Write before the spec table. One line per visual state (and out-of-scope behaviors). Source of the rows is the Inventory section above.
+
+## Stories & component tests (component workbench)
+
+When the target project has Storybook or a similar component workbench:
+
+- One story per in-scope Inventory row (state × context); follow the project’s existing story file conventions and naming.
+- Each story exposes its state through a declarative entry the Agent can drive later: test id, knob/arg, or an auto-action that runs on entry.
+- Include the host-constraint axis: at least the product width floor and one narrower squeeze checkpoint when the host can resize.
+- Isolated is not simulated: a story is a real render of the real component with real tokens; isolation removes host/engine dependencies, not truth.
+- Component tests assert the Spec table’s `expected` values (geometry, color, token/class mapping) — never numbers from chat notes or walkthrough memory.
+- No test setup in the project → record the suggestion in the living artifact (advisory, not blocking); do not scaffold a whole test stack for one change.
+- No component workbench at all → record the adoption suggestion once; measurement falls back to the channel ladder in `figma-pixel-verify`.
 
 ## Design-spec table template
 
@@ -107,6 +129,8 @@ Write as Markdown **in the living artifact** (Spec section). One row per measura
 - [ ] Inventory covers visible sections, documented visual states, readable annotations, and `out-of-scope: behavior` / `no-variant-in-design` lines
 - [ ] Spec table present: geometry, type, color, fill ownership, `state`, `basis`; `mode` when theme is in scope; text color token or `raw-only`
 - [ ] Assets subsection present: node, local path, format for each in-scope visible graphic
+- [ ] Stories subsection present and mirrors the Inventory when a component workbench exists (or the adoption suggestion is recorded)
+- [ ] Component tests lock key Spec values, or the missing-test-setup suggestion is recorded
 - [ ] Every visible child section of a large frame was fetched (or unfinished sections are listed); rows were appended per section
 - [ ] Assets use whitelist patterns: outer-instance one-file export; instance geometry; no mask-recolor for design-colored glyphs
 - [ ] Theme: in scope when file modes or project theme switch exist; per-mode values and per-theme assets from the design (or pending items noted)

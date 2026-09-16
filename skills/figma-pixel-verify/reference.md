@@ -13,6 +13,22 @@
 
 Hosts or users may tighten; record overrides in the report.
 
+## Measurement channel ladder
+
+Resolve the runnable surface in this order; declare the chosen channel in the report.
+
+| Rung | Channel | When to use | Notes |
+|------|---------|-------------|-------|
+| 1 | Component-workbench story | Living artifact has a Stories subsection, or a Storybook-style workbench is detected | Preferred: systematic, observable, agent-drivable states |
+| 2 | Lightweight isolated harness | No workbench, or workbench broken; component reachable by stubbing host/engine dependencies | Stub intent: cut non-UI dependency chains, keep real tokens/styles |
+| 3 | In-product preview route | Component needs its real shell context | Use the project's preview/dev route when cheaper than a full launch |
+| 4 | Full app / browser launch | Nothing lighter can render the component | Heaviest; last resort |
+
+- Isolated is not simulated: a story or harness is a real render with real tokens; the ladder orders integration completeness × cost, not real-vs-fake.
+- A broken or absent workbench falls the ladder down — record the fallback.
+- When the project declares or shows a host/platform floor (an engine older than the workbench browser), the real host remains the final authority: add a platform-floor note; workbench PASS is not platform-floor proof.
+- No workbench at all → make **one** adoption suggestion (a component workbench is systematic, observable, and agent-testable, and enables component tests) and continue measuring through the next rung; the suggestion is advisory, never blocking.
+
 ## Quality channel install gate
 
 Use this gate during verify preflight. Do not paste a third-party browser API here; load that skill’s own install reference.
@@ -57,6 +73,8 @@ Write into the living artifact **Verify** section (same file as Inventory/Spec),
 ## Verify
 
 - Target: <route or story>
+- Channel: <storybook | isolated-harness | preview | full-app>
+- Platform floor: <detected (note) | none>
 - Spec source: <path to this file or sibling>
 - Inventory coverage: <measured>/<critical visual rows> (<unmeasured list>)
 - Theme scope: <single default | light+dark | …>
