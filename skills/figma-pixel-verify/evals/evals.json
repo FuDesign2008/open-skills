@@ -133,6 +133,39 @@
         "Does not skip to an already-connected weaker browser MCP while that install is possible",
         "Does not abort verify solely because the quality CLI was missing at the start of the run"
       ]
+    },
+    {
+      "id": 13,
+      "name": "prefer-story-over-app-launch",
+      "prompt": "活文档有 Stories 小节（Chip hover story 带 testid 自动 hover 入口）。目标工程也可启动完整 APP 预览（启动约需数分钟）。用户「检查像素对齐」。请按 figma-pixel-verify 说明测量通道选择（dry-run）。",
+      "expected_output": "Use the storybook story from the Stories subsection as the first channel; drive hover via the declarative entry; declare Channel: storybook; app launch stays a fallback.",
+      "expectations": [
+        "Uses the storybook story from the Stories subsection as the first channel instead of launching the full app",
+        "Drives the hover state via the declarative entry, then reads computed style",
+        "Declares Channel: storybook in the report; full app launch remains a fallback, not the default"
+      ]
+    },
+    {
+      "id": 14,
+      "name": "no-workbench-suggest-and-continue",
+      "prompt": "目标工程没有任何组件工作台，组件可经业务壳预览路由打开。用户「检查像素对齐」。请按 figma-pixel-verify 说明测量前的通道动作（dry-run）。",
+      "expected_output": "Make one advisory adoption suggestion; continue measuring through the in-product preview rung; record Channel: preview; workbench absence is not a verify failure.",
+      "expectations": [
+        "Makes one advisory suggestion to adopt a component workbench (systematic, observable, agent-testable)",
+        "Continues measuring through the next rung (in-product preview) without blocking",
+        "Records Channel: preview and does not treat the missing workbench as a verify failure"
+      ]
+    },
+    {
+      "id": 15,
+      "name": "channel-declaration-and-platform-floor",
+      "prompt": "你在 Storybook（本机新 Chrome）测完所有关键行均 PASS；目标工程声明其宿主引擎为旧版 Chromium。请按 figma-pixel-verify 给出报告要点（dry-run）。",
+      "expected_output": "Report declares Channel: storybook with all rows measured, plus a platform-floor note that the real host remains the final authority; no overall platform-level PASS beyond the workbench channel.",
+      "expectations": [
+        "Declares Channel: storybook in the report with the measured rows",
+        "Adds a platform-floor note: the real host (older engine) remains the final authority; workbench PASS is not platform-floor proof",
+        "Does not claim overall PASS beyond the workbench channel for the host platform"
+      ]
     }
   ]
 }
