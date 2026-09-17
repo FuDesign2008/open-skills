@@ -669,6 +669,228 @@
           "text": "整体行为与引入本能力前一致"
         }
       ]
+    },
+    {
+      "id": 37,
+      "name": "slot-admission-non-overlap",
+      "prompt": "队列并发度记录为 2，待办序里第一张卡的 Modules 与某在飞卡重叠，其后第二张卡不重叠。",
+      "expected_output": "系统跳过重叠卡、采纳不重叠的卡占满 slot；重叠卡保持 pending 直到在飞卡完成，不为占满 slot 而强行采纳。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "准入判据读取卡面 Modules 字段而非自由文本 Constraints"
+        },
+        {
+          "text": "重叠卡被跳过并保持 pending，不被强行采纳"
+        },
+        {
+          "text": "不重叠的卡被采纳以填充空闲 slot"
+        }
+      ]
+    },
+    {
+      "id": 38,
+      "name": "slot-idle-and-refill",
+      "prompt": "队列并发度 3，但所有待办卡都与在飞卡模块重叠或都被依赖阻塞。",
+      "expected_output": "空闲 slot 保持空转、不采纳任何卡、不报错也不死锁；运行随在飞卡完成推进，并在完成边界补位与重算杠杆。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "无可采纳卡时 slot 空转而不报错、不死锁"
+        },
+        {
+          "text": "完成边界重新评估可采纳卡并补位"
+        },
+        {
+          "text": "该边界同时重算信息杠杆"
+        }
+      ]
+    },
+    {
+      "id": 39,
+      "name": "enqueue-concurrency-isolation-ticket",
+      "prompt": "我把一批需求排进队列。并发怎么跑、隔离怎么做你问我一下。",
+      "expected_output": "入队时问并发度（推荐默认 3）与隔离强度；选 ≥2 即接受 worktree 强制（每并发 child 一个 worktree）；拒绝 worktree 则把该队列并发封顶为 1；两者记入队列配置。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "并发度作为入队期问题提出，推荐默认 3"
+        },
+        {
+          "text": "选 ≥2 即记录为接受 worktree 强制隔离"
+        },
+        {
+          "text": "拒绝 worktree 则并发封顶 1 并记录"
+        },
+        {
+          "text": "两个值记入 .goal-driven/queues/<queue-id>/config"
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "name": "consequence-disclosure-by-actual-config",
+      "prompt": "我这个工程是多仓布局，脚本里有 ../sibling-repo 的相对路径。把并发度设成 3。",
+      "expected_output": "入队票按本工程实际配置走查并披露后果：至少含多仓 sibling 路径在工作树下可能不再解析、每并发 child 一个 worktree 的磁盘成本、以及验收将预演冲突而非交人逐张合并；不得只写「接受 worktree」。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "后果按本工程实际配置推导，而非泛泛而谈"
+        },
+        {
+          "text": "披露多仓 sibling 路径断裂风险"
+        },
+        {
+          "text": "披露每并发 child 一 worktree 的磁盘成本"
+        },
+        {
+          "text": "披露验收改为冲突预演（人审真冲突）"
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "name": "absent-run-reuses-recorded-concurrency",
+      "prompt": "今晚无人值守跑这个队列。队列配置里已记录 Concurrency: 3、Isolation: worktree。另一个队列则什么记录都没有。",
+      "expected_output": "已记录的队列照用 3 并发与 worktree 强制（含已接受的隔离），不再询问；无记录的队列以并发 1 运行，绝不静默假定并发大于 1。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "缺席运行照用已记录值与已接受的隔离强度"
+        },
+        {
+          "text": "无记录时退到并发 1 而非静默假定"
+        },
+        {
+          "text": "不发起新的并发度询问（无人可答）"
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "name": "worktree-dependency-conditional-check",
+      "prompt": "队列并发度解析为 3，但 git-worktree-discipline 这个 skill 没安装。",
+      "expected_output": "前置检查按条件中止并给出安装指引（并发 ≥2 时 worktree 隔离是承载依赖）；若并发度为 1，同一依赖缺失不阻断运行。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "并发 ≥2 且缺 git-worktree-discipline 时中止并给安装指引"
+        },
+        {
+          "text": "并发 1 时该依赖缺失不阻断"
+        },
+        {
+          "text": "不静默降级隔离强度"
+        }
+      ]
+    },
+    {
+      "id": 43,
+      "name": "three-way-caps-and-wallclock",
+      "prompt": "跑队列，并发 3。已设 max-tasks 3、max-concurrent 2、墙钟 2 小时。",
+      "expected_output": "三个口径独立记账；并发度触顶时不派发新卡但在飞卡继续执行至完成；任一 cap 触顶即停止派发并保留剩余 pending；卡片预估总和仅作参考，不被表述为墙钟上界。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "三口径分别记账并记录是哪一个触顶"
+        },
+        {
+          "text": "并发触顶不中断在飞卡"
+        },
+        {
+          "text": "预估总和降级为参考，不表述为墙钟上界"
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "name": "single-writer-and-effective-concurrency",
+      "prompt": "两个子运行在同一时间窗完成；期间 slot 因模块重叠长时间空闲。",
+      "expected_output": "派发器是进度文档唯一写者（child 只回报不写共享文件）；两次完成逐条记录且都出现在进度文档；文档记录有效并发度与声明值的差距，使人看出吞吐欠达的原因。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "child 不写进度文档或任何共享队列文件"
+        },
+        {
+          "text": "并发完成逐条记录，无条目丢失"
+        },
+        {
+          "text": "记录有效并发度与声明值的差距"
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "name": "same-module-exploration-amortization",
+      "prompt": "队列里有两张卡都要改同一个模块。",
+      "expected_output": "两张卡不会被同时准入（写串行）；首卡产出探查记录（Approach Record 形状，落绑定队列目录）；后续卡以该记录为种子，不再从零探查；记录 factual 项证伪则不种子化。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "同模块两张卡不同时准入（写串行由非重叠判据保证）"
+        },
+        {
+          "text": "首卡产出 Approach Record 形状的探查记录并落在绑定队列目录"
+        },
+        {
+          "text": "后续卡以记录为种子复用；证伪则不种子化"
+        }
+      ]
+    },
+    {
+      "id": 46,
+      "name": "conflict-prediction-local-only",
+      "prompt": "验收时三个任务分支待审，其中两个已开出 PR。",
+      "expected_output": "在临时 worktree 内 rebase 到最新 main 预演冲突；不推送、不 force-push、不改写任何已开出 PR 的分支；只把真冲突与建议合并序呈报给人，不自行合并。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "冲突预演在临时 worktree 内进行"
+        },
+        {
+          "text": "不推送、不 force-push、不改写已发布分支"
+        },
+        {
+          "text": "只呈报真冲突与建议序，不自行合并"
+        }
+      ]
+    },
+    {
+      "id": 47,
+      "name": "platform-concurrency-degradation",
+      "prompt": "队列并发度是 3，但当前平台只能同时跑 1 个子运行。",
+      "expected_output": "退到平台支持的最高并发度运行，并在进度文档中明示该降级；正文不把任何平台专属并发工具写成必需路径。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "降级到平台支持的并发度并在进度文档明示"
+        },
+        {
+          "text": "不静默假装已并发"
+        },
+        {
+          "text": "不硬编码平台专属并发工具为必需路径"
+        }
+      ]
+    },
+    {
+      "id": 48,
+      "name": "concurrency-one-behavior-unchanged",
+      "prompt": "这个队列没记录并发度（或记录为 1），卡也没有 Modules 字段。",
+      "expected_output": "以并发 1 消费，隔离保持 branch-or-worktree 现状；无 Modules 字段的卡不因缺字段被搁置；整体行为与引入并发前逐字一致。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "并发 1 时隔离保持 branch-or-worktree 现状"
+        },
+        {
+          "text": "缺 Modules 字段的卡不因此被搁置或报错"
+        },
+        {
+          "text": "整体行为与引入并发前一致"
+        }
+      ]
     }
   ]
 }

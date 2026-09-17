@@ -15,6 +15,7 @@ File name: `.goal-driven/queues/<queue-id>/<slug>.md` (slug = kebab-case goal su
 - Certainty/Difficulty: high-certainty/low-cost | uncertain | high-cost (derived from four signals — `reversibility`, `evidence`, `blast_radius`, `dependency_shape` — each marked `factual` or `preference`; the most conservative band wins on conflict; no numeric score)
 - Waits-on: none | <card-slug> (machine-readable dependency edge; edges must stay acyclic)
 - Reusable: no | yes (default `no`; `yes` yields an `approaches/<signature>.md` record)
+- Modules: <normalized path/module list, extracted at enqueue from Constraints> (machine-readable; the concurrent-admission criterion reads this field and MUST NOT read Constraints prose; treated as `factual` and verified at the consumption-entry check)
 - Traceability: none | openspec/<change-name> (only when the user opted into OpenSpec sedimentation at enqueue)
 - Stage-exit policy: manual | ai-proxy | auto (set by the interaction-budget first ticket; pre-filled from the assessment recommendation only under the same all-factual high-certainty gate as `Engine`; legacy `Counterpart: on` / `counterpart` values read as `ai-proxy`; legacy `manual-pause` / `auto-escape` read as `manual` / `auto`)
 - Estimate: <coarse duration band, e.g. "<30min" / "~1h" / ">2h">
@@ -49,6 +50,23 @@ The estimate is advisory only: caps and the per-card budget stay authoritative, 
 
 Priority uses a three-level vocabulary: `P0` (urgent — consumed first), `P1` (normal — the default when unstated), `P2` (background — consumed last). Within a level the order is: **information leverage** descending (the card whose resolution retires the most other pending cards first), then the certainty/difficulty band (high-certainty/low-cost first), and FIFO by `Created` timestamp as the final tie-break. Leverage is recomputed at every completion boundary; a recomputation that moves the queue head is recorded as a `reordering` note. A card added while a run is in progress is discovered at the next post-completion re-scan and admitted by these same rules (Stage 2 step 7 in SKILL.md).
 
+## Queue Config
+
+Path: `.goal-driven/queues/<queue-id>/config` — one file per queue, holding the values the enqueue interview settled while the human was present, so absent runs reuse them instead of guessing.
+
+```markdown
+- Concurrency: <1..N>            # settled at enqueue; recommended default 3
+- Isolation: branch | worktree   # worktree is mandatory when Concurrency >= 2
+- Max-tasks: <N>                 # queue-level cap
+- Wall-clock: <duration>         # queue-level cap
+```
+
+**Concurrency.** Settled at enqueue, never assumed. A run with the human present and no recorded value asks; an absent, unattended or scheduled run reuses the recorded value and falls back to **1** when none is recorded. The system MUST NOT silently assume a concurrency above 1.
+
+**Isolation strength.** `worktree` is implied by `Concurrency >= 2` — a single working tree cannot serve two children on two branches — and is accepted as part of choosing that concurrency; declining worktrees caps the queue at `Concurrency: 1` and keeps today's branch-or-worktree behavior. At concurrency 1 the isolation stays `branch | worktree`, unchanged.
+
+**Consequence disclosure.** The enqueue ticket states the consequences derived by walking this project's actual configuration (per `intake-interview-discipline` §A) — at minimum the sibling-path breakage risk for multi-repository projects, the disk cost of one worktree per concurrent child, and that the human will review conflict pre-runs rather than N unassisted merges.
+
 ## Progress Document
 
 Path: `.goal-driven/queues/<queue-id>/runs/<batch-id>/progress.md` (`batch-id` = run start timestamp `YYYYMMDD-HHMM`). Create at batch start; update on every status change. Legacy runs may still sit at `.goal-driven/runs/` when the bound id is `default`.
@@ -63,6 +81,9 @@ Path: `.goal-driven/queues/<queue-id>/runs/<batch-id>/progress.md` (`batch-id` =
 | Branch | task branch tip |
 | Report | path to the engine completion report |
 | Notes | relationships (covered-by / waits-on), blockers, human asks, and a `reordering` note whenever a leverage recomputation moves the queue head |
+| Effective concurrency | batch-level (not per task): the concurrency actually achieved beside the resolved value — a gap means slots idled on module overlap or the platform degraded |
+
+The dispatcher is the **sole writer** of this document — a child run reports back and never writes it, and completions arriving together are recorded sequentially so no entry is lost. The document also records the **effective concurrency** achieved next to the resolved value, so a run whose slots idled on module overlap (or that fell back for platform reasons) is visibly under-utilized rather than silently slower.
 
 Written into the bound queue directory as `triage-<timestamp>.md`: the **triage record** — the batch's merges, root-cause clusters, suggested kills and parked items, each with its basis (which card covers which, which member cards a cluster folded, what evidence produced a mechanical verdict, and which decisions the proxy made). A pre-run enqueue has no batch directory yet, so the record lives here rather than in `runs/<batch-id>/`. It rides the acceptance package, presented by path, and is the audit trail for "why did my card disappear".
 
@@ -70,7 +91,8 @@ Written into the bound queue directory as `triage-<timestamp>.md`: the **triage 
 
 ```markdown
 ## Queue Run <batch-id>
-- Duration: <start → end> (planned ≈ <sum of card estimates>); caps hit: <none | max-tasks | time>
+- Duration: <start → end> (planned ≈ <sum of card estimates> — reference only, never presented as a wall-clock bound); caps hit: <none | max-tasks | max-concurrent | wall-clock>
+- Concurrency: resolved <N> / effective <M>   (a gap means slots idled on module overlap or the platform degraded)
 - Done: N   Failed: M   Skipped: K   Parked: P   Left pending: R
 - Branches awaiting review:
   - <branch> — <task slug> — <result tier> — report: <path>
@@ -100,7 +122,9 @@ A record seeds a new card's intake only when its `factual` entries still verify 
 
 ## Defaults
 
-- Queue caps when the trigger states none: stop after **3 tasks** or **2 hours**, whichever comes first. State the resolved cap in the first progress-doc entry so the stopping rule is auditable.
+- Queue caps when the trigger states none: stop after **3 tasks** or **2 hours**, whichever comes first. Three independent caps exist — `max-tasks`, `max-concurrent`, and a **wall-clock** time cap; the resolved values are stated in the first progress-doc entry so the stopping rule is auditable. Hitting any cap stops **dispatch** only: in-flight children continue to a safe point, and remaining cards stay `pending`. The summed card estimates are reference only and MUST NOT be presented as an upper bound on wall-clock duration.
+- Concurrency and isolation defaults: settled at the enqueue interview (recommended concurrency default 3) and recorded in the queue config; `Concurrency >= 2` implies worktree-mandatory isolation; declining worktrees caps concurrency at 1. Absent runs reuse the recorded values and fall back to 1 when none is recorded — concurrency above 1 is never assumed. When the platform cannot run the resolved concurrency, the highest supported value is used and the fallback is stated in the progress document.
+- Conflict prediction defaults: rebase happens in a **temporary scratch worktree for prediction only** — never push, never force-push, never rewrite a branch that already carries an open PR/MR. Only genuine conflicts and the suggested merge order reach the human; the actual rebase and merge stay human.
 - Gitignore hint when cards may contain private info: suggest `.goal-driven/` in the user project's `.gitignore` — queue content belongs to the local project owner.
 - Mid-run discovery: a re-scanned card in the **bound** queue directory missing its approval record stays `pending` with the progress note `awaiting approval (added mid-run)`; malformed cards likewise stay `pending` without stalling the loop; sibling queues are not admitted; discovery events land in the progress document's Notes.
 - Presence tiers: intake depth follows `intake-interview-discipline` §A — present (default) per-decision questioning with the three-part base; declared/structural absence keeps the once-confirm mode unchanged.

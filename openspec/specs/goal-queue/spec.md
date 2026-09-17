@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Persistent goal-backlog queue lifecycle owned by the user-invocable `goal-driven-queue` skill: durable task-card backlog, intake-time high-impact pre-approval with 留痕, serial consumption delegating each task to the `goal-driven-workflow` engine (`goal-run` capability), per-task branch/worktree isolation, queue-level budget and stopping rules, a per-run progress document, and a batch acceptance package that hands merge decisions back to the human. Scheduling stays platform-native; this layer treats any trigger — manual or scheduled — as "consume the queue until it drains or caps hit".
+Persistent goal-backlog queue lifecycle owned by the user-invocable `goal-driven-queue` skill: durable task-card backlog, intake-time high-impact pre-approval with 留痕, enqueue-time batch triage with a derived certainty/difficulty band feeding both ordering and routing, slot-based concurrent consumption whose concurrency is settled at enqueue and reused by absent runs, worktree-mandatory isolation above concurrency 1 with same-module exploration amortized, queue-level budget and stopping rules over three caps, a per-run progress document with single-writer accounting and recorded effective concurrency, and a batch acceptance package that pre-runs merge conflicts so only real ones reach the human. Scheduling stays platform-native; this layer treats any trigger — manual or scheduled — as "consume the queue until it drains or caps hit".
 ## Requirements
 ### Requirement: 持久 backlog 载体
 
@@ -78,7 +78,7 @@ Markdown task cards placed directly under `.goal-driven/` (not under `queues/` o
 
 ### Requirement: 入库即预审批（高危启动门禁的队列级化解）
 
-The system SHALL run a **fog-bounded deep intake interview** at enqueue time while the human is present, per `intake-interview-discipline` §A (one question per turn until fog graduates; approach comparison with human pick; freeze into the task card), applying its **presence tiers**: human present (the default) → per-decision questioning with high-impact self-answers escalated to questions and an intake output that opens with the three-part base (goal restatement / key elements / open questions) before freezing into the card — the card is the product of that display, not its replacement; declared absence or structural absence → the once-confirm + full-ledger mode unchanged. The interview SHALL be preceded by the batch triage pass owned by `goal-queue-triage`, so cards eliminated or folded by triage never reach an interview. The system SHALL capture human approval of each task's final goal condition and budget as **an approval event distinct from run-start**: approval MUST display the Decisions-I-made-for-you section, and starting consumption requires a separate explicit run instruction even when the two confirmations are consecutive; "once" = one approval event closing that interview, not one question total, and an explicit human skip records assumptions and proceeds. **One approval event MAY cover a whole triage batch** — the batch path already used by the Jira list-enqueue shortcut extends to the general enqueue path, covering the batch's merges, clusters and suggested kills in a single confirmation. The approval record in the task card (the git commit serves as 留痕) satisfies the launch approval otherwise required per unattended run; the host MUST thin-reference `design-approval-gate` named-escape semantics for this pattern. Mid-run launches MUST NOT pause for absent humans unless a newly detected relationship issue or constraint violation changes an already-approved condition, in which case the task MUST be parked as `conflict pending confirmation`.
+The system SHALL run a **fog-bounded deep intake interview** at enqueue time while the human is present, per `intake-interview-discipline` §A (one question per turn until fog graduates; approach comparison with human pick; freeze into the task card), applying its **presence tiers**: human present (the default) → per-decision questioning with high-impact self-answers escalated to questions and an intake output that opens with the three-part base (goal restatement / key elements / open questions) before freezing into the card — the card is the product of that display, not its replacement; declared absence or structural absence → the once-confirm + full-ledger mode unchanged. The interview SHALL be preceded by the batch triage pass owned by `goal-queue-triage`, so cards eliminated or folded by triage never reach an interview. The interview SHALL also settle **concurrency and isolation strength** for the queue per 并发度与隔离强度的入队期决策 — the last cheap moment to ask, since absent runs reuse the recorded values. The system SHALL capture human approval of each task's final goal condition and budget as **an approval event distinct from run-start**: approval MUST display the Decisions-I-made-for-you section, and starting consumption requires a separate explicit run instruction even when the two confirmations are consecutive; "once" = one approval event closing that interview, not one question total, and an explicit human skip records assumptions and proceeds. **One approval event MAY cover a whole triage batch** — the batch path already used by the Jira list-enqueue shortcut extends to the general enqueue path, covering the batch's merges, clusters and suggested kills in a single confirmation. The approval record in the task card (the git commit serves as 留痕) satisfies the launch approval otherwise required per unattended run; the host MUST thin-reference `design-approval-gate` named-escape semantics for this pattern. Mid-run launches MUST NOT pause for absent humans unless a newly detected relationship issue or constraint violation changes an already-approved condition, in which case the task MUST be parked as `conflict pending confirmation`.
 
 #### Scenario: 深谈入库一次审批
 
@@ -89,6 +89,11 @@ The system SHALL run a **fog-bounded deep intake interview** at enqueue time whi
 
 - **WHEN** 一批卡经 triage 产出合并、聚簇与建议不做项，人在场
 - **THEN** 一次批准事件覆盖整批的 triage 处置（合并/折叠/建议不做）与各卡条件预算；未被人显式处置的建议不做项保持原状态
+
+#### Scenario: 入队一并定并发与隔离
+
+- **WHEN** 人在场入队一个队列
+- **THEN** 深谈在冻结前问清并发度（推荐 3）与隔离强度，并把两者记入队列配置；选并发 ≥2 即接受 worktree 强制，拒绝 worktree 则并发封顶 1
 
 #### Scenario: 夜间启动不再阻塞
 
@@ -113,11 +118,11 @@ The system SHALL run a **fog-bounded deep intake interview** at enqueue time whi
 #### Scenario: 缺席档保持不变
 
 - **WHEN** 用户声明无人值守或卡片由结构性缺席通道入队
-- **THEN** 按现行一次确认 + 全账本模式执行，行为与引入在场两档之前逐字一致；triage 仅自动应用机械可证结论
+- **THEN** 按现行一次确认 + 全账本模式执行；triage 仅自动应用机械可证结论；并发度与隔离强度照用入队时已记录的值
 
 ### Requirement: 显式触发边界（编排层不内置调度）
 
-The skill SHALL activate only on an explicit queue request (trigger words such as 「跑队列」「goal 队列」「无人值守队列」 / "run queue", "goal queue") and SHALL describe scheduling as platform-native intent only (cron / systemd / scheduled CI / assistant-native routines / manual invocation). The skill MUST NOT embed scheduler commands as required paths and MUST NOT auto-start consumption merely by being loaded. When loaded without a queue request and without a bound queue-id, the idle overview SHALL state that this conversation has no queue yet and MUST NOT list sibling queues as a picker.
+The skill SHALL activate only on an explicit queue request (trigger words such as 「跑队列」「goal 队列」「无人值守队列」 / "run queue", "goal queue") and SHALL describe scheduling as platform-native intent only (cron / systemd / scheduled CI / assistant-native routines / manual invocation). The skill MUST NOT embed scheduler commands as required paths and MUST NOT auto-start consumption merely by being loaded. When loaded without a queue request and without a bound queue-id, the idle overview SHALL state that this conversation has no queue yet and MUST NOT list sibling queues as a picker. A trigger MAY state a concurrency for this run; when it does not, the recorded queue value applies and an unrecorded value on an attended run is asked rather than assumed.
 
 #### Scenario: 加载即观察
 
@@ -127,41 +132,12 @@ The skill SHALL activate only on an explicit queue request (trigger words such a
 #### Scenario: 定时拉起即消费
 
 - **WHEN** 平台定时器拉起「跑队列」且无对话绑定
-- **THEN** 系统串行消费 `default` 的 pending 任务直至清空或触达队列级预算上限，不抽干其它 `q-*` 抽屉
+- **THEN** 系统按该队列已记录的并发度与隔离强度消费 `default` 的 pending 任务直至清空或触达队列级预算上限，不抽干其它 `q-*` 抽屉
 
-### Requirement: 串行消费与非阻塞失败
+#### Scenario: 触发语指定并发度
 
-The system SHALL consume queued tasks strictly serially in the order defined by 持久 backlog 载体 (priority level, then information leverage, then assessment band, then FIFO). The relationship pass is re-anchored in two places: **at enqueue**, the batch triage pass owned by `goal-queue-triage` handles equivalence, root-cause clustering and suggested kills before any interview; **at dispatch**, a light pass over pending cards **in the bound queue only** re-checks dependency waiting, overlap-conflict and **derived** against the live code state, and re-evaluates remaining cards after each completion. At that same post-completion boundary the system SHALL also re-scan the bound queue directory for newly added pending cards: a discovered card that is well-formed and carries both a budget clause and an approval record SHALL be admitted into the consumption order for the remainder of the run (never preempting the in-flight child task) and SHALL count against the remaining queue-level task cap; a discovered card that is malformed or lacks an approval record SHALL stay `pending` with a note in the progress document, and MUST NOT be executed. Cards appearing only in sibling queues MUST NOT be admitted. One task's failure MUST NOT block later tasks; failed tasks are marked and recorded with reason, then the loop continues.
-
-#### Scenario: 失败不传染
-
-- **WHEN** 任务 A 的长跑以预算耗尽终止且验收未达成
-- **THEN** 系统将 A 标记为 failed 及原因，继续执行下一个 pending 任务 B
-
-#### Scenario: 重复任务跳过
-
-- **WHEN** 待执行任务 B 的症状与目标同已完成的任务 A 等价且 A 的产出已覆盖
-- **THEN** 系统将 B 标记为 skipped (covered by duplicate)，注记指向 A 的报告
-
-#### Scenario: 派发时重判依赖与重叠
-
-- **WHEN** 某任务完成后代码状态发生变化
-- **THEN** 系统在派发边界对剩余卡重判依赖等待、重叠冲突与 derived 关系，并按最新状态调整后续消费顺序
-
-#### Scenario: 运行中追加完成后纳入
-
-- **WHEN** 队列运行中（某子任务执行期间）一张新的合法卡片（含预算子句与审批留痕）被写入**已绑定** queue-id 的目录
-- **THEN** 当前子任务不被打断；其后一次完成边界重扫该目录时该卡片通过校验并按消费顺序插入后续消费，发现事件记入进度文档 Notes；兄弟队列中的新卡不被纳入
-
-#### Scenario: 无审批留痕的新卡不执行
-
-- **WHEN** 重扫发现一张缺少审批留痕（Approved 记录缺失）的新卡片
-- **THEN** 系统将其保持 pending 并在进度文档注记「awaiting approval (added mid-run)」，绝不无人审批执行
-
-#### Scenario: 迟到卡片计入任务配额
-
-- **WHEN** 队列级任务数上限为 3 且运行中第 2 个任务完成后重扫纳入 1 张新卡片
-- **THEN** 该卡片占用剩余任务配额（第 3 个派发名额），时间上限口径不变；配额触顶时新卡片与其它 pending 一样保留至下次运行
+- **WHEN** 触发语中显式给出并发度（如「跑队列 2 并发」）
+- **THEN** 该次运行采用触发语给出的并发度；未给出时采用队列已记录值，未记录且在场时则询问
 
 ### Requirement: Jira 列表入队捷径
 
@@ -212,44 +188,79 @@ Relationship handling SHALL be split by pass. The **enqueue batch triage pass** 
 
 ### Requirement: 逐任务隔离
 
-The system SHALL require each queued task to execute on its own branch (or linked worktree) based off the current main state, so concurrent history stays reviewable per-task and one task's working tree never carries another's uncommitted changes. Isolation directives follow `git-worktree-discipline`; the orchestrator does not restate its checklists.
+The system SHALL grade isolation strength by the resolved concurrency. At concurrency 1 each queued card SHALL execute on its own branch **or** a linked worktree based off the current main state, as today. At concurrency ≥ 2 each concurrent child SHALL execute in its **own worktree** — a single working tree cannot serve two children on two branches — so one task's working tree never carries another's uncommitted changes. Isolation directives follow `git-worktree-discipline`; the orchestrator does not restate its checklists. A queue whose concurrency is capped at 1 (because worktrees were declined) keeps the branch-or-worktree behavior.
 
 #### Scenario: 独立分支落盘
 
 - **WHEN** 任务进入执行阶段
 - **THEN** 引擎在该任务专属分支上进行全部修改，完成后该分支承载本次交付物供人审查合并
 
+#### Scenario: 并发 ≥2 强制 worktree
+
+- **WHEN** 队列并发度为 2 或以上且某任务被准入
+- **THEN** 该任务的子运行在自己的 worktree 中执行，不与任何在飞任务共享工作树
+
+#### Scenario: 并发 1 保持现状
+
+- **WHEN** 队列并发度为 1
+- **THEN** 隔离保持 branch-or-worktree 的现状，行为与引入并发之前逐字一致
+
 ### Requirement: 模式向子运行传播
 
-The system SHALL propagate batch-level mode explicitly into every child long-run invocation: a card's `Stage-exit policy` field, when present, overrides trigger-word propagation (manual → child manual mode; proxy → child auto mode + proxy checkpoints; auto → child auto mode with named escapes); with no field, the legacy trigger rule applies (queue trigger containing 「自动」/"auto" runs children in auto mode; default trigger leaves children in their manual defaults). Child skills' auto-revert-to-manual behavior MUST NOT break queue continuity between tasks. The orchestrator states mode propagation once and does not rely on ambient inheritance.
+The system SHALL propagate batch-level mode explicitly into **every** child long-run invocation — with concurrency, each admitted slot receives its own explicit propagation rather than relying on a single batch-level statement: a card's `Stage-exit policy` field, when present, overrides trigger-word propagation (manual → child manual mode; proxy → child auto mode + proxy checkpoints; auto → child auto mode with named escapes); with no field, the legacy trigger rule applies (queue trigger containing 「自动」/"auto" runs children in auto mode; default trigger leaves children in their manual defaults). Child skills' auto-revert-to-manual behavior MUST NOT break queue continuity between tasks. The orchestrator states mode propagation per admitted child and does not rely on ambient inheritance.
 
 #### Scenario: 自动批次持续自动
 
 - **WHEN** 用户以「自动跑队列」触发且队列含三个任务
-- **THEN** 三个任务的引擎调用均以自动模式发起，前一个任务的完结回退不影响后续任务的连续执行
+- **THEN** 三个任务的引擎调用均以自动模式发起，任一任务的完结回退不影响后续任务的连续执行
+
+#### Scenario: 并发下逐 slot 传播
+
+- **WHEN** 多个子运行同时被准入
+- **THEN** 每个 child 各自收到显式的模式传播，不依赖批次级的隐式继承
 
 ### Requirement: 队列级预算与停止规则
 
-The system SHALL enforce queue-level caps independent of per-task budgets: a maximum number of tasks per run and/or an overall time cap supplied at trigger time or from the queue config, stopping cleanly when reached with remaining tasks left pending. When a run starts, the system SHOULD report upfront how the summed card estimates compare to the resolved caps (advisory only — stopping remains cap-driven). The system treats stopping as a feature: hitting caps, emptying the queue, or repeated no-progress outcomes all end the run gracefully and hand back to the human.
+The system SHALL enforce three independent queue-level caps: a maximum number of tasks per run (`max-tasks`), a maximum concurrency (`max-concurrent`, resolved per 并发度与隔离强度的入队期决策), and an overall **wall-clock** time cap — each supplied at trigger time or from the queue config. Hitting any cap SHALL stop **dispatch** cleanly with remaining tasks left `pending` while in-flight children reach a safe point. The summed card estimates SHALL be reported as reference only and MUST NOT be presented as an upper bound on wall-clock duration. The system treats stopping as a feature: hitting caps, emptying the queue, or repeated no-progress outcomes all end the run gracefully and hand back to the human.
 
 #### Scenario: 总预算触顶优雅收尾
 
-- **WHEN** 队列级时间上限在第三个任务执行完毕时到达
-- **THEN** 系统停止派发第四个任务，保留其 pending 状态，转入验收包生成流程
+- **WHEN** 队列级时间上限到达
+- **THEN** 系统停止派发新卡，保留未派发卡的 pending 状态，在飞卡到达安全点后转入验收包生成流程
+
+#### Scenario: 三口径分别记账
+
+- **WHEN** 运行过程中任一 cap 触顶（任务数 / 并发度 / 墙钟）
+- **THEN** 进度文档记录是哪一个口径触顶，并据此收尾
+
+#### Scenario: 并发度触顶不中断在飞卡
+
+- **WHEN** 并发度已达上限而仍有待派发卡
+- **THEN** 系统不派发新卡，但已在飞的子运行继续执行至完成
 
 ### Requirement: 进度文档与验收包
 
-The system SHALL maintain a persistent progress document updated on every status change (path `.goal-driven/queues/<queue-id>/runs/<batch-id>/progress.md`, minimum fields: task, mode, status, result summary, branch name, notes), and SHALL end every run with an acceptance package in that same `runs/<batch-id>/` directory: the batch progress document plus each executed task's engine completion report plus the branch list awaiting human review. Merge decisions remain exclusively human; the package labels claims per `completion-evidence-discipline` inherited from the engine reports.
+The system SHALL maintain a persistent progress document (path `.goal-driven/queues/<queue-id>/runs/<batch-id>/progress.md`, minimum fields: task, mode, status, result summary, branch name, notes) whose **sole writer is the dispatcher** — a child run reports back and MUST NOT write it, and completions arriving together are recorded sequentially so no entry is lost. Every run SHALL end with an acceptance package in that same `runs/<batch-id>/` directory: the batch progress document, the triage record by path, each executed task's engine completion report, and the branch list awaiting human review — with each branch **auto-rebased onto the latest main and its conflicts pre-computed** so the human reviews real conflicts rather than performing N unassisted merge decisions. Merge decisions remain exclusively human; the package labels claims per `completion-evidence-discipline` inherited from the engine reports.
 
 #### Scenario: 人回归验收
 
 - **WHEN** 用户在同一对话回来查看「昨晚跑了什么」
 - **THEN** 系统呈现该队列进度文档路径与最终摘要：每个任务的结果、证据来源、对应分支，以及待人工判定的 outcome 型事项清单
 
+#### Scenario: 单写者记账不丢条目
+
+- **WHEN** 两个子运行在同一时间窗内完成
+- **THEN** 派发器逐条记录两次状态变更，进度文档中两条都在
+
+#### Scenario: 验收只呈报真冲突
+
+- **WHEN** 组装验收包时多数分支可无冲突合入
+- **THEN** 系统只呈报真冲突与建议合并序列，不要求人逐张做无冲突的合并决策
+
 #### Scenario: 合并权保留在人
 
 - **WHEN** 全部任务已完成且验收包已生成
-- **THEN** 系统停在分支清单与建议处等待人工处置，不自行合并到主分支
+- **THEN** 系统停在分支清单与冲突预演结果处等待人工处置，不自行合并到主分支
 
 ### Requirement: 编排层薄引用引擎方法论
 
@@ -285,7 +296,7 @@ When a child run's evidence falsifies the card's frozen approach, the orchestrat
 #### Scenario: 停止不传染
 
 - **WHEN** 某任务的冻结方向被子运行证据证伪
-- **THEN** 该任务干净停止并出票留待人重新定方向，队列其余合法任务继续串行消费
+- **THEN** 该任务干净停止并出票留待人重新定方向；队列其余合法任务继续消费，在飞子运行不因此中断
 
 ### Requirement: 验收包汇总决策与假设台账
 
@@ -321,7 +332,7 @@ The queue SHALL offer OpenSpec sedimentation as an **opt-in enqueue-time decisio
 
 ### Requirement: 子任务引擎可选调度
 
-The enqueue interview SHALL include an **engine ticket** (second fixed ticket, after the interaction budget): the value is chosen from among `goal-driven-workflow | solve-workflow | opsx-solve-workflow | jira-fix-workflow | opsx-jira-fix-workflow` (exact skill names, with fit guidance and a recommended answer) and is fixed per card at freeze time as the `Engine` field. **The ticket carries no default value unless the card's certainty/difficulty assessment reaches the high-certainty, low-cost band**, in which case the assessment's recommended engine SHALL be pre-filled as the default and the human (or proxy) confirms or overrides it in the same interaction — this replaces the previous blanket "no default value" rule. The Delegate step SHALL dispatch by this field and pass the card's `Stage-exit policy` along: a `solve-workflow` child receives the card's problem statement + frozen-decisions block as its stage-1 input and runs per the policy (proxy → auto mode with proxy-occupied exits; manual → manual mode; auto → auto with named escapes); an `opsx-solve-workflow` child additionally passes the openspec environment gate (`openspec/` directory + usable CLI detection) — a card whose engine requires a missing environment parks at the consumption-entry check as `conflict pending confirmation`, never degrading to another engine silently. A `opsx-jira-fix-workflow` child receives the same supply as the jira-fix child (Jira-link goal condition, frozen decisions as its stage 0–1 supply, explicit `queue-child` flag) plus the openspec environment gate, with an **archive + PR-open terminal**: the child archives its OpenSpec change (archiving is native to its model and always happens), then stops at PR open — merge + Jira writeback defer to the human. A `jira-fix-workflow` child receives the Jira issue link/key as the card's goal condition, the frozen-decisions block as its stage 0–1 supply, an explicit `queue-child` context flag, and a **PR-open terminal**: the child runs through stage 9 (PR open) and a record-only closeout — stage 10 (merge + Jira writeback) is deferred to the human, whose merge authority the queue never proxies; the acceptance package lists the awaiting PR and the pending merge + writeback as explicit follow-ups. Queue-level contracts (caps, branch isolation, per-status recording, relationship pass) apply to every engine unchanged. A card without a `Stage-exit policy` keeps the legacy trigger rule; a card without an `Engine` field parks at the consumption-entry check as `conflict pending confirmation` (awaiting engine decision — one added line un-parks it); the queue never silently picks an engine that neither the human nor a high-confidence assessment supplied.
+The enqueue interview SHALL include an **engine ticket** (second fixed ticket, after the interaction budget): the value is chosen from among `goal-driven-workflow | solve-workflow | opsx-solve-workflow | jira-fix-workflow | opsx-jira-fix-workflow` (exact skill names, with fit guidance and a recommended answer) and is fixed per card at freeze time as the `Engine` field. **The ticket carries no default value unless the card's certainty/difficulty assessment reaches the high-certainty, low-cost band**, in which case the assessment's recommended engine SHALL be pre-filled as the default and the human (or proxy) confirms or overrides it in the same interaction — this replaces the previous blanket "no default value" rule. The Delegate step SHALL dispatch by this field and pass the card's `Stage-exit policy` along: a `solve-workflow` child receives the card's problem statement + frozen-decisions block as its stage-1 input and runs per the policy (proxy → auto mode with proxy-occupied exits; manual → manual mode; auto → auto with named escapes); an `opsx-solve-workflow` child additionally passes the openspec environment gate (`openspec/` directory + usable CLI detection) — a card whose engine requires a missing environment parks at the consumption-entry check as `conflict pending confirmation`, never degrading to another engine silently. A `opsx-jira-fix-workflow` child receives the same supply as the jira-fix child (Jira-link goal condition, frozen decisions as its stage 0–1 supply, explicit `queue-child` flag) plus the openspec environment gate, with an **archive + PR-open terminal**: the child archives its OpenSpec change (archiving is native to its model and always happens), then stops at PR open — merge + Jira writeback defer to the human. A `jira-fix-workflow` child receives the Jira issue link/key as the card's goal condition, the frozen-decisions block as its stage 0–1 supply, an explicit `queue-child` context flag, and a **PR-open terminal**: the child runs through stage 9 (PR open) and a record-only closeout — stage 10 (merge + Jira writeback) is deferred to the human, whose merge authority the queue never proxies; the acceptance package lists the awaiting PR and the pending merge + writeback as explicit follow-ups. Queue-level contracts (caps, isolation strength, per-status recording, relationship pass) apply to every engine unchanged. A card without a `Stage-exit policy` keeps the legacy trigger rule; a card without an `Engine` field parks at the consumption-entry check as `conflict pending confirmation` (awaiting engine decision — one added line un-parks it); the queue never silently picks an engine that neither the human nor a high-confidence assessment supplied.
 
 #### Scenario: 派发给 solve-workflow 子运行
 
@@ -388,7 +399,7 @@ Decisions-I-made entries SHALL be marked `factual` (branch baselines, dependency
 
 ### Requirement: goal-queue 代理检查点接线
 
-`goal-driven-queue` SHALL declare `ai-proxy-discipline` in frontmatter `dependencies` (prerequisite check with install guidance; abort on missing when the card's Stage-exit policy is `proxy`) and wire it, when the card records `Stage-exit policy: ai-proxy`, at these thin-pointer checkpoints: enqueue intake Q&A (absent human); the **batch triage / batch approval event** (mechanically provable outcomes apply without confirmation; the proxy MAY grant the batch approval as bounded pre-authorization with the Decisions-I-made section displayed to it); the card approval event (proxy approval = bounded pre-authorization, Decisions-I-made section displayed to it); the record-step verification-checklist check on each child report; and conflict re-adjudication (whether a parked card's constraints re-validate within the original frozen scope). At the batch triage checkpoint the proxy MUST NOT confirm a **value-judgment kill** — discarding a card a human submitted is outcome acceptance and stays human-only; on hit the item SHALL be ticketed and parked as `conflict pending confirmation`, never applied. Proxy-made triage decisions SHALL be recorded in the triage record and surfaced in the acceptance package's needs-your-judgment section. Checkpoint invocations count against the queue budget. With any other policy value or none, queue behavior is identical to today.
+`goal-driven-queue` SHALL declare `ai-proxy-discipline` in frontmatter `dependencies` (prerequisite check with install guidance; abort on missing when the card's Stage-exit policy is `proxy`) and wire it, when the card records `Stage-exit policy: ai-proxy`, at these thin-pointer checkpoints: enqueue intake Q&A (absent human); the **batch triage / batch approval event** (mechanically provable outcomes apply without confirmation; the proxy MAY grant the batch approval as bounded pre-authorization with the Decisions-I-made section displayed to it); the **concurrency and isolation decision** (recorded at enqueue, reused by absent runs); the card approval event (proxy approval = bounded pre-authorization, Decisions-I-made section displayed to it); the record-step verification-checklist check on each child report; and conflict re-adjudication (whether a parked card's constraints re-validate within the original frozen scope). When several children are in flight, checkpoint events SHALL be adjudicated **serially by the dispatcher** so that no two adjudications interleave. At the batch triage checkpoint the proxy MUST NOT confirm a **value-judgment kill** — discarding a card a human submitted is outcome acceptance and stays human-only; on hit the item SHALL be ticketed and parked as `conflict pending confirmation`, never applied. Proxy-made triage decisions SHALL be recorded in the triage record and surfaced in the acceptance package's needs-your-judgment section. Checkpoint invocations count against the queue budget. With any other policy value or none, queue behavior is identical to today.
 
 #### Scenario: 代理批准事件
 
@@ -404,4 +415,48 @@ Decisions-I-made entries SHALL be marked `factual` (branch baselines, dependency
 
 - **WHEN** 代理在 triage 检查点作出任何决策
 - **THEN** 该决策记入 triage 记录并出现在验收包的 needs-your-judgment 段，可被人推翻
+
+#### Scenario: 并发检查点串行裁决
+
+- **WHEN** 多个 ai-proxy 子运行同时抵达检查点
+- **THEN** 派发器串行地逐个裁决，不出现两个裁决交错
+
+### Requirement: 并发消费与非阻塞失败
+
+The system SHALL consume queued cards through the slot dispatch defined by 并发 slot 派发与非重叠准入, admitting cards in the order defined by 持久 backlog 载体 (priority level, then information leverage, then assessment band, then FIFO) — the order decides admission sequence, not the number of concurrent children. The relationship pass is re-anchored in two places: **at enqueue**, the batch triage pass owned by `goal-queue-triage` handles equivalence, root-cause clustering and suggested kills before any interview; **at dispatch**, a light pass over pending cards **in the bound queue only** re-checks dependency waiting, overlap-conflict and **derived** against the live code state, and re-evaluates remaining cards after each completion. At that same post-completion boundary the system SHALL also re-scan the bound queue directory for newly added pending cards: a discovered card that is well-formed and carries both a budget clause and an approval record SHALL be admitted into the consumption order for the remainder of the run (it MUST NOT preempt an in-flight child) and SHALL count against the remaining queue-level task cap; a discovered card that is malformed or lacks an approval record SHALL stay `pending` with a note in the progress document, and MUST NOT be executed. Cards appearing only in sibling queues MUST NOT be admitted. One task's failure MUST NOT block later tasks; failed tasks are marked and recorded with reason and the freed slot is refilled at the next completion boundary.
+
+#### Scenario: 失败不传染
+
+- **WHEN** 任务 A 的长跑以预算耗尽终止且验收未达成
+- **THEN** 系统将 A 标记为 failed 及原因，并在下一个完成边界把腾出的 slot 补给下一个可采纳卡
+
+#### Scenario: 重复任务跳过
+
+- **WHEN** 待执行任务 B 的症状与目标同已完成的任务 A 等价且 A 的产出已覆盖
+- **THEN** 系统将 B 标记为 skipped (covered by duplicate)，注记指向 A 的报告
+
+#### Scenario: 派发时重判依赖与重叠
+
+- **WHEN** 某任务完成后代码状态发生变化
+- **THEN** 系统在派发边界对剩余卡重判依赖等待、重叠冲突与 derived 关系，并按最新状态调整后续采纳顺序（含对在飞卡模块集的重叠检查）
+
+#### Scenario: 并发采纳不超并发度
+
+- **WHEN** 已满并发度且仍有可采纳卡
+- **THEN** 系统不采纳新卡，在飞卡继续执行；任一完成后再补位
+
+#### Scenario: 运行中追加完成后纳入
+
+- **WHEN** 队列运行中（某子任务执行期间）一张新的合法卡片（含预算子句与审批留痕）被写入**已绑定** queue-id 的目录
+- **THEN** 在飞子任务不被打断；其后一次完成边界重扫该目录时该卡片通过校验并按采纳顺序进入后续消费（受并发度与非重叠判据约束），发现事件记入进度文档 Notes；兄弟队列中的新卡不被纳入
+
+#### Scenario: 无审批留痕的新卡不执行
+
+- **WHEN** 重扫发现一张缺少审批留痕（Approved 记录缺失）的新卡片
+- **THEN** 系统将其保持 pending 并在进度文档注记「awaiting approval (added mid-run)」，绝不无人审批执行
+
+#### Scenario: 迟到卡片计入任务配额
+
+- **WHEN** 队列级任务数上限为 3 且运行中第 2 个任务完成后重扫纳入 1 张新卡片
+- **THEN** 该卡片占用剩余任务配额（第 3 个派发名额）；配额触顶时新卡片与其它 pending 一样保留至下次运行
 
