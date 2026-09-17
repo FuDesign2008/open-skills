@@ -42,6 +42,8 @@ File name: `.goal-driven/queues/<queue-id>/<slug>.md` (slug = kebab-case goal su
 
 ## Acceptance Summary
 <filled after the run: engine report path, branch name, result tier (done/failed/...), outcome items awaiting human judgment>
+
+- Verification: awaiting | verified | returned — <reason, who/when> (human-only verdict; `awaiting` from package assembly until a present human records it; a batch is not accepted while any executed card is `awaiting`)
 ```
 
 The budget clause mirrors the engine's own mandatory-budget rule — a card without one fails the consumption-entry check. The Frozen Decisions section mirrors `intake-interview-discipline` — it answers the child engine's stage 1 intake so the child never re-asks what was frozen; falsifying evidence mid-run produces a clean stop + ticket, not a silent pivot.
@@ -80,6 +82,7 @@ Path: `.goal-driven/queues/<queue-id>/runs/<batch-id>/progress.md` (`batch-id` =
 | Result summary | one line: what happened, or why parked/failed |
 | Branch | task branch tip |
 | Report | path to the engine completion report |
+| Verification | `awaiting` / `verified` / `returned` — the human per-card verdict; `awaiting` from package assembly until a present human records a verdict (legacy rows without it are unchanged) |
 | Notes | relationships (covered-by / waits-on), blockers, human asks, and a `reordering` note whenever a leverage recomputation moves the queue head |
 | Effective concurrency | batch-level (not per task): the concurrency actually achieved beside the resolved value — a gap means slots idled on module overlap or the platform degraded |
 
@@ -93,7 +96,8 @@ Written into the bound queue directory as `triage-<timestamp>.md`: the **triage 
 ## Queue Run <batch-id>
 - Duration: <start → end> (planned ≈ <sum of card estimates> — reference only, never presented as a wall-clock bound); caps hit: <none | max-tasks | max-concurrent | wall-clock>
 - Concurrency: resolved <N> / effective <M>   (a gap means slots idled on module overlap or the platform degraded)
-- Done: N   Failed: M   Skipped: K   Parked: P   Left pending: R
+- Done: N   Failed: M   Skipped: K   Parked: P   Left pending: L
+- Verification: <path to verification.md> — Verified: V   Awaiting: A   Returned: R   (batch accepted only when Awaiting = 0)
 - Branches awaiting review:
   - <branch> — <task slug> — <result tier> — report: <path>
 - Needs your judgment:
@@ -101,6 +105,39 @@ Written into the bound queue directory as `triage-<timestamp>.md`: the **triage 
   - <ledger rollup per intake-interview-discipline: unresolved tickets / low-confidence assumptions / high-impact-if-wrong entries; clean-stop tickets with options>
 - Suggested merge order / conflicts: <short list>
 ```
+
+## Verification Document
+
+Path: `.goal-driven/queues/<queue-id>/runs/<batch-id>/verification.md` — the dedicated, consolidated human-verification surface: one section per **executed** card, so the human verifies each card from a single place instead of hopping across engine reports. Assembled and maintained by the dispatcher, the sole writer of the durable records (this document, each card's Acceptance Summary, the progress `Verification` column, and the batch counts); the human supplies each verdict — on the document's Verdict line or to the dispatcher — and the dispatcher records it. The verdict seat is **human-only** — an AI proxy may check a report's quality, never fill a card's verdict.
+
+```markdown
+# Human Verification — <batch-id>
+
+- Queue: <queue-id>   Window: <start → end>   Caps hit: <none | max-tasks | max-concurrent | wall-clock>
+- Concurrency: resolved <N> / effective <M>
+- Verification: Verified <v> / Awaiting <a> / Returned <rt>   (accepted only when Awaiting = 0)
+- Other outcomes: Failed <f> / Skipped <k> / Parked <p> / Left pending <l>
+
+> Verify each executed card below, one by one, and record your verdict on its Verdict line.
+> Outcome-type acceptance is human-only: an AI proxy may check a report's quality, never enter your verdict.
+
+## Card: <slug>
+- Goal condition: <verbatim>
+- Engine: <engine>   Result: <result tier>   Branch: <tip>
+- Report: <path>
+- Layered acceptance: hard <…> / soft <…> / human <outcome items>
+- Verification checklist (from the engine report):
+  1. …
+- Side effects: functional <…> / non-functional <…>
+- Ledger for this card: <unresolved tickets / low-confidence assumptions / high-impact-if-wrong>
+- Conflict pre-run: <clean | conflicts with <branch>>
+- Verdict: [ ] verified   [ ] returned — reason: ____   by: ____   at: ____
+
+## Items needing your decision (no verdict slot)
+- <failed / skipped (covered) / waiting dependency / conflict pending confirmation / parked / leftover pending — with reason>
+```
+
+The batch is accepted only when every executed card carries a verdict; `returned` findings route back as new or revised cards.
 
 ## Approach Record (written only when `Reusable: yes`)
 
@@ -132,7 +169,8 @@ A record seeds a new card's intake only when its `factual` entries still verify 
 - Stage-exit policy absent → legacy trigger-word mode propagation + proxy off (behavior identical to pre-policy versions). With `proxy`: checkpoints per the card's charter — absent-mode intake Q&A, the batch triage / batch approval event, approval event, record-step report check, conflict re-adjudication; every proxy decision is ledger-marked `proxy-made` and human-overturnable at acceptance. One reservation applies at the triage checkpoint: a value-judgment kill is outcome acceptance and stays human-only, so the proxy tickets and parks it instead of confirming.
 - Jira list-enqueue shortcut: one interaction-budget ticket and one approval event for the whole parsed list; Engine frozen by `jira-fix-queue` / `opsx-jira-fix-queue` (or an already-frozen Engine on a Jira-ID list); never start consumption from the shortcut. Relationship type **derived** is recorded in progress Notes; opsx-jira children persist those notes as `## Related Issues` in each change's `design.md`. Duplicate/equivalent → skip; same root cause does **not** share a branch or OpenSpec change.
 - Factual Decisions-I-made entries are verified at the consumption-entry check (symbol-exists / branch-contains / merge-base); falsified entries park the card at the gate.
-- Triage defaults: only mechanical outcomes apply automatically — an exact problem-signature plus target-path match, or a `done` card's report already covering this outcome — and each is archived reversibly with `superseded-by` recorded. Every value judgment, including "not worth doing", stays in its current status until a human acts. Under declared absence or `ai-proxy` only the mechanical outcomes apply; the triage record carries the rest.
+- Verification defaults: `done` = engine completed; acceptance is the card's `Verification` state (`awaiting` at package assembly → human `verified` / `returned`). A batch is never presented as accepted while any executed card is `awaiting`, and the verdict seat is human-only (a proxy may check the report, never fill the verdict). Cards and batches predating this state behave as before; no retro-active verdict is required.
+- Triage defaults: only mechanical outcomes apply automatically — an exact problem-signature plus target-path match, or a `verified` card's report already covering this outcome — and each is archived reversibly with `superseded-by` recorded. Every value judgment, including "not worth doing", stays in its current status until a human acts. Under declared absence or `ai-proxy` only the mechanical outcomes apply; the triage record carries the rest.
 - Certainty band defaults: derived from the four signals per the change's design (most conservative band wins on conflict). A band derived from any `preference` signal is not treated as verified, and the routing defaults on `Engine` and `Stage-exit policy` unlock only when every signal is `factual` and verified.
 - Reuse defaults: `Reusable` is `no`; a record seeds an intake only while its `factual` entries verify; promotion into a shared carrier (`AGENTS.md`, rules, project-local skill) follows `learn-and-improve`'s carrier decision tree — recommend-only, never written by the queue.
-- `Waits-on` defaults: an unresolved target holds the card in `waiting dependency`; a cycle, or a target ending in any terminal state other than `done`, parks the affected cards as `conflict pending confirmation` without blocking other cards.
+- `Waits-on` defaults: an unresolved target holds the card in `waiting dependency` (a `done`-but-`awaiting` target keeps holding); a cycle, or a target ending in any state other than **`verified`** (`returned`, skipped, archived, failed, parked), parks the affected cards as `conflict pending confirmation` without blocking other cards.
