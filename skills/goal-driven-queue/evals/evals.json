@@ -408,6 +408,267 @@
           "text": "不向人索要队列名"
         }
       ]
+    },
+    {
+      "id": 23,
+      "name": "triage-equivalence-merge-reversible",
+      "prompt": "本对话入队两张卡：①「修复导出 CSV 重复行」②「解决导出 CSV 出现重复行的问题」。两张卡目标与症状等价，②的证据已由①覆盖。",
+      "expected_output": "先跑 batch triage（在逐卡深谈之前），识别为等价组；机械可证结论自动应用：被覆盖卡归档（不删除）并在原地指向覆盖卡及其报告，事件记入 triage 记录；被合并掉的卡不再消耗深谈。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "triage 先于逐卡深谈执行"
+        },
+        {
+          "text": "等价判定按精确问题签名 + 目标路径集匹配，而非近似相似"
+        },
+        {
+          "text": "被覆盖卡归档而非删除，并记录 superseded-by 指向"
+        },
+        {
+          "text": "合并事件进入 triage 记录，且被合并卡不再进入深谈"
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "name": "triage-root-cause-cluster-folding",
+      "prompt": "入队三张卡：导出乱码、导出缺列、导出时间格式错。三者症状指向同一根因（导出序列化器）。",
+      "expected_output": "triage 折叠为一张卡，折叠后的卡内含三张成员卡各自的目标文本；成员卡以归档方式保留可回溯，不直接丢弃。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "识别为同根因簇而非三个独立任务"
+        },
+        {
+          "text": "折叠后的卡保留三张成员卡各自的目标文本"
+        },
+        {
+          "text": "成员卡以归档方式保留，可回溯"
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "name": "triage-value-kill-needs-human",
+      "prompt": "入队一张卡「把整个日志模块重写为结构化日志」，triage 认为其价值存疑、建议不做。",
+      "expected_output": "价值判断不得自动应用：只提出建议并保持卡片原状态，等待人在批准事件中处置，绝不自动淘汰。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "价值类结论不自动淘汰"
+        },
+        {
+          "text": "卡片保持原状态直至人处置"
+        },
+        {
+          "text": "建议在批准事件中呈现给人"
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "name": "triage-absence-no-silent-kill",
+      "prompt": "我今晚不在，把这些卡都排进队列跑（其中一张 triage 认为价值存疑）。",
+      "expected_output": "缺席档下只有机械可证结论（精确等价、已被 done 卡覆盖）自动应用；价值类建议保持原状并写入进度文档注记，留待人回归；绝不静默淘汰。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "缺席下不静默淘汰"
+        },
+        {
+          "text": "仅机械可证结论被自动应用"
+        },
+        {
+          "text": "价值类项留原位并写入进度文档注记"
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "name": "proxy-cannot-confirm-value-kill",
+      "prompt": "队列里 Stage-exit policy: ai-proxy 的卡在缺席运行中，triage 产出「建议不做」的价值类结论。",
+      "expected_output": "代理不得确认该淘汰（属保留项：结果接受）：该项出票并搁置为 conflict pending confirmation 留人判定；机械可证的等价/被覆盖结论仍照常自动应用；代理所作决策进 triage 记录并在验收包 needs-your-judgment 呈现。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "代理不批准价值类淘汰，改为出票并搁置"
+        },
+        {
+          "text": "机械可证结论仍自动应用，无需确认"
+        },
+        {
+          "text": "代理的 triage 决策进记录并进入验收包待判段"
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "name": "assessment-derived-band-prefills-routing",
+      "prompt": "入队一张卡：给设置页加一个开关。改动局限单一模块（双向门）、已有测试可复现、无依赖。四项信号均为 factual 且核实通过。",
+      "expected_output": "由四信号派生出高确定度、低成本档；引擎票与阶段出口策略票预填评估推荐值，人在同一次交互中确认或覆盖；卡片记录产生默认的四项信号与「全部 factual 已核验」事实。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "档位由四信号派生，不独立断言、不含数值评分"
+        },
+        {
+          "text": "四项信号均标 factual 且经实证"
+        },
+        {
+          "text": "引擎票与策略票预填推荐值且可覆盖"
+        },
+        {
+          "text": "卡片留痕默认来源与可覆盖事实"
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "name": "assessment-preference-blocks-default",
+      "prompt": "入队一张卡，其「影响半径」信号只能靠主观判断（preference），其余信号与派生档看起来是高确定/低成本。",
+      "expected_output": "引擎票与阶段出口策略票保持必问且无默认值；该档位不被视为已核验（只有 factual 输入会被实证核查）；行为与引入本能力前一致。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "存在 preference 信号时不解锁任何默认"
+        },
+        {
+          "text": "两票仍必问无默认"
+        },
+        {
+          "text": "档位不被视为已核验"
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "name": "factual-signal-falsified-parks-card",
+      "prompt": "卡片评估的 factual 项记录了「依赖 MR !123 已合入」，但消费入口检查发现该 MR 实际未合入。",
+      "expected_output": "该 factual 信号被实证证伪 → 卡片在消费入口即搁置为 conflict pending confirmation 并注记证伪证据；评估默认不再生效，不派发、不留到运行中 clean stop。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "在消费入口对 factual 信号做廉价实证"
+        },
+        {
+          "text": "证伪即门口搁置而非派发"
+        },
+        {
+          "text": "该卡的评估默认随之失效"
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "name": "leverage-ordering-within-priority",
+      "prompt": "同级两张 P1 卡：A 的结论可决定其余三张待办卡是否还需要做；B 只影响自身。",
+      "expected_output": "A 先于 B 被消费；杠杆计数按 Waits-on 传递闭包 + 同根因簇成员数计算；完成后在完成边界重算，重排事件记入进度文档 Notes。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "A 先于 B 消费"
+        },
+        {
+          "text": "说明杠杆计数的依据（依赖闭包 / 同簇成员）"
+        },
+        {
+          "text": "杠杆在完成边界重算，重排有 reordering 注记"
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "name": "waits-on-cycle-parks-ring",
+      "prompt": "队列里 A 卡 Waits-on B、B 卡 Waits-on A。",
+      "expected_output": "识别成环：环上每张卡被搁置为 conflict pending confirmation 并记录该环；不派发任一环上卡；不阻塞其它合法卡。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "识别 Waits-on 成环"
+        },
+        {
+          "text": "环上各卡搁置并记录该环"
+        },
+        {
+          "text": "其它合法卡不被阻塞"
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "name": "waits-on-target-non-done-terminal",
+      "prompt": "B 卡 Waits-on A，但 A 最终以 skipped (covered) 结束。",
+      "expected_output": "B 被搁置为 conflict pending confirmation 待人工决定，而非无限期停在 waiting dependency。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "识别目标以非 done 终态（skipped/归档/failed/搁置）结束"
+        },
+        {
+          "text": "B 搁置待人工决定"
+        },
+        {
+          "text": "不无限期停留在 waiting dependency"
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "name": "reuse-seed-shortens-intake",
+      "prompt": "新入队卡的问题签名命中一条复用记录，且该记录的 factual 项经核实仍成立。",
+      "expected_output": "深谈以该记录为种子：方案对比从记录解法起步，记录已决的票以「待确认」而非「待回答」呈现；批准事件仍独立发生（种子化不替代批准）；卡片冻结决策区标明所依据记录。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "命中记录即以其为种子化深谈"
+        },
+        {
+          "text": "已决票以待确认而非待回答呈现"
+        },
+        {
+          "text": "批准事件仍独立发生"
+        },
+        {
+          "text": "卡片冻结决策区标明复用来源"
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "name": "reuse-record-factual-fails-no-seed",
+      "prompt": "一条复用记录的 factual 项（目标路径）经核实已不存在。",
+      "expected_output": "该记录不用于种子化；卡片退回完整深谈，不沿用可能过期的解法。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "先核实记录的 factual 项"
+        },
+        {
+          "text": "证伪则不用于种子化"
+        },
+        {
+          "text": "卡片退回完整深谈"
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "name": "legacy-card-unchanged",
+      "prompt": "队列里有一张不含 Certainty/Difficulty、Waits-on、Reusable 字段的存量卡。",
+      "expected_output": "按原有规则消费：不因缺新字段被搁置或报错；顺序为优先级 +（无杠杆/无档位时）FIFO；行为与引入本能力前逐字一致。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "存量卡不因缺新字段被搁置或报错"
+        },
+        {
+          "text": "顺序退化为优先级 + FIFO"
+        },
+        {
+          "text": "整体行为与引入本能力前一致"
+        }
+      ]
     }
   ]
 }
