@@ -169,7 +169,7 @@ When `goal-driven-queue` is invoked by `jira-fix-queue` or `opsx-jira-fix-queue`
 
 ### Requirement: derived 关系且禁止共用 change/分支
 
-Relationship handling SHALL be split by pass. The **enqueue batch triage pass** (owned by `goal-queue-triage`) SHALL handle **duplicate/equivalent** and **root-cause clustering**, marking a card whose outcome is already covered by a done card `skipped (covered)` with a pointer to the covering report. The **dispatch-time relationship pass** SHALL recognize **derived** (fixing A reveals B as follow-on or deeper root cause) in addition to **dependency** and **overlap-conflict**. Derived SHALL be recorded in the progress document Notes. The system MUST NOT place two in-progress cards on one branch or one OpenSpec change. For `Engine: opsx-jira-fix-workflow` children, relationship-pass notes SHALL be included in the card supply so the child writes `## Related Issues` in that change's `design.md`.
+Relationship handling SHALL be split by pass. The **enqueue batch triage pass** (owned by `goal-queue-triage`) SHALL handle **duplicate/equivalent** and **root-cause clustering**, marking a card whose outcome is already covered by an **accepted** card (`Verification: verified`) `skipped (covered)` with a pointer to the covering report; a card that is only `done` (engine completed) but still `awaiting` or `returned` MUST NOT cover another card. The **dispatch-time relationship pass** SHALL recognize **derived** (fixing A reveals B as follow-on or deeper root cause) in addition to **dependency** and **overlap-conflict**. Derived SHALL be recorded in the progress document Notes. The system MUST NOT place two in-progress cards on one branch or one OpenSpec change. For `Engine: opsx-jira-fix-workflow` children, relationship-pass notes SHALL be included in the card supply so the child writes `## Related Issues` in that change's `design.md`.
 
 #### Scenario: 入队与派发职责分离
 
@@ -180,6 +180,11 @@ Relationship handling SHALL be split by pass. The **enqueue batch triage pass** 
 
 - **WHEN** 关系检测认定 B 由已完成的 A 衍生且 B 仍需修复
 - **THEN** B 保持独立卡片与独立分支，进度 Notes 记录 derived，不并入 A 的 change
+
+#### Scenario: 覆盖证据须已验收
+
+- **WHEN** 一张卡声称其产出已被另一张卡覆盖，而后者仅 `done`（`Verification: awaiting` 或 `returned`）
+- **THEN** 系统不得据其标记 `skipped (covered)`；仅当覆盖卡 `Verification: verified` 时才可机械应用覆盖
 
 #### Scenario: opsx 子运行写入 Related Issues
 
@@ -457,8 +462,8 @@ The system SHALL consume queued cards through the slot dispatch defined by 并�
 
 #### Scenario: 重复任务跳过
 
-- **WHEN** 待执行任务 B 的症状与目标同已完成的任务 A 等价且 A 的产出已覆盖
-- **THEN** 系统将 B 标记为 skipped (covered by duplicate)，注记指向 A 的报告
+- **WHEN** 待执行任务 B 的症状与目标同一张**已人工验收（`Verification: verified`）**的卡 A 等价且 A 的产出已覆盖
+- **THEN** 系统将 B 标记为 skipped (covered by duplicate)，注记指向 A 的报告；A 仅 `done` 但 `Verification: awaiting` 或 `returned` 时不构成覆盖，不得据此跳过 B
 
 #### Scenario: 派发时重判依赖与重叠
 
