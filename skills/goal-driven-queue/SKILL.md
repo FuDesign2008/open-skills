@@ -1,6 +1,6 @@
 ---
 name: goal-driven-queue
-version: "0.14.0"
+version: "0.15.0"
 user-invocable: true
 description: "Queue orchestrator over child engines (goal-driven / solve / opsx-solve / jira-fix / opsx-jira-fix). Triggers:「goal 批量」「跑队列」「任务队列」「无人值守队列」「把需求加入队列」「空闲时段跑任务」「批量 triage」「确定度评估」「解法复用」「并发跑队列」/ goal-driven-queue, goal batch, run queue, unattended task queue, batch triage, certainty assessment, approach reuse, concurrent queue. Backlog auto-isolated per conversation under .goal-driven/queues/. Enqueue adds batch triage (equivalence merge, root-cause clustering, suggested kill), a derived certainty band as ordering key and routing feed, and approach reuse. Consumption is slot-based, concurrency settled at enqueue and reused when absent; a slot takes only a card whose module set does not overlap an in-flight card, and acceptance pre-runs merge conflicts. Jira lists enqueue here (also via jira-fix-queue / opsx-jira-fix-queue). Do NOT use for a single ad-hoc long run (goal-driven-workflow), a single Jira issue, or setting up cron/schedulers."
 dependencies:
@@ -15,7 +15,7 @@ dependencies:
 
 # Goal-Driven Queue
 
-> This skill owns the **queue lifecycle**: persistent backlog, intake-time approval capture, concurrent consumption, queue-level caps, progress document, acceptance package.
+> This skill owns the **queue lifecycle**: persistent backlog, intake-time approval capture, concurrent consumption, queue-level caps, progress document, acceptance package, and the post-run human per-card verification gate.
 > Single-run methodology lives in `goal-driven-workflow` (the engine); merge decisions stay human. Loading this skill MUST NOT start consumption by itself — consumption starts only on an explicit queue request or a scheduled pull.
 > References stay thin: `evolution-review` (kill vocabulary, record-the-failed-recipe), `learn-and-improve` (carrier decision tree) and `solution-review` (reversibility / CBAM / WSJF vocabulary) supply vocabulary only and are deliberately **not** frontmatter dependencies — their absence degrades a recommendation's richness, never a gate.
 
@@ -56,6 +56,8 @@ Resolve the bound `queue-id` at every enqueue, Jira list-enqueue shortcut, and c
 Task-card status vocabulary (shared with the progress document):
 `pending → in progress → done | failed | skipped (covered) | waiting dependency | conflict pending confirmation`
 
+`done` means "engine completed"; acceptance is tracked separately by the card's **Verification** state — `awaiting | verified | returned` — recorded in its Acceptance Summary and the progress document's `Verification` column. A batch MUST NOT be presented as accepted while any executed card is `awaiting`, and the batch summary reports `Verified: N / Awaiting: M / Returned: K`.
+
 Card format and all output templates live in [reference.md](reference.md).
 
 ## Path Overview
@@ -64,7 +66,7 @@ Card format and all output templates live in [reference.md](reference.md).
 |-------|------------------|-------------|-----------------|
 | 1 Enqueue & Pre-approve | ✅ Read; Write limited to `.goal-driven/queues/<queue-id>/` (cards, archived cards, triage record, queue config) | ⛔ stop before starting any run | validated task card(s) + triage record + queue config |
 | 2 Run the Queue | ✅ Everything, per child-run contract | auto-advance; stops at caps or empty queue | updated progress doc |
-| 3 Acceptance Package | ✅ Bash; Write limited to `.goal-driven/queues/<queue-id>/runs/` | ⛔ stop, hand back to human | package path + summary |
+| 3 Acceptance Package & Human Verification | ✅ Bash; Write limited to `.goal-driven/queues/<queue-id>/runs/` | ⛔ stop, hand back to human for per-card verification | package + `verification.md` path + summary + verdict states |
 
 ## Stage 1: Enqueue & Pre-approve
 
@@ -119,14 +121,16 @@ While a slot is free and an admissible pending card exists — the order defined
 
 When caps hit or the queue empties: stop cleanly — stopping mid-backlog is a feature, leftover cards simply stay `pending`.
 
-## Stage 3: Acceptance Package
+## Stage 3: Acceptance Package & Human Verification
 
-Assemble into `.goal-driven/queues/<queue-id>/runs/<batch-id>/`: the progress document, the **triage record** (referenced by path from the queue directory: merges, clusters, suggested kills and parked items with their basis, including every proxy-made decision), each executed task's engine completion report (its report-template output, referenced by path), and the branch list awaiting review — each waiting branch rebased **inside a temporary scratch worktree for conflict prediction only**, so the human reviews real conflicts instead of performing N unassisted merges. The prediction MUST NOT push, force-push, or rewrite a branch that already carries an open PR/MR; the actual rebase and merge stay human. Before handing back, run the **queue-level verification checklist** — (1) caps accounting: tasks dispatched vs the resolved caps, which cap stopped the run; (2) progress-document completeness: every status change has an entry, discovery notes present for mid-run additions; (3) per-task report-checklist status: each executed task's engine report carries its numbered verification checklist, overall status recorded in the card's acceptance summary; (4) leftover pending inventory: what remains, at which priorities, for the next run; (5) archive status per task when `Traceability` is set. Surface failing items, never drop them. Then hand back:
+Assemble into `.goal-driven/queues/<queue-id>/runs/<batch-id>/`: the progress document, the **triage record** (referenced by path from the queue directory: merges, clusters, suggested kills and parked items with their basis, including every proxy-made decision), each executed task's engine completion report (its report-template output, referenced by path), the **dedicated verification document `verification.md`** ([reference.md](reference.md) § Verification Document), and the branch list awaiting review — each waiting branch rebased **inside a temporary scratch worktree for conflict prediction only**, so the human reviews real conflicts instead of performing N unassisted merges. The prediction MUST NOT push, force-push, or rewrite a branch that already carries an open PR/MR; the actual rebase and merge stay human. Before handing back, run the **queue-level verification checklist** — (1) caps accounting: tasks dispatched vs the resolved caps, which cap stopped the run; (2) progress-document completeness: every status change has an entry, discovery notes present for mid-run additions; (3) per-task report-checklist status: each executed task's engine report carries its numbered verification checklist, overall status recorded in the card's acceptance summary; (4) leftover pending inventory: what remains, at which priorities, for the next run; (5) archive status per task when `Traceability` is set; (6) verification coverage: every executed card appears in `verification.md` with its verdict state and its section populated from the engine report, awaiting count reported. Surface failing items, never drop them.
 
-- Present the summary: per-task result, evidence location, branch tip, and the outcome-type items only a human can judge (the engine separates those; never self-certify them).
+**Human per-card verification gate.** Engine completion stays `done`; acceptance is separate. At assembly the dispatcher marks every **executed** card `Verification: awaiting` (card Acceptance Summary + progress-document `Verification` column) and writes `verification.md` — one section per executed card consolidating goal condition, engine/result/branch/report, layered acceptance, the engine report's numbered checklist, side effects, ledger items and conflict pre-run, plus a verdict line. The batch MUST NOT be presented as accepted until every executed card carries a **human** verdict `verified` / `returned`. The per-card verdict is **human-only** — with `Stage-exit policy: ai-proxy` the proxy MAY still run the record-step report-checklist check (thin pointer to `ai-proxy-discipline`), but MUST NOT fill, infer, or pre-fill a card's verdict; an absent verdict stays `awaiting`. Non-executed outcomes (`failed` / `skipped (covered)` / `waiting dependency` / `conflict pending confirmation` / parked / leftover `pending`) go to the document's "items needing your decision" section, not a verdict slot. Batches and cards predating this state behave exactly as before. Then hand back:
+
+- Present the summary: per-task result, evidence location, branch tip, the verification-document path with each card's verdict state, and the outcome-type items only a human can judge (the engine separates those; never self-certify them).
 - Roll up each task's decision/assumption ledger (`intake-interview-discipline` §C) **and the triage record**: "Needs your judgment" aggregates outcome-type items plus unresolved tickets, low-confidence assumptions, high-impact-if-wrong entries, and every triage decision awaiting a human — un-acted suggested kills, parked clusters, dependency stalls, and proxy-made triage decisions; clean-stop tickets each carry their options for a one-glance decision.
-- Stop at the conflict picture. Merge authority is exclusively human — surface only genuine conflicts plus the suggested merge order, and do not merge, push to protected branches, or close anything irreversible.
-- Route acceptance findings back into new or revised cards so the next run starts better informed.
+- Stop at the conflict picture and the per-card verification. Merge authority is exclusively human — surface only genuine conflicts plus the suggested merge order, and do not merge, push to protected branches, or close anything irreversible.
+- Route acceptance findings (including `returned` verdicts) back into new or revised cards so the next run starts better informed.
 
 ## Red Flags
 
@@ -142,3 +146,5 @@ Assemble into `.goal-driven/queues/<queue-id>/runs/<batch-id>/`: the progress do
 - Sharing one OpenSpec change or one branch across two in-progress Jira cards "because they share a root cause"
 - Auto-applying a value-judgment kill, or letting a batch approval swallow a suggested kill the human never acted on — mechanical equivalence may be applied automatically, a judgment about worth may not
 - Unlocking an engine or stage-exit-policy default from a band whose derivation rested on any `preference` signal
+- Presenting a batch as accepted while any executed card is still `Verification: awaiting`; filling, inferring, or pre-filling a per-card verdict on the human's behalf (an AI proxy included)
+- Assembling the acceptance package without the dedicated `verification.md`, or leaving an executed card without its consolidated section

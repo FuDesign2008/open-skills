@@ -891,6 +891,45 @@
           "text": "整体行为与引入并发前一致"
         }
       ]
+    },
+    {
+      "id": 49,
+      "name": "post-run-per-card-human-verification-doc",
+      "prompt": "队列一批任务今晚无人值守跑完（含 3 张已完成、1 张因环境失败）。现在该收尾了。",
+      "expected_output": "在 runs/<batch-id>/ 生成独立的 verification.md：每张已执行卡一节，就地汇总目标条件/引擎结果/分支报告/分层验收/引擎核对清单/副作用/台账项/冲突预演，并留 verified|returned 裁决行；所有已执行卡标 Verification: awaiting；批次摘要显示 Verified/Awaiting/Returned，且在任何已执行卡仍 awaiting 时不得表述为已验收；失败等未执行结果并入「待判定」区不占裁决位。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "生成独立核对文档 verification.md，每张已执行卡一节且信息集中（含引擎核对清单与台账项）"
+        },
+        {
+          "text": "已执行卡标 Verification: awaiting，批次未获逐卡裁决前不得表述为已验收"
+        },
+        {
+          "text": "批次摘要呈报 Verified/Awaiting/Returned 计数"
+        },
+        {
+          "text": "failed/skipped/搁置/遗留 pending 进「待判定」区，不占逐卡裁决位"
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "name": "proxy-cannot-fill-per-card-verdict",
+      "prompt": "队列里 Stage-exit policy: ai-proxy 的任务已完成，代理做了报告质询并认为通过。人还没回来。现在核对文档里这几张卡该怎么记？",
+      "expected_output": "代理只能给报告质量裁决（带证据标签的通过/打回），不得填写或推断逐卡验收裁决；卡片保持 Verification: awaiting，核对文档留待真人裁决；批次不得因代理质询通过而表述为已验收。",
+      "files": [],
+      "assertions": [
+        {
+          "text": "代理不得填写或推断 verified/returned 逐卡裁决"
+        },
+        {
+          "text": "卡片保持 Verification: awaiting 直至真人裁决"
+        },
+        {
+          "text": "代理质询通过不等于批次已验收"
+        }
+      ]
     }
   ]
 }
