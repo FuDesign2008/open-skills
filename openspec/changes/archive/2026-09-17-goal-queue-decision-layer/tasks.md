@@ -56,6 +56,6 @@
 - [x] 5.1 `openspec-sync-specs` 将三份 delta 合入主 `specs/`（goal-queue 更新 + goal-queue-triage / goal-queue-reuse 新建）
 - [x] 5.2 `openspec-archive-change` 归档变更
 - [x] 5.3 归档后核对 diff：主 specs 更新与 `openspec/changes/archive/` 移动均落在工作区变更中
-- [ ] 5.4 `delivery-discipline`：需要交付时提交并创建 PR/MR
-- [ ] 5.5 `feature-branch-closeout` 呈现收尾菜单（PR / 合并 / 保留 / 继续）
-- [ ] 5.6 `learn-and-improve` 回顾：判断哪些经验值得沉淀及其载体（写入共享载体前须人显式请求）
+- [x] 5.4 `delivery-discipline`：需要交付时提交并创建 PR/MR
+- [x] 5.5 `feature-branch-closeout` 呈现收尾菜单（PR / 合并 / 保留 / 继续）
+- [x] 5.6 `learn-and-improve` 回顾：判断哪些经验值得沉淀及其载体（写入共享载体前须人显式请求）
