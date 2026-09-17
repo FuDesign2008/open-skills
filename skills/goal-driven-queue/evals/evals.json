@@ -470,7 +470,7 @@
       "id": 26,
       "name": "triage-absence-no-silent-kill",
       "prompt": "我今晚不在，把这些卡都排进队列跑（其中一张 triage 认为价值存疑）。",
-      "expected_output": "缺席档下只有机械可证结论（精确等价、已被 done 卡覆盖）自动应用；价值类建议保持原状并写入进度文档注记，留待人回归；绝不静默淘汰。",
+      "expected_output": "缺席档下只有机械可证结论（精确等价、已被 `verified` 卡覆盖）自动应用；价值类建议保持原状并写入进度文档注记，留待人回归；绝不静默淘汰。",
       "files": [],
       "assertions": [
         {
@@ -597,13 +597,13 @@
     },
     {
       "id": 33,
-      "name": "waits-on-target-non-done-terminal",
-      "prompt": "B 卡 Waits-on A，但 A 最终以 skipped (covered) 结束。",
-      "expected_output": "B 被搁置为 conflict pending confirmation 待人工决定，而非无限期停在 waiting dependency。",
+      "name": "waits-on-target-not-verified-terminal",
+      "prompt": "B 卡 Waits-on A，但 A 最终以 skipped (covered) 结束；另一例目标 D 已 done 但被人工 `returned`。",
+      "expected_output": "B 被搁置为 conflict pending confirmation 待人工决定，而非无限期停在 waiting dependency；同理 Done 但被 returned 的目标也搁置依赖卡，而仅 done/awaiting 的目标保持 waiting dependency（只有 verified 才释放依赖）。",
       "files": [],
       "assertions": [
         {
-          "text": "识别目标以非 done 终态（skipped/归档/failed/搁置）结束"
+          "text": "识别目标以非 verified 终态（returned/skipped/归档/failed/搁置）结束"
         },
         {
           "text": "B 搁置待人工决定"
