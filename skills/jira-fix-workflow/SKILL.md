@@ -1,6 +1,6 @@
 ---
 name: jira-fix-workflow
-version: "3.34.2"
+version: "3.35.0"
 user-invocable: true
 description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end; ai-proxy overlay (thin freeze then occupy) is available independently. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / fix this bug, jira-fix, auto fix, force fix, resume fix, ai-proxy mode, switch to ai-proxy. Do NOT use for batch fixes across multiple issues — use jira-fix-queue instead (it enqueues into goal-driven-queue; confirm, then run the queue)."
 dependencies:
@@ -32,6 +32,7 @@ dependencies:
   - figma-pixel-verify
   - runtime-verification-discipline
   - ai-proxy-discipline
+  - context-budget-discipline
 ---
 
 # Jira Bug-Fix Workflow
@@ -114,7 +115,7 @@ Upgrading in manual mode requires user confirmation.
 
 ## State Persistence (interruption recovery)
 
-**Resume**: when `state.json` exists, 🤖 auto continues from `current_phase`; 👤 manual asks whether to resume. **Cleanup**: on completion set `current_phase: "completed"`. Directory layout and schema: [reference.md](reference.md) § State Directory and state.json.
+**Resume**: when `state.json` exists, 🤖 auto continues from `current_phase`; 👤 manual asks whether to resume. When a ledger per `context-budget-discipline` exists for the run, rebuild state from the ledger + referenced artifacts instead of replaying history. **Cleanup**: on completion set `current_phase: "completed"`. Directory layout and schema: [reference.md](reference.md) § State Directory and state.json.
 
 **`--retry` (stage-3 re-entry)**: skip 0/1; read the existing `01-jira-info.md`; ask once "what was fixed last time / what's the new symptom"; write "this iteration's context" into `02-analysis.md`; reset state (`current_phase: 3`, `completed_phases: [0,1]`, clear `grade`/`selected_option`/`review_*`); append `-v2`/`-v3`… to the branch name; if root cause is still unclear, prefer instrumentation debugging.
 
@@ -212,6 +213,8 @@ Exit script: reference.md.
 
 Before production edits, follow `design-approval-gate` (manual: user pass; auto/force: named escape + 留痕).
 
+**Context budget**: evaluate the phase-boundary reset and the compaction threshold per `context-budget-discipline` (ledger path from the stage-6 plan / card supply); any reset requires a complete ledger entry first.
+
 **Figma pixel fidelity:** When the issue/plan includes a Figma URL/node or pixel-restore / design-faithful UI intent, load `figma-pixel-implement` and follow it. Implement is incomplete without a durable inventory+spec path in the target repo. Do not restate its methodology here.
 
 **Branch**: naming and single-/multi-repo flow are in [reference.md](reference.md) § Stage 7 Branch-Creation Details; write `00-branch.md`.
@@ -224,7 +227,7 @@ After execution: 🤖 normal→8, 🟠 pause for review; 👤 normal wait for co
 
 ## Stage 8: Check & Verify
 
-Output the result only — do not change code. Compare against the Jira repro/expected result, stage 6's plan, tests, side effects, and root cause; use `analysis-core` §4 for the debug-verify loop. Verification execution follows `runtime-verification-discipline` (the AI executes verification itself in an environment, and hands a step to the user only at a classified true hard boundary, with the reason stated). When this run implemented from Figma, load `figma-pixel-verify` and follow it; a missing measured report (the living artifact’s Verify section, or the Spec source sibling) blocks this verification stage from passing. A spec-gap FAIL does not pass verification—re-enter `figma-pixel-implement` to complete the table. Also load it when alignment checking is required without a same-run implement. Verification-report honesty per `staged-review-flow` and `completion-evidence-discipline`. Template: reference.md § Stage 8.
+Output the result only — do not change code. **Context budget**: verify against the ledger + artifacts when a reset occurred (per `context-budget-discipline`); never replay prior-session history. Compare against the Jira repro/expected result, stage 6's plan, tests, side effects, and root cause; use `analysis-core` §4 for the debug-verify loop. Verification execution follows `runtime-verification-discipline` (the AI executes verification itself in an environment, and hands a step to the user only at a classified true hard boundary, with the reason stated). When this run implemented from Figma, load `figma-pixel-verify` and follow it; a missing measured report (the living artifact’s Verify section, or the Spec source sibling) blocks this verification stage from passing. A spec-gap FAIL does not pass verification—re-enter `figma-pixel-implement` to complete the table. Also load it when alignment checking is required without a same-run implement. Verification-report honesty per `staged-review-flow` and `completion-evidence-discipline`. Template: reference.md § Stage 8.
 
 | Verdict | Next |
 |------|------|
@@ -236,6 +239,8 @@ Output the result only — do not change code. Compare against the Jira repro/ex
 ---
 
 ## Stage 9: Submit PR/MR
+
+**Context budget**: report drafting reads the ledger + referenced artifacts (per `context-budget-discipline`), not the full transcript.
 
 Load `delivery-discipline` and follow it. Supply:
 

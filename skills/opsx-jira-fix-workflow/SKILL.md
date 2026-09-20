@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.22.2"
+version: "1.23.0"
 user-invocable: true
 description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / opsx jira fix, OpenSpec Jira fix workflow, ai-proxy mode, switch to ai-proxy."
 dependencies:
@@ -33,6 +33,7 @@ dependencies:
   - figma-pixel-implement
   - figma-pixel-verify
   - runtime-verification-discipline
+  - context-budget-discipline
 ---
 
 # OPSX Jira Bug-Fix Workflow
@@ -294,6 +295,8 @@ In manual mode, output the plan and pause; in auto mode, the normal case auto-ad
 
 Before production edits, follow `design-approval-gate` (manual: user pass; auto/force/lean: named escape + 留痕).
 
+**Context budget**: evaluate the phase-boundary reset and the compaction threshold per `context-budget-discipline` (ledger path from the stage-5 plan / card supply); any reset requires a complete ledger entry first.
+
 ### 6.1 Create the fix branch
 
 Branch naming:
@@ -331,6 +334,8 @@ For behavior-changing work, follow `test-first-discipline` during implementation
 Load and call `test-suite-ensure`, declaring `mode=mandatory`, scoped to this fix's logic files; a failure or a declined necessary-scaffolding request blocks entry to stage 7. test-suite-ensure does not satisfy test-first.
 
 ## Stage 7: Check verification
+
+**Context budget**: verify against the ledger + artifacts when a reset occurred (per `context-budget-discipline`); never replay prior-session history.
 
 Must cover:
 

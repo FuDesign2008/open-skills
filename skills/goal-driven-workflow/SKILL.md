@@ -1,6 +1,6 @@
 ---
 name: goal-driven-workflow
-version: "0.7.0"
+version: "0.8.0"
 user-invocable: true
 description: "Goal-Driven long-run workflow: run an agent autonomously for hours toward a verifiable goal. Five stages — ① deep intake interview & output contract (approach frozen before launch) ② layer acceptance criteria + design the /goal condition (measurable end state, stated check, constraints, turn/time cap) ③ sub-agent division & context management (context-rot mitigation) ④ launch the long run (/goal, claude -p non-interactive, or manual-loop fallback) ⑤ completion report & human acceptance. Built on top of Claude Code's native /goal harness, with a generic fallback for environments without /goal. Triggers — 「goal 长跑」「goal run」「goal-driven」「目标驱动长跑」「一个 goal 下去跑」「长跑目标」「无人值守跑任务」「goal-run」 / goal run, goal-driven, long-run goal, autonomous run, run until done."
 dependencies:
@@ -9,6 +9,7 @@ dependencies:
   - design-approval-gate
   - intake-interview-discipline
   - ai-proxy-discipline
+  - context-budget-discipline
 ---
 
 # Goal-Driven Long-Run Workflow
@@ -33,6 +34,7 @@ Frontmatter `dependencies`; prerequisite check must pass or the flow aborts:
 - `design-approval-gate` — standalone Stage 4 launch-approval pause that enters Armed (see long-run divergence below)
 - `intake-interview-discipline` — stage 1 deep intake (fog-bounded interview → approach comparison → freeze → pre-launch self-review); stage 4 in-run self-answer rules; stage 5 ledger surfacing
 - `ai-proxy-discipline` — proxy checkpoints (`Stage-exit policy: ai-proxy`): absent-mode intake Q&A, bounded contract approval (Arm, not Launch), stage 5 report check; abort only when a card carries that policy and the skill is missing
+- `context-budget-discipline` — stage 3 context-plan quantification (compaction threshold / phase→reset-boundary map / ledger path) and stage-4 threshold checks at budget milestones
 
 **Related (informational)**: `solve-workflow` (full PDCA); handbook §8 of `docs/7x24-agent-reliability-handbook.md`.
 
@@ -133,10 +135,11 @@ This invocation is a **queue child** only when **this turn's** user/orchestrator
 1. **Division principle**: the main agent holds the **high-level plan + synthesis** (and the goal condition); sub-agents do deep work in **clean contexts** and return only a **condensed summary (1–2k tokens)**.
 2. **Pick the context technique** ([reference.md](reference.md) § Stage 3):
    - **Sub-agent architecture** — parallel exploration / multi-module work
-   - **Compaction** — long conversational flows (summarize-and-reopen near the window limit)
+   - **Compaction** — long conversational flows; threshold and recovery rules per `context-budget-discipline` (proactive ~60–70% of the window, never near-limit only)
    - **Structured note-taking** — milestone-driven iterative work (NOTES.md / memory)
-3. Define each sub-agent's task, minimal tool set, output contract, completion condition, and failure handling. Prefer an **independent harness** (writer vs reviewer separation) to avoid cross-bias.
-4. Fill **Template 3**.
+3. **Quantify the context plan** per `context-budget-discipline`: name (a) the compaction threshold as a fraction of the context window, (b) the phase→reset-boundary map for the planned lifecycle, (c) the ledger path for session handoffs — a plan missing any element blocks Stage-4 launch approval.
+4. Define each sub-agent's task, minimal tool set, output contract, completion condition, and failure handling. Prefer an **independent harness** (writer vs reviewer separation) to avoid cross-bias.
+5. Fill **Template 3**.
 
 **Red Flags**: main agent absorbing sub-agent details (context flows back in); sub-agents without output contracts; unbounded tool sets.
 
@@ -159,7 +162,7 @@ This invocation is a **queue child** only when **this turn's** user/orchestrator
    - Non-interactive agent CLI wrapping the harness: e.g. `claude -p "/goal <condition>" --output-format stream-json --verbose`.
    - **Fallback** (no goal harness): manual bounded loop — do work → verify against acceptance checklist → continue if unmet (budget-bounded) → else stop; explicit stop clause required.
 3. **In-run decision rules**: mid-run decisions follow `intake-interview-discipline` §B (self-answer priority: frozen contract → investigated fact → conservative default; evidence falsifying the frozen approach → **clean stop + ticket report**, never a silent pivot).
-4. **Monitor**: check harness status (elapsed, turns, tokens, latest evaluator reason); interrupt early via the environment's cancel control (e.g. Ctrl+C / `/goal clear`). At each budget milestone (every half/third of the budget), record one run-log line — evaluator reason, remaining budget, anomalies; sustained no-progress triggers the early interrupt instead of burning the full budget.
+4. **Monitor**: check harness status (elapsed, turns, tokens, latest evaluator reason); interrupt early via the environment's cancel control (e.g. Ctrl+C / `/goal clear`). At each budget milestone (every half/third of the budget), record one run-log line — evaluator reason, remaining budget, anomalies; at each milestone also evaluate the compaction threshold per `context-budget-discipline` (crossed → reset at the next safe point, ledger entry first); sustained no-progress triggers the early interrupt instead of burning the full budget.
 5. Output **Template 4**. On standalone: if Design-checked is incomplete, refuse Launch and continue checks; if Armed, wait for a closed-list Launch instruction; only then start the harness. On a queue child, start execute per `Stage-exit policy` (card approval already 留痕).
 
 **Red Flags**: skipping auto-approval mode (run stalls on writes); no budget; no per-turn convention file; one giant goal instead of a chain; silent mid-run approach pivot (violates `intake-interview-discipline` iron rule 2); starting the harness while Design-checked is incomplete; treating 「自动跑」 or bare "ok"/"confirm" as Launch; bundling launch approval with starting the run.

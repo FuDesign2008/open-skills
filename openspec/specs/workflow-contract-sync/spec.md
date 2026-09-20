@@ -162,7 +162,6 @@ solve 家族工作流（solve-workflow / opsx-solve-workflow / jira-fix-workflow
 - **WHEN** an agent opens the comment or writeback section of either Jira fix host
 - **THEN** full Wiki notation tables are not pasted in the host; the host loads `jira-wiki-markup` (writeback loads it for the repair comment)
 
-
 ### Requirement: 分析阶段核心方法论内容 SHALL 单源承载
 
 工作流 skill 的分析阶段核心方法论内容——临时改动权限与回滚门控、打点调试触发条件与调试 skill 委托、调试-验证闭环规则、分析步骤骨架——MUST 由共享 skill `analysis-core` 单源承载，各工作流以引用方式集成并在引用行声明差异映射（如 `{next-stage}` 占位符，须「号+名」），MUST NOT 在各工作流正文中逐字复制该内容。编排性内容（阶段出口、手动/自动模式差异、OpenSpec/Jira 产物落点、形似神异清单上的有意分歧）MUST 留在各工作流。本 Requirement 在 `analysis-core` 已落地的仓库状态下生效。
@@ -217,7 +216,6 @@ After `staged-review-flow` lands, host review sections MUST NOT keep a parallel 
 
 - **WHEN** an agent reads `jira-fix-workflow` or `opsx-jira-fix-workflow` preamble
 - **THEN** there is no capability→stage table or load note for `env-capability-discovery`
-
 
 ### Requirement: Hosts MUST NOT orchestrate optional enhancement discovery
 
@@ -278,3 +276,28 @@ When a host documents a Prerequisite Skill Check missing-notice that enumerates 
 
 - **WHEN** 任一 solve 家族宿主的探索方案阶段被打开
 - **THEN** 其正文只保留决策顺序规则与核查项名称内联（约两行），完整核查方法指向 `code-design-review` Layer A，不逐字复制
+
+### Requirement: solve 家族工作流 SHALL 经 context-budget-discipline 执行上下文预算
+
+The four solve-family hosts (solve-workflow / opsx-solve-workflow / jira-fix-workflow / opsx-jira-fix-workflow) SHALL thin-reference `context-budget-discipline` at their execution stages: at entry to the implement / verify / report stages, the host evaluates the phase-boundary reset (fresh session seeded from the disk ledger, or in-place summarize-and-reopen) and the proactive compaction threshold per the discipline, and writes a complete ledger entry before any reset. Hooks MUST be sub-steps inside existing integer stages (no decimal stage numbers). Each host declares `context-budget-discipline` in its frontmatter `dependencies` and covers it in the stage-0 prerequisite skill check (missing → abort with install guidance); missing-notice dependency lists are updated in the same change. Hosts and host reference files MUST NOT paste the ledger format, threshold table, or methodology verbatim — one-line pointers only. goal-run hosts (goal-driven-workflow) are covered by their own spec delta, not this requirement.
+
+#### Scenario: Jira 宿主执行阶段接线
+
+- **WHEN** `jira-fix-workflow` 进入 stages 7/8/9（或 `opsx-jira-fix-workflow` 进入 stages 6/7/8）
+- **THEN** 宿主以一行薄引用应用阶段边界 / 阈值 / 台账规则，方法论细节来自 `context-budget-discipline`，不存在内联复制
+
+#### Scenario: 缺失 skill 在 stage 0 中止
+
+- **WHEN** 运行环境缺少 `context-budget-discipline` 而某 solve 家族宿主声明了强依赖
+- **THEN** 该宿主前置检查以安装指引中止，不静默降级
+
+#### Scenario: 宿主正文无方法论复制
+
+- **WHEN** 扫描任一 solve 家族宿主的 SKILL.md / reference.md 查找台账格式或阈值表
+- **THEN** 仅存在一行指针，无逐字复制
+
+#### Scenario: 续跑路径消费台账
+
+- **WHEN** Jira 宿主经 `--resume` / 「从上次继续」恢复一次被重置的运行
+- **THEN** checkpoint 依据最近一条台账条目重建状态，不回放历史对话
+
