@@ -1,6 +1,6 @@
 ---
 name: solve-workflow
-version: "1.28.2"
+version: "1.29.0"
 user-invocable: true
 description: "Eight-stage PDCA workflow for systematically solving bugs, refactors, and feature-development tasks: clarify → analyze → explore solutions → review → plan → execute → verify → retrospect. Manual mode (default) pauses for user confirmation at each stage exit; auto mode runs end-to-end; ai-proxy overlay (thin freeze then occupy) is available independently. Triggers — 「明确问题」「分析问题」「探索方案」「审查方案」「制定计划」「执行计划」「检查验证」「复盘改进」(alias「回顾总结」)；「继续分析」「深入分析」「修改方案」「完善方案」「优化方案」「更新计划」「修订计划」「修改计划」；「自动模式」「自动分析」「自动解决」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / clarify problem, analyze problem, explore solutions, review solution, make plan, execute plan, verify, retrospective, auto mode, ai-proxy mode, switch to ai-proxy."
 dependencies:
@@ -29,6 +29,7 @@ dependencies:
   - figma-pixel-verify
   - runtime-verification-discipline
   - ai-proxy-discipline
+  - context-budget-discipline
 ---
 
 # Eight-Stage Problem-Solving Workflow
@@ -277,6 +278,8 @@ When the user says "更新计划" / "修订计划" / "修改计划" (update/revi
 
 > Principle: execute strictly per the plan, confirm on completion. Before production edits, follow `design-approval-gate` (manual: user pass; auto/lean: named escape + 留痕). Before the first non-trivial write (docs or code), load `git-worktree-discipline` (worktree gate + optional isolation).
 
+**Context budget**: evaluate the phase-boundary reset and the compaction threshold per `context-budget-discipline` (ledger path from the stage-5 plan); any reset requires a complete ledger entry first.
+
 **Figma pixel fidelity:** When the task includes a Figma URL/node or pixel-restore / design-faithful UI intent, load `figma-pixel-implement` and follow it. Implement is incomplete without a durable inventory+spec path in the target repo. Do not restate its methodology here.
 
 ### Execution flow
@@ -305,6 +308,8 @@ For behavior-changing work, follow `test-first-discipline` (failing test observe
 ## Stage 7: Verify (Check)
 
 > Principle: output only the verification results — improvement suggestions belong to stage 8.
+
+**Context budget**: if the run crossed the compaction threshold or restarted from a ledger, verify against the ledger + artifacts — never by replaying prior-session history (per `context-budget-discipline`).
 
 1. **Goal achievement** — whether stage 1's expected outcome was met
 2. **Comparison with the plan** — compare against stage 5's plan

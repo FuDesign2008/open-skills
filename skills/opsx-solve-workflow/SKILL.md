@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.22.2"
+version: "1.23.0"
 user-invocable: true
 description: "Eight-stage PDCA problem-solving workflow that persists analysis, proposal, design review, plan, execution, and verification into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context. Use for feature work, bug fixes, refactors, and complex engineering tasks that need long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick one-off edit with no traceability need — use solve-workflow instead. Triggers：「opsx解决」「OpenSpec解决」「规范化解决」「创建OpenSpec变更」「创建opsx变更」「用OpenSpec分析」「用OpenSpec修复」「opsx自动解决」「OpenSpec自动解决」「opsx-solve」「opsx-solve-workflow」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / opsx solve, OpenSpec solve workflow, create an OpenSpec change, ai-proxy mode, switch to ai-proxy."
 dependencies:
@@ -31,6 +31,7 @@ dependencies:
   - figma-pixel-verify
   - runtime-verification-discipline
   - ai-proxy-discipline
+  - context-budget-discipline
 ---
 
 # OPSX Eight-Stage Problem-Solving Workflow
@@ -68,6 +69,7 @@ Not a replacement for plain `solve-workflow`:
 - `staged-review-flow` (stage 4 review orchestration; depends on `solution-review` and `code-design-review`)
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit` (delegated via `analysis-core`; stage 2 + stage 7)
 - `analysis-core` (single source for stage-2 analysis methodology: temporary-change gate / instrumentation debug with runtime-evidence-debug as default entry / analysis step skeleton / analysis gate output block / debug-verify loop)
+- `context-budget-discipline` (stage 6/7 entry: phase-boundary reset evaluation, proactive compaction threshold, ledger handoff before any reset)
 - `node-version-discipline` (stage 7 Node version alignment)
 - `learn-and-improve` (stage 8 retrospective and knowledge sediment)
 - `workflow-mode-lifecycle` (auto/manual mode lifecycle)
@@ -265,6 +267,8 @@ In manual mode, output the plan and pause; wait for user confirmation before ent
 
 Before production edits, follow `design-approval-gate` (manual: user pass; auto/lean: named escape + 留痕).
 
+**Context budget**: evaluate the phase-boundary reset and the compaction threshold per `context-budget-discipline` (ledger path from the stage-5 plan); any reset requires a complete ledger entry first.
+
 **Figma pixel fidelity:** When the task includes a Figma URL/node or pixel-restore / design-faithful UI intent, load `figma-pixel-implement` and follow it. Implement is incomplete without a durable inventory+spec path in the target repo. Do not restate its methodology here.
 
 Read `tasks.md` and implement in order:
@@ -284,6 +288,8 @@ Load and call `test-suite-ensure`, declaring `mode=mandatory`, scoped to this ch
 🔌 **OPSX skills integration**: call the `openspec-apply-change` skill to execute the tasks (read its SKILL.md first, then complete each task per its instructions). `openspec-apply-change` queries change status and execution instructions via the CLI internally; this skill never calls the CLI directly to drive execution.
 
 ## Stage 7: Check & verify
+
+**Context budget**: verify against the ledger + artifacts when a reset occurred (per `context-budget-discipline`); never replay prior-session history.
 
 Verification must cover three layers:
 
