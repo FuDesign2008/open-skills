@@ -1,0 +1,10 @@
+# Tasks: context-budget-discipline
+
+- [ ] 1. NEW skill `skills/context-budget-discipline/` — SKILL.md (frontmatter: `user-invocable: false`, routing-only description ≤950 chars with 中文触发词, `dependencies: []`; body: four behavioral sections per delta spec) + reference.md (threshold table, ledger entry template, phase→boundary map template, missed-threshold recovery note). English body, de-identified examples.
+- [ ] 2. Wire `goal-driven-workflow` — stage 3 upgraded to threshold-quantified plan (threshold fraction + phase→boundary map + ledger path, thin-ref line); stage-4 monitor line (threshold check rides budget-milestone cadence); frontmatter +dep; strong-deps prose entry; missing-notice sync; version bump.
+- [ ] 3. Wire `solve-workflow` + `opsx-solve-workflow` — execute/verify entry hooks (one line each) + frontmatter +dep + missing-notice sync + version bumps.
+- [ ] 4. Wire `jira-fix-workflow` — stages 7/8/9 entry hooks + `--resume` checkpoint reads the ledger + frontmatter +dep + missing-notice sync + version bump.
+- [ ] 5. Wire `opsx-jira-fix-workflow` — stages 6/7 entry hooks + frontmatter +dep + missing-notice sync + version bump.
+- [ ] 6. `goal-driven-queue` — Delegate card supply one sentence (engine enforces its own context budget) + version bump. No frontmatter change, no card field.
+- [ ] 7. Gates — `openspec validate 2026-09-18-context-budget-discipline --strict`; `npm run lint:skill-description`; `npm run lint:deid`; `npm run gen:skills-index` (commit regenerated docs); `npm test`; drift greps: (a) no platform-specific compaction commands in `skills/`; (b) threshold fraction + ledger format single-sourced in the discipline (goal-run thin-ref allowed); (c) each host's missing-notice list matches frontmatter; (d) `grep -rn "context-budget-discipline" skills/*/SKILL.md` shows exactly the 5 host thin-refs + queue supply line, no methodology paragraphs.
+- [ ] 8. Evidence report — record each gate output as fresh evidence; then commit (two commits: governance artifacts / implementation).
