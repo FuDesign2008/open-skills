@@ -387,7 +387,7 @@ else
 fi
 ```
 
-**Why a precise regex instead of a broad match**: `<<<<<<<` (7 `<` characters + a space) locks onto git's conflict-marker format, excluding things like `===` separator lines in CSS comments or ASCII art. `^={7,}$` requires a line of pure equals signs to the end of the line, so a CSS comment like `/* ====== */` won't match (there's a `*/` after the equals signs). Pairing is still the verdict: a pure `=======` separator line (license underlines, Markdown rules) matches `^={7,}$` but is not residue — the verdict requires `<`/`>`/`|` markers in the same file.
+**Why a precise regex instead of a broad match**: `<<<<<<<` (7 `<` characters + a space) locks onto git's conflict-marker format, excluding things like `===` separator lines in CSS comments or ASCII art. `^={7,}$` requires a line of pure equals signs to the end of the line, so a CSS comment like `/* ====== */` won't match (there's a `*/` after the equals signs). Pairing semantics follow the authoritative pair-first rule in git-release-finish Phase 0.
 
 **Why `git grep` instead of `grep -r`**: `git grep` automatically respects `.gitignore` and only scans tracked files, naturally excluding untracked build artifacts, which combined with the precise regex forms a double filter.
 

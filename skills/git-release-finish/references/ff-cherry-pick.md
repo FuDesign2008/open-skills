@@ -88,11 +88,12 @@ Squash (and cherry-pick) produce new hashes, so hash ancestry cannot prove compl
 ```bash
 # Added files: every file release added (relative to the merge base) must exist on target
 cd <REPO_PATH> && BASE=$(git merge-base origin/<TARGET_BRANCH> origin/<RELEASE_BRANCH>)
-git diff --name-status "$BASE..origin/<RELEASE_BRANCH>" | awk '$1=="A"{print $2}' > /tmp/added.txt
+git diff --name-status "$BASE..origin/<RELEASE_BRANCH>" | awk -F'\t' '$1=="A"{print $2}' > /tmp/added.txt
 while IFS= read -r f; do
   git cat-file -e "origin/<TARGET_BRANCH>:$f" 2>/dev/null || echo "MISSING: $f"
 done < /tmp/added.txt
 # Zero MISSING lines is the strongest completeness signal for the squash path.
+# Any MISSING line fails the verification — investigate it before declaring the sync complete.
 
 # Modified files with content differences: directionality check — per file, compute the
 # release-only line count. Counts concentrated in "two product lines' alternative

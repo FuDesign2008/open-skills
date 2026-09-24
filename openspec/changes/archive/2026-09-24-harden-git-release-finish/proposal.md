@@ -28,7 +28,7 @@
 
 ## Impact
 
-- **受影响文件**：`skills/git-release-finish/SKILL.md`（Phase 0 / 3 / 5.5 / 6 / 8 + Common Mistakes）、`skills/git-release-finish/references/ff-cherry-pick.md`（squash 变体 + 验证手法 + 「唯一出路」措辞修正）、`skills/git-conflict-resolve/SKILL.md`（机械判据 + diff3 陷阱 + 残留判定同步）
+- **受影响文件**：`skills/git-release-finish/SKILL.md`（Phase 0 / 3 / 5.5 / 8 + appendix pre-commit hook）、`skills/git-release-finish/references/ff-cherry-pick.md`（squash 变体 + 验证手法 + 「唯一出路」措辞修正）、`skills/git-conflict-resolve/SKILL.md`（机械判据 + diff3 陷阱 + 残留判定同步）
 - **版本**：两个 skill 的 frontmatter `version` 各 bump 一次（内容增强）
 - **派生产物**：`docs/generated/skills-index.md` 由脚本再生（pre-commit 自动处理，须纳入提交）
 - **无运行时代码 / API / 依赖变更**；对外的安装面（SKILL.md 分发）不变，行为契约为纯增量

@@ -511,15 +511,17 @@ A git native hook that runs the Phase 0/8 marker regex on every staged content. 
 ```bash
 cat > .git/hooks/pre-commit << 'HOOK'
 #!/bin/bash
-# Reject staged content with git conflict markers (Phase 0/8 regex + pair-first verdict)
+# Reject staged content with git conflict markers (Phase 0/8 pair-first verdict)
 # Pure '=' lines without <, >, or | markers are false positives (license underlines,
 # Markdown separators) — they do not block.
-if git diff --cached | grep -qE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} '; then
-  if git diff --cached | grep -qE '^<{7,} |^>{7,} |^\|{7,} '; then
-    echo "pre-commit: staged content contains conflict markers; commit blocked"
+# Scan the staged blobs directly: git diff output prefixes every line (+/-/space),
+# which defeats the ^ anchors of the marker regex.
+git diff --cached --name-only -z | while IFS= read -r -d '' f; do
+  if git grep --cached -qE '^<{7,} |^>{7,} |^\|{7,} ' -- "$f" 2>/dev/null; then
+    echo "pre-commit: staged content contains conflict markers ($f); commit blocked"
     exit 1
   fi
-fi
+done || exit 1
 exit 0
 HOOK
 chmod +x .git/hooks/pre-commit
