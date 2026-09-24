@@ -8,6 +8,7 @@
 | [figma-pixel-fidelity-mask-incident.md](figma-pixel-fidelity-mask-incident.md) | 贡献者 / Skill 作者 | Figma 像素保真被 CSS mask 破坏的事件复盘与早期单 skill 草案 |
 | [figma-pixel-fidelity-research.md](figma-pixel-fidelity-research.md) | 贡献者 / Skill 作者 | Figma MCP 官方能力 + 社区 skill 深潜；**双 skill**（实现 / 检查）架构草案 |
 | [git-worktree-multi-repo-local-verify-case.md](git-worktree-multi-repo-local-verify-case.md) | 贡献者 / Skill 作者 | 多仓 git worktree 本地验证真案例：兄弟路径断裂、联调分层、对 `git-worktree-discipline` 的启示 |
+| [git-release-finish-multi-repo-analysis.md](git-release-finish-multi-repo-analysis.md) | 贡献者 / Skill 作者 | 多仓 release 收尾实战（5 仓 × 2 版本、8 个执行单元）：4 项改进建议 —— `merge_status` 卡住处置、ff 大规模冲突的 squash 变体、冲突子集差分验证、Phase 0 正则误报；附分支识别陷阱与 squash 路径的内容等价性验证手法 |
 | [merge-coverage-gate-bypass-incident.md](merge-coverage-gate-bypass-incident.md) | 贡献者 / Skill 作者 | 合并前覆盖率门控被绕过的事件复盘 |
 | [concept-explanation-dual-track.md](concept-explanation-dual-track.md) | 贡献者 / Skill 作者 | 双轨讲解法（理性+感性认识）方法论与两个脱敏 IPC 问答范例；`explain-simply` skill 的素材来源 |
 | [goal-driven-intake-depth-analysis.md](goal-driven-intake-depth-analysis.md) | 贡献者 / Skill 作者 | 真实案例对照分析：goal-driven-* 与 solve-workflow 的核对粒度差距（6 个结构性根因 + 5 条改进建议）；granularity-alignment 变更的素材来源 |

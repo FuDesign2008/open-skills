@@ -1,5 +1,30 @@
 # 修复与变更记录
 
+## 2026-09-24：新增 git-release-finish 多仓实战分析文档
+
+**状态**：已完成
+
+**变更方式**：新增 `docs/git-release-finish-multi-repo-analysis.md`，记录一次真实的多仓 release 收尾（5 仓 × 2 版本、8 个执行单元）中发现的 4 项改进建议 —— ① `merge_status` 卡在 `checking` 的处置（`merge_ref` 强制重算）；② ff 模式下大规模冲突的 squash 变体（替代 219 次逐 commit cherry-pick）；③ 冲突裁决的子集差分验证方法论；④ Phase 0 正则对**纯等号分隔线**的误报（与既有 `superpowers/specs/2026-07-03-conflict-marker-defense-design.md` 覆盖的 CSS 注释误报互补）。同时补充两项分支识别陷阱与 squash 路径的内容等价性验证手法。并在 `docs/README.md` 文档索引追加对应行。
+
+该文档**仅提出建议**，未修改任何 `skills/` 下的源文件 —— 待后续接手者按文档第七章的落地清单实施后，再行修改 `SKILL.md` / `references/`。
+
+**验证场景**：
+
+**场景 1** — 文档可被发现
+
+1. 打开 `docs/README.md`。
+2. 查看文档索引表。
+
+**预期结果**：可见 `git-release-finish-multi-repo-analysis.md` 一行，链向正确路径。
+
+**场景 2** — 未误改 skill 源文件
+
+1. 在仓库根目录执行 `git status`。
+
+**预期结果**：`skills/git-release-finish/` 下无改动；变更仅含新增 1 个 docs 文件 + `docs/README.md` 追加 1 行 + 本记录。
+
+---
+
 ## 2026-03-22：删除 solve-workflow 历史旧版归档文件
 
 **状态**：已修复
