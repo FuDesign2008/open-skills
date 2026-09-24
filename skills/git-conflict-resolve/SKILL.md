@@ -1,6 +1,6 @@
 ---
 name: git-conflict-resolve
-version: "1.2.0"
+version: "1.3.0"
 user-invocable: true
 description: "Use when a Git merge or rebase produces code conflicts, especially when AI-automated conflict resolution is error-prone (picking the wrong side, losing a refactor, reverting to an older version) and semantic analysis plus logic verification is needed. Also applies when a multi-round rebase stops repeatedly and conflict files need to be aggregated across rounds. Triggers — 「解冲突」「处理冲突」「git-conflict-resolve」「解决 merge 冲突」「解决 rebase 冲突」「冲突解决」 / conflict resolve, resolve merge conflict, resolve rebase conflict."
 ---
@@ -127,6 +127,28 @@ For each file in the cumulative list, classify it using the "Build Artifact Iden
 > ⚠️ **Default to caution**: files with ambiguous boundaries (neither in a known build-output directory nor matching a clear artifact signature) **must never be short-circuited** — route them through Y.2. Misclassifying source code as a build artifact loses target-side changes, and that cost far outweighs reading one extra file — **when in doubt, read it rather than misjudge it**.
 
 > 📖 See [reference.md](reference.md) for the identification checklist, detailed commands for each conflict type, and the rename+hash fallback and rationale.
+
+---
+
+## Sub-stage Y.1.6 — Mechanical Triage Fast Path (before semantic analysis)
+
+> ⚠️ Runs after Y.1.5's build-artifact short-circuit and before Y.2's semantic analysis. Mechanical criteria produce evidence, not conclusions by default: "take ours" is valid only once the subset check proves it. When the mechanical criteria cannot decide, fall through to Y.2's normal semantic analysis and Y.3's confidence tiers.
+
+For each remaining conflict block (source code / config / docs that passed Y.1.5):
+
+**1. Subset diff check (first choice)** — is theirs a subset of ours?
+
+```bash
+diff <(ours_block) <(theirs_block) | grep -c '^>'
+#   0  → theirs ⊆ ours → take ours (🟢 high confidence), record the criterion in the log
+#   >0 → escalate: union merge or take-theirs analysis below
+```
+
+**2. Symbol-existence check (source files)** — verify theirs' top-level symbols (functions/classes/exports) exist in ours; when ours' method signatures already cover theirs' required parameters, ours is a functional superset. When a three-way comparison (base/ours/theirs) shows the two sides are alternative implementations of the same feature — a design divergence, not content loss — record that finding and resolve through the confidence tiers.
+
+**3. Union merge with heading-key dedup (specs/docs)** — for files with heading structure (e.g. `## → ### Requirement: → #### Scenario:`), keep all of ours and append theirs' blocks whose headings are absent from ours; same-heading entries merge once, never duplicate.
+
+**diff3 parsing trap** — before parsing conflict blocks from file content, detect the diff3 style (a `^\|{7,}` base section inside the block, or read `git config merge.conflictStyle`). With diff3, a conflict block has four parts: `<<<<<<< HEAD` ours, `||||||| base` base, `=======` separator, theirs. A parser that only knows the three-part form mistakes the base section for ours and concludes "ours is a superset" — a wrong verdict.
 
 ---
 
@@ -350,18 +372,22 @@ C = I'll merge it manually — let me know when it's done
 Immediately after finishing the resolution action for **each** file in Y.4 (`git checkout --theirs/--ours`, manual editing, the rename+hash strategy, etc.), run:
 
 ```bash
-# Precise regex matching git's conflict-marker format (7+ chars at line start + space/end-of-line)
-# Covers the standard 7-character form, non-standard 8+ character forms, and diff3's ||||||| base marker
-git grep -nE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' -- "$FILE" 2>/dev/null \
-  && {
-    echo "❌ $FILE resolution failed: conflict markers remain"
-    # Roll back to the conflicted state and re-enter Y.2 for analysis
-    git checkout MERGE_HEAD -- "$FILE" 2>/dev/null
-    return 1
-  } || echo "✅ $FILE is clean"
+# Pair-first verdict (authoritative rule in git-release-finish Phase 0; same semantics here):
+# a match counts as residue only when <, >, or | markers are present; pure '=' lines
+# (license underlines, Markdown separators) are false positives.
+if git grep -qE '^<{7,} |^>{7,} |^\|{7,} ' -- "$FILE" 2>/dev/null; then
+  echo "❌ $FILE resolution failed: conflict markers remain"
+  # Roll back to the conflicted state and re-enter Y.2 for analysis
+  git checkout MERGE_HEAD -- "$FILE" 2>/dev/null
+  return 1
+elif git grep -qE '^={7,}$' -- "$FILE" 2>/dev/null; then
+  echo "ℹ️ $FILE has pure '=' lines (no markers) — pair-first false positive, clean"
+else
+  echo "✅ $FILE is clean"
+fi
 ```
 
-**Why a precise regex instead of a broad match**: `<<<<<<<` (7 `<` characters + a space) locks onto git's conflict-marker format, excluding things like `===` separator lines in CSS comments or ASCII art. `^={7,}$` requires a line of pure equals signs to the end of the line, so a CSS comment like `/* ====== */` won't match (there's a `*/` after the equals signs).
+**Why a precise regex instead of a broad match**: `<<<<<<<` (7 `<` characters + a space) locks onto git's conflict-marker format, excluding things like `===` separator lines in CSS comments or ASCII art. `^={7,}$` requires a line of pure equals signs to the end of the line, so a CSS comment like `/* ====== */` won't match (there's a `*/` after the equals signs). Pairing is still the verdict: a pure `=======` separator line (license underlines, Markdown rules) matches `^={7,}$` but is not residue — the verdict requires `<`/`>`/`|` markers in the same file.
 
 **Why `git grep` instead of `grep -r`**: `git grep` automatically respects `.gitignore` and only scans tracked files, naturally excluding untracked build artifacts, which combined with the precise regex forms a double filter.
 
@@ -405,9 +431,10 @@ Check: were any independent, necessary changes on the main side (e.g. a hotfix) 
 > Do not scan the whole repo. Only scan the files in Y.1's cumulative list — these are the only files involved in this conflict resolution, and thus the only place markers could remain. A whole-repo scan would be swamped by false positives from things like CSS comments in build artifacts.
 
 ```bash
-# Scan only the cumulative-list files, using a precise regex for git's conflict-marker format
+# Scan only the cumulative-list files; the verdict is pair-first (pure '=' lines without
+# <, >, or | markers are false positives — authoritative rule in git-release-finish Phase 0)
 for FILE in $CONFLICT_FILES_CUMULATIVE; do
-  git grep -nE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' -- "$FILE" 2>/dev/null \
+  git grep -qE '^<{7,} |^>{7,} |^\|{7,} ' -- "$FILE" 2>/dev/null \
     && echo "❌ $FILE has residual markers"
 done
 ```
@@ -469,9 +496,10 @@ git add -A
 > ⚠️ **Pre-commit gate (L2 defense)**: before `git commit`, scan all staged files for residual conflict markers. This is the last line of defense before committing — it can still catch problems even if the Y.4.5 instant verification was skipped or went wrong.
 
 ```bash
-# Scan all staged files
+# Scan all staged files; the verdict is pair-first (pure '=' lines are false positives,
+# authoritative rule in git-release-finish Phase 0)
 git diff --cached --name-only | while read f; do
-  git grep -lE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' -- "$f" 2>/dev/null \
+  git grep -qE '^<{7,} |^>{7,} |^\|{7,} ' -- "$f" 2>/dev/null \
     && { echo "❌ Commit blocked: $f still contains conflict markers"; exit 1; }
 done
 # exit 1 → blocks the commit, go back to Y.4 to reprocess that file
@@ -531,20 +559,21 @@ git rebase --continue   # if commits remain to finish from the last round
 ## Quick Reference Commands
 
 ```bash
-# ── Conflict-marker detection (precise regex, shared by every defense layer) ──
-# Matches git's conflict-marker format: 7+ characters at line start + space/end-of-line
-# Covers the standard 7-character form, non-standard 8+ character forms, and diff3's ||||||| base marker
+# ── Conflict-marker detection (precise regex + pair-first verdict, shared by every defense layer) ──
+# Matcher: git's conflict-marker format, 7+ characters at line start + space/end-of-line
+# Verdict: a match is residue only when the marker regex matches too; pure '=' lines are false positives
 RE='^<{7,} |^={7,}$|^>{7,} |^\|{7,} '
+RE_MARKER='^<{7,} |^>{7,} |^\|{7,} '
 
 # Y.4.5 single-file instant verification
-git grep -nE "$RE" -- "$FILE" 2>/dev/null
+git grep -qE "$RE_MARKER" -- "$FILE" 2>/dev/null && git grep -nE "$RE" -- "$FILE" 2>/dev/null
 
 # Y.5 cumulative-list scan
-for f in $CONFLICT_FILES; do git grep -lE "$RE" -- "$f" 2>/dev/null; done
+for f in $CONFLICT_FILES; do git grep -qE "$RE_MARKER" -- "$f" 2>/dev/null && git grep -lE "$RE" -- "$f" 2>/dev/null; done
 
 # Y.6 pre-commit gate (staged files)
 git diff --cached --name-only | while read f; do
-  git grep -lE "$RE" -- "$f" 2>/dev/null && echo "❌ $f"
+  git grep -qE "$RE_MARKER" -- "$f" 2>/dev/null && git grep -lE "$RE" -- "$f" 2>/dev/null && echo "❌ $f"
 done
 
 # ── Three-way version content ──

@@ -1,6 +1,6 @@
 ---
 name: git-release-finish
-version: "2.0.0"
+version: "2.1.0"
 user-invocable: true
 description: "Use when releasing a Git repository version — tagging, merging release branches into main, resolving conflicts, or syncing changes between release branches. Handles ambiguous tag naming (v-prefix vs plain), unknown main branch (master/main/develop), ff-only merge method (forces cherry-pick strategy), protected-branch rules, cross-release hash-sensitive sync, and MR/PR extra-file cleanup. Single or multi-repo. Triggers — 「发版」「打tag」「发布版本」「版本发布」「release流程」「git-release」「multi-repo release」「release同步到另一个release」 / release a version, tag and merge, finish release branch."
 ---
@@ -90,9 +90,22 @@ description: "Use when releasing a Git repository version — tagging, merging r
 
 Matches standard 7-char markers, non-standard 8+ char markers, and diff3 `||||||| base` markers. `git grep` honors `.gitignore` automatically, so untracked build artifacts are excluded. `^={7,}$` requires pure `=` to end-of-line, so CSS comments like `/* ====== */` do not match; `^<{7,} ` requires 7+ `<` followed by a space, so ordinary `<` operators do not match.
 
+**Residue verdict — pair first** (authoritative rule; every scan in this skill and in `git-conflict-resolve` applies the same semantics): the regex above is a matcher, not a verdict. A match counts as true residue only when the same file also contains an opening/closing marker — `^<{7,} ` / `^>{7,} ` / `^\|{7,} `. A pure `=` line on its own is a false positive (third-party license headings like `The MIT License` underlined with `===============`, Markdown separator rules). A hit does not automatically mean residue — the pairing is the verdict.
+
 **L4a — Worktree scan**:
 ```bash
 git grep -lE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' 2>/dev/null
+```
+
+**L4a triage — separate true residue from pure-`=` false positives**:
+```bash
+git grep -lE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' 2>/dev/null | while read -r f; do
+  if git grep -qE '^<{7,} |^>{7,} |^\|{7,} ' -- "$f" 2>/dev/null; then
+    echo "TRUE RESIDUE: $f"
+  else
+    echo "false positive (pure '=' lines only): $f"
+  fi
+done
 ```
 
 **L4b — Historical merge-commit pickaxe scan**:
@@ -105,8 +118,8 @@ git log --all --merges --since="30 days ago" \
 | Result | Action |
 |------|------|
 | L4a and L4b both empty | Healthy; proceed to Phase 1 |
-| L4a non-empty | Abort. Clean the worktree (resolve or checkout a clean copy) and re-run |
-| L4b non-empty | Abort. Fix the commit in question (or add a fixup commit) and re-run |
+| L4a triage finds true residue, or L4b non-empty | Abort. Clean the worktree (resolve or checkout a clean copy) and re-run |
+| L4a matches are all pure `=` lines (no `<`/`>`/`\|` markers) | False positive. Record it in the scan output; proceed to Phase 1 |
 
 > Do not "release first, clean later." Residue in main propagates to downstream CI/CD which builds on wrong content.
 
@@ -190,7 +203,7 @@ If `TAG_SHA ≠ REMOTE_SHA` (after dereferencing annotated tags), the tag landed
 
 > The main branch may be `master`, `main`, or `develop`, and may differ per repo.
 
-**Three layers of evidence, ranked by trust**:
+**Four layers of evidence, ranked by trust**:
 
 1. **Remote merge history (strongest)**:
 ```bash
@@ -198,9 +211,13 @@ git log --oneline --merges -20 | grep -E "into '(master|main|develop)'"
 ```
 Historical "Merge branch 'release/X.Y.Z' into 'master'" records reveal the target.
 
-2. **Remote HEAD** (`git remote show origin | grep "HEAD branch"` is live; `git symbolic-ref refs/remotes/origin/HEAD` is local cache and may be stale). Prefer the live query on disagreement.
+2. **Remote HEAD** (`git ls-remote --symref origin HEAD` is live and authoritative; `git remote show origin` is also live but times out often; `git symbolic-ref refs/remotes/origin/HEAD` is local cache and may be stale). Prefer the live query on disagreement.
 
-3. **User confirmation (fallback)**: when sources conflict or no history exists, list candidates and ask.
+3. **Branch-naming behavior and merged-MR distribution**: `sync-release/*-to-<X>` sync branches name their target in the branch name itself (`git branch -a | grep sync-release/`); when all version-release MRs land on one target branch, that distribution is behavioral evidence (platform API: merged MRs filtered by `target_branch`).
+
+4. **User confirmation (fallback)**: when sources conflict or no history exists, list candidates and ask.
+
+> **A candidate may be an active parallel branch, not a deprecated trunk.** A branch named `master` can be a living parallel CI branch — its own CI config with different images and install steps, triggered independently by the branch name, with recent commits from others — while trunk is `main`. Before treating a candidate as deprecated or cleaning it up, falsify this first: independent CI configuration or recent third-party commits mean it is an active parallel branch. Do not clean up an active parallel branch; record its real role in the Phase 10 report.
 
 > Remote HEAD can point at a deprecated branch. After migrations or branch-policy changes, remote HEAD may still point at the old main. If remote HEAD's branch is hundreds of commits behind another candidate, treat remote HEAD as stale, rely on merge history, confirm with the user:
 ```bash
@@ -293,15 +310,27 @@ echo "main ahead:    $(git rev-list --count origin/<RELEASE_BRANCH>..origin/<MAI
 
 > Mandatory whenever merge-tree reported 0. merge-tree=0 ≠ MR is mergeable.
 
-Check the MR's `mergeable` / `can_be_merged` status via your platform's CLI/API. Then consult the table top-down — **the first matching row wins** (the three rows are mutually exclusive):
+Check the MR's `mergeable` / `can_be_merged` status via your platform's CLI/API. Then consult the table top-down — **the first matching row wins** (the rows are mutually exclusive):
 
 | Result | Action |
 |------|------|
 | `can_be_merged` / `MERGEABLE`, **and** Phase 3.5 did **not** flag the ff trap | Proceed to Phase 9 |
 | Not mergeable (`conflict` / `UNMERGEABLE`) | Switch to rebase strategy (Phase 6); do not proceed to Phase 9 |
 | `can_be_merged`, but Phase 3.5 flagged `ff` mode + non-fast-forward | **Phase 9 `mr merge` will still return 406.** Switch to the cherry-pick strategy in `references/ff-cherry-pick.md`; do not proceed to Phase 9 |
+| Stuck at `checking` (see unstall procedure below) | Platform recomputation is still pending — run the unstall procedure; do not classify as unmergeable |
 
 > `can_be_merged` only means "code has no conflicts and a merge result exists." It does not bypass `merge_method=ff` or other project-level constraints. The full mechanism and authoritative judgment live in Phase 3.5.
+
+### Unstalling a stuck `checking` status
+
+Multi-repo runs hit this most: the previous MR just updated the target ref and the platform's async re-check queues behind it. When `merge_status` stays `checking` for N consecutive polls (default N=6, 4s interval) while `has_conflicts=false` and `state=opened`:
+
+1. Call the platform's mergeability-recompute endpoint (GitLab: `GET /projects/:id/merge_requests/:iid/merge_ref`) to force a fresh computation.
+2. Wait ~3s, then re-check `merge_status`.
+3. If it turns `can_be_merged` → continue with the table above.
+4. If it is still `checking` → keep polling; only after several recompute-and-wait rounds with no change treat it as a platform anomaly and surface to the user.
+
+A stalled `checking` is an unfinished computation, not a merge verdict — it never means "unmergeable".
 
 ---
 
@@ -384,13 +413,17 @@ Re-run the `comm -23` check; the count must be 0.
 
 ### 8.1 Residual marker scan (uses the Phase 0 regex)
 
-Scope is `git diff --name-only` (not the full repo) — only files changed by the merge can carry new residue. Full-repo scans drown in false positives from CSS `=========` comments and ASCII art.
+Scope is `git diff --name-only` (not the full repo) — only files changed by the merge can carry new residue. Full-repo scans drown in false positives from CSS `=========` comments, ASCII art, license files, and Markdown separators. The verdict is pair-first (Phase 0): pure `=` lines without `<`, `>`, or `|` markers are false positives, not residue.
 
 ```bash
 BASE=$(git merge-base origin/<MAIN_BRANCH> HEAD)
 git diff --name-only $BASE..HEAD | while read f; do
-  git grep -nE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' -- "$f" 2>/dev/null \
-    && { echo "Residue in $f; merge forbidden"; exit 1; }
+  if git grep -qE '^<{7,} |^>{7,} |^\|{7,} ' -- "$f" 2>/dev/null; then
+    git grep -nE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' -- "$f" 2>/dev/null
+    echo "Residue in $f; merge forbidden"; exit 1
+  elif git grep -qE '^={7,}$' -- "$f" 2>/dev/null; then
+    echo "pure '=' lines in $f (no <, >, | markers) — pair-first false positive, not residue"
+  fi
 done
 ```
 
@@ -478,19 +511,23 @@ A git native hook that runs the Phase 0/8 marker regex on every staged content. 
 ```bash
 cat > .git/hooks/pre-commit << 'HOOK'
 #!/bin/bash
-# Reject staged content with git conflict markers (Phase 0/8 regex)
-git diff --cached | grep -qE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} ' \
-  && {
+# Reject staged content with git conflict markers (Phase 0/8 regex + pair-first verdict)
+# Pure '=' lines without <, >, or | markers are false positives (license underlines,
+# Markdown separators) — they do not block.
+if git diff --cached | grep -qE '^<{7,} |^={7,}$|^>{7,} |^\|{7,} '; then
+  if git diff --cached | grep -qE '^<{7,} |^>{7,} |^\|{7,} '; then
     echo "pre-commit: staged content contains conflict markers; commit blocked"
     exit 1
-  } || exit 0
+  fi
+fi
+exit 0
 HOOK
 chmod +x .git/hooks/pre-commit
 ```
 
 - Bypassable with `git commit --no-verify` — L5 is enhancement, not a gate
 - If a project already has a pre-commit hook, append the marker check to the existing hook
-- Uses the same precise regex defined in Phase 0
+- Uses the Phase 0 regex with the same pair-first verdict
 
 ---
 
