@@ -429,15 +429,25 @@ When the host is not macOS, the skill/install path is absent, or install is bloc
 
 ### Requirement: figma-pixel-verify SHALL treat vision screenshots as supporting evidence
 
-When the model can inspect images, verify MUST capture running-UI vs Figma screenshots and use them to flag gross or composition mismatches (wrong block, fragment-cut appearance, stacking). When a JS-eval channel exists, Overall PASS MUST still require numeric measurement of critical visual rows. Vision-only comparison MUST NOT produce Overall PASS if JS-eval was available.
+When the model can inspect images, verify MUST capture running-UI vs Figma screenshots and use them to flag gross or composition mismatches (wrong block, fragment-cut appearance, stacking). When a JS-eval channel or a layout probe can run, Overall PASS MUST still require numeric measurement of critical visual rows. Vision-only comparison MUST NOT produce Overall PASS if either channel can run. When the declared channel is `storybook`, `isolated-harness`, `preview`, or `full-app`, the Verify section MUST include `Screenshot:` set to a path of a running-UI image saved this run. `scripts/check-figma-verify-report.mjs` MUST exit non-zero unless that path resolves to an existing non-empty file whose extension is png, jpg, jpeg, or webp. When the channel is `layout-probe` and the command cannot open a UI, `Screenshot:` MUST be `not-openable` and the script MUST NOT require an image file. A screenshot file MUST NOT replace numeric measurement.
 
 #### Scenario: Vision flags fragment-cut but numeric still required
 
-- **WHEN** JS-eval is available and a screenshot shows a logo stacked from multiple fragments
+- **WHEN** a document channel or a layout probe can run and a screenshot shows a logo stacked from multiple fragments
 - **THEN** verify records a non-PASS for that asset and still measures numeric rows; it MUST NOT skip numeric checks because the screenshot already looks wrong
 
-#### Scenario: Vision-only cannot PASS when eval exists
+#### Scenario: Vision-only cannot PASS when a measurement channel exists
 
-- **WHEN** JS-eval is available and the agent only compared screenshots
+- **WHEN** a JS-eval channel or a layout probe can run and the agent only compared screenshots
 - **THEN** overall is not PASS
+
+#### Scenario: Openable channel without a saved image fails the checker
+
+- **WHEN** the report declares `Channel: storybook` and `Screenshot:` is missing, empty, or points at a file that does not exist or has zero bytes
+- **THEN** `check-figma-verify-report.mjs` exits non-zero
+
+#### Scenario: Layout probe that cannot open a UI does not invent an image
+
+- **WHEN** the report declares `Channel: layout-probe` and `Screenshot: not-openable`
+- **THEN** the screenshot clause does not fail the checker, and numeric measurement is still required
 

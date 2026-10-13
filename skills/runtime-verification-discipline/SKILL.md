@@ -1,8 +1,8 @@
 ---
 name: runtime-verification-discipline
-version: "1.1.0"
+version: "1.2.0"
 user-invocable: false
-description: "Hard discipline for runtime verification in PDCA workflows: the AI executes verification itself in an environment — real preferred over simulated, subject to determinism + safety — never defaulting to a human checklist. Attempt-first, resolve a pluggable provider (project script/skill → shared capability skill), and hand to a human only at a true hard boundary with a stated reason. Use at any workflow verify/check stage (bug fix or feature) to decide WHERE verification runs, WHO runs it, WHETHER it suffices. Referenced by PDCA hosts via frontmatter dependencies. Triggers — 「环境验证」「真实环境验证」「真机验证」「真机测试」「模拟环境验证」「AI 验证」「验证分层」「验证充分性」 / runtime verification, environment verification, real vs simulated. Do NOT alias completion-evidence-discipline (evidence freshness) or runtime-evidence-debug (debug instrumentation)."
+description: "Hard discipline for runtime verification in PDCA workflows: the AI executes verification itself in an environment — real preferred over simulated, subject to determinism + safety — never defaulting to a human checklist. Attempt-first, resolve a pluggable provider (project script/skill → shared capability skill), and hand to a human only at a true hard boundary with a stated reason. Use at any workflow verify/check stage (bug fix or feature) to decide WHERE verification runs, WHO runs it, WHETHER it suffices. Referenced by PDCA hosts via frontmatter dependencies. Triggers — 「环境验证」「真实环境验证」「真机验证」「真机测试」「模拟环境验证」「AI 验证」「验证分层」「验证充分性」 / runtime verification, environment verification, real vs simulated. When a check opens a UI, cite a saved non-empty screenshot; non-UI checks do not. Do NOT alias completion-evidence-discipline (evidence freshness) or runtime-evidence-debug (debug instrumentation)."
 ---
 
 # Runtime Verification Discipline
@@ -70,6 +70,8 @@ When the AI cannot execute a verification, classify why before doing anything el
 Never use a vague "no Bash / environment limits" hand-wave to hand off without classifying. The classification is what keeps "minimize human labor" honest — it forces the distinction between "I didn't wire it" and "it genuinely cannot be automated."
 
 **Pixel geometry is not category C.** A numeric comparison of laid-out frames to a design spec is not subjective UX, and it is not a physical-device step when a document channel or a layout probe can run. A missing probe is category A: write and run the probe in this turn, mounted in the shipping parent. Category C "physical device" stays for an action no command can perform. A lower-tier label ("real-environment smoke recommended") does not turn those rows into a human step and does not replace the measurement.
+
+**An opened UI keeps a screenshot file.** When a check opened a UI, the evidence cites a path to a non-empty png, jpg, jpeg, or webp saved this run. Unit tests, spec validation, and a layout probe that only prints numbers and cannot open a UI do not require an image and must not invent one. The image does not replace that check's own pass condition. Do not restate a Figma report's channel names here.
 
 ## Sufficiency check
 

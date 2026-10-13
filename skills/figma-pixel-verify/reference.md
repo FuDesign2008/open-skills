@@ -46,7 +46,7 @@ Use this gate during verify preflight. Do not paste a third-party browser API he
 4. Prefer `getBoundingClientRect` (or layout APIs) for width/height; compare in CSS pixels. For `basis` rows, measure the named sibling relationship (e.g. header bottom vs title top), not only the node’s own padding.
 5. Normalize colors (`rgb(26, 26, 26)` → `#1A1A1A`) before compare.
 6. Re-run the same script/path after each fix iteration — no “looks fine” shortcuts.
-7. When the model can inspect images, attach UI vs Figma screenshots as supporting notes for composition. They do not replace steps 2–5 when JS-eval exists.
+7. When the model can inspect images, attach UI vs Figma screenshots as supporting notes for composition. They do not replace steps 2–5 when JS-eval or a layout probe exists. On an openable channel, the Verify section cites the saved running-UI file. A layout probe that cannot open a UI uses `Screenshot: not-openable`.
 
 ### Example measurement intent (illustrative)
 
@@ -77,6 +77,7 @@ Write into the living artifact **Verify** section (same file as Inventory/Spec),
 - Channel: <storybook | isolated-harness | preview | full-app | layout-probe>
 - Mounted in: <shipping parent, or the story/route for a document channel>
 - Measurement command: <command that printed the excerpt>
+- Screenshot: <path to a non-empty png/jpg/jpeg/webp of the running UI | not-openable>
 - Platform floor: <detected (note) | none>
 - Spec source: <path to this file or sibling>
 - Inventory coverage: <measured>/<critical visual rows> (<unmeasured list>)
@@ -95,6 +96,8 @@ Write into the living artifact **Verify** section (same file as Inventory/Spec),
 | … | … | … | … | … | … | PASS/DRIFT/MISSING-style/accepted-residual/… | basis: … |
 
 For multi-theme scope: repeat the table per theme (or add a `theme` column); each row under each theme gets its own verdict.
+
+`Screenshot` is required. An openable channel cites a saved non-empty png, jpg, jpeg, or webp. A layout probe that cannot open a UI uses `not-openable`. The checker stats that file. The image does not replace numeric measurement.
 
 Overall **PASS** (or **PASS-with-accepted-residuals**) requires every critical visual row measured in the correct state/mode and within tolerance, except rows explicitly `accepted-residual` (owner + reason). Unmeasured critical rows, `MISSING-style`, unaccepted `DRIFT`, incomplete Spec, a missing living artifact after this-run implement, invented fill vs Spec `none`, fragment-cut vs a single Assets export, generic-shell size drift, invented text-color alias, or a remote design URL for a visible graphic ⇒ **FAIL**.
 

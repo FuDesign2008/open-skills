@@ -30,6 +30,15 @@ export const LONE_MOUNT = new Set([
   "-",
 ]);
 
+const OPENABLE = new Set([
+  "storybook",
+  "isolated-harness",
+  "preview",
+  "full-app",
+]);
+
+const IMAGE_EXT = new Set([".png", ".jpg", ".jpeg", ".webp"]);
+
 const BLOCKING = new Set([
   "drift",
   "missing-style",
@@ -115,11 +124,34 @@ function tokensOf(actual) {
   return { hex, nums };
 }
 
+function screenshotErrors(channel, shot, options) {
+  if (!CHANNELS.has(channel)) return [];
+  const value = (shot || "").trim();
+  if (channel === "layout-probe" && value.toLowerCase() === "not-openable") return [];
+  if (OPENABLE.has(channel) && value.toLowerCase() === "not-openable") {
+    return ["Screenshot not-openable is only valid for layout-probe"];
+  }
+  if (!value) return ["Screenshot is empty"];
+  const baseDir = options.baseDir || process.cwd();
+  const resolved = path.resolve(baseDir, value);
+  const ext = path.extname(resolved).toLowerCase();
+  if (!IMAGE_EXT.has(ext)) {
+    return ["Screenshot extension must be png, jpg, jpeg, or webp"];
+  }
+  try {
+    const st = fs.statSync(resolved);
+    if (!st.isFile() || st.size <= 0) return ["Screenshot file is empty"];
+  } catch {
+    return ["Screenshot file does not exist"];
+  }
+  return [];
+}
+
 /**
  * @param {string} markdown
  * @returns {{ ok: boolean, errors: string[] }}
  */
-export function checkReport(markdown) {
+export function checkReport(markdown, options = {}) {
   const errors = [];
   const section = verifySection(markdown);
   if (!section) {
@@ -131,6 +163,7 @@ export function checkReport(markdown) {
   const mounted = field(section, "Mounted in");
   const command = field(section, "Measurement command");
   const overall = field(section, "Overall");
+  errors.push(...screenshotErrors(channel, field(section, "Screenshot"), options));
 
   if (!CHANNELS.has(channel)) {
     errors.push(`Channel must be one of ${[...CHANNELS].join(", ")}`);
@@ -197,8 +230,9 @@ function main() {
     console.error("usage: node check-figma-verify-report.mjs <living-artifact.md>");
     process.exit(2);
   }
-  const markdown = fs.readFileSync(path.resolve(file), "utf8");
-  const result = checkReport(markdown);
+  const resolved = path.resolve(file);
+  const markdown = fs.readFileSync(resolved, "utf8");
+  const result = checkReport(markdown, { baseDir: path.dirname(resolved) });
   if (result.ok) {
     console.log("PASS");
     process.exit(0);
