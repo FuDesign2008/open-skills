@@ -23,29 +23,30 @@ Resolve the runnable surface in this order; declare the chosen channel in the re
 | 2 | Lightweight isolated harness | No workbench, or workbench broken; component reachable by stubbing host/engine dependencies | Stub intent: cut non-UI dependency chains, keep real tokens/styles |
 | 3 | In-product preview route | Component needs its real shell context | Use the project's preview/dev route when cheaper than a full launch |
 | 4 | Full app / browser launch | Nothing lighter can render the component | Heaviest; last resort |
+| — | `layout-probe` | Surface has no computed-style API, or every document rung is unavailable | Mount the control in the shipping parent, run layout, print frames. A lone view is not this rung |
 
 - Isolated is not simulated: a story or harness is a real render with real tokens; the ladder orders integration completeness × cost, not real-vs-fake.
 - A broken or absent workbench falls the ladder down — record the fallback.
-- When the project declares or shows a host/platform floor (an engine older than the workbench browser), the real host remains the final authority: add a platform-floor note; workbench PASS is not platform-floor proof.
+- When the project declares a host engine older than the workbench browser, the report may note that difference. The note does not withhold geometric PASS and does not create a human step. Rows that depend on that engine's syntax are measured at that floor, or they stay unmeasured and overall is not PASS.
 - No workbench at all → make **one** adoption suggestion (a component workbench is systematic, observable, and agent-testable, and enables component tests) and continue measuring through the next rung; the suggestion is advisory, never blocking.
 
 ## Quality channel install gate
 
 Use this gate during verify preflight. Do not paste a third-party browser API here; load that skill’s own install reference.
 
-1. If the host is macOS **and** the `ego-browser` skill (or its install script) is available: if `command -v ego-browser` fails, follow that skill’s install reference, wait for user GUI onboarding when required, then confirm the CLI before measuring.
+1. If the host is macOS **and** the `ego-browser` skill (or its install script) is available: if `command -v ego-browser` fails, follow that skill’s install reference when the install finishes in this turn. If GUI onboarding is still required, record it and continue with the next reachable channel.
 2. After the CLI is ready, load the skill and use it for open / pointer state / screenshot / evaluate.
 3. If the host is not macOS, the skill/install path is absent, or install is blocked: continue with another JS-eval channel and record the channel used. Verify still runs.
 
 ## Measurement guidance
 
 1. Resolve a stable selector per `node / role` (test id > role+name > CSS path).
-2. Switch the running UI to the row’s `state` and `mode` before reading. On macOS with the `ego-browser` skill/install path, finish that install/onboard gate first, then hover/click/theme-switch through that channel and evaluate. When that install is impossible, use another JS-eval channel. Default-state readings do not satisfy a hover row.
+2. Switch the running UI to the row’s `state` and `mode` before reading. On macOS with a usable `ego-browser` CLI, hover/click/theme-switch through that channel and evaluate. When install still needs GUI onboarding, use the next reachable channel in this turn. On `layout-probe`, actual is the frame printed after layout inside the shipping parent. A lone view is not a measurement. A source literal that matches `expected` leaves the row unmeasured. Default-state readings do not satisfy a hover row.
 3. Prefer `getComputedStyle` (or equivalent) for colors, fonts, radii, padding.
 4. Prefer `getBoundingClientRect` (or layout APIs) for width/height; compare in CSS pixels. For `basis` rows, measure the named sibling relationship (e.g. header bottom vs title top), not only the node’s own padding.
 5. Normalize colors (`rgb(26, 26, 26)` → `#1A1A1A`) before compare.
 6. Re-run the same script/path after each fix iteration — no “looks fine” shortcuts.
-7. When the model can inspect images, attach UI vs Figma screenshots as supporting notes for composition. They do not replace steps 2–5 when JS-eval exists.
+7. When the model can inspect images, attach UI vs Figma screenshots as supporting notes for composition. They do not replace steps 2–5 when JS-eval or a layout probe exists. On an openable channel, the Verify section cites the saved running-UI file. A layout probe that cannot open a UI uses `Screenshot: not-openable`.
 
 ### Example measurement intent (illustrative)
 
@@ -73,19 +74,30 @@ Write into the living artifact **Verify** section (same file as Inventory/Spec),
 ## Verify
 
 - Target: <route or story>
-- Channel: <storybook | isolated-harness | preview | full-app>
+- Channel: <storybook | isolated-harness | preview | full-app | layout-probe>
+- Mounted in: <shipping parent, or the story/route for a document channel>
+- Measurement command: <command that printed the excerpt>
+- Screenshot: <path to a non-empty png/jpg/jpeg/webp of the running UI | not-openable>
 - Platform floor: <detected (note) | none>
 - Spec source: <path to this file or sibling>
 - Inventory coverage: <measured>/<critical visual rows> (<unmeasured list>)
 - Theme scope: <single default | light+dark | …>
-- Iterations: <n>≤3
+- Iterations: <n>≤8
 - Overall: PASS | PASS-with-accepted-residuals | FAIL
+
+### Measurement excerpt
+
+```text
+<stdout of the measurement command; every PASS actual number and color appears here>
+```
 
 | node / role | state | mode | property | expected | actual | verdict | notes |
 |-------------|-------|------|----------|----------|--------|---------|-------|
 | … | … | … | … | … | … | PASS/DRIFT/MISSING-style/accepted-residual/… | basis: … |
 
 For multi-theme scope: repeat the table per theme (or add a `theme` column); each row under each theme gets its own verdict.
+
+`Screenshot` is required. An openable channel cites a saved non-empty png, jpg, jpeg, or webp. A layout probe that cannot open a UI uses `not-openable`. The checker stats that file. The image does not replace numeric measurement.
 
 Overall **PASS** (or **PASS-with-accepted-residuals**) requires every critical visual row measured in the correct state/mode and within tolerance, except rows explicitly `accepted-residual` (owner + reason). Unmeasured critical rows, `MISSING-style`, unaccepted `DRIFT`, incomplete Spec, a missing living artifact after this-run implement, invented fill vs Spec `none`, fragment-cut vs a single Assets export, generic-shell size drift, invented text-color alias, or a remote design URL for a visible graphic ⇒ **FAIL**.
 
@@ -101,9 +113,8 @@ Overall **PASS** (or **PASS-with-accepted-residuals**) requires every critical v
 - e.g. CSS mask recolor; invented fill; fragment-cut icon; generic shell; invented text alias; remote asset URL; wrong variant; missing token; sampled subset; spec-gap (re-enter implement)
 ```
 
-## Degradation without JS-eval
+## When no document channel exists
 
-1. State clearly: numeric verify unavailable.
-2. Attach screenshot side-by-side notes.
-3. Mark rows MISSING-style or “vision-only residual.”
-4. Overall must not be unconditional PASS.
+1. Run or add a layout probe and read its printed frames as actual.
+2. If that command cannot be executed, overall is FAIL and the report names the command. Screenshot notes may sit beside that FAIL.
+3. Mark unmeasured rows MISSING-style. Overall is not PASS.

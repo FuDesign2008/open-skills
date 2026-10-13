@@ -1,8 +1,8 @@
 ---
 name: completion-evidence-discipline
-version: "1.0.0"
+version: "1.1.0"
 user-invocable: false
-description: "Hard discipline for verification and completion claims: do NOT claim tests passed, a fix works, or a task is complete without fresh evidence from commands or checks run in the CURRENT turn; label unavailable checks as pending with the exact action required. Referenced by PDCA verification stages via staged-review-flow and host workflows. Triggers — 「完成须有证据」「验证证据纪律」「宣称完成前验证」「completion evidence」 / completion evidence discipline, fresh verification evidence. Do NOT use as a standalone product workflow."
+description: "Hard discipline for verification and completion claims: do NOT claim tests passed, a fix works, or a task is complete without fresh evidence from commands or checks run in the CURRENT turn; label unavailable checks as pending with the exact action required. Referenced by PDCA verification stages via staged-review-flow and host workflows. Triggers — 「完成须有证据」「验证证据纪律」「宣称完成前验证」「completion evidence」 / completion evidence discipline, fresh verification evidence. An opened-UI pass claim cites a non-empty image saved this turn. Do NOT use as a standalone product workflow."
 ---
 
 # Completion Evidence Discipline
@@ -24,6 +24,8 @@ When about to claim any of: tests passed, typecheck/build OK, verification compl
 
 1. **Run** the relevant command/check in this turn, **or**
 2. **Label Pending** with the exact manual action still required — and **do not** say it passed.
+
+When the check opened a UI, that fresh evidence includes a filesystem path to a non-empty png, jpg, jpeg, or webp saved this turn. A path with no such file does not support a pass claim. Checks that did not open a UI do not require an image.
 
 Compose with `staged-review-flow` verification honesty:
 

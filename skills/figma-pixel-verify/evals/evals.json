@@ -160,11 +160,11 @@
       "id": 15,
       "name": "channel-declaration-and-platform-floor",
       "prompt": "你在 Storybook（本机新 Chrome）测完所有关键行均 PASS；目标工程声明其宿主引擎为旧版 Chromium。请按 figma-pixel-verify 给出报告要点（dry-run）。",
-      "expected_output": "Report declares Channel: storybook with all rows measured, plus a platform-floor note that the real host remains the final authority; no overall platform-level PASS beyond the workbench channel.",
+      "expected_output": "Report declares Channel: storybook with geometric rows PASS. It may note the older host engine. That note does not withhold geometric PASS and does not ask a person to finish those rows. Rows that depend on the older engine's syntax stay unmeasured until measured at that floor.",
       "expectations": [
         "Declares Channel: storybook in the report with the measured rows",
-        "Adds a platform-floor note: the real host (older engine) remains the final authority; workbench PASS is not platform-floor proof",
-        "Does not claim overall PASS beyond the workbench channel for the host platform"
+        "May note the older host engine; the note does not withhold geometric PASS and does not create a human step",
+        "Rows that depend on the older engine's syntax stay unmeasured until a runtime or parser at that floor measures them"
       ]
     }
   ]

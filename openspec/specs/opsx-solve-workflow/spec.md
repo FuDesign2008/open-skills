@@ -91,7 +91,7 @@ Phase 8 SHALL ensure `tasks.md` is complete, delta specs represent the implement
 
 ### Requirement: opsx-solve-workflow SHALL strong-depend on figma-pixel implement and verify
 
-`opsx-solve-workflow` MUST list both `figma-pixel-implement` and `figma-pixel-verify` in frontmatter `dependencies`. At startup prerequisite check, a missing either skill MUST abort (no silent degrade). Phase 6 MUST load `figma-pixel-implement` when Figma URL/node or pixel-restore / design-faithful UI intent is in scope; implement is incomplete without a durable inventory+spec path in the target repo. Phase 7 MUST load `figma-pixel-verify` when this run implemented from Figma or the user/plan requires alignment checking. When this run implemented from Figma, Phase 7 MUST treat a missing Verify section (or Spec source sibling) as a failed verification stage. A spec-gap FAIL MUST NOT pass Phase 7—re-enter implement to complete the table. Host prose MUST stay thin (load + scope conditions) and MUST NOT duplicate the Figma skills' methodology.
+`opsx-solve-workflow` MUST list both `figma-pixel-implement` and `figma-pixel-verify` in frontmatter `dependencies`. At startup prerequisite check, a missing either skill MUST abort (no silent degrade). Phase 6 MUST load `figma-pixel-implement` when Figma URL/node or pixel-restore / design-faithful UI intent is in scope; implement is incomplete without a durable inventory+spec path in the target repo. That skill MUST continue into `figma-pixel-verify` in the same run until overall PASS or the measurement command cannot run. Phase 7 MUST load `figma-pixel-verify` when this run implemented from Figma or the user/plan requires alignment checking. When this run implemented from Figma, Phase 7 MUST treat a missing Verify section (or Spec source sibling) as a failed verification stage. Phase 7 MUST pass only when that report’s overall status is PASS (accepted residuals included), its channel is `storybook`, `isolated-harness`, `preview`, `full-app`, or `layout-probe`, and `scripts/check-figma-verify-report.mjs` from `figma-pixel-verify` exits 0 on that file. A source-literal compare, or a report that leaves pixel rows for a person, MUST NOT pass Phase 7. Any other result MUST fail Phase 7 and return to Phase 6 for another fix/re-measure loop. A spec-gap FAIL MUST NOT pass Phase 7—re-enter implement to complete the table. Host prose MUST stay thin (load + scope conditions) and MUST NOT duplicate the Figma skills' methodology.
 
 #### Scenario: Missing pair aborts opsx-solve startup
 
@@ -101,7 +101,7 @@ Phase 8 SHALL ensure `tasks.md` is complete, delta specs represent the implement
 #### Scenario: Phase 6 Figma UI work loads implement
 
 - **WHEN** Phase 6 executes a plan that implements UI from a Figma node
-- **THEN** the host loads `figma-pixel-implement` and follows that skill for assets and the living spec path
+- **THEN** the host loads `figma-pixel-implement` and that skill continues into `figma-pixel-verify` in the same run until overall PASS or the measurement command cannot run
 
 #### Scenario: Phase 7 missing Figma verify report fails
 
@@ -112,6 +112,11 @@ Phase 8 SHALL ensure `tasks.md` is complete, delta specs represent the implement
 
 - **WHEN** Phase 7 verify FAILs because Spec is missing critical rows
 - **THEN** Phase 7 MUST NOT pass and MUST re-enter `figma-pixel-implement` to complete the table
+
+#### Scenario: Source compare does not pass Phase 7
+
+- **WHEN** the Verify channel is a source-literal compare, or the report leaves pixel rows for a person
+- **THEN** Phase 7 MUST NOT pass and MUST return to Phase 6 for another fix/re-measure loop
 
 ### Requirement: Phase 7 SHALL delegate verification execution to runtime-verification-discipline
 

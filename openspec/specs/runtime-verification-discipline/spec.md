@@ -67,7 +67,7 @@ TBD - created by archiving change add-ai-env-verification. Update Purpose after 
 - **B（缺一次性环境）**：验证可自动化但缺一次性安装的工具链/环境——SHALL 给出安装命令由用户决定，之后 AI 接管。
 - **C（真硬边界）**：SHALL 交还人并说明理由；C 含三类——AI 无法执行该步（物理设备、captcha、生物识别）、AI 无法判定结果（主观 UX、探索式评估）、动作有真实世界副作用。
 
-禁止用「无 Bash / 环境限制」等含糊措辞不经分类就交还人。
+禁止用「无 Bash / 环境限制」等含糊措辞不经分类就交还人。对照设计规格的布局后几何尺寸不是 C 类：它不是主观体验，在文档通道或布局探针能跑时也不是物理设备步骤。缺少探针属于 A 类，本轮写好并在上线用的父容器里跑完。低于生产层的标注不得把这些行改成人工步骤，也不得代替测量。
 
 #### Scenario: 未接线的可自动化验证
 
@@ -79,6 +79,11 @@ TBD - created by archiving change add-ai-env-verification. Update Purpose after 
 
 - **WHEN** 一项验证需要真实指纹或主观 UX 判定
 - **THEN** AI 交还用户并明确说明这是真硬边界及其原因
+
+#### Scenario: 像素几何不交还人
+
+- **WHEN** 验证是把布局后的宽高和设计规格做数值比较，且文档通道或布局探针可以执行
+- **THEN** AI 在本轮测量并判定，不把该行列为人工验证项
 
 ### Requirement: 验证须充分覆盖改动的确切行为
 
@@ -110,3 +115,21 @@ TBD - created by archiving change add-ai-env-verification. Update Purpose after 
 - **THEN** 既要有本轮新鲜证据（completion-evidence-discipline）
 - **AND** 验证环境层与执行者满足本纪律
 
+### Requirement: 能打开界面的验证 SHALL 留存非空截图文件
+
+当一次验证打开了可查看的界面，证据记录 SHALL 写明本轮保存的运行界面截图路径。该文件 SHALL 存在且非空，扩展名为 png、jpg、jpeg 或 webp。没有打开界面的检查（单测、规格校验，以及只打印布局数字且打不开界面的探针）SHALL NOT 被要求附截图，也 SHALL NOT 为了留痕伪造图片。截图 SHALL NOT 代替该验证自己的通过条件。本纪律 SHALL NOT 复述 Figma 通道或报告字段；那些留在 `figma-pixel-verify`。
+
+#### Scenario: 打开了界面
+
+- **WHEN** 验证在浏览器或应用里打开了界面并完成检查
+- **THEN** 记录包含一个已保存、非空的截图路径
+
+#### Scenario: 非界面检查
+
+- **WHEN** 验证是单测或规格校验，没有打开界面
+- **THEN** 通过结论不要求截图文件
+
+#### Scenario: 打不开界面的布局探针
+
+- **WHEN** 测量命令只打印布局后的数字，且本轮打不开界面
+- **THEN** 记录标明打不开界面，不要求伪造截图

@@ -54,6 +54,7 @@ The system SHALL layer acceptance criteria into three tiers: machine-verifiable 
 
 - **WHEN** 在启动长跑前设计验收标准
 - **THEN** 系统将验收标准分为硬性（编译/测试/格式，agent 可自验）、软性（质检模型 + 确定性 checker）、人工（结果型，需人判断）三层，并将硬性标准作为 `/goal` 条件来源
+- **AND** 当目标含 Figma 节点或像素还原时，几何行属于硬性，检查方式是 `figma-pixel-verify` 的报告检查脚本退出码为 0；这些行不属于人工层
 
 ### Requirement: /goal 条件遵循官方四部分
 

@@ -28,14 +28,16 @@ Write the contract in the **target repo**, not only in the session.
 
 ## Spec
 
-| node / role | state | mode | property | expected | unit | basis | token / class | source |
-|-------------|-------|------|----------|----------|------|-------|---------------|--------|
-| Header / title | default | light | font-size | 24 | px | self | `text-2xl` / `--font-size-24` | Figma text style / variable |
-| Welcome / title | default | light | gap-from-header | 82 | px | bottom of 顶部模块 → top of title | (layout) | metadata y minus header height |
-| Chip | hover | light | background | #F4F6F7 | hex | self | `--color-fill-2` | variant Hover |
-| Panel | default | light | background | none | — | self | (transparent) | no readable fill |
-| Title | default | light | color | #1A1C33 | hex | self | `--text-5` | Figma variable Text/5 |
-| Helper | default | light | color | #888888 | hex | self | `raw-only` | no readable variable name |
+| node / role | state | mode | property | expected | unit | basis | token / class | source | primitive |
+|-------------|-------|------|----------|----------|------|-------|---------------|--------|-----------|
+| Header / title | default | light | font-size | 24 | px | self | `text-2xl` / `--font-size-24` | Figma text style / variable | project-component |
+| Welcome / title | default | light | gap-from-header | 82 | px | bottom of 顶部模块 → top of title | (layout) | metadata y minus header height | project-component |
+| Chip | hover | light | background | #F4F6F7 | hex | self | `--color-fill-2` | variant Hover | project-component |
+| Panel | default | light | background | none | — | self | (transparent) | no readable fill | project-component |
+| Title | default | light | color | #1A1C33 | hex | self | `--text-5` | Figma variable Text/5 | project-component |
+| Helper | default | light | color | #888888 | hex | self | `raw-only` | no readable variable name | project-component |
+
+`primitive` is `project-component` (laid-out size already matches), `custom-layout` (frames assigned in the layout pass a probe reads), or `platform-control` (only after a stock instance’s layout probe matches the spec box).
 
 ## Assets
 
