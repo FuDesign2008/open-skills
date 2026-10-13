@@ -1,6 +1,6 @@
 ---
 name: jira-wiki-markup
-version: "1.1.0"
+version: "1.1.1"
 user-invocable: false
 description: "Compose Jira wiki-rendered fields (especially comments) in Jira Wiki markup. Use whenever writing jira_add_comment body, a wiki description, or a repair report that will be posted to Jira. Triggers — 「Jira 语法」「Jira Wiki」「写 Jira 评论」「Jira 评论格式」「wiki markup」「jira comment markup」. Do NOT use for reading issues, status transitions, GitHub/PR Markdown, or Jira Cloud ADF. Referenced by Jira comment writers via frontmatter dependencies."
 ---
@@ -35,6 +35,10 @@ Write Wiki markup, not GitHub Markdown. The Wiki renderer is a different dialect
 | Escape a Wiki character | `\X` (e.g. `\{`) |
 
 Links: put a space after a URL when the next character is not part of the URL. Images: `!https://example.com/image.png!` or `!attached.png|thumbnail!`.
+
+## Markup fidelity across write channels
+
+Composing correct markup is necessary but not sufficient: a relaying layer may escape or rewrite it. After writing any Wiki-rendered field, read the stored value back and confirm the key markers survive verbatim; if they do not, fall back to a direct REST write via `jira-status-writeback`'s `scripts/update-comment-wiki.mjs` (credential chain identical to `jira-read`).
 
 ## Repair comment
 
