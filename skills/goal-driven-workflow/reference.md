@@ -43,6 +43,7 @@ Per-stage output templates for `goal-driven-workflow`, plus a primary-harness ch
 - [ ] Tests pass: <command> (coverage >= <threshold>)
 - [ ] No TODO/FIXME left
 - [ ] <other machine-verifiable items>
+- [ ] Figma pixel geometry, when in scope: the figma-pixel-verify report checker exits 0
 
 ### Soft (LLM-judge + deterministic checker)
 - [ ] <quality bar>
@@ -51,6 +52,7 @@ Per-stage output templates for `goal-driven-workflow`, plus a primary-harness ch
 ### Human (outcome-type → stage 5 human acceptance)
 - [ ] <business/architecture judgment>
 - [ ] <experience judgment>
+Pixel geometry rows are Hard, not this tier.
 
 ## Goal condition (official 4 parts)
 <measurable end state> + <stated check> + <key constraints> + <budget: or stop after N turns>
@@ -205,6 +207,7 @@ goal-driven-workflow strongly depends on (missing = abort):
 - `completion-evidence-discipline`: stage 2/5 acceptance evidence
 - `design-approval-gate`: standalone Stage 4 launch-approval pause that enters Armed (does not start the harness)
 - `intake-interview-discipline`: stage 1 deep intake (interview → approach freeze → pre-launch self-review); stage 4 in-run self-answer rules; stage 5 ledger surfacing
+- `figma-pixel-implement` / `figma-pixel-verify`: required installed; invoke when the goal is Figma pixel restore
 
 【Install】
   npx skills add FuDesign2008/open-skills -g --skill <name> --yes

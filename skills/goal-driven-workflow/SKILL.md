@@ -1,6 +1,6 @@
 ---
 name: goal-driven-workflow
-version: "0.8.0"
+version: "0.9.0"
 user-invocable: true
 description: "Goal-Driven long-run workflow: run an agent autonomously for hours toward a verifiable goal. Five stages — ① deep intake interview & output contract (approach frozen before launch) ② layer acceptance criteria + design the /goal condition (measurable end state, stated check, constraints, turn/time cap) ③ sub-agent division & context management (context-rot mitigation) ④ launch the long run (/goal, claude -p non-interactive, or manual-loop fallback) ⑤ completion report & human acceptance. Built on top of Claude Code's native /goal harness, with a generic fallback for environments without /goal. Triggers — 「goal 长跑」「goal run」「goal-driven」「目标驱动长跑」「一个 goal 下去跑」「长跑目标」「无人值守跑任务」「goal-run」 / goal run, goal-driven, long-run goal, autonomous run, run until done."
 dependencies:
@@ -10,6 +10,8 @@ dependencies:
   - intake-interview-discipline
   - ai-proxy-discipline
   - context-budget-discipline
+  - figma-pixel-implement
+  - figma-pixel-verify
 ---
 
 # Goal-Driven Long-Run Workflow
@@ -35,6 +37,7 @@ Frontmatter `dependencies`; prerequisite check must pass or the flow aborts:
 - `intake-interview-discipline` — stage 1 deep intake (fog-bounded interview → approach comparison → freeze → pre-launch self-review); stage 4 in-run self-answer rules; stage 5 ledger surfacing
 - `ai-proxy-discipline` — proxy checkpoints (`Stage-exit policy: ai-proxy`): absent-mode intake Q&A, bounded contract approval (Arm, not Launch), stage 5 report check; abort only when a card carries that policy and the skill is missing
 - `context-budget-discipline` — stage 3 context-plan quantification (compaction threshold / phase→reset-boundary map / ledger path) and stage-4 threshold checks at budget milestones
+- `figma-pixel-implement` / `figma-pixel-verify` — required installed; load both when the goal includes a Figma URL/node or pixel-restore intent
 
 **Related (informational)**: `solve-workflow` (full PDCA); handbook §8 of `docs/7x24-agent-reliability-handbook.md`.
 
@@ -109,6 +112,7 @@ This invocation is a **queue child** only when **this turn's** user/orchestrator
    - **Hard** (machine-verifiable) → agent self-verifies; these become the goal-harness condition
    - **Soft** (LLM-judge + deterministic checker) → optional quality gate
    - **Human** (outcome-type) → human acceptance in stage 5
+   - When the goal includes a Figma URL/node or pixel-restore intent, pixel geometry is **Hard**. The stated check is `scripts/check-figma-verify-report.mjs` from `figma-pixel-verify` exiting 0. Those rows are not Human. Load `figma-pixel-implement` and `figma-pixel-verify` and follow them during the run. A card line that accepts source comparison or a person looking at pixels does not satisfy the hard item.
 2. **Design the goal condition** using four parts. Primary harness (`/goal`) evaluators **only read the transcript** — they do not run commands or read files — so the condition must be something the agent's own output can demonstrate:
 
    ```

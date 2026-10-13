@@ -139,21 +139,26 @@ Implement MUST build a design-spec table (element × property × Figma exact val
 
 ### Requirement: figma-pixel-verify SHALL measure the running UI against the spec
 
-`figma-pixel-verify` MUST compare the live rendered UI to the design-spec table using numeric reads from the running page (e.g. computed style and box metrics) when a JS-eval channel exists, plus optional side-by-side screenshot comparison. Pass/fail reporting MUST classify rows (at least distinguishing match, wrong token/drift, hardcoded literal, wrong variant/state, and missing element). Geometric comparisons MUST apply an explicit tolerance (e.g. about ±1px for box/spacing); colors, weights, and radii MUST compare exactly unless the skill documents a different rule. The loop MUST be bounded (about three fix/re-measure iterations unless the user raises the cap). Overall PASS additionally requires the unmeasured-critical-row rule (`figma-pixel-verify SHALL fail overall when critical inventory rows are unmeasured`).
+`figma-pixel-verify` MUST compare the live rendered UI to the design-spec table using numbers read after a layout pass: computed style and box metrics when a document channel exists, or frames printed by a layout probe that mounted the control in the shipping parent when the surface has no computed-style API. A command that lays out the control with no parent is not a measurement. Copying a source literal that was written to match `expected` is not a measurement. Pass/fail reporting MUST classify rows (at least distinguishing match, wrong token/drift, hardcoded literal, wrong variant/state, and missing element). Geometric comparisons MUST apply an explicit tolerance (e.g. about ±1px for box/spacing); colors, weights, and radii MUST compare exactly unless the skill documents a different rule. On a non-pass row the agent MUST fix the running UI and remeasure in the same run. The loop MUST continue until overall PASS or the measurement command cannot be executed, with a safety cap of about eight iterations. Hitting the cap MUST yield overall FAIL with residuals. When a measured box matches a platform control's intrinsic size and not the spec, the next iteration MUST switch that control to a custom layout that assigns the spec frames in the layout pass. Overall PASS MUST also require `scripts/check-figma-verify-report.mjs` from `figma-pixel-verify` to exit 0 on the living artifact. Overall PASS additionally requires the unmeasured-critical-row rule (`figma-pixel-verify SHALL fail overall when critical inventory rows are unmeasured`).
 
 #### Scenario: Numeric pass detects spacing drift
 
 - **WHEN** the spec requires an 8px gap and the running UI measures 12px
 - **THEN** verify MUST report a non-pass row with the measured delta and MUST NOT mark overall alignment as passed
 
-#### Scenario: No eval channel degrades honestly
+#### Scenario: Layout probe measures a non-document surface
 
-- **WHEN** no channel can evaluate JavaScript in the running app
-- **THEN** verify MUST NOT claim a full numeric pass; it MUST record residuals for unmeasured properties and may use screenshot comparison only with that limitation stated
+- **WHEN** the surface has no computed-style API and a command mounts the control in the shipping parent, runs layout, and prints frames
+- **THEN** verify records those printed frames as actual and MUST NOT treat a source-literal compare or a lone-view layout as the measurement
+
+#### Scenario: No executable probe fails closed
+
+- **WHEN** neither a document channel nor a layout-probe command can run
+- **THEN** overall status is not PASS, the report names the missing command, and the pixel rows stay unmeasured
 
 ### Requirement: figma-pixel-verify SHALL resolve the measurement surface through a channel ladder and declare the channel used
 
-Verify MUST resolve the runnable surface in a fixed preference order: (1) a component-workbench story from the living artifact's Stories subsection or a detected Storybook-style workbench; (2) a lightweight isolated harness that stubs host/engine dependencies while keeping real tokens and styles; (3) the in-product preview route; (4) a full app/browser launch as the heaviest last resort. A broken or absent workbench MUST fall the ladder down with the fallback recorded. Verify MUST declare the chosen channel (`Channel: storybook | isolated-harness | preview | full-app`) in the report. When the project declares or shows a host/platform floor (an engine older than the workbench browser), verify MUST note that the real host remains the final authority — workbench PASS MUST NOT be reported as platform-floor proof. When no workbench exists at all, verify MUST make one advisory adoption suggestion (systematic, observable, agent-testable, enables component tests) and continue measuring through the next rung — the suggestion MUST NOT block or abort verify. Isolation MUST NOT be treated as simulation: a story or harness is a real render of the real component with real tokens; the ladder orders integration completeness × cost, not real-vs-fake.
+Verify MUST resolve the runnable surface in a fixed preference order: (1) a component-workbench story from the living artifact's Stories subsection or a detected Storybook-style workbench; (2) a lightweight isolated harness that stubs host/engine dependencies while keeping real tokens and styles; (3) the in-product preview route; (4) a full app/browser launch as the heaviest last resort. A broken or absent workbench MUST fall the ladder down with the fallback recorded. When the surface has no computed-style API, or every document rung is unavailable, verify MUST use `layout-probe`: a command this run executes that mounts the control inside the shipping parent, runs one layout pass, and prints frames. A command that lays out the control with no parent MUST NOT be treated as a measurement. Verify MUST declare the chosen channel (`Channel: storybook | isolated-harness | preview | full-app | layout-probe`) in the report. When the project declares a host engine older than the workbench browser, the report MAY note that difference. The note MUST NOT withhold geometric PASS and MUST NOT create a human step. Rows that depend on that engine's syntax MUST be measured with a runtime or parser at that floor, or they stay unmeasured and overall is not PASS. When no workbench exists at all, verify MUST make one advisory adoption suggestion (systematic, observable, agent-testable, enables component tests) and continue measuring through the next rung — the suggestion MUST NOT block or abort verify. Isolation MUST NOT be treated as simulation: a story or harness is a real render of the real component with real tokens; the ladder orders integration completeness × cost, not real-vs-fake.
 
 #### Scenario: Story preferred over full app launch
 
@@ -170,14 +175,14 @@ Verify MUST resolve the runnable surface in a fixed preference order: (1) a comp
 - **WHEN** the detected workbench fails to build or serve
 - **THEN** verify records the fallback and continues with the next rung instead of aborting
 
-#### Scenario: Workbench PASS is not platform-floor proof
+#### Scenario: Engine floor does not create a human step
 
-- **WHEN** all critical rows PASS under the workbench channel and the project declares a host engine older than the workbench browser
-- **THEN** the report carries a platform-floor note naming the real host as the final authority and MUST NOT claim overall platform-level PASS beyond the workbench channel
+- **WHEN** geometric rows PASS under a workbench channel and the project declares a host engine older than the workbench browser
+- **THEN** the report may note the engine difference, geometric PASS stands, and the report MUST NOT ask a person to finish those rows
 
 ### Requirement: figma-pixel-fidelity skills SHALL stay platform-agnostic and strong-depend from PDCA hosts
 
-Skill bodies MUST describe intents (obtain design context, export assets, measure computed styles, persist and update the living artifact) and MUST NOT require a single named MCP/CLI as the only implementation. Host workflows `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, and `opsx-jira-fix-workflow` MUST list both `figma-pixel-implement` and `figma-pixel-verify` in frontmatter `dependencies`. At host startup prerequisite check, a missing either skill MUST abort (no silent degrade). Hosts MUST load `figma-pixel-implement` during execution when the task includes a Figma URL/node or pixel-restore / design-faithful UI intent; implement is incomplete without a durable inventory+spec path. When this run implemented from Figma, hosts MUST load `figma-pixel-verify` during verification and MUST treat a missing Verify section (or named Spec source sibling) as a failed verification stage. A spec-gap FAIL MUST NOT pass verification—the host re-enters implement to complete the table. Hosts MUST also load verify when the user/plan requires alignment checking without a same-run implement. Pure non-UI work MUST still pass the install-time prerequisite check but MUST NOT be forced to run implement/verify loops. Host prose MUST stay thin and MUST NOT duplicate Figma skill methodology.
+Skill bodies MUST describe intents (obtain design context, export assets, measure computed styles, persist and update the living artifact) and MUST NOT require a single named MCP/CLI as the only implementation. Host workflows `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, and `opsx-jira-fix-workflow` MUST list both `figma-pixel-implement` and `figma-pixel-verify` in frontmatter `dependencies`. At host startup prerequisite check, a missing either skill MUST abort (no silent degrade). Hosts MUST load `figma-pixel-implement` during execution when the task includes a Figma URL/node or pixel-restore / design-faithful UI intent; implement is incomplete without a durable inventory+spec path. When this run implemented from Figma, hosts MUST load `figma-pixel-verify` during verification and MUST treat a missing Verify section (or named Spec source sibling) as a failed verification stage. The verification stage MUST pass only when that report’s overall status is PASS (accepted residuals included), its channel is a laid-out measurement, and `scripts/check-figma-verify-report.mjs` from `figma-pixel-verify` exits 0. A source-literal compare, or a report that leaves pixel rows for a person, MUST NOT pass. A spec-gap FAIL MUST NOT pass verification—the host re-enters implement to complete the table. Hosts MUST also load verify when the user/plan requires alignment checking without a same-run implement. Pure non-UI work MUST still pass the install-time prerequisite check but MUST NOT be forced to run implement/verify loops. Host prose MUST stay thin and MUST NOT duplicate Figma skill methodology.
 
 #### Scenario: Missing Figma pixel skill aborts host startup
 
@@ -403,14 +408,14 @@ When measuring, verify MUST treat as non-PASS (DRIFT, HARDCODED, or an equivalen
 
 ### Requirement: figma-pixel-verify SHALL install and use the quality browser channel when installable
 
-When the host is macOS and the `ego-browser` skill (or its install script) is available, `figma-pixel-verify` MUST make the `ego-browser` CLI ready before measuring: follow that skill’s install reference when the command is missing, wait for user GUI onboarding when required, then load the skill and use it for open preview, pointer/visual state, screenshot, and in-page JavaScript evaluate. Verify MUST NOT skip to a weaker channel while that install is possible. Verify MUST NOT copy that product’s TaskSpace/CLI API into `figma-*`. `ego-browser` MUST NOT be a frontmatter `dependencies` entry.
+When the host is macOS and the `ego-browser` skill (or its install script) is available, and the CLI is already usable or the install finishes in this turn without waiting on a person, `figma-pixel-verify` MUST use that CLI before other document channels. If install still needs GUI onboarding, verify MUST record that and continue with the next reachable JS-eval or layout-probe channel in the same turn. Verify MUST NOT copy that product’s TaskSpace/CLI API into `figma-*`. `ego-browser` MUST NOT be a frontmatter `dependencies` entry.
 
 When the host is not macOS, the skill/install path is absent, or install is blocked, verify MUST continue with another JS-eval channel if one exists and MUST NOT abort solely because `ego-browser` is unavailable.
 
 #### Scenario: Installable quality channel is installed before measure
 
 - **WHEN** the host is macOS, the `ego-browser` skill/install path exists, `command -v ego-browser` fails, and another browser MCP is already connected
-- **THEN** verify follows the `ego-browser` install/onboard path and confirms the CLI before measuring; it MUST NOT skip to the already-connected MCP while that install is possible
+- **THEN** verify finishes that install when it can complete in this turn, and MUST NOT wait on GUI onboarding while another channel can measure
 
 #### Scenario: Session browser skill is used for hover measurement
 

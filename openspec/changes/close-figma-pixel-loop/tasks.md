@@ -14,3 +14,4 @@
 
 - [x] 3.1 `openspec validate close-figma-pixel-loop` 通过。
 - [x] 3.2 `node scripts/lint-skill-description.mjs` 无 error；变更 skill 文本无 denylist 命中；`node scripts/gen-skill-docs.mjs` 已跑。
+- [x] 3.3 报告检查脚本单测 6/6 通过，CLI 对合格报告退出 0、对孤立挂载退出 1；主规格已去掉截图收尾、等人看真机、孤立视图探针。

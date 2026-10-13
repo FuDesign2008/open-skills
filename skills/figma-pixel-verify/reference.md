@@ -23,11 +23,11 @@ Resolve the runnable surface in this order; declare the chosen channel in the re
 | 2 | Lightweight isolated harness | No workbench, or workbench broken; component reachable by stubbing host/engine dependencies | Stub intent: cut non-UI dependency chains, keep real tokens/styles |
 | 3 | In-product preview route | Component needs its real shell context | Use the project's preview/dev route when cheaper than a full launch |
 | 4 | Full app / browser launch | Nothing lighter can render the component | Heaviest; last resort |
-| — | `layout-probe` | Surface has no computed-style API, or every document rung is unavailable | Command prints width, height, and child frames of the real view after one layout pass. Source-literal compare is not this rung |
+| — | `layout-probe` | Surface has no computed-style API, or every document rung is unavailable | Mount the control in the shipping parent, run layout, print frames. A lone view is not this rung |
 
 - Isolated is not simulated: a story or harness is a real render with real tokens; the ladder orders integration completeness × cost, not real-vs-fake.
 - A broken or absent workbench falls the ladder down — record the fallback.
-- When the project declares or shows a host/platform floor (an engine older than the workbench browser), the real host remains the final authority: add a platform-floor note; workbench PASS is not platform-floor proof.
+- When the project declares a host engine older than the workbench browser, the report may note that difference. The note does not withhold geometric PASS and does not create a human step. Rows that depend on that engine's syntax are measured at that floor, or they stay unmeasured and overall is not PASS.
 - No workbench at all → make **one** adoption suggestion (a component workbench is systematic, observable, and agent-testable, and enables component tests) and continue measuring through the next rung; the suggestion is advisory, never blocking.
 
 ## Quality channel install gate
@@ -41,7 +41,7 @@ Use this gate during verify preflight. Do not paste a third-party browser API he
 ## Measurement guidance
 
 1. Resolve a stable selector per `node / role` (test id > role+name > CSS path).
-2. Switch the running UI to the row’s `state` and `mode` before reading. On macOS with a usable `ego-browser` CLI, hover/click/theme-switch through that channel and evaluate. When install still needs GUI onboarding, use the next reachable channel in this turn. On `layout-probe`, actual is the printed frame. A source literal that matches `expected` leaves the row unmeasured. Default-state readings do not satisfy a hover row.
+2. Switch the running UI to the row’s `state` and `mode` before reading. On macOS with a usable `ego-browser` CLI, hover/click/theme-switch through that channel and evaluate. When install still needs GUI onboarding, use the next reachable channel in this turn. On `layout-probe`, actual is the frame printed after layout inside the shipping parent. A lone view is not a measurement. A source literal that matches `expected` leaves the row unmeasured. Default-state readings do not satisfy a hover row.
 3. Prefer `getComputedStyle` (or equivalent) for colors, fonts, radii, padding.
 4. Prefer `getBoundingClientRect` (or layout APIs) for width/height; compare in CSS pixels. For `basis` rows, measure the named sibling relationship (e.g. header bottom vs title top), not only the node’s own padding.
 5. Normalize colors (`rgb(26, 26, 26)` → `#1A1A1A`) before compare.
@@ -75,12 +75,20 @@ Write into the living artifact **Verify** section (same file as Inventory/Spec),
 
 - Target: <route or story>
 - Channel: <storybook | isolated-harness | preview | full-app | layout-probe>
+- Mounted in: <shipping parent, or the story/route for a document channel>
+- Measurement command: <command that printed the excerpt>
 - Platform floor: <detected (note) | none>
 - Spec source: <path to this file or sibling>
 - Inventory coverage: <measured>/<critical visual rows> (<unmeasured list>)
 - Theme scope: <single default | light+dark | …>
 - Iterations: <n>≤8
 - Overall: PASS | PASS-with-accepted-residuals | FAIL
+
+### Measurement excerpt
+
+```text
+<stdout of the measurement command; every PASS actual number and color appears here>
+```
 
 | node / role | state | mode | property | expected | actual | verdict | notes |
 |-------------|-------|------|----------|----------|--------|---------|-------|
