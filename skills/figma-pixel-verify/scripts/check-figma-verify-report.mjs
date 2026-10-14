@@ -171,8 +171,8 @@ function differentialArtifactErrors(value, options, openable, screenshotValue) {
   if (!resolved.some(isFile)) {
     return ["Pixel differential artifact file does not exist or is empty"];
   }
-  const shot = (screenshotValue || "").trim().toLowerCase();
-  const shotPath = shot && shot !== "not-openable" ? path.resolve(baseDir, shot) : "";
+  const shot = (screenshotValue || "").trim();
+  const shotPath = shot && shot.toLowerCase() !== "not-openable" ? path.resolve(baseDir, shot) : "";
   if (shotPath && !resolved.some((p) => p !== shotPath && isFile(p))) {
     return ["Pixel differential must cite an artifact distinct from the Screenshot file"];
   }

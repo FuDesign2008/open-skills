@@ -164,6 +164,17 @@ test("differential reusing the Screenshot path is rejected", () => {
   assert.ok(r.errors.some((e) => /distinct from the Screenshot/i.test(e)));
 });
 
+test("case-mixed Screenshot path reuse is still rejected", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "figma-diff-case-"));
+  fs.writeFileSync(path.join(dir, "UI.png"), Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+  const r = checkReport(
+    report({ channel: "preview", screenshot: "UI.png", diff: "UI.png" }),
+    { baseDir: dir }
+  );
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some((e) => /distinct from the Screenshot/i.test(e)));
+});
+
 test("punctuation-separated differential refs resolve", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "figma-diff-punct-"));
   fs.writeFileSync(path.join(dir, "ui.png"), Buffer.from([0x89, 0x50, 0x4e, 0x47]));
