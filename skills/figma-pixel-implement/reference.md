@@ -87,6 +87,7 @@ Write as Markdown **in the living artifact** (Spec section). One row per measura
 - Colors: hex/rgba **or** token name + resolved value if known.
 - `basis` names the parent or sibling the number is relative to (self padding vs gap from a named module).
 - `state` matches the inventory (default, hover, …).
+- Rows are **mechanically expanded from the fetched node tree, never sampled**: every fetched visible node is covered by rows (position, size, its own properties) or listed as `out-of-scope` with a reason; text nodes carry the full typography set (size/weight/line-height/color) and line count; containers carry padding/gap/radius/shadow and their children's absolute offsets from the frame origin.
 - Omit properties you cannot observe later (verify will fail overall if they stay critical and unmeasured).
 - When theme is in scope, add a `mode` column (or one row per mode) for theme-varying properties; resolve per-mode values from the design itself (variable `valuesByMode` when exposed, otherwise re-fetch with the file/frame mode switched or via the per-theme frame); shared values stay single-row.
 - Conflicting QA/walkthrough/annotation numbers stay in notes; `expected` stays on the Figma node.
@@ -130,6 +131,8 @@ Write as Markdown **in the living artifact** (Spec section). One row per measura
 - [ ] Durable path in the target repo (existing Figma doc dir or `docs/figma/<frame>.md`)
 - [ ] Inventory covers visible sections, documented visual states, readable annotations, and `out-of-scope: behavior` / `no-variant-in-design` lines
 - [ ] Spec table present: geometry, type, color, fill ownership, `state`, `basis`; `mode` when theme is in scope; text color token or `raw-only`
+- [ ] Spec rows mechanically expanded from the fetched node tree (no sampling): every fetched node covered or `out-of-scope` with a reason; full typography set and absolute coordinate chain included
+- [ ] Reference exports on disk: per-in-scope-frame raster export recorded (node id, path, scale) as the differential-sweep baseline
 - [ ] Assets subsection present: node, local path, format for each in-scope visible graphic
 - [ ] Stories subsection present and mirrors the Inventory when a component workbench exists (or the adoption suggestion is recorded)
 - [ ] Component tests lock key Spec values, or the missing-test-setup suggestion is recorded
