@@ -147,28 +147,36 @@ function screenshotErrors(channel, shot, options) {
   return [];
 }
 
-function differentialArtifactErrors(value, options, openable) {
+function differentialArtifactErrors(value, options, openable, screenshotValue) {
   const text = (value || "").trim();
   if (!text) return ["Pixel differential is empty"];
   if (!openable) {
     // A layout probe has no UI screenshot to diff; a recorded note (or a cited artifact) is enough.
     return text.length >= 12 ? [] : ["Pixel differential record is too thin"];
   }
-  const tokens = text.match(/\S+\.(?:png|jpg|jpeg|webp|gif)\b/gi) || [];
+  const tokens = text.match(/[^\s,;、()[\]<>`]+\.(?:png|jpg|jpeg|webp|gif)\b/gi) || [];
   if (tokens.length === 0) {
     return ["Pixel differential must cite a side-by-side and/or diff artifact path"];
   }
   const baseDir = options.baseDir || process.cwd();
-  const exists = tokens.some((t) => {
-    const p = path.resolve(baseDir, t.replace(/[,;、]+$/, ""));
+  const isFile = (p) => {
     try {
       const st = fs.statSync(p);
       return st.isFile() && st.size > 0;
     } catch {
       return false;
     }
-  });
-  return exists ? [] : ["Pixel differential artifact file does not exist or is empty"];
+  };
+  const resolved = tokens.map((t) => path.resolve(baseDir, t));
+  if (!resolved.some(isFile)) {
+    return ["Pixel differential artifact file does not exist or is empty"];
+  }
+  const shot = (screenshotValue || "").trim().toLowerCase();
+  const shotPath = shot && shot !== "not-openable" ? path.resolve(baseDir, shot) : "";
+  if (shotPath && !resolved.some((p) => p !== shotPath && isFile(p))) {
+    return ["Pixel differential must cite an artifact distinct from the Screenshot file"];
+  }
+  return [];
 }
 
 /**
@@ -187,7 +195,8 @@ export function checkReport(markdown, options = {}) {
   const mounted = field(section, "Mounted in");
   const command = field(section, "Measurement command");
   const overall = field(section, "Overall");
-  errors.push(...screenshotErrors(channel, field(section, "Screenshot"), options));
+  const screenshotValue = field(section, "Screenshot");
+  errors.push(...screenshotErrors(channel, screenshotValue, options));
 
   if (!CHANNELS.has(channel)) {
     errors.push(`Channel must be one of ${[...CHANNELS].join(", ")}`);
@@ -253,8 +262,10 @@ export function checkReport(markdown, options = {}) {
     errors.push("Source reconciliation is missing");
   } else if (/unreconciled/i.test(reconciliation)) {
     errors.push("Source reconciliation must be completed before PASS");
+  } else if (!/\d+\s*\/\s*\d+/.test(reconciliation)) {
+    errors.push("Source reconciliation must include N/M counts");
   }
-  errors.push(...differentialArtifactErrors(differential, options, OPENABLE.has(channel)));
+  errors.push(...differentialArtifactErrors(differential, options, OPENABLE.has(channel), screenshotValue));
   if (!independent) {
     errors.push("Independent check is missing");
   } else if (/^unavailable\b/i.test(independent.trim())) {
