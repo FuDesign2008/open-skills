@@ -43,7 +43,7 @@ Per-stage output templates for `goal-driven-workflow`, plus a primary-harness ch
 - [ ] Tests pass: <command> (coverage >= <threshold>)
 - [ ] No TODO/FIXME left
 - [ ] <other machine-verifiable items>
-- [ ] Figma pixel geometry, when in scope: the figma-pixel-verify report checker exits 0
+- [ ] When the goal text contains `figma.com` or `node-id=`, or asks for pixel restore: `check-figma-verify-report.mjs` exits 0 (hard, not soft/human; text, visibility, and list length do not substitute)
 
 ### Soft (LLM-judge + deterministic checker)
 - [ ] <quality bar>
@@ -207,7 +207,7 @@ goal-driven-workflow strongly depends on (missing = abort):
 - `completion-evidence-discipline`: stage 2/5 acceptance evidence
 - `design-approval-gate`: standalone Stage 4 launch-approval pause that enters Armed (does not start the harness)
 - `intake-interview-discipline`: stage 1 deep intake (interview → approach freeze → pre-launch self-review); stage 4 in-run self-answer rules; stage 5 ledger surfacing
-- `figma-pixel-implement` / `figma-pixel-verify`: required installed; invoke when the goal is Figma pixel restore
+- `figma-pixel-implement` / `figma-pixel-verify`: required installed; invoke when the goal text contains `figma.com` or `node-id=`, or the user asks for pixel restore
 
 【Install】
   npx skills add FuDesign2008/open-skills -g --skill <name> --yes

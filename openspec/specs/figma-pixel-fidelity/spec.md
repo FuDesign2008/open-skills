@@ -197,7 +197,7 @@ Verify MUST resolve the runnable surface in a fixed preference order for documen
 
 ### Requirement: figma-pixel-fidelity skills SHALL stay platform-agnostic and strong-depend from PDCA hosts
 
-Skill bodies MUST describe intents (obtain design context, export assets, measure laid-out frames, persist and update the living artifact) and MUST NOT require a single named MCP/CLI as the only implementation. Host workflows `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, and `opsx-jira-fix-workflow` MUST list both `figma-pixel-implement` and `figma-pixel-verify` in frontmatter `dependencies`. At host startup prerequisite check, a missing either skill MUST abort (no silent degrade). Hosts MUST load `figma-pixel-implement` during execution when the task includes a Figma URL/node or pixel-restore / design-faithful UI intent; implement is incomplete without a durable inventory+spec path. When this run implemented from Figma, hosts MUST load `figma-pixel-verify` during verification and MUST treat a missing Verify section (or named Spec source sibling) as a failed verification stage. The verification stage MUST pass only when that report’s overall status is PASS (accepted residuals included), its channel is `storybook`, `isolated-harness`, `preview`, `full-app`, or `layout-probe`, and `scripts/check-figma-verify-report.mjs` from `figma-pixel-verify` exits 0 on that file. A report that compares source literals, or that leaves pixel rows for a person, MUST NOT pass the stage. Any other result MUST fail the stage and return to the implement stage for another fix/re-measure loop inside the run. A spec-gap FAIL MUST NOT pass verification—the host re-enters implement to complete the table. Hosts MUST also load verify when the user/plan requires alignment checking without a same-run implement. Pure non-UI work MUST still pass the install-time prerequisite check but MUST NOT be forced to run implement/verify loops. Host prose MUST stay thin and MUST NOT duplicate Figma skill methodology.
+Skill bodies MUST describe intents (obtain design context, export assets, measure laid-out frames, persist and update the living artifact) and MUST NOT require a single named MCP/CLI as the only implementation. Host workflows `solve-workflow`, `opsx-solve-workflow`, `jira-fix-workflow`, and `opsx-jira-fix-workflow` MUST list both `figma-pixel-implement` and `figma-pixel-verify` in frontmatter `dependencies`. At host startup prerequisite check, a missing either skill MUST abort (no silent degrade). Hosts MUST load `figma-pixel-implement` during execution when the task text contains `figma.com` or `node-id=`, or the user asks for pixel restore; those rows stay hard; a probe of visible text, a visibility flag, or a list length does not pass them; when that same text also contains `参考`, `match the existing`, or `same as`, verify adds the named control's interaction states; implement is incomplete without a durable inventory+spec path. When the task text contains `figma.com` or `node-id=`, or this run implemented from Figma, hosts MUST load `figma-pixel-verify` during verification and MUST treat a missing Verify section (or named Spec source sibling) as a failed verification stage. The verification stage MUST pass only when that report’s overall status is PASS (accepted residuals included), its channel is `storybook`, `isolated-harness`, `preview`, `full-app`, or `layout-probe`, and `scripts/check-figma-verify-report.mjs` from `figma-pixel-verify` exits 0 on that file. A report that compares source literals, or that leaves pixel rows for a person, MUST NOT pass the stage. Any other result MUST fail the stage and return to the implement stage for another fix/re-measure loop inside the run. A spec-gap FAIL MUST NOT pass verification—the host re-enters implement to complete the table. Hosts MUST also load verify when the user/plan requires alignment checking without a same-run implement. Pure non-UI work MUST still pass the install-time prerequisite check but MUST NOT be forced to run implement/verify loops. Host prose MUST stay thin and MUST NOT duplicate Figma skill methodology.
 
 #### Scenario: Missing Figma pixel skill aborts host startup
 
@@ -573,4 +573,18 @@ Before writing overall PASS, verify MUST obtain an independent re-check — via 
 
 - **WHEN** the author re-reads its own Spec table in the same context and calls it a check
 - **THEN** this does not satisfy the independence requirement
+
+### Requirement: figma-pixel-verify SHALL add interaction rows from a named shipped control
+
+When the task text contains `figma.com` or `node-id=` and also `参考`, `match the existing`, or `same as`, verify MUST read the named existing control's authored rules for hover, focus, focus-within, and open or expanded. Each property that differs from the resting rule MUST become a spec row with that `state` before numeric measurement. A resting-frame reading MUST NOT pass those rows. A probe that only checks text, visibility, or item count MUST NOT measure them.
+
+#### Scenario: Focus rule on the named control becomes a row
+
+- **WHEN** the task text contains a Figma URL and `参考`, and the named control's focus rule changes the border color
+- **THEN** verify adds a focus-state border row and measures the new control in that state
+
+#### Scenario: Resting frame does not cover the focus row
+
+- **WHEN** the focus-state row exists and the only reading is the resting frame
+- **THEN** that row is unmeasured and overall is not PASS
 

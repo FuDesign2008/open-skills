@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.25.0"
+version: "1.26.0"
 user-invocable: true
 description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / opsx jira fix, OpenSpec Jira fix workflow, ai-proxy mode, switch to ai-proxy."
 dependencies:
@@ -84,7 +84,7 @@ Not a replacement for plain `jira-fix-workflow`:
 - `jira-status-writeback` (stage 8 post-merge writeback: status transition + fix-comment SOP, single source)
 - `jira-wiki-markup` (Wiki markup for every Jira comment body; writeback loads it for the repair comment)
 - `learn-and-improve` (stage 8 retrospective and knowledge sediment)
-- `figma-pixel-implement` / `figma-pixel-verify` (Figma export-faithful implement + measured verify; required installed; invoke only when Figma UI work is in scope)
+- `figma-pixel-implement` / `figma-pixel-verify` (Figma export-faithful implement + measured verify; required installed; invoke when the goal, card, issue, or plan contains `figma.com` or `node-id=`, or the user asks for pixel restore)
 
 ## Prerequisite skill check
 
@@ -309,7 +309,7 @@ A multi-repo scenario needs a branch per repo, listing each repo, branch, and co
 
 ### 6.2 Execute tasks
 
-**Figma pixel fidelity:** When the issue/plan includes a Figma URL/node or pixel-restore / design-faithful UI intent, load `figma-pixel-implement` and follow it. Implement is incomplete without a durable inventory+spec path in the target repo. That skill continues into `figma-pixel-verify` in the same run until overall PASS or the measurement command cannot run. Do not restate its methodology here.
+**Figma pixel fidelity:** Load `figma-pixel-implement` and follow it when the goal, card, issue, or plan text contains `figma.com` or `node-id=`, or when the user asks for pixel restore (像素级还原). That substring is the scope fact. Keep those rows hard; do not place them under soft or human because the task also checks behavior. A probe of visible text, a visibility flag, or a list length does not pass the pixel rows. When that same text also contains `参考`, `match the existing`, or `same as`, pass that fact into verify so the named control's interaction states become rows. Implement is incomplete without a durable inventory+spec path in the target repo. That skill continues into `figma-pixel-verify` in the same run until overall PASS or the measurement command cannot run. Do not restate its methodology here.
 
 Work through `tasks.md` in order:
 
@@ -350,7 +350,7 @@ Must cover:
 4. Jira cross-check: are the repro steps and expected/actual results closed out
 5. Side-effect check: are related modules and platforms affected; the verification report must disclose `Node (declared vX) ✅/⚠️ not aligned`
 6. Debug-verify loop: if stage 2 used a debug skill to locate the root cause, verify the fix using that **same** skill per `analysis-core` §4 (not tests alone)
-7. Figma pixel verify: when this run implemented from Figma, load `figma-pixel-verify` and follow it; a missing measured report (the living artifact’s Verify section, or the Spec source sibling) blocks this verification stage from passing. A spec-gap FAIL does not pass verification—re-enter `figma-pixel-implement` to complete the table. Also load it when alignment checking is required without a same-run implement. This stage passes only when that report’s overall status is PASS (accepted residuals included) and its channel is a laid-out measurement (`storybook`, `isolated-harness`, `preview`, `full-app`, or `layout-probe`). Any other result fails this stage and returns to the implement stage for another fix/re-measure loop. This stage also runs `scripts/check-figma-verify-report.mjs` from the `figma-pixel-verify` skill on that report; a non-zero exit fails the stage.
+7. Figma pixel verify: when the goal, card, issue, or plan contains `figma.com` or `node-id=`, or this run implemented from Figma, load `figma-pixel-verify` and follow it; a missing measured report (the living artifact’s Verify section, or the Spec source sibling) blocks this verification stage from passing. A spec-gap FAIL does not pass verification—re-enter `figma-pixel-implement` to complete the table. Also load it when alignment checking is required without a same-run implement. This stage passes only when that report’s overall status is PASS (accepted residuals included) and its channel is a laid-out measurement (`storybook`, `isolated-harness`, `preview`, `full-app`, or `layout-probe`). Any other result fails this stage and returns to the implement stage for another fix/re-measure loop. This stage also runs `scripts/check-figma-verify-report.mjs` from the `figma-pixel-verify` skill on that report; a non-zero exit fails the stage.
 
 **Verification execution follows `runtime-verification-discipline`** (strong dependency): the AI executes verification itself in an environment, and a step is listed as a manual-verification item only at a classified true hard boundary, with the reason stated.
 
