@@ -12,9 +12,9 @@ Scope is the literal substrings `figma.com` or `node-id=` in the goal, card, iss
 
 When the same text also contains `参考`, `match the existing`, or `same as`, `figma-pixel-verify` reads the named control's hover, focus, focus-within, and open or expanded rules. Each property that differs from rest is a row. A resting-frame reading does not pass those rows.
 
-## Queue checker
+## Queue
 
-`skills/goal-driven-queue/scripts/check-pixel-tier.mjs` reads one markdown file. No `figma.com` / `node-id=` → exit 0. Otherwise exit 1 when a soft/human line or section mentions pixel geometry, or the file does not cite `check-figma-verify-report.mjs`.
+`goal-driven-queue` stays an orchestrator. It does not interpret pixel rows and does not ship a pixel-tier script. The child engine loads the figma skills.
 
 ## Approval
 

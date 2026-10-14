@@ -542,17 +542,3 @@ After a batch run ends (caps hit or queue empty) and the acceptance package is a
 - **WHEN** 查看引入本能力之前完成的批次
 - **THEN** 不要求补做逐卡裁决，行为与引入前逐字一致
 
-### Requirement: 队列核对文档在含设计链接时不得把像素行标成软性
-
-When `verification.md` contains `figma.com` or `node-id=`, `goal-driven-queue` MUST run `scripts/check-pixel-tier.mjs` from this skill on that file before marking any such card engine-`done`. Exit 0 is required. A non-zero exit means pixel geometry was placed under soft or human, or the hard line does not cite `check-figma-verify-report.mjs`. A probe of visible text, a visibility flag, or a list length MUST NOT replace that citation.
-
-#### Scenario: 软性像素行不能收工
-
-- **WHEN** 核对文档含 `figma.com`，且同一行把像素写在 soft 下
-- **THEN** `check-pixel-tier.mjs` 退出码非 0，该卡不得标成引擎完成
-
-#### Scenario: 硬性行引用报告检查脚本才通过
-
-- **WHEN** 核对文档含 `node-id=`，硬性行引用 `check-figma-verify-report.mjs`，且 soft/human 未写像素
-- **THEN** `check-pixel-tier.mjs` 退出码为 0
-

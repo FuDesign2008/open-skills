@@ -8,7 +8,7 @@ A dialog restore cited a Figma URL and told the agent to match an existing contr
 
 - Hosts treat `figma.com` or `node-id=` in the goal, card, issue, or plan as the scope fact. Pixel rows stay hard. A functional probe does not pass them.
 - When that text also contains `参考`, `match the existing`, or `same as`, verify adds the named control's hover, focus, and open rules as rows.
-- `goal-driven-queue` runs `scripts/check-pixel-tier.mjs` on `verification.md` before engine-done.
+- The queue does not grow a pixel checker. Child engines load `figma-pixel-implement` / `figma-pixel-verify` and use `check-figma-verify-report.mjs`.
 
 ## Non-goals
 
