@@ -49,7 +49,7 @@ const BLOCKING = new Set([
 ]);
 
 function field(section, name) {
-  const re = new RegExp(`^- ${name}:\\s*(.+)$`, "im");
+  const re = new RegExp(`^- ${name}:[ \\t]*(.+)$`, "im");
   const m = section.match(re);
   return m ? m[1].trim() : "";
 }
@@ -147,6 +147,30 @@ function screenshotErrors(channel, shot, options) {
   return [];
 }
 
+function differentialArtifactErrors(value, options, openable) {
+  const text = (value || "").trim();
+  if (!text) return ["Pixel differential is empty"];
+  if (!openable) {
+    // A layout probe has no UI screenshot to diff; a recorded note (or a cited artifact) is enough.
+    return text.length >= 12 ? [] : ["Pixel differential record is too thin"];
+  }
+  const tokens = text.match(/\S+\.(?:png|jpg|jpeg|webp|gif)\b/gi) || [];
+  if (tokens.length === 0) {
+    return ["Pixel differential must cite a side-by-side and/or diff artifact path"];
+  }
+  const baseDir = options.baseDir || process.cwd();
+  const exists = tokens.some((t) => {
+    const p = path.resolve(baseDir, t.replace(/[,;、]+$/, ""));
+    try {
+      const st = fs.statSync(p);
+      return st.isFile() && st.size > 0;
+    } catch {
+      return false;
+    }
+  });
+  return exists ? [] : ["Pixel differential artifact file does not exist or is empty"];
+}
+
 /**
  * @param {string} markdown
  * @returns {{ ok: boolean, errors: string[] }}
@@ -219,6 +243,26 @@ export function checkReport(markdown, options = {}) {
   }
   if (residual && overall === "PASS") {
     errors.push("accepted-residual rows require Overall PASS-with-accepted-residuals");
+  }
+
+  // v1.10.0 evidence gates: reconciliation table, differential artifacts, independent re-check.
+  const reconciliation = field(section, "Source reconciliation");
+  const differential = field(section, "Pixel differential");
+  const independent = field(section, "Independent check");
+  if (!reconciliation) {
+    errors.push("Source reconciliation is missing");
+  } else if (/unreconciled/i.test(reconciliation)) {
+    errors.push("Source reconciliation must be completed before PASS");
+  }
+  errors.push(...differentialArtifactErrors(differential, options, OPENABLE.has(channel)));
+  if (!independent) {
+    errors.push("Independent check is missing");
+  } else if (/^unavailable\b/i.test(independent.trim())) {
+    if (independent.trim().length < 40) {
+      errors.push("Independent check unavailable record must name attempted methods and reason");
+    }
+  } else if (independent.trim().length < 12) {
+    errors.push("Independent check lacks method/identity/artifact detail");
   }
 
   return { ok: errors.length === 0, errors };

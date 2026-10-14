@@ -81,6 +81,9 @@ Write into the living artifact **Verify** section (same file as Inventory/Spec),
 - Platform floor: <detected (note) | none>
 - Spec source: <path to this file or sibling>
 - Inventory coverage: <measured>/<critical visual rows> (<unmeasured list>)
+- Source reconciliation: <expected items>/<covered> (<added rows> added, <out-of-scope> out-of-scope)
+- Pixel differential: <path to side-by-side and/or diff artifact>
+- Independent check: <method + checker identity + artifact path | unavailable: <attempted methods + reason>>
 - Theme scope: <single default | light+dark | …>
 - Iterations: <n>≤8
 - Overall: PASS | PASS-with-accepted-residuals | FAIL
@@ -99,9 +102,22 @@ For multi-theme scope: repeat the table per theme (or add a `theme` column); eac
 
 `Screenshot` is required. An openable channel cites a saved non-empty png, jpg, jpeg, or webp. A layout probe that cannot open a UI uses `not-openable`. The checker stats that file. The image does not replace numeric measurement.
 
-Overall **PASS** (or **PASS-with-accepted-residuals**) requires every critical visual row measured in the correct state/mode and within tolerance, except rows explicitly `accepted-residual` (owner + reason). Unmeasured critical rows, `MISSING-style`, unaccepted `DRIFT`, incomplete Spec, a missing living artifact after this-run implement, invented fill vs Spec `none`, fragment-cut vs a single Assets export, generic-shell size drift, invented text-color alias, or a remote design URL for a visible graphic ⇒ **FAIL**.
+Overall **PASS** (or **PASS-with-accepted-residuals**) requires every critical visual row measured in the correct state/mode and within tolerance, except rows explicitly `accepted-residual` (owner + reason), **and** a complete Source reconciliation table, **and** cited pixel-differential artifacts on an openable channel, **and** a present `Independent check:` line (or its recorded unavailability). Unmeasured critical rows, `MISSING-style`, unaccepted `DRIFT`, incomplete Spec, an unreconciled spec, a missing living artifact after this-run implement, invented fill vs Spec `none`, fragment-cut vs a single Assets export, generic-shell size drift, invented text-color alias, or a remote design URL for a visible graphic ⇒ **FAIL**.
 
 `out-of-scope: behavior` inventory lines are listed under Behavior (not pixel PASS).
+
+### Source reconciliation
+
+| expected item (from Figma source) | spec row | status |
+|-----------------------------------|----------|--------|
+| … | … | covered / added / out-of-scope (reason) |
+
+Compact form accepted: `expected items: N / covered: M / added rows: K (list) / out-of-scope: L (list with reasons)`.
+
+### Pixel differential
+- Side-by-side: <path> (reference export × implementation screenshot, same box)
+- Diff artifact: <path | not-available: reason>
+- Findings: <each difference → new measured row / recorded residual>
 
 ### Residuals
 - …

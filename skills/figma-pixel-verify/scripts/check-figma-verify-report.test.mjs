@@ -14,6 +14,9 @@ function report(overrides = {}) {
   const actual = overrides.actual ?? "108";
   const verdict = overrides.verdict ?? "PASS";
   const screenshot = overrides.screenshot ?? "not-openable";
+  const recon = overrides.recon ?? "12/12 (0 added, 0 out-of-scope)";
+  const diff = overrides.diff ?? "not-available: layout-probe has no UI screenshot";
+  const indie = overrides.indie ?? "blind re-source check by reviewer-agent; artifact: review.md";
   return `# Spec
 
 ## Verify
@@ -22,6 +25,9 @@ function report(overrides = {}) {
 - Mounted in: ${mounted}
 - Measurement command: ${command}
 - Screenshot: ${screenshot}
+- Source reconciliation: ${recon}
+- Pixel differential: ${diff}
+- Independent check: ${indie}
 - Overall: ${overall}
 
 ### Measurement excerpt
@@ -99,9 +105,50 @@ test("openable channel without a screenshot file is rejected", () => {
 test("openable channel accepts a non-empty image", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "figma-shot-"));
   fs.writeFileSync(path.join(dir, "ui.png"), Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+  fs.writeFileSync(path.join(dir, "side.png"), Buffer.from([0x89, 0x50, 0x4e, 0x47]));
   const r = checkReport(
-    report({ channel: "isolated-harness", screenshot: "ui.png" }),
+    report({ channel: "isolated-harness", screenshot: "ui.png", diff: "side.png" }),
     { baseDir: dir }
   );
   assert.equal(r.ok, true, r.errors.join("; "));
+});
+
+test("missing Source reconciliation is rejected", () => {
+  const r = checkReport(report({ recon: "" }));
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some((e) => /reconciliation/i.test(e)));
+});
+
+test("unreconciled marker is rejected", () => {
+  const r = checkReport(report({ recon: "UNRECONCILED" }));
+  assert.equal(r.ok, false);
+});
+
+test("openable channel diff citing a missing artifact is rejected", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "figma-diff-"));
+  fs.writeFileSync(path.join(dir, "ui.png"), Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+  const r = checkReport(
+    report({ channel: "preview", screenshot: "ui.png", diff: "missing-side.png" }),
+    { baseDir: dir }
+  );
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some((e) => /differential/i.test(e)));
+});
+
+test("missing Independent check is rejected", () => {
+  const r = checkReport(report({ indie: "" }));
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some((e) => /independent/i.test(e)));
+});
+
+test("independent check unavailable needs attempted methods and reason", () => {
+  const thin = checkReport(report({ indie: "unavailable" }));
+  assert.equal(thin.ok, false);
+  const recorded = checkReport(
+    report({
+      indie:
+        "unavailable: tried fresh-agent run and cross-model check, neither available in this environment",
+    })
+  );
+  assert.equal(recorded.ok, true, recorded.errors.join("; "));
 });
