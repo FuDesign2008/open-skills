@@ -211,7 +211,8 @@ async function main() {
 }
 
 const isDirectRun =
-  process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(fs.realpathSync(process.argv[1])).href
 if (isDirectRun) {
   main().catch((err) => {
     console.error(err && err.message ? err.message : err)
