@@ -77,6 +77,19 @@ Never use a vague "no Bash / environment limits" hand-wave to hand off without c
 
 Verification is sufficient only if it exercises the change's **exact behavior the way the software is really used**. The bar is not "the app boots" but "the fixed bug's specific symptom is gone on the real usage path" or "the new feature's real usage path works." If the assertion does not cover the changed behavior, the verification is insufficient regardless of which environment ran it.
 
+## UI verification face precheck
+
+Before verifying, decide whether the verification face includes UI behavior. The decision MUST use verifiable facts only — never free-form judgment:
+
+- **File-type signal** — the change's file set contains view/style-bearing files (`.html`, `.css`, `.scss`, `.less`, `.vue`, `.svelte`, or TSX/JSX component files). `git diff --name-only` settles it.
+- **Verification-target signal** — the change goal, task card, or fix description makes rendering, layout, or interaction behavior the object of verification. Reading that text settles it.
+
+Either signal hit = the face includes UI behavior. The verify stage then MUST include at least one check that opens a UI — real environment first per the tier rules; a simulated UI still counts as opening a UI. That check triggers the screenshot clause above. Non-UI checks stay screenshot-free, and fabricating an image is still forbidden.
+
+If no environment can open a UI this run (deployment unreachable, input not simulatable), the verification report MUST carry an explicit limitation entry stating why it is blocked, which tier is blocked, and the follow-up action that will cover the gap. Do not skip silently, and do not present non-UI checks as covering the UI behavior.
+
+When neither signal hits (a pure-logic change verified by parser-output comparison, for example), this precheck does not fire — non-UI checks satisfy verification as before.
+
 ## Honest tier labeling (non-blocking)
 
 The verification report MUST state which tier each check actually used. When the tier used is below the production target, label it: "verified in simulation; real-environment smoke test recommended." This is a labeling duty, not a gate — it never blocks the AI from verifying at the reachable tier, but it forbids presenting a simulated result as real-environment confirmation.
