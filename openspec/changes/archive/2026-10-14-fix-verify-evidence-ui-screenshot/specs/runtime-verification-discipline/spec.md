@@ -6,14 +6,22 @@
 
 验证规划时 SHALL 判定验证面是否包含 UI 行为。判定输入 SHALL 只有下面两条命令输出。变更目标、任务卡、修复描述的措辞不是判定输入。
 
-- **路径后缀信号**：本次改动 diff 中有路径以 `.html`、`.css`、`.scss`、`.less`、`.vue`、`.svelte`、`.tsx` 或 `.jsx` 结尾。
-- **视图标记信号**：同一 diff 的新增或删除行匹配下面这条大小写敏感的扩展正则：
+- **路径后缀信号**：变更集合中有路径以 `.html`、`.css`、`.scss`、`.less`、`.vue`、`.svelte`、`.tsx` 或 `.jsx` 结尾。
+- **视图标记信号**：跟踪 diff 的新增或删除行匹配下面的 diff 正则，或未跟踪文件的任一行匹配标签正则。两条都大小写敏感。
+
+diff 正则（对 `git diff -U0` 做 `grep -E`）：
 
 ```
 ^[+-].*</?(div|span|button|input|img|svg|path|ul|li|form|label|textarea|canvas|section|header|footer|nav|table|video|iframe|h[1-6])([[:space:]]|>|/)
 ```
 
-两条信号使用同一次 diff。`origin/HEAD` 可解析时，该 diff 为 `git diff --merge-base origin/HEAD`；否则为 `git diff HEAD`。路径后缀用 `--name-only` 证实。视图标记用 `-U0` 经 `grep -E` 与上式过滤证实。
+标签正则（对每个未跟踪文件做 `grep -E`）：
+
+```
+</?(div|span|button|input|img|svg|path|ul|li|form|label|textarea|canvas|section|header|footer|nav|table|video|iframe|h[1-6])([[:space:]]|>|/)
+```
+
+变更集合 = 跟踪 diff 的路径 ∪ 未跟踪且未被 ignore 的路径。在 `git rev-parse --show-toplevel` 下执行。跟踪 diff 的 base 取 `git rev-parse --verify --quiet` 能解析的第一个 ref，顺序为 `origin/HEAD`、`main`、`master`。有则跟踪 diff 为 `git diff --merge-base <该 ref>`；都没有则为 `git diff HEAD`。未跟踪路径为 `git ls-files --others --exclude-standard`。跟踪 diff 为空时，不得因此丢掉未跟踪路径。路径名来自该跟踪 diff 的 `--name-only` 加上未跟踪列表。
 
 任一信号命中即判定含 UI 行为。验证阶段 SHALL 在 AI 可驱动的环境中至少运行一次打开 UI 的检查（真实环境优先，按既有分层规则；模拟 UI 同样计为打开 UI）。该检查触发既有「打开 UI 须留存非空截图」义务。
 
@@ -29,6 +37,18 @@
 - **THEN** 验证阶段包含至少一次打开 UI 的检查并留存截图
 - **AND** 不以类型检查/单测/规格校验全绿替代该检查
 
+#### Scenario: 未跟踪的视图文件命中
+
+- **WHEN** 工作区有未被 ignore 的未跟踪路径以 `.html` 结尾，且该路径不在 `git diff --name-only` 的输出里
+- **THEN** 路径后缀信号命中，验证阶段包含至少一次打开 UI 的检查并留存截图
+- **AND** 不以「跟踪 diff 未列出该文件」当作未命中
+
+#### Scenario: 无 origin/HEAD 时用本地 main
+
+- **WHEN** `origin/HEAD` 不能被 `git rev-parse --verify --quiet` 解析，本地 `main` 能解析，相对 `main` 的 merge-base diff 含以 `.css` 结尾的路径，且 `git diff HEAD` 为空
+- **THEN** 路径后缀信号命中
+- **AND** 不以空的 `git diff HEAD` 当作未命中
+
 #### Scenario: 视图标记命中而后缀未命中
 
 - **WHEN** 改动路径没有上述后缀，但 diff 的新增或删除行匹配视图标记正则
@@ -37,7 +57,7 @@
 
 #### Scenario: 只在描述里提到渲染
 
-- **WHEN** 任务卡写明验证对象是弹层定位，但 diff 无上述后缀，也无匹配视图标记的增删行
+- **WHEN** 任务卡写明验证对象是弹层定位，但变更集合无上述后缀，跟踪 diff 与未跟踪文件也都不匹配视图标记
 - **THEN** 本前置不触发，验证报告无需 UI 截图或 limitation 留痕
 - **AND** 非 UI 检查照常满足验证要求
 

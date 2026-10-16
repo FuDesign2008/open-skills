@@ -81,14 +81,22 @@ Verification is sufficient only if it exercises the change's **exact behavior th
 
 Before verifying, decide whether the verification face includes UI behavior. Two command outputs decide it. Wording in the goal, task card, or fix description is not an input.
 
-- **Path-suffix signal** — a path in the change diff ends in `.html`, `.css`, `.scss`, `.less`, `.vue`, `.svelte`, `.tsx`, or `.jsx`.
-- **View-markup signal** — an added or removed line in that same diff matches this extended regular expression, case-sensitive:
+The change set is the tracked diff plus every untracked, non-ignored path. Run from `git rev-parse --show-toplevel`. Pick the diff base as the first ref that `git rev-parse --verify --quiet` accepts, in this order: `origin/HEAD`, then `main`, then `master`. When one resolves, the tracked diff is `git diff --merge-base <that-ref>`. When none resolve, the tracked diff is `git diff HEAD`. Untracked paths are `git ls-files --others --exclude-standard`. An empty tracked diff does not drop those paths.
+
+- **Path-suffix signal** — a path in that change set ends in `.html`, `.css`, `.scss`, `.less`, `.vue`, `.svelte`, `.tsx`, or `.jsx`. Names are `git diff --name-only` on the tracked diff, plus the untracked list.
+- **View-markup signal** — an added or removed line in `git diff -U0` on the tracked diff matches the diff pattern below, or any line of an untracked file matches the tag pattern below. Both are case-sensitive.
+
+Diff pattern (`grep -E` on `git diff -U0`):
 
 ```
 ^[+-].*</?(div|span|button|input|img|svg|path|ul|li|form|label|textarea|canvas|section|header|footer|nav|table|video|iframe|h[1-6])([[:space:]]|>|/)
 ```
 
-Settle both signals on one diff. When `origin/HEAD` resolves, that diff is `git diff --merge-base origin/HEAD`. Otherwise it is `git diff HEAD`. Use `--name-only` for the path-suffix signal. Use `-U0` piped to `grep -E` with the pattern above for the view-markup signal.
+Tag pattern (`grep -E` on each untracked file):
+
+```
+</?(div|span|button|input|img|svg|path|ul|li|form|label|textarea|canvas|section|header|footer|nav|table|video|iframe|h[1-6])([[:space:]]|>|/)
+```
 
 Either hit means the face includes UI behavior. The verify stage then includes at least one check that opens a UI — real environment first per the tier rules; a simulated UI still counts as opening a UI. That check triggers the screenshot clause above. Non-UI checks stay screenshot-free, and fabricating an image is still forbidden.
 
