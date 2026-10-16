@@ -81,7 +81,16 @@ Verification is sufficient only if it exercises the change's **exact behavior th
 
 Before verifying, decide whether the verification face includes UI behavior. Two command outputs decide it. Wording in the goal, task card, or fix description is not an input.
 
-The change set is the tracked diff plus every untracked, non-ignored path. Run from `git rev-parse --show-toplevel`. Pick the diff base as the first ref that `git rev-parse --verify --quiet` accepts, in this order: `origin/HEAD`, then `main`, then `master`. When one resolves, the tracked diff is `git diff --merge-base <that-ref>`. When none resolve, the tracked diff is `git diff HEAD`. Untracked paths are `git ls-files --others --exclude-standard`. An empty tracked diff does not drop those paths.
+The change set is the tracked diff plus every untracked, non-ignored path. Run from `git rev-parse --show-toplevel`. Untracked paths are `git ls-files --others --exclude-standard`. An empty tracked diff does not drop those paths.
+
+Resolve one base, in order:
+
+1. `origin/HEAD`, when `git rev-parse --verify --quiet origin/HEAD` succeeds.
+2. Otherwise, when `git branch --show-current` is non-empty, read `git reflog show --format=%gs HEAD` from newest to oldest. The base is `<src>` on the oldest line `checkout: moving from <src> to <current>`. `<src>` must not be `<current>`, and `git rev-parse --verify --quiet <src>` must succeed. The oldest line is the last match in that output.
+3. Otherwise, list `git for-each-ref --format='%(refname:short) %(committerdate:unix)' refs/heads refs/remotes`. Keep a ref when its name is not the current branch, `git rev-parse <ref>` is not `git rev-parse HEAD`, and `git merge-base --is-ancestor <ref> HEAD` succeeds. Choose the greatest committer timestamp. Equal timestamps use the lexicographically smallest ref name.
+4. Otherwise there is no base, and the tracked diff is `git diff HEAD`.
+
+When a base resolved, the tracked diff is `git diff --merge-base <base>`.
 
 - **Path-suffix signal** — a path in that change set ends in `.html`, `.css`, `.scss`, `.less`, `.vue`, `.svelte`, `.tsx`, or `.jsx`. Names are `git diff --name-only` on the tracked diff, plus the untracked list.
 - **View-markup signal** — an added or removed line in `git diff -U0` on the tracked diff matches the diff pattern below, or any line of an untracked file matches the tag pattern below. Both are case-sensitive.

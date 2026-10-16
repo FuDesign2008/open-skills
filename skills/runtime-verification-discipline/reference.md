@@ -48,6 +48,7 @@ The precheck (SKILL.md "UI verification face precheck") uses two command outputs
 | A styling fix whose diff paths end in `.css` or `.scss` | Path-suffix | Verify stage includes at least one UI-opening check with a saved screenshot; green type check/unit tests do not substitute |
 | A new untracked, non-ignored file whose path ends in `.html` or `.css` and does not appear in `git diff --name-only` | Path-suffix | Same as above. An empty tracked diff does not drop the untracked path |
 | `origin/HEAD` does not resolve, local `main` does, and the merge-base diff against `main` contains a `.css` path while `git diff HEAD` is empty | Path-suffix | Same as above. The empty `git diff HEAD` is not a miss |
+| No `origin/HEAD`, `main`, or `master`. The base branch is `develop`, the feature branch has a committed `.css` file, and the worktree is clean | Path-suffix | Same as above. The base is the reflog source `develop`, or `develop` as a strict ancestor. The empty `git diff HEAD` is not a miss |
 | A `.ts` diff that adds a div element tag and has none of the path suffixes | View-markup | Same as above |
 | A `.ts` numeric fix whose task text names popover positioning, and whose diff has no view-markup match | Neither | Precheck does not fire; non-UI checks satisfy verification as before |
 | A pure-logic serialization fix verified by parser-output comparison | Neither | Precheck does not fire; non-UI checks satisfy verification as before |

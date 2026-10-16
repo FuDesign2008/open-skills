@@ -153,7 +153,16 @@ diff 正则（对 `git diff -U0` 做 `grep -E`）：
 </?(div|span|button|input|img|svg|path|ul|li|form|label|textarea|canvas|section|header|footer|nav|table|video|iframe|h[1-6])([[:space:]]|>|/)
 ```
 
-变更集合 = 跟踪 diff 的路径 ∪ 未跟踪且未被 ignore 的路径。在 `git rev-parse --show-toplevel` 下执行。跟踪 diff 的 base 取 `git rev-parse --verify --quiet` 能解析的第一个 ref，顺序为 `origin/HEAD`、`main`、`master`。有则跟踪 diff 为 `git diff --merge-base <该 ref>`；都没有则为 `git diff HEAD`。未跟踪路径为 `git ls-files --others --exclude-standard`。跟踪 diff 为空时，不得因此丢掉未跟踪路径。路径名来自该跟踪 diff 的 `--name-only` 加上未跟踪列表。
+变更集合 = 跟踪 diff 的路径 ∪ 未跟踪且未被 ignore 的路径。在 `git rev-parse --show-toplevel` 下执行。未跟踪路径为 `git ls-files --others --exclude-standard`。跟踪 diff 为空时，不得因此丢掉未跟踪路径。路径名来自该跟踪 diff 的 `--name-only` 加上未跟踪列表。
+
+跟踪 diff 的 base 按下面顺序取第一个成立的：
+
+1. `git rev-parse --verify --quiet origin/HEAD` 成功时，base 为 `origin/HEAD`。
+2. 否则，当前分支名非空时，读 `git reflog show --format=%gs HEAD`（新的在前）。base 为最旧一行 `checkout: moving from <src> to <current>` 里的 `<src>`。`<src>` 不得是当前分支，且 `git rev-parse --verify --quiet <src>` 必须成功。最旧一行是该输出里最后一条匹配。
+3. 否则，列 `git for-each-ref --format='%(refname:short) %(committerdate:unix)' refs/heads refs/remotes`。保留的 ref 须同时满足：名字不是当前分支，`git rev-parse <ref>` 不等于 `git rev-parse HEAD`，且 `git merge-base --is-ancestor <ref> HEAD` 成功。取 committer 时间戳最大的；时间戳相同则取字典序最小的 ref 名。
+4. 否则没有 base，跟踪 diff 为 `git diff HEAD`。
+
+有 base 时，跟踪 diff 为 `git diff --merge-base <base>`。
 
 任一信号命中即判定含 UI 行为。验证阶段 SHALL 在 AI 可驱动的环境中至少运行一次打开 UI 的检查（真实环境优先，按既有分层规则；模拟 UI 同样计为打开 UI）。该检查触发既有「打开 UI 须留存非空截图」义务。
 
@@ -178,6 +187,12 @@ diff 正则（对 `git diff -U0` 做 `grep -E`）：
 #### Scenario: 无 origin/HEAD 时用本地 main
 
 - **WHEN** `origin/HEAD` 不能被 `git rev-parse --verify --quiet` 解析，本地 `main` 能解析，相对 `main` 的 merge-base diff 含以 `.css` 结尾的路径，且 `git diff HEAD` 为空
+- **THEN** 路径后缀信号命中
+- **AND** 不以空的 `git diff HEAD` 当作未命中
+
+#### Scenario: 基线分支不叫 main 或 master
+
+- **WHEN** 没有 `origin/HEAD`、`main`、`master`，本地基线分支是 `develop`，功能分支从 `develop` 分出并已提交以 `.css` 结尾的路径，工作区干净，`git diff HEAD` 为空
 - **THEN** 路径后缀信号命中
 - **AND** 不以空的 `git diff HEAD` 当作未命中
 
