@@ -79,16 +79,24 @@ Verification is sufficient only if it exercises the change's **exact behavior th
 
 ## UI verification face precheck
 
-Before verifying, decide whether the verification face includes UI behavior. The decision MUST use verifiable facts only — never free-form judgment:
+Before verifying, decide whether the verification face includes UI behavior. Two command outputs decide it. Wording in the goal, task card, or fix description is not an input.
 
-- **File-type signal** — the change's file set contains view/style-bearing files (`.html`, `.css`, `.scss`, `.less`, `.vue`, `.svelte`, or TSX/JSX component files). `git diff --name-only` settles it.
-- **Verification-target signal** — the change goal, task card, or fix description makes rendering, layout, or interaction behavior the object of verification. Reading that text settles it.
+- **Path-suffix signal** — a path in the change diff ends in `.html`, `.css`, `.scss`, `.less`, `.vue`, `.svelte`, `.tsx`, or `.jsx`.
+- **View-markup signal** — an added or removed line in that same diff matches this extended regular expression, case-sensitive:
 
-Either signal hit = the face includes UI behavior. The verify stage then MUST include at least one check that opens a UI — real environment first per the tier rules; a simulated UI still counts as opening a UI. That check triggers the screenshot clause above. Non-UI checks stay screenshot-free, and fabricating an image is still forbidden.
+```
+^[+-].*</?(div|span|button|input|img|svg|path|ul|li|form|label|textarea|canvas|section|header|footer|nav|table|video|iframe|h[1-6])([[:space:]]|>|/)
+```
 
-If no environment can open a UI this run (deployment unreachable, input not simulatable), the verification report MUST carry an explicit limitation entry stating why it is blocked, which tier is blocked, and the follow-up action that will cover the gap. Do not skip silently, and do not present non-UI checks as covering the UI behavior.
+Settle both signals on one diff. When `origin/HEAD` resolves, that diff is `git diff --merge-base origin/HEAD`. Otherwise it is `git diff HEAD`. Use `--name-only` for the path-suffix signal. Use `-U0` piped to `grep -E` with the pattern above for the view-markup signal.
 
-When neither signal hits (a pure-logic change verified by parser-output comparison, for example), this precheck does not fire — non-UI checks satisfy verification as before.
+Either hit means the face includes UI behavior. The verify stage then includes at least one check that opens a UI — real environment first per the tier rules; a simulated UI still counts as opening a UI. That check triggers the screenshot clause above. Non-UI checks stay screenshot-free, and fabricating an image is still forbidden.
+
+When `figma-pixel-verify` owns this verify and its report channel is `layout-probe` with `Screenshot: not-openable`, that recorded line is the UI-evidence outcome for the pixel check and it closes this precheck. An openable channel under that skill opens a UI and keeps a screenshot, which satisfies this precheck.
+
+If a signal hits and this run still cannot open a UI, classify the blocker under the A/B/C rule before writing the report. Class A wires a UI-opening check this turn. A limitation entry is for class C, and for class B while the one-time setup is still pending. The entry states why it is blocked, which tier is blocked, and the follow-up action that will cover the gap, and it states that non-UI checks do not cover the UI behavior.
+
+When neither signal hits, this precheck does not fire. Non-UI checks satisfy verification as before.
 
 ## Honest tier labeling (non-blocking)
 

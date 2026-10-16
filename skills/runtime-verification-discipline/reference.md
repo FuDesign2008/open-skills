@@ -41,19 +41,20 @@ Lookup order: project provider → shared capability skill → honest handoff.
 
 ## Verification face precheck — worked examples
 
-The precheck (SKILL.md「UI verification face precheck」) uses two verifiable signals. Worked examples:
+The precheck (SKILL.md "UI verification face precheck") uses two command outputs. Wording in the goal or task card is not an input. Worked examples:
 
 | Case | Signal hit | Expected verify-stage behavior |
 |------|-----------|-------------------------------|
-| A styling fix touching `.css`/`.scss` files | File-type signal | Verify stage includes at least one UI-opening check with a saved screenshot; green type check/unit tests do not substitute |
-| A fix in a `.ts` render-logic file whose verification target is a popover's positioning behavior | Verification-target signal | Same as above — the file-type signal alone would have missed it |
-| A pure-logic serialization fix verified by parser-output comparison, no rendering/interaction target | Neither signal | Precheck does not fire; non-UI checks satisfy verification as before |
-| Styling fix, cloud deployment unreachable and no local UI channel available | File-type signal, environment blocked | Explicit limitation entry (template below); non-UI checks may still run, but the report must not present them as covering the UI behavior |
-| A fix whose verification target is a system-level input interaction the agent cannot simulate | Verification-target signal, environment blocked | Explicit limitation entry (template below) |
+| A styling fix whose diff paths end in `.css` or `.scss` | Path-suffix | Verify stage includes at least one UI-opening check with a saved screenshot; green type check/unit tests do not substitute |
+| A `.ts` diff that adds a div element tag and has none of the path suffixes | View-markup | Same as above |
+| A `.ts` numeric fix whose task text names popover positioning, and whose diff has no view-markup match | Neither | Precheck does not fire; non-UI checks satisfy verification as before |
+| A pure-logic serialization fix verified by parser-output comparison | Neither | Precheck does not fire; non-UI checks satisfy verification as before |
+| A styling fix whose blocker classifies as C, or as B while one-time setup is still pending | Path-suffix, classified blocker | Limitation entry (template below), after A/B/C classification. Class A wires a UI-opening check this turn instead |
+| `figma-pixel-verify` report channel `layout-probe` with `Screenshot: not-openable` | Path-suffix may also hit | That recorded line closes this precheck; no second UI-opening check |
 
-**Limitation-entry template** (three parts):
+**Limitation-entry template** (three parts, after A/B/C classification):
 
-> UI-behavior check not run this turn — blocked because: &lt;reason&gt;. Blocked tier: &lt;real/simulated UI&gt;. Follow-up: &lt;the explicit action that will cover the gap, e.g. re-run after the next deployment, or a named manual step with its reason&gt;.
+> UI-behavior check not run this turn — blocked because: &lt;reason&gt;. Blocked tier: &lt;real/simulated UI&gt;. Follow-up: &lt;the explicit action that will cover the gap, e.g. re-run after the next deployment, or a named manual step with its reason&gt;. Non-UI checks in this report do not cover the UI behavior.
 
 ## Per-host integration snippets
 
