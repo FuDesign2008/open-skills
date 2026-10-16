@@ -39,6 +39,28 @@ Lookup order: project provider → shared capability skill → honest handoff.
 
 > Projects that want AI-driven verification SHOULD expose it via a stable, discoverable convention (a documented verify script or a project skill) so the AI can find it without being told — the same convention-over-configuration pattern mainstream tools use for config discovery.
 
+## Verification face precheck — worked examples
+
+The precheck (SKILL.md "UI verification face precheck") uses two command outputs. Wording in the goal or task card is not an input. Worked examples:
+
+| Case | Signal hit | Expected verify-stage behavior |
+|------|-----------|-------------------------------|
+| A styling fix whose diff paths end in `.css` or `.scss` | Path-suffix | Verify stage includes at least one UI-opening check with a saved screenshot; green type check/unit tests do not substitute |
+| A new untracked, non-ignored file whose path ends in `.html` or `.css` and does not appear in `git diff --name-only` | Path-suffix | Same as above. An empty tracked diff does not drop the untracked path |
+| `origin/HEAD` does not resolve, local `main` does, and the merge-base diff against `main` contains a `.css` path while `git diff HEAD` is empty | Path-suffix | Same as above. The empty `git diff HEAD` is not a miss |
+| No `origin/HEAD`, `main`, or `master`. The base branch is `develop`, the feature branch has a committed `.css` file, and the worktree is clean | Path-suffix | Same as above. The base is the `%H` commit on the oldest `branch: Created from` line of the feature branch. The empty `git diff HEAD` is not a miss |
+| No `origin/HEAD`. That creation commit is the fork from `develop`. A later ref points at the commit that added `.css`, and a non-view commit follows. The command runs in a linked worktree, or the branch has been renamed. `git diff HEAD` is empty | Path-suffix | The tracked diff is `git diff --merge-base` of the creation commit, which still lists the `.css` file. The bookmark ref is not the base |
+| A view file such as `old.css` was committed on the base branch before the feature branch was created. The feature branch's own commits add no view-suffix path | Neither | The creation commit already contains that file, so the tracked diff does not list it. The precheck does not fire |
+| A `.ts` diff that adds a div element tag and has none of the path suffixes | View-markup | Same as above |
+| A `.ts` numeric fix whose task text names popover positioning, and whose diff has no view-markup match | Neither | Precheck does not fire; non-UI checks satisfy verification as before |
+| A pure-logic serialization fix verified by parser-output comparison | Neither | Precheck does not fire; non-UI checks satisfy verification as before |
+| A styling fix whose blocker classifies as C, or as B while one-time setup is still pending | Path-suffix, classified blocker | Limitation entry (template below), after A/B/C classification. Class A wires a UI-opening check this turn instead |
+| `figma-pixel-verify` report channel `layout-probe` with `Screenshot: not-openable` | Path-suffix may also hit | That recorded line closes this precheck; no second UI-opening check |
+
+**Limitation-entry template** (three parts, after A/B/C classification):
+
+> UI-behavior check not run this turn — blocked because: &lt;reason&gt;. Blocked tier: &lt;real/simulated UI&gt;. Follow-up: &lt;the explicit action that will cover the gap, e.g. re-run after the next deployment, or a named manual step with its reason&gt;. Non-UI checks in this report do not cover the UI behavior.
+
 ## Per-host integration snippets
 
 Each host adds `runtime-verification-discipline` to frontmatter `dependencies` and keeps only a thin reference at its verify stage. The edit shape differs by the host's current wording:

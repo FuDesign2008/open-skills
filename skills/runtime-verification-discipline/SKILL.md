@@ -77,6 +77,44 @@ Never use a vague "no Bash / environment limits" hand-wave to hand off without c
 
 Verification is sufficient only if it exercises the change's **exact behavior the way the software is really used**. The bar is not "the app boots" but "the fixed bug's specific symptom is gone on the real usage path" or "the new feature's real usage path works." If the assertion does not cover the changed behavior, the verification is insufficient regardless of which environment ran it.
 
+## UI verification face precheck
+
+Before verifying, decide whether the verification face includes UI behavior. Two command outputs decide it. Wording in the goal, task card, or fix description is not an input.
+
+The change set is the tracked diff plus every untracked, non-ignored path. Run from `git rev-parse --show-toplevel`. Untracked paths are `git ls-files --others --exclude-standard`. An empty tracked diff does not drop those paths.
+
+Resolve one base, in order:
+
+1. `origin/HEAD`, when `git rev-parse --verify --quiet origin/HEAD` succeeds.
+2. Otherwise, when `git branch --show-current` is non-empty, read that branch's reflog, not `HEAD`'s. Linked worktrees share the branch reflog, and `git branch -m` keeps it on the new name. The command is `git reflog show --date=unix --format='%H%x09%gd%x09%gs' <current>`. Keep a line whose subject is `branch: Created from <src>`. The base is the `%H` commit on the line whose `%gd` braces hold the smallest unix time. `%H` must pass `git rev-parse --verify --quiet`, and `git merge-base --is-ancestor <commit> HEAD` must succeed. If it does not, drop that line and take the next smallest time. Do not resolve `<src>`. Equal times use the commit that is an ancestor of the other; if neither is, use the lexicographically smallest SHA.
+3. Otherwise, list `git for-each-ref --format='%(refname:short) %(committerdate:unix)' refs/heads refs/remotes`. Keep a ref when its name is not the current branch, `git rev-parse <ref>` is not `git rev-parse HEAD`, and `git merge-base --is-ancestor <ref> HEAD` succeeds. From `git reflog show --format=%gs <current>`, collect old names: start with the current name, and on each line `Branch: renamed refs/heads/<old> to refs/heads/<new>` add `<old>` when `<new>` is already collected. Drop a kept ref when `git reflog show --format=%gs <ref>` contains `branch: Created from <name>` for a collected name. Also drop it when that reflog contains `branch: Created from HEAD`, `git rev-parse <ref>` equals the `%H` on that line, and another kept ref is an ancestor of `<ref>`. Choose the greatest committer timestamp among the refs that remain. Equal timestamps use the lexicographically smallest ref name.
+4. Otherwise there is no base, and the tracked diff is `git diff HEAD`.
+
+When a base resolved, the tracked diff is `git diff --merge-base <base>`.
+
+- **Path-suffix signal** — a path in that change set ends in `.html`, `.css`, `.scss`, `.less`, `.vue`, `.svelte`, `.tsx`, or `.jsx`. Names are `git diff --name-only` on the tracked diff, plus the untracked list.
+- **View-markup signal** — an added or removed line in `git diff -U0` on the tracked diff matches the diff pattern below, or any line of an untracked file matches the tag pattern below. Both are case-sensitive.
+
+Diff pattern (`grep -E` on `git diff -U0`):
+
+```
+^[+-].*</?(div|span|button|input|img|svg|path|ul|li|form|label|textarea|canvas|section|header|footer|nav|table|video|iframe|h[1-6])([[:space:]]|>|/)
+```
+
+Tag pattern (`grep -E` on each untracked file):
+
+```
+</?(div|span|button|input|img|svg|path|ul|li|form|label|textarea|canvas|section|header|footer|nav|table|video|iframe|h[1-6])([[:space:]]|>|/)
+```
+
+Either hit means the face includes UI behavior. The verify stage then includes at least one check that opens a UI — real environment first per the tier rules; a simulated UI still counts as opening a UI. That check triggers the screenshot clause above. Non-UI checks stay screenshot-free, and fabricating an image is still forbidden.
+
+When `figma-pixel-verify` owns this verify and its report channel is `layout-probe` with `Screenshot: not-openable`, that recorded line is the UI-evidence outcome for the pixel check and it closes this precheck. An openable channel under that skill opens a UI and keeps a screenshot, which satisfies this precheck.
+
+If a signal hits and this run still cannot open a UI, classify the blocker under the A/B/C rule before writing the report. Class A wires a UI-opening check this turn. A limitation entry is for class C, and for class B while the one-time setup is still pending. The entry states why it is blocked, which tier is blocked, and the follow-up action that will cover the gap, and it states that non-UI checks do not cover the UI behavior.
+
+When neither signal hits, this precheck does not fire. Non-UI checks satisfy verification as before.
+
 ## Honest tier labeling (non-blocking)
 
 The verification report MUST state which tier each check actually used. When the tier used is below the production target, label it: "verified in simulation; real-environment smoke test recommended." This is a labeling duty, not a gate — it never blocks the AI from verifying at the reachable tier, but it forbids presenting a simulated result as real-environment confirmation.
