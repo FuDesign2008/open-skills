@@ -18,7 +18,7 @@
 **Goals**
 
 - 在规则层（runtime-verification-discipline）补齐前置强制：验证面含 UI 行为 → 验证须含打开 UI 的检查并留截图；环境受限 → 显式 limitation 留痕，不静默跳过。
-- 判定输入可核验（铁律 10）：路径后缀与视图标记。变更集合是跟踪 diff 加上未跟踪且未被 ignore 的路径。base 先取 `origin/HEAD`，否则取分支创建 reflog 里的来源，否则取严格祖先 ref。目标、任务卡、修复描述的措辞不是判定输入。
+- 判定输入可核验（铁律 10）：路径后缀与视图标记。变更集合是跟踪 diff 加上未跟踪且未被 ignore 的路径。base 先取 `origin/HEAD`，否则取当前分支 reflog 里 `branch: Created from` 行的 `%H` 提交（不读 HEAD reflog，不解析来源分支名），否则取严格祖先 ref，并丢掉从当前分支创建出来的书签。目标、任务卡、修复描述的措辞不是判定输入。
 - 经既有薄引用句传播到全部 4 个 host，host 文本零改动。
 
 **Non-Goals**
@@ -48,7 +48,7 @@
 1. **路径后缀信号**：变更集合中的路径以 `.html`/`.css`/`.scss`/`.less`/`.vue`/`.svelte`/`.tsx`/`.jsx` 结尾。变更集合 = 跟踪 diff 的 `--name-only` ∪ `git ls-files --others --exclude-standard`。
 2. **视图标记信号**：跟踪 diff 的增删行匹配 diff 正则，或未跟踪文件的任一行匹配去掉 `^[+-].*` 前缀后的同一标签正则。
 
-跟踪 diff 的 base 按顺序取第一个成立的：`origin/HEAD`；否则 HEAD reflog 里最旧的 `checkout: moving from <src> to <current>`；否则在本地与远程 ref 里取严格祖先中 committer 时间戳最新的（同时间戳取字典序最小）。有 base 则 `git diff --merge-base <base>`。没有任何这样的 ref 时才用 `git diff HEAD`。跟踪 diff 为空时仍保留未跟踪路径。
+跟踪 diff 的 base 按顺序取第一个成立的：`origin/HEAD`；否则当前分支 reflog 里 `branch: Created from <src>` 中 `%gd` 时间最早且仍是 HEAD 祖先的 `%H`（linked worktree 与 `git branch -m` 都读这条分支 reflog；不解析 `<src>`）；否则在本地与远程 ref 里取严格祖先，先丢掉从当前分支（含改名前的名字）创建的 ref，以及 `branch: Created from HEAD` 且 tip 仍停在创建提交、同时还有更老祖先的 ref，再取 committer 时间戳最新的（同时间戳取字典序最小）。有 base 则 `git diff --merge-base <base>`。没有任何这样的 ref 时才用 `git diff HEAD`。跟踪 diff 为空时仍保留未跟踪路径。分出之前已经在基线上的视图文件不在这份 diff 里。
 
 **理由**：铁律 10 要求判定输入能被一条命令或一次 grep 证实。路径后缀盖住视图文件。视图标记盖住后缀之外、diff 里真有视图标签的改动。只改数值的 `.ts`/`.js` 逻辑，即使任务卡写了「弹层定位」，也不命中。
 
@@ -72,6 +72,7 @@ release.yml 在 push main 时自动 bump `package.json` 版本；skill frontmatt
 
 - [风险] 传播依赖执行方在验证阶段真正加载 discipline 正文 → [缓解] 4 个 host 的薄引用句已指向该 skill，遵循即读；reference.md 新增判定信号示例与留痕模板供查例。
 - [风险] 视图标记正则误伤含同类标签文本的非界面改动 → [缓解] 标签表是闭合集合且大小写敏感；多触发只多一次打开 UI 或留痕。只改数值、描述里写了渲染的 `.ts`/`.js` 不命中，这是铁律 10 的边界，不靠阅读描述补洞。
+- [风险] 当前分支没有 `branch: Created from` 行时才进入严格祖先回退；回退会丢掉书签 ref → [缓解] `git checkout -b` 与 `git branch` 都会写下该行，`%H` 是分出时的提交。这一步读分支 reflog，不读 HEAD reflog，所以 linked worktree 和改名之后仍然读得到。
 - [风险] 「模拟 UI 同样计为打开 UI」被读成「无截图能力的检查也须截图」→ [缓解] 条款明写非 UI 检查照常免截图、不得伪造截图，与既有条款衔接。
 
 ## Migration Plan

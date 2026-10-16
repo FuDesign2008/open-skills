@@ -26,8 +26,8 @@ diff 正则（对 `git diff -U0` 做 `grep -E`）：
 跟踪 diff 的 base 按下面顺序取第一个成立的：
 
 1. `git rev-parse --verify --quiet origin/HEAD` 成功时，base 为 `origin/HEAD`。
-2. 否则，当前分支名非空时，读 `git reflog show --format=%gs HEAD`（新的在前）。base 为最旧一行 `checkout: moving from <src> to <current>` 里的 `<src>`。`<src>` 不得是当前分支，且 `git rev-parse --verify --quiet <src>` 必须成功。最旧一行是该输出里最后一条匹配。
-3. 否则，列 `git for-each-ref --format='%(refname:short) %(committerdate:unix)' refs/heads refs/remotes`。保留的 ref 须同时满足：名字不是当前分支，`git rev-parse <ref>` 不等于 `git rev-parse HEAD`，且 `git merge-base --is-ancestor <ref> HEAD` 成功。取 committer 时间戳最大的；时间戳相同则取字典序最小的 ref 名。
+2. 否则，当前分支名非空时，读该分支的 reflog，不读 `HEAD` 的。linked worktree 共用这条分支 reflog，`git branch -m` 后它留在新名字上。命令是 `git reflog show --date=unix --format='%H%x09%gd%x09%gs' <current>`。保留主题为 `branch: Created from <src>` 的行。base 为这些行里 `%gd` 花括号中 unix 时间最小的那一行的 `%H`。`%H` 必须通过 `git rev-parse --verify --quiet`，且 `git merge-base --is-ancestor <commit> HEAD` 必须成功。不成功则丢掉该行，改取时间次小的一行。不解析 `<src>`。时间相同则取彼此之中作为祖先的那个提交；若互不为祖先，取字典序最小的 SHA。
+3. 否则，列 `git for-each-ref --format='%(refname:short) %(committerdate:unix)' refs/heads refs/remotes`。保留的 ref 须同时满足：名字不是当前分支，`git rev-parse <ref>` 不等于 `git rev-parse HEAD`，且 `git merge-base --is-ancestor <ref> HEAD` 成功。从 `git reflog show --format=%gs <current>` 收集旧名：从当前名开始，每一行 `Branch: renamed refs/heads/<old> to refs/heads/<new>` 在 `<new>` 已收集时把 `<old>` 加进去。丢掉这样的 ref：`git reflog show --format=%gs <ref>` 含有 `branch: Created from <name>`，且 `<name>` 是已收集的名字。也丢掉这样的 ref：该 reflog 含有 `branch: Created from HEAD`，`git rev-parse <ref>` 等于该行的 `%H`，且另一个仍保留的 ref 是它的祖先。其余 ref 取 committer 时间戳最大的；时间戳相同则取字典序最小的 ref 名。
 4. 否则没有 base，跟踪 diff 为 `git diff HEAD`。
 
 有 base 时，跟踪 diff 为 `git diff --merge-base <base>`。
@@ -63,6 +63,18 @@ diff 正则（对 `git diff -U0` 做 `grep -E`）：
 - **WHEN** 没有 `origin/HEAD`、`main`、`master`，本地基线分支是 `develop`，功能分支从 `develop` 分出并已提交以 `.css` 结尾的路径，工作区干净，`git diff HEAD` 为空
 - **THEN** 路径后缀信号命中
 - **AND** 不以空的 `git diff HEAD` 当作未命中
+
+#### Scenario: 中途书签不掩盖已提交的视图文件
+
+- **WHEN** 没有 `origin/HEAD`，当前分支 reflog 有 `branch: Created from` 行，该行 `%H` 是从 `develop` 分出时的提交且是 HEAD 的祖先；该提交之后已提交以 `.css` 结尾的路径，另一个 ref 指向该提交且 committer 时间更晚，其后还有非视图提交；工作区干净，`git diff HEAD` 为空；命令在 linked worktree 中执行，或当前分支名已与创建时不同
+- **THEN** 路径后缀信号命中
+- **AND** 不以相对该书签 ref 的 diff 当作跟踪 diff
+
+#### Scenario: 分出前已在基线上的视图文件不命中
+
+- **WHEN** 基线分支在分出功能分支之前已提交 `old.css`，功能分支自己的提交没有视图后缀，创建行的 `%H` 是分出时的提交
+- **THEN** 路径后缀不因 `old.css` 命中
+- **AND** 本前置不触发
 
 #### Scenario: 视图标记命中而后缀未命中
 

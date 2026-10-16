@@ -4,7 +4,7 @@
 
 ## What Changes
 
-- `runtime-verification-discipline` 规则层新增一条**前置强制**：验证开始前须判定验证面是否包含 UI 行为。判定输入只有两条命令输出：路径后缀，以及视图标记。变更集合是跟踪 diff 加上未跟踪且未被 ignore 的路径。跟踪 diff 的 base 先取 `origin/HEAD`，否则取 HEAD reflog 里最旧的 `checkout: moving from <src> to <current>`，否则取严格祖先 ref 中最新的一个；都没有才用 `git diff HEAD`。目标、任务卡、修复描述的措辞不是判定输入。任一命中时，AI 可驱动环境内至少运行一次打开 UI 的检查并留存截图。仍打不开时先做 A/B/C 分类：A 类本轮接线；C 类以及尚未就绪的 B 类在验证报告以 limitation 留痕（受限原因 + 受阻层 + 后续动作）。
+- `runtime-verification-discipline` 规则层新增一条**前置强制**：验证开始前须判定验证面是否包含 UI 行为。判定输入只有两条命令输出：路径后缀，以及视图标记。变更集合是跟踪 diff 加上未跟踪且未被 ignore 的路径。跟踪 diff 的 base 先取 `origin/HEAD`，否则取当前分支 reflog 里 `branch: Created from` 的 `%H` 提交（不读 HEAD reflog），否则取去掉书签之后的严格祖先 ref；都没有才用 `git diff HEAD`。目标、任务卡、修复描述的措辞不是判定输入。任一命中时，AI 可驱动环境内至少运行一次打开 UI 的检查并留存截图。仍打不开时先做 A/B/C 分类：A 类本轮接线；C 类以及尚未就绪的 B 类在验证报告以 limitation 留痕（受限原因 + 受阻层 + 后续动作）。
 - `reference.md` 同步新增该条款的判定信号示例与留痕模板，供 host 薄引用后查例。
 - 不改动 `completion-evidence-discipline`（其被动证据形态条款语义正确，与新前置条款互补分层：前置强制归环境/充分性轴，证据新鲜度与证据形态归它）。
 - 不改动 4 个 host 工作流（薄引用原则：规则层单点修改经薄引用句自动传播到所有 host）。
