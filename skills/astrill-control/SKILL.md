@@ -1,6 +1,6 @@
 ---
 name: astrill-control
-version: "1.0.0"
+version: "1.1.0"
 user-invocable: true
 description: "Control Astrill VPN on macOS through its menu-bar GUI: status (app / tunnel / GUI menu / exit IP), connect, disconnect — all idempotent, verified by dual probes (tunnel process + exit IP) plus GUI menu state. Use whenever the user mentions Astrill, asks to turn the VPN on or off, connect or disconnect the VPN, check VPN status or exit IP, or needs to switch VPN state around network-sensitive steps where one platform requires the proxy and another requires a direct connection. Prerequisite (one-time): the app hosting the agent holds the macOS Accessibility permission. Do NOT use for other VPN clients or general network debugging. Triggers — 「Astrill」「打开 VPN」「连接 VPN」「VPN 开」「VPN on」「断开 VPN」「关掉 VPN」「VPN 关」「VPN off」「查 VPN 状态」「VPN 状态」「切换 VPN」「VPN 出口 IP」 / Astrill, turn on VPN, connect VPN, disconnect VPN, turn off VPN, check VPN status, toggle VPN, VPN exit IP."
 ---
@@ -31,6 +31,32 @@ Resolve `<skill-dir>` from the skill base directory announced at load time; when
 | Exit IP | `curl --max-time 6 ipinfo.io/ip` | cross-check: connected → foreign node IP; disconnected → local direct IP |
 
 `on` and `off` are idempotent: each first reads the current state and returns success immediately when the desired state already holds.
+
+## DNS Residue Detection and Recovery
+
+After `off` in tunnel mode the network can stay degraded — slow or failing DNS resolution — even though both disconnect probes are green. The field-observed root cause: Astrill's DNS servers (10.x virtual range) and routes remain registered on the system. The recovery below is the command-line equivalent of the GUI Renew DHCP Lease.
+
+After every `off`, before relying on the direct connection, run both residue probes (no GUI needed):
+
+```bash
+# 1. DNS residue: a nameserver in the 10.x range in scutil --dns output = Astrill residue
+scutil --dns | grep nameserver | grep -E "10\." && echo "DNS residue present" || echo "DNS clean"
+# 2. Route residue: the default route still pointing at a utun interface
+route -n get default | grep -q utun && echo "route residue present" || echo "route clean"
+```
+
+Recovery (needs sudo):
+
+```bash
+sudo networksetup -setdnsservers Wi-Fi Empty                     # clear manual DNS → back to DHCP
+sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder  # flush the DNS cache
+# Still degraded (full lease renew):
+sudo ipconfig set en0 BOOTP && sudo ipconfig set en0 DHCP
+```
+
+When sudo cannot be completed non-interactively, hand the commands to the human, or use the GUI DHCP-lease renewal as the fallback: System Settings → Wi-Fi → Details → TCP/IP → Renew DHCP Lease.
+
+The network service name (`Wi-Fi`) and the interface (`en0`) in these commands vary by the local setup.
 
 ## One-Time Prerequisite: Accessibility Permission
 
