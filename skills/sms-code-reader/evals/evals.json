@@ -1,0 +1,56 @@
+{
+  "skill_name": "sms-code-reader",
+  "evals": [
+    {
+      "id": 1,
+      "name": "fresh-code-read",
+      "prompt": "我在 Mac 上跑一个自动化登录流程，刚在页面上点了「获取验证码」，平台显示已发送，帮我拿到验证码填进去。",
+      "expected_output": "应按节奏执行：先等 30-90 秒（iPhone 接收 + iCloud 同步到 Mac 的延迟），再每 15 秒轮询一次 chat.db（最多 4 次），用 LIKE '%验证码%' 的 sqlite3 查询取码；取到后先做新鲜度判定（时间戳与当前时间比对，只接受 0-240 秒内的码），通过后才填入提交；全部轮询落空则走同步健康诊断，最终兜底是请用户看 iPhone 报码（约 10 秒）。",
+      "files": [],
+      "assertions": [
+        {"text": "触发后先等 30-90 秒再轮询，而不是立刻查询 chat.db"},
+        {"text": "用 sqlite3 直读 ~/Library/Messages/chat.db 的验证码模式查询（LIKE '%验证码%'）"},
+        {"text": "填码前执行 0-240 秒新鲜度判定，窗口外的码不输入"},
+        {"text": "全部失败时兜底为请用户看 iPhone 报码，而不是无限重试"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "stale-code-infrastructure-triage",
+      "prompt": "验证码读出来了，但时间戳是 6 个小时前的；而且昨天还能读到码，今天触发后一直读不到新码，chat.db 的 mtime 是新的。帮我排查。",
+      "expected_output": "应丢弃旧码（严禁输入 6 小时前的码）；排查顺序基础设施优先：先问 iPhone 是否和 Mac 在同一网络、iPhone 电量是否低于 20%（低电量省电模式会暂停短信转发），再查网络/开关；库活（mtime 新）但无新短信指向 iPhone 侧——重开短信转发开关（会话重建需数分钟）；仍不通则人工报码兜底。",
+      "files": [],
+      "assertions": [
+        {"text": "明确丢弃窗口外的旧码，不将其填入验证码输入框"},
+        {"text": "排查顺序为先问 iPhone 同网络/电量，再查软件层（权限/进程/APNs）"},
+        {"text": "识别「库活但无新短信」为 iPhone 侧故障，处理为重开 Text Message Forwarding"},
+        {"text": "提到低电量（<20%）省电模式会暂停转发这一根因"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "mac-side-stall-recovery",
+      "prompt": "触发验证码后轮询了 270 秒，chat.db 零新码；chat.db-wal 的 mtime 冻在几分钟前不动；Messages 进程活着，APNs 端口探测也通。怎么办？要不要再触发一次验证码？",
+      "expected_output": "应识别为 Mac 侧同步停滞（第三类同步故障）：wal mtime 冻结 + Messages 进程活 + APNs 通（对照排除 iPhone 侧）= Mac 本地库写入停滞；恢复配方为 killall Messages + open -a Messages 重启（wal mtime 立即更新、同步秒级恢复）；停滞期间不重复触发验证码（首轮码可能从未入库，重复触发烧限流额度），恢复后失败步骤走恢复轮——重触发一次→轮询→填码提交。",
+      "files": [],
+      "assertions": [
+        {"text": "由 wal mtime 冻结 + 进程/APNs 正常判定故障在 Mac 本地库写入，而非 iPhone 侧"},
+        {"text": "恢复动作为 killall Messages + open -a Messages 重启，并确认 wal mtime 恢复更新"},
+        {"text": "停滞期间不重复触发验证码（不烧限流额度），恢复后才重触发一次"},
+        {"text": "恢复后失败步骤走恢复轮：重触发→轮询→填码提交"}
+      ]
+    },
+    {
+      "id": 4,
+      "name": "icloud-rollback-immediate-use",
+      "prompt": "刚才读到的验证码（2 分钟内的，当时判定是新鲜的）填入提交后提示不对；现在再查 chat.db，那条记录没了，库里最新的一条变成几小时前的了。这是怎么回事，接下来怎么拿码？",
+      "expected_output": "应识别为 chat.db iCloud 同步回滚：iCloud 同步以旧快照覆盖本地 WAL，刚读到的码从库中消失、最新记录回退到数小时前；处理为读到立即用（取码→填入→提交一气呵成，勿间隔复查库内「最新」记录）；当前码已失效则重触发「获取验证码」再读新码，而不是回查库里回滚后的旧记录。",
+      "files": [],
+      "assertions": [
+        {"text": "把「刚读的码消失 + 最新记录回退数小时」归因为 iCloud 同步回滚覆盖本地 WAL"},
+        {"text": "给出「读到立即用、一气呵成、勿间隔复查」的操作纪律"},
+        {"text": "码失效后的正确动作是重触发再读新码，而非信任库内回滚后的记录"}
+      ]
+    }
+  ]
+}
