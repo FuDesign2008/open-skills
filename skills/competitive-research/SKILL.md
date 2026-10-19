@@ -1,15 +1,15 @@
 ---
-name: tech-research-workflow
-version: "1.0.0"
+name: competitive-research
+version: "2.0.1"
 user-invocable: true
-description: "End-to-end technology and competitor research workflow that turns a design-shaping question into a decision-ready, evidence-bound report family: self business audit (asset/hazard inventory with file:line), competitor first-hand runtime testing (five-step evidence method, evolution curves, same-track incident search), three-tier design mapping (copy / copy-the-idea / explicitly-not-copy), reflux loop (first version as constraint probe), layered reports, plus a lean path for single-question research. Triggers — 「技术调研」「竞品调研」「竞品分析」「技术调研报告」「调研报告」「竞品实测」 / tech research workflow, competitor research, competitive analysis, technology research report. Do NOT use for single-question web lookup without design output (use research / effective-web-research), known-bug upstream research routing (known-issue-research), or rewriting an existing design doc into a review doc (tech-review-doc)."
+description: "Layered competitive research on shipped features. When the question is something the user can see or do, record that behavior before the implementation, name the evidence source, and check interaction boundaries before adopting the behavior. Use this whenever the user asks how a shipped product behaves, including during a bug fix. Full requests get a decision-ready report family; problem-solving hosts use the lean path. Triggers — 「技术调研」「竞品调研」「竞品分析」「产品调研」「全面调研」「调研报告」「竞品实测」 / competitive research, product research, competitor research, technology research report. Do NOT use for known-defect or industry-limit routing (known-issue-research), a single web lookup with no behavior or design decision (effective-web-research), or turning an existing design into a review doc (tech-review-doc)."
 dependencies:
   - effective-web-research
 ---
 
-# Tech Research Workflow
+# Competitive Research
 
-> Evidence-driven technology and competitor research that ends in a decision-ready report family, not a pile of links. Use when the question is design-shaping — "should we support X, and how" — and the answer must survive a technical review.
+> Evidence-driven competitive research. A full request ends in a decision-ready report family. A problem-solving host gets the lean layer-selected answer. Product behavior comes before implementation.
 
 > **Prerequisite check**: this skill declares `effective-web-research` in frontmatter `dependencies`. On load, verify it is available; if missing, abort and print the install command (`npx skills add FuDesign2008/open-skills -g`). No silent fallback — every external search in this workflow runs under that skill's discipline.
 
@@ -55,7 +55,28 @@ Record the inventory as a table (template in [reference.md](reference.md)). Asse
 
 ## Step 2: Learn from competitors
 
-Research shipped, running features — not press releases. Announcements and articles are lead-generation; runtime evidence is the source.
+Research shipped, running features. Announcements and articles are leads.
+
+Select layers from the question. Do not run every layer every time.
+
+1. **Product behavior**, required when the result is something the user can see or operate. Record the user action and the observable result before any implementation mechanism.
+2. **Interaction boundaries**, required when that behavior will be adopted as the target: repeat the action, step back one level, reach zero, and interact with an already shipped behavior.
+3. **Technical mechanism**, after a behavior record exists when layer 1 ran. First-hand runtime evidence outranks articles.
+4. **Risk surfaces** — security forensics, evolution curve, same-track incidents — only when the question sits on those surfaces.
+
+Shapes and a de-identified example are in [reference.md](reference.md).
+
+### 2.0 Evidence sources for behavior claims
+
+Name one source on every behavior claim:
+
+| Source | What it is |
+|---|---|
+| In-person or human observation | A person saw the shipped product do this |
+| Automation | A scripted or tool-driven session |
+| Reported or second-hand | A comment, article, or retelling |
+
+Human observation wins when it conflicts with automation. Record why the automation missed. For a custom-rendered editor (self-drawn caret or selection), an automated keystroke counts only when the caret or focus is shown to be on the target before the key, and the recorded result is what was observed at that target. An automation result of no visible change is not the decision source until that check holds, or a human observation agrees.
 
 ### 2.1 Runtime forensics on shipped features
 
@@ -124,22 +145,24 @@ Binding for the full flow and the lean path alike:
 | E3 second-hand | Articles, docs, advisories | Link + publication/update date |
 
 - **First-hand > second-hand** wherever they conflict; state the conflict rather than silently picking one.
-- **Every non-trivial claim carries a tier tag.** A report whose claims are all E3 is a literature survey, not research.
-- **Reproducible-evidence section**: the report family includes, for each key claim, the evidence tier, location, and how to reproduce the observation (steps, command, or click-path). Reviewers re-run probes; reviews get shorter and angrier when they can.
+- **Every non-trivial claim carries a tier tag.** A competitor behavior claim also names its source grade from step 2.0. A report whose claims are all E3 is a literature survey, not research.
+- **Reproducible-evidence section**: the report family includes, for each key claim, the evidence tier, the source grade when the claim is competitor behavior, the location, and how to reproduce the observation (steps, command, or click-path). Reviewers re-run probes; reviews get shorter and angrier when they can.
 
 ## End-to-end staged flow
 
 1. **Intake** — question, decision, audience, access inventory, path selection.
 2. **Self audit** — positioning, goals/non-goals, asset/hazard inventory with `file:line`.
-3. **Competitor research** — runtime forensics (five-step), evolution curves, same-track incidents, interviews as available; second-hand as leads.
+3. **Competitor research** — the layers the question needs. When the result is something the user can see or operate, record the user action and the observable result before any implementation mechanism. Technical mechanism then uses five-step runtime forensics. Evolution curves, same-track incidents, and interviews run only when that surface is in scope. Second-hand sources are leads.
 4. **Design mapping** — three tiers, every element classified, recommendation + rationale + alternative.
 5. **Report family** — assemble the layers (below); evidence standards applied throughout.
 6. **Review reflux** — first version as probe; route pushback to the failed step; iterate until the review's corrections are cosmetic.
 
 ## Lean path: single-question research
 
+Problem-solving hosts load this path for one user-visible question. It keeps layer selection and the evidence-source rules. It drops the report family, design mapping, and reflux loop. When the caller will adopt the behavior as the target, the question includes the boundary operations from step 2.
+
 1. **Scope the question** — one bounded question, the decision it feeds, and the acceptance bar for "answered".
-2. **One targeted first-hand check** — the smallest probe that answers it (usually steps 1–4 of the five-step method on a single surface, or one `file:line` reading of your own code).
+2. **One targeted first-hand check** — the smallest probe that answers it. When product behavior is a selected layer, record the user action and the observable result before any implementation mechanism. Use the five-step runtime method for the mechanism layer after that record exists, or when the question does not need the behavior layer. A `file:line` reading of your own code answers an inventory question.
 3. **One-page answer** — the answer, its evidence citation (tier-tagged), what was not checked, and the follow-up question if the answer raises one.
 
 The lean path keeps the evidence standards and drops the report family, design mapping, and reflux loop.

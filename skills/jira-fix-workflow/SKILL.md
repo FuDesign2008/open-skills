@@ -13,6 +13,7 @@ dependencies:
   - workflow-mode-lifecycle
   - clarifying-question-discipline
   - known-issue-research
+  - competitive-research
   - analysis-core
   - test-suite-ensure
   - merge-discipline
@@ -152,7 +153,7 @@ Output: problem restatement (no technical judgment) / key elements / ambiguities
 
 ## Stage 3: Analyze the Problem
 
-Load `analysis-core` §§1-3; the stage output MUST close with the analysis gate output block (`analysis-core` §5 — red loop / debug entry / scenario supplements / temporary changes; missing block blocks stage 4). Mapping: `{next-stage}` = stage 4 "difficulty grading"; `{root-cause step}` = root-cause analysis; `{impact-assessment step}` = impact scope; `{upstream-eval step}` = upstream-dependency fix evaluation.
+Load `analysis-core` §§1-3; the stage output MUST close with the analysis gate output block (`analysis-core` §5 — red loop / debug entry / scenario supplements / temporary changes; missing block blocks stage 4). Mapping: `{next-stage}` = stage 4 "difficulty grading"; `{root-cause step}` = root-cause analysis; `{impact-assessment step}` = impact scope; `{upstream-eval step}` = upstream-dependency fix evaluation. When the expected outcome is a result the user can see or operate, that same load runs `competitive-research` per `analysis-core`. Do not restate its method.
 
 **Workflow-specific differences**: ① the industry-wide-issue evaluation is a **gate**; ② 🚫 no viable fix → report + **stop, do not enter stage 5** + write a Jira comment (load `jira-wiki-markup`; template in reference.md); ③ existence check ❌ → stop + Jira comment (load `jira-wiki-markup`) + wait for the user; ④ artifact `02-analysis.md` (includes a difficulty pre-assessment).
 

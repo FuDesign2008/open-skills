@@ -5,6 +5,7 @@
 | [../README.md](../README.md) | 所有人 | 项目简介；**npx 通用安装**；排错见 INSTALL |
 | [INSTALL.md](INSTALL.md) | 要复制命令、查范围、排错的用户 | **通用安装**（npx）详解、常见问题 |
 | [generated/skills-index.md](generated/skills-index.md) | 所有人 | 全部 skill 的版本、可唤起性、描述（触发条件）；由脚本生成，页首有维护提示 |
+| [competitive-research-behavior-first-case.md](competitive-research-behavior-first-case.md) | 贡献者 / Skill 作者 | 两起编辑器缺陷的竞品调研复盘：行为层、来源档和光标落点已进入 `competitive-research`；单步按键操作手册不进技能 |
 | [figma-pixel-fidelity-mask-incident.md](figma-pixel-fidelity-mask-incident.md) | 贡献者 / Skill 作者 | Figma 像素保真被 CSS mask 破坏的事件复盘与早期单 skill 草案 |
 | [figma-pixel-fidelity-research.md](figma-pixel-fidelity-research.md) | 贡献者 / Skill 作者 | Figma MCP 官方能力 + 社区 skill 深潜；**双 skill**（实现 / 检查）架构草案 |
 | [git-worktree-multi-repo-local-verify-case.md](git-worktree-multi-repo-local-verify-case.md) | 贡献者 / Skill 作者 | 多仓 git worktree 本地验证真案例：兄弟路径断裂、联调分层、对 `git-worktree-discipline` 的启示 |

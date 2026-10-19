@@ -103,3 +103,11 @@ After stage 10 merge path completes (merge + `jira-status-writeback`, or keep/co
 - **WHEN** the host writes a Jira comment for an existence-check mismatch or an industry-wide hard-problem stop
 - **THEN** the comment body is composed per `jira-wiki-markup`
 
+### Requirement: jira-fix-workflow SHALL strong-depend on competitive-research
+
+`jira-fix-workflow` MUST list `competitive-research` in frontmatter `dependencies`. At startup prerequisite check, a missing `competitive-research` MUST abort with an install hint. The analysis stage MUST delegate user-visible competitive research to `analysis-core`'s load of `competitive-research` with one line, and MUST NOT restate that skill's method.
+
+#### Scenario: Missing competitive-research aborts startup
+
+- **WHEN** `jira-fix-workflow` loads and `competitive-research` is not installed
+- **THEN** the workflow aborts and names the missing skill and an install command

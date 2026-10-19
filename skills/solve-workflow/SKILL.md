@@ -13,6 +13,7 @@ dependencies:
   - workflow-mode-lifecycle
   - clarifying-question-discipline
   - known-issue-research
+  - competitive-research
   - analysis-core
   - test-suite-ensure
   - node-version-discipline
@@ -50,7 +51,7 @@ dependencies:
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit` (debug skills delegated to via `analysis-core`; stage 2 + stage 7)
 - `analysis-core` (single source of truth for stage 2's methodology: temporary-change gate / instrumentation debug with runtime-evidence-debug as default entry / analysis step skeleton / analysis gate output block / debug-verify loop)
 - `learn-and-improve` (stage 8 retrospective and knowledge sediment)
-- `workflow-mode-lifecycle` (manual/auto mode lifecycle), `clarifying-question-discipline` (hard clarifying-question discipline and investigation-first), `known-issue-research` (stage 2 research routing / known-issue quick search / industry-wide evaluation)
+- `workflow-mode-lifecycle` (manual/auto mode lifecycle), `clarifying-question-discipline` (hard clarifying-question discipline and investigation-first), `known-issue-research` (stage 2 research routing / known-issue quick search / industry-wide evaluation), `competitive-research` (user-visible competitor behavior during analysis; method stays in that skill)
 - `test-suite-ensure` (stage 6 test completion: generate and run tests when test infrastructure exists; scaffold with user confirmation when it doesn't)
 - `test-first-discipline` (stage 6: failing-test-first for behavior changes; distinct from test-suite-ensure)
 - `design-approval-gate` (before stage 6: no production impl without approval; named auto/hotfix escapes)
@@ -198,7 +199,7 @@ Load the strong dependency `analysis-core` and run its §§1–3. This workflow'
 - `{next-stage}` = stage 3 "Explore Solutions"
 - `{root-cause step}` = step 5 "Root cause"; `{impact-assessment step}` = step 7 "Impact"; `{upstream-eval step}` = step 6 "Upstream dependency fix evaluation"
 
-Output format per `analysis-core` and `known-issue-research/reference.md`; the output MUST close with the analysis gate output block (`analysis-core` §5) — missing block blocks stage 3. If any temporary change was made, its list + rollback verification rides in the block's temporary-changes line.
+Output format per `analysis-core` and `known-issue-research/reference.md`; the output MUST close with the analysis gate output block (`analysis-core` §5) — missing block blocks stage 3. If any temporary change was made, its list + rollback verification rides in the block's temporary-changes line. When the expected outcome is a result the user can see or operate, that same load runs `competitive-research` per `analysis-core`. Do not restate its method.
 
 ---
 

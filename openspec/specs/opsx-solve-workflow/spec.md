@@ -133,3 +133,11 @@ Phase 8 SHALL ensure `tasks.md` is complete, delta specs represent the implement
 - **WHEN** `opsx-solve-workflow` 启动前置检查发现 `runtime-verification-discipline` 不可用
 - **THEN** 工作流在阶段 0 之后中止并提示安装
 
+### Requirement: opsx-solve-workflow SHALL strong-depend on competitive-research
+
+`opsx-solve-workflow` MUST list `competitive-research` in frontmatter `dependencies`. At startup prerequisite check, a missing `competitive-research` MUST abort with an install hint. The analysis stage MUST delegate user-visible competitive research to `analysis-core`'s load of `competitive-research` with one line, and MUST NOT restate that skill's method.
+
+#### Scenario: Missing competitive-research aborts startup
+
+- **WHEN** `opsx-solve-workflow` loads and `competitive-research` is not installed
+- **THEN** the workflow aborts and names the missing skill and an install command

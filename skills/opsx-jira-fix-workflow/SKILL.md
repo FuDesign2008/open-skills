@@ -13,6 +13,7 @@ dependencies:
   - workflow-mode-lifecycle
   - clarifying-question-discipline
   - known-issue-research
+  - competitive-research
   - analysis-core
   - test-suite-ensure
   - merge-discipline
@@ -70,7 +71,7 @@ Not a replacement for plain `jira-fix-workflow`:
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit` (delegated via `analysis-core`; stage 2 + stage 7)
 - `analysis-core` (single source for stage-2 analysis methodology: temporary-change gate / instrumentation debug with runtime-evidence-debug as default entry / analysis step skeleton / analysis gate output block / debug-verify loop)
 - `node-version-discipline` (Node version alignment before stage 6 execution verification)
-- `workflow-mode-lifecycle` (auto/manual mode lifecycle), `clarifying-question-discipline` (hard active-questioning discipline and investigation-first), `known-issue-research` (stage 2 research routing / known-issue quick search / industry-wide evaluation)
+- `workflow-mode-lifecycle` (auto/manual mode lifecycle), `clarifying-question-discipline` (hard active-questioning discipline and investigation-first), `known-issue-research` (stage 2 research routing / known-issue quick search / industry-wide evaluation), `competitive-research` (user-visible competitor behavior during analysis; method stays in that skill)
 - `test-suite-ensure` (stage 6.2.5 test-suite ensure: complete and run tests when infra exists; scaffold with user confirmation when it doesn't)
 - `test-first-discipline` (execution: failing-test-first for behavior changes; distinct from test-suite-ensure)
 - `design-approval-gate` (before execution: no production impl without approval; named auto/hotfix escapes)
@@ -210,7 +211,7 @@ Load the strong dependency `analysis-core` and execute its §§1-3. This workflo
 - `{next-stage}` = Stage 3 "Create the OpenSpec change"
 - `{root-cause step}` = step 5; `{impact-assessment step}` = step 7; `{upstream-eval step}` = step 6
 
-The stage output MUST close with the analysis gate output block (`analysis-core` §5 — red loop / debug entry / scenario supplements / temporary changes); a missing block blocks entry to Stage 3.
+The stage output MUST close with the analysis gate output block (`analysis-core` §5 — red loop / debug entry / scenario supplements / temporary changes); a missing block blocks entry to Stage 3. When the expected outcome is a result the user can see or operate, that same load runs `competitive-research` per `analysis-core`. Do not restate its method.
 
 ### This workflow's orchestration (kept)
 

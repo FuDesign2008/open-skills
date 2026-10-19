@@ -14,6 +14,7 @@ dependencies:
   - workflow-mode-lifecycle
   - clarifying-question-discipline
   - known-issue-research
+  - competitive-research
   - analysis-core
   - test-suite-ensure
   - merge-discipline
@@ -75,6 +76,7 @@ Not a replacement for plain `solve-workflow`:
 - `workflow-mode-lifecycle` (auto/manual mode lifecycle)
 - `clarifying-question-discipline` (hard discipline for active questioning + investigation-first)
 - `known-issue-research` (stage 2 research routing / known-issue quick search / industry-wide evaluation)
+- `competitive-research` (user-visible competitor behavior during analysis; method stays in that skill)
 - `test-suite-ensure` (stage 6 test-suite ensure: complete and run tests when infra exists; scaffold with user confirmation when it doesn't)
 - `test-first-discipline` (stage 6: failing-test-first for behavior changes; distinct from test-suite-ensure)
 - `design-approval-gate` (before stage 6: no production impl without approval; named auto/hotfix escapes)
@@ -187,7 +189,7 @@ Load the strong dependency `analysis-core` and execute its §§1-3. This workflo
 
 🔌 **OPSX**: this stage creates **no artifact**; Why / Impact are written into `proposal.md` once stage 3 selects a solution.
 
-The stage output MUST close with the analysis gate output block (`analysis-core` §5 — red loop / debug entry / scenario supplements / temporary changes); a missing block blocks entry to Stage 3.
+The stage output MUST close with the analysis gate output block (`analysis-core` §5 — red loop / debug entry / scenario supplements / temporary changes); a missing block blocks entry to Stage 3. When the expected outcome is a result the user can see or operate, that same load runs `competitive-research` per `analysis-core`. Do not restate its method.
 
 If the existence check fails or the description mismatches the code, pause for user confirmation and do not proceed to solution exploration.
 
