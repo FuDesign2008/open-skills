@@ -29,6 +29,13 @@ test("competitive-research is the skill id and orders behavior before mechanism"
     /Record the user action and the observable result before any implementation mechanism/
   );
   assert.match(skill, /Human observation wins when it conflicts with automation/);
+  assert.match(
+    skill,
+    /an automated keystroke counts only when the caret or focus is shown to be on the target before the key/
+  );
+  assert.doesNotMatch(skill, /usually steps 1–4 of the five-step method/);
+  const reference = read("skills/competitive-research/reference.md");
+  assert.match(reference, /Source grade \(competitor behavior claims\)/);
 });
 
 test("analysis-core loads the lean path only for user-visible outcomes", () => {

@@ -43,7 +43,7 @@ Alternative considered: run every layer on every question. Rejected as too heavy
 
 ### 3. Evidence source grades
 
-Behavior claims name one source: in-person or human observation, automation, or a reported or second-hand account. Human observation wins conflicts. For a custom-rendered editor, automation that reports no visible change is not the decision source until caret or focus is shown to be on the target, or a human observation agrees. Existing evidence tiers (runtime, file:line, second-hand link+date) stay. Behavior claims carry both a tier and a source grade.
+Behavior claims name one source: in-person or human observation, automation, or a reported or second-hand account. Human observation wins conflicts. For a custom-rendered editor, an automated keystroke counts only when the caret or focus is shown to be on the target before the key, and the recorded result is what was observed at that target. An automation result of no visible change is not the decision source until that check holds, or a human observation agrees. Existing evidence tiers (runtime, file:line, second-hand link+date) stay. Behavior claims carry both a tier and a source grade. The full-report evidence entry lists that source grade next to the tier.
 
 ### 4. Lean path question from analysis includes boundaries when adopting
 

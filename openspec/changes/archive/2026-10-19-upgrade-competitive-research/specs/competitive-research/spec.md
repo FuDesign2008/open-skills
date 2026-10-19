@@ -44,12 +44,17 @@ When the question concerns a result the user can see or operate, competitor rese
 
 ### Requirement: Evidence sources SHALL be graded and human observation SHALL outrank conflicting automation
 
-Each competitor behavior claim MUST name its source as one of: in-person or human observation, automation, or a reported or second-hand account. When automation conflicts with in-person or human observation, the decision MUST use the human observation and MUST record why the automation missed. For a custom-rendered editor with a self-drawn caret or selection, an automation result of no visible change MUST NOT be the decision source until the caret or focus is shown to be on the target, or a human observation confirms the same result.
+Each competitor behavior claim MUST name its source as one of: in-person or human observation, automation, or a reported or second-hand account. When automation conflicts with in-person or human observation, the decision MUST use the human observation and MUST record why the automation missed. For a custom-rendered editor with a self-drawn caret or selection, an automated keystroke MUST count only when the caret or focus is shown to be on the target before the key, and the recorded result MUST be what was observed at that target. An automation result of no visible change MUST NOT be the decision source until that check holds, or a human observation confirms the same result.
 
 #### Scenario: Automation and a human observer disagree
 
 - **WHEN** an automated session reports no visible change and a human observer reports a visible change for the same action
 - **THEN** the decision uses the human observation and the record states the automation gap
+
+#### Scenario: An automated keystroke lands off the target
+
+- **WHEN** an automated keystroke on a custom-rendered editor changes the document somewhere other than the intended caret
+- **THEN** the record does not treat that keystroke as evidence of the target action, and states that the caret was not shown on the target
 
 ### Requirement: The mechanism layer SHALL privilege first-hand runtime evidence when it runs
 

@@ -55,6 +55,7 @@ A-items end the meeting with a verdict; B-items end it with a signature; C-items
 ```markdown
 ## Evidence <ID>: <one-line claim>
 - Tier: E1 (first-hand runtime) | E2 (first-hand code) | E3 (second-hand)
+- Source grade (competitor behavior claims): in-person or human observation | automation | reported or second-hand
 - Location: observation steps / file:line / link + date
 - Reproduce: <exact steps, command, or click-path a reviewer can re-run>
 - Observed: <captured values, verbatim where possible>

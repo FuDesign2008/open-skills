@@ -145,6 +145,10 @@ vite.config.ts.timestamp-*
 # Claude Code local settings
 .claude/settings.local.json
 
+# Local field notes that still contain internal tickets or private URLs.
+# The public write-up lives under docs/.
+local-notes/
+
 # oh-my-claudecode state
 .omc/
 
