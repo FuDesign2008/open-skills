@@ -1,6 +1,16 @@
-# Tech Research Workflow — reference
+# Competitive Research — reference
 
-Depth material for `tech-research-workflow`: report-family templates, a worked (de-identified) runtime-forensics example, evolution-curve and incident-search how-to, document-pipeline mechanics, and interview guidance. The SKILL.md carries the methodology; this file carries the shapes.
+Depth material for `competitive-research`: layer and evidence-source shapes, report-family templates, a worked (de-identified) runtime-forensics example, evolution-curve and incident-search how-to, document-pipeline mechanics, and interview guidance. The SKILL.md carries the methodology; this file carries the shapes.
+
+## 0. Layer and evidence-source shapes
+
+Behavior record, one row per action:
+
+| Action | Observable result | Source | Tier | Boundary checked |
+|---|---|---|---|---|
+| Press the key at the start of the wrapped line | The next character moves down and the space stays visible | In-person observation | First-hand runtime | Repeat, then remove one level |
+
+Source is one of: in-person or human observation, automation, reported or second-hand. When automation conflicts with a human observation, the human observation is the decision source and the row states the automation gap. Mechanism notes cite the behavior row they explain. Risk-surface notes (security, evolution, incidents) are separate rows and are omitted when that surface is out of scope.
 
 All examples use generic placeholders (`Competitor A`, `my-project`, `my-desktop-app`); no real product identifiers appear here by design.
 

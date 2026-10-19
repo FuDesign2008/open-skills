@@ -1,6 +1,6 @@
 ---
 name: analysis-core
-version: "1.2.0"
+version: "1.3.0"
 user-invocable: false
 description: "Shared analysis-stage methodology for PDCA fix workflows: temporary-change permission and rollback gate, red-capable reproduction loop before hypothesis lists (user-pasted evidence excluded), instrumentation-debug with runtime-evidence-debug as default entry, analysis step skeleton (existence → research routing → phenomenon/locate/root-cause/upstream-eval/impact), mandatory analysis gate output block, and debug-verify loop. Parameterizes the post-analysis exit as {next-stage}. Referenced by PDCA hosts via frontmatter dependencies. Triggers — 「分析阶段核心」「分析核心」「临时改动门控」「红环门控」「打点调试门控」「调试验证闭环」「分析门控」 / analysis stage core, red-capable loop gate, temp-change gate, instrumentation debug gate, analysis gate output block, debug-verify loop."
 dependencies:
@@ -58,7 +58,7 @@ Analysis is read-only by default. Analysis-assist edits only are allowed; they m
    | ❌ Problem gone | Report it may already be fixed or logic changed, cite locations, **stop and wait for user** |
    | ⚠️ Description mismatches code | Report the mismatch, **return to the workflow's problem-clarification stage** |
 
-2. **Research routing** — load `known-issue-research` and follow it (triage + known-issue quick search + industry-wide evaluation). The referencing workflow's reference line supplies `{root-cause step}` / `{impact-assessment step}` / `{upstream-eval step}` maps. Report templates: `known-issue-research/reference.md`.
+2. **Research routing** — load `known-issue-research` and follow it (triage + known-issue quick search + industry-wide evaluation). The referencing workflow's reference line supplies `{root-cause step}` / `{impact-assessment step}` / `{upstream-eval step}` maps. Report templates: `known-issue-research/reference.md`. When the expected outcome is a result the user can see or operate, load `competitive-research` and run its lean layer-selected path before that behavior is treated as confirmed. The question names the user action and the observable result. When that behavior will be adopted as the target, include repeat, step back one level, reach zero, and interaction with an already shipped behavior. Do not restate that skill's method. If the load fails, abort with the install command. When the outcome is not user-visible, skip this load.
 
 3. **Phenomenon** — reproduction conditions/steps; when the issue is browser-reproducible, prefer `browser-debug-toolkit` to reproduce and observe runtime state (not limited to UI/CSS/DOM; follow that skill's degradation path if browser automation is unavailable).
 
