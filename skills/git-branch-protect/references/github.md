@@ -65,7 +65,7 @@ Apply the expected trunk policy only after the user accepts `set-trunk`. Preserv
 Run only after the user confirms `<sha>` and the force-push.
 
 1. Push `backup/<branch>-<short-sha>` from the current tip. The name must not match `release/*`.
-2. On the exact branch only, allow force-push long enough for one update. On classic protection that is `allowsForcePushes: true` on the exact rule. On a ruleset, add a temporary exclusion or a bypass that you remove in the next step. Do not loosen the wildcard for every release branch.
+2. Show the command that allows force-push on the exact branch only. On classic protection that is `allowsForcePushes: true` on the exact rule. On a ruleset, that is a temporary exclusion or a bypass removed in the freeze step. Wait for the user to accept that protection write, then run it. Do not loosen the wildcard for every release branch. A decline stops the rollback and leaves the branch where it is.
 3. `git push --force-with-lease=refs/heads/<branch>:<current-tip> origin <sha>:refs/heads/<branch>`
 4. Run `freeze` for that branch.
 5. Tell collaborators to fetch and `git reset --hard origin/<branch>`. Rewinding the branch does not unpublish artifacts.

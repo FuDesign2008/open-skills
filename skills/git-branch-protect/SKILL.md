@@ -5,7 +5,7 @@ user-invocable: true
 description: "Use when checking or changing who can push or merge release/*, an exact release branch, or main/master. Read the live rule with glab or gh, then whitelist the active release, freeze a finished release, set trunk protection, or roll a release branch back to a chosen commit. Also use when git-release-start or git-release-finish needs that check. Triggers — 「分支权限」「保护分支」「冻结 release」「release 白名单」「回退保护分支」 / branch protection, freeze release branch, release whitelist, protected branch permission. Do NOT use for creating the release branch, tagging and merging the release, or merging an ordinary change. A protection write waits for the user to confirm that command."
 ---
 
-# Branch Access Lifecycle
+# Git Branch Protect
 
 ## Overview
 
@@ -58,13 +58,13 @@ Run the matching section in the host reference. After a write the user accepted,
 |-----------|--------|
 | `ensure-default` | Unmatched `release/*` branches deny push and deny merge. Leave an existing default that already does this unchanged. List every exact rule that still allows merge |
 | `allow-merge <branch>` | That exact branch denies push and allows maintainer merge. Other allow entries stay |
-| `freeze <branch>` | Remove only that branch's allow entry. If a wider rule still allows merge, report the branch as not frozen and name the rule |
+| `freeze <branch>` | When a wider rule already denies merge, remove only that branch's allow entry. When no matching rule denies merge, set the exact rule to deny push and deny merge. If a wider rule still allows merge, report the branch as not frozen and name the rule |
 | `check-trunk [name]` | Compare trunk with "push denied, maintainer merge allowed". Report a mismatch. Do not write |
 | `rollback <branch> <sha>` | Only when the user invoked this operation and confirmed the sha, the force-push, and the temporary protection change. Backup, move the branch, restore the frozen policy |
 
 For a new release, compare `ensure-default` first, then `allow-merge`. Each write waits for its own acceptance. `freeze` is offered only after the tag exists and the trunk merge has succeeded, and it runs only after acceptance.
 
-Trunk writes happen only when the user asks this skill to set trunk policy and then accepts that write. Use the same push-denied, maintainer-merge policy. A release skill reports trunk drift and waits for that acceptance before `set-trunk`.
+Trunk writes happen only when the user asks this skill directly to set trunk policy and then accepts `set-trunk`. Use the same push-denied, maintainer-merge policy. A release skill reports trunk drift and does not run `set-trunk`.
 
 ## Report
 
@@ -88,4 +88,4 @@ When `blocked-layer` is set, stop. Do not claim the branch is frozen or whitelis
 
 Input: "冻结 release/1.2.3"
 
-Output: read the live rule. When the branch is already frozen, the report says `confirmation: already-met`. When it is not, show the command that removes only that allow entry and wait. After the user accepts, run it and print the report. On GitLab the accepted write deletes the exact allow rule and leaves `release/*` denying merge. On GitHub it removes the exception for that branch on every layer that targets it.
+Output: read the live rule. When the branch is already frozen, the report says `confirmation: already-met`. When it is not, show the command that removes only that allow entry and wait. After the user accepts, run it and print the report. On GitLab, when `release/*` already denies merge, the accepted write deletes the exact allow rule. When no matching rule denies merge, the accepted write sets the exact rule to deny push and deny merge. On GitHub it removes the exception for that branch on every layer that targets it, or locks the exact rule when no wildcard is in use.

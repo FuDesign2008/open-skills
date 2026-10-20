@@ -35,13 +35,17 @@ Do not delete other exact rules. When the user has accepted both writes, run `en
 
 ## freeze
 
-Delete only the exact protected-branch rule named `<branch>`.
+Read the effective rule first.
+
+When a matching `release/*` rule already denies merge, delete only the exact protected-branch rule named `<branch>`.
 
 ```bash
 glab api --method DELETE "projects/:fullpath/protected_branches/<url-encoded-branch>"
 ```
 
-If no exact rule exists, the branch already follows `release/*`. Recompute the effective merge level. When it is still above `0`, report the branch as not frozen and name the rule that allows merge. Do not delete that other rule.
+When no matching rule denies merge, set the exact rule to `push_access_level=0`, `merge_access_level=0`, `allow_force_push=false` with the update procedure. Creating that exact rule is the write when the branch has none. Do not delete a wider rule that still allows merge.
+
+After the accepted write, recompute the effective merge level. When it is still above `0`, report the branch as not frozen and name the rule that allows merge.
 
 ## check-trunk
 
@@ -56,10 +60,10 @@ Same expected rule as `check-trunk`. Write it only after the user accepts `set-t
 Run only after the user confirms `<sha>` and the force-push.
 
 1. `git branch backup/<branch>-<short-sha> <current-tip>` and push that backup branch. It must not match `release/*`.
-2. Temporarily set the exact rule to `push_access_level=40` and `allow_force_push=true` so the rewind is possible. A wildcard that denies force-push still wins if the exact rule does not allow it, because the loosest rule wins. The exact rule must allow force-push; do not try to "tighten" the wildcard.
+2. Show the command that sets the exact rule to `push_access_level=40` and `allow_force_push=true`. Wait for the user to accept that protection write, then run it. A wildcard that denies force-push still wins if the exact rule does not allow it, because the loosest rule wins. The exact rule must allow force-push; do not try to "tighten" the wildcard. A decline stops the rollback and leaves the branch where it is.
 3. `git push --force-with-lease=refs/heads/<branch>:<current-tip> origin <sha>:refs/heads/<branch>`
 4. Fetch and hard-reset the local branch to the remote.
-5. Run `freeze` so the exact force-push rule is removed and `release/*` applies again.
+5. Run `freeze` so the temporary force-push allowance is removed.
 6. Tell collaborators to fetch and `git reset --hard origin/<branch>`. A branch rewind does not unpublish build artifacts.
 
 ## Update procedure

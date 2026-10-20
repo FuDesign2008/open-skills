@@ -26,7 +26,11 @@ The skill SHALL send a protection create, update, or delete only after the user 
 
 #### Scenario: User declines
 - **WHEN** the user declines the write
-- **THEN** the live rules stay as they were
+- **THEN** the live rules stay as they were, the release continues, and a rejected push is not a reason to remove protection
+
+#### Scenario: Existing whitelist rejects push
+- **WHEN** the live rules already deny push and allow maintainer merge on the new release branch
+- **THEN** start does not write, and a rejected push dry-run counts as success
 
 #### Scenario: Read is immediate
 - **WHEN** the operation only lists or computes rules
@@ -78,7 +82,7 @@ After both the tag and the merge into trunk have succeeded, `git-release-finish`
 
 #### Scenario: Trunk mismatch during release
 - **WHEN** a release skill reads trunk and trunk push is allowed
-- **THEN** the skill reports the mismatch and does not change the trunk rule
+- **THEN** the skill reports the mismatch and does not run `set-trunk`
 
 #### Scenario: Direct trunk setup
 - **WHEN** the user invokes `git-branch-protect` to set trunk policy and confirms the write
@@ -92,8 +96,12 @@ Force-push rollback of a release branch SHALL run only when the user invokes `gi
 - **THEN** it does not force-push the branch pointer, and it freezes the branch only after the user confirms `freeze`
 
 #### Scenario: Explicit rollback
-- **WHEN** the user invokes rollback for a named release branch and confirms the force-push
+- **WHEN** the user invokes rollback for a named release branch, confirms the force-push, and accepts the temporary protection write
 - **THEN** the skill backs up the current tip, moves the branch to the requested commit, and restores the frozen policy
+
+#### Scenario: Temporary protection write is declined
+- **WHEN** the user confirms the force-push and declines the temporary protection write
+- **THEN** the skill does not change the protection rule and does not force-push
 
 ### Requirement: GitLab effective permission follows the loosest matching rule
 On GitLab, the skill SHALL treat push, merge, and force-push as the most permissive matching rule, including group rules. It SHALL NOT treat a stricter exact rule as a freeze while a looser wildcard still matches.
@@ -105,6 +113,10 @@ On GitLab, the skill SHALL treat push, merge, and force-push as the most permiss
 #### Scenario: Wildcard freeze with exact allow
 - **WHEN** `release/*` denies merge and an exact rule allows maintainer merge
 - **THEN** that exact branch is mergeable and other release branches without an allow rule are not
+
+#### Scenario: Freeze without a denying wildcard
+- **WHEN** the user confirms `freeze` and no matching rule denies merge
+- **THEN** the exact rule denies push and denies merge, and the branch is not left unprotected
 
 ### Requirement: GitHub classic uses the single winning rule
 On GitHub classic branch protection, the skill SHALL treat the specific branch-name rule as the only rule for that branch. A whitelist entry SHALL be an exact rule that allows maintainer merge. A freeze SHALL be the absence of that exception under a locking wildcard, or a locking exact rule when no wildcard is in use.

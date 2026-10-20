@@ -238,7 +238,7 @@ echo "main ahead of HEAD candidate: $(git rev-list --count origin/<HEAD_BRANCH>.
 **Checks (run in parallel per repo)**:
 
 1. **merge_method / merge-commit allowances** — Query the project's `merge_method` (GitLab) or `allow_merge_commit` / `allow_squash_merge` / `allow_rebase_merge` (GitHub) via your platform's API to detect ff-only mode.
-2. **Release-branch protection rules** — Query `protected_branches` for `release/*` and `*`; record `push_access_levels` and `merge_access_levels` to detect push=No one. When `git-branch-protect` is available, also run its read-only `check-trunk` through `glab` or `gh`. Report a mismatch with "push denied, maintainer merge allowed". `set-trunk` runs only after the user accepts that write. When the skill is not available, keep this fingerprint and continue.
+2. **Release-branch protection rules** — Query `protected_branches` for `release/*` and `*`; record `push_access_levels` and `merge_access_levels` to detect push=No one. When `git-branch-protect` is available, also run its read-only `check-trunk` through `glab` or `gh`. Report a mismatch with "push denied, maintainer merge allowed". Do not run `set-trunk`. When the skill is not available, keep this fingerprint and continue.
 3. **CI gate** — Query `only_allow_merge_if_pipeline_succeeds` (GitLab) or equivalent.
 4. **Descendant check (ff-mode decision)**:
 ```bash

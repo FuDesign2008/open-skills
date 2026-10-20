@@ -17,6 +17,13 @@
 - [x] 3.1 Run `openspec validate git-branch-protect --strict --type change` and record a passing result.
 - [x] 3.2 Regenerate `docs/generated/skills-index.md`, run the de-identification linter on the new skill files, and add `git-branch-protect` to the category table in `AGENTS.md`. Verify the index contains the new skill and the linter reports no new internal identifier in those files.
 
+## 4. Review fixes before archive
+
+- [x] 4.1 Phase 6 treats an existing push denial plus maintainer merge as a pass, and a declined write does not authorize removing protection.
+- [x] 4.2 Release skills report trunk drift and do not run `set-trunk`.
+- [x] 4.3 GitLab freeze tightens the exact rule when no denying wildcard exists, and recomputes after the write.
+- [x] 4.4 Rollback shows the temporary protection write and waits for acceptance before running it.
+
 ## Workflow follow-up
 
 - Archive only after verification is confirmed.

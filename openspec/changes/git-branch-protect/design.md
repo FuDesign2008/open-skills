@@ -45,7 +45,7 @@ Alternative: frontmatter `dependencies`. Rejected. This repo aborts a skill when
 
 ### Default deny, then one allow entry
 
-If unmatched `release/*` branches can still be merged, the skill shows `ensure-default` and writes it only after acceptance, then shows an exact allow for the new branch (push denied, maintainer merge allowed) and writes that only after its own acceptance. A default that already denies merge is left unchanged. Finish deletes only the exact allow for the shipped branch, and only after acceptance. If the effective result still allows merge, finish reports the surviving rule and does not claim a freeze.
+If unmatched `release/*` branches can still be merged, the skill shows `ensure-default` and writes it only after acceptance, then shows an exact allow for the new branch (push denied, maintainer merge allowed) and writes that only after its own acceptance. A default that already denies merge is left unchanged. Finish removes only the exact allow for the shipped branch when a denying wildcard already covers it, and only after acceptance. When no matching rule denies merge, finish tightens that exact rule to deny push and deny merge instead of deleting it. If the effective result still allows merge, finish reports the surviving rule and does not claim a freeze.
 
 GitLab numbers in the reference: push `0`, merge `0` for the default; push `0`, merge `40` for an allow entry; `allow_force_push` false. GitHub has no access-level field. An allow entry is an exact classic rule that restricts pushes and is not locked, or a ruleset exclusion. A freeze is lock / loss of that exclusion. The skill does not add bypass actors and does not turn off an existing "include administrators" setting.
 
@@ -63,7 +63,7 @@ Read the server version. Below 15.6, replace a rule by DELETE then POST in one s
 
 ### Rollback
 
-Direct invocation only, after the user confirms the commit and the force-push. Create `backup/<branch>-<short-sha>`, push it, temporarily allow force-push for that exact branch, `git push --force-with-lease` to the confirmed sha, then return the branch to the frozen policy. `git-release-finish` never calls this operation.
+Direct invocation only, after the user confirms the commit and the force-push. Create `backup/<branch>-<short-sha>`, push it, show the temporary force-push allowance and run it only after the user accepts that protection write, `git push --force-with-lease` to the confirmed sha, then return the branch to the frozen policy. A declined allowance stops the rollback. `git-release-finish` never calls this operation.
 
 ### Authoring
 
@@ -88,3 +88,7 @@ English body, Chinese triggers in the description, description a single quoted l
 ## Open Questions
 
 None that change the spec or the task split. Live host behavior stays outside this change's test run.
+
+## Verification Notes
+
+【覆盖率门控跳过】工程偏好 coverage-gate: never。时间：2026-10-20T15:20:00+08:00。决策人：项目配置。
