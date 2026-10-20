@@ -1,0 +1,23 @@
+{
+  "skill_name": "branch-access-lifecycle",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "冻结 release/1.2.3，不要让 Maintainer 再合并进去",
+      "expected_output": "The skill loads, chooses GitLab or GitHub from origin, and runs freeze. It does not create the release branch or merge a pull request.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "仓库根目录没有 branch-access.json。请创建 release/2.0.0。",
+      "expected_output": "git-release-start creates the branch and does not call ensure-default or allow-merge.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "branch-access.json 已启用。release/1.2.3 已经打完 tag 并合入 main，但 release/* 仍然允许合并。",
+      "expected_output": "git-release-finish calls freeze and the report says the branch is not frozen, naming the wider rule. It does not force-push.",
+      "files": []
+    }
+  ]
+}

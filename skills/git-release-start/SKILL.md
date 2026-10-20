@@ -54,6 +54,7 @@ At the start of a version iteration, create a release branch from the main devel
 | 1 | Confirm version number and base branch | — |
 | 2 | Analyze each repo's release-branch naming convention | `git branch -r` |
 | 3 | Create the release branch on remote | `<GIT_CLI>` api |
+| 3.5 | Opt-in branch access: default deny, then allow this branch | `branch-access-lifecycle` when `branch-access.json` is enabled |
 | 4 | Sync locally + set tracking | `git fetch` + `git checkout --track` |
 | 5 | Update environment file | `echo` / text write |
 | 6 | Verify | `git branch` + `cat` |
@@ -156,6 +157,22 @@ gh api repos/:owner/:repo/git/refs \
 
 ---
 
+## Phase 3.5: Opt-in branch access
+
+Read `<repo-root>/branch-access.json` after the remote branch exists.
+
+| Marker | Action |
+|--------|--------|
+| Missing, invalid JSON, or `"enabled"` is not `true` | Skip this phase. Do not look up `branch-access-lifecycle` and do not change protection |
+| `"enabled": true` and `branch-access-lifecycle` is not available | Stop. Print `npx skills add FuDesign2008/open-skills -g --skill branch-access-lifecycle --yes` |
+| `"enabled": true` and the skill is available | Load it. Run `ensure-default`, then `allow-merge` for this release branch |
+
+`trunk` in the marker, when set, is the branch name passed to a later trunk check. This phase does not write trunk rules.
+
+The allow entry denies push and allows maintainer merge. Phase 6 treats a rejected push as success only when this phase ran.
+
+---
+
 ## Phase 4: Sync locally + set tracking
 
 > ⚠️ Use `--track` to ensure the local branch tracks `origin/<RELEASE_BRANCH>`.
@@ -204,10 +221,11 @@ Run the following verification for each repo:
 ```bash
 # Push channel is clear (no permission errors is enough)
 git push --dry-run origin <RELEASE_BRANCH>
-# Expected: shows what would be pushed, or "Everything up-to-date"; no "rejected" or permission errors
+# Expected when Phase 3.5 was skipped: shows what would be pushed, or "Everything up-to-date"; no "rejected" or permission errors
+# Expected when Phase 3.5 ran: the push is rejected. Push is denied on the whitelist entry. The allow-merge report is the pass signal
 ```
 
-**If any check fails, stop and fix it; only proceed to Phase 7 after confirming.**
+**If any check fails, stop and fix it; only proceed to Phase 7 after confirming.** A rejected dry-run is a pass only when Phase 3.5 ran and its report says this branch allows maintainer merge.
 
 ---
 

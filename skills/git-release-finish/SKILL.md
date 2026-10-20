@@ -238,7 +238,7 @@ echo "main ahead of HEAD candidate: $(git rev-list --count origin/<HEAD_BRANCH>.
 **Checks (run in parallel per repo)**:
 
 1. **merge_method / merge-commit allowances** — Query the project's `merge_method` (GitLab) or `allow_merge_commit` / `allow_squash_merge` / `allow_rebase_merge` (GitHub) via your platform's API to detect ff-only mode.
-2. **Release-branch protection rules** — Query `protected_branches` for `release/*` and `*`; record `push_access_levels` and `merge_access_levels` to detect push=No one.
+2. **Release-branch protection rules** — Query `protected_branches` for `release/*` and `*`; record `push_access_levels` and `merge_access_levels` to detect push=No one. When `<repo-root>/branch-access.json` has `"enabled": true`, load `branch-access-lifecycle` and run `check-trunk` (read-only). If that skill is missing, stop and print `npx skills add FuDesign2008/open-skills -g --skill branch-access-lifecycle --yes`. A missing or disabled marker skips the load and does not change protection.
 3. **CI gate** — Query `only_allow_merge_if_pipeline_succeeds` (GitLab) or equivalent.
 4. **Descendant check (ff-mode decision)**:
 ```bash
@@ -469,6 +469,8 @@ git fetch origin <MAIN_BRANCH>
 git log origin/<MAIN_BRANCH> --oneline -5
 ```
 Confirm the latest commits include the release merge.
+
+4. **Opt-in freeze** — only when `"enabled": true` in `branch-access.json`, and only after this phase's merge succeeded and the tag from Phase 2 exists. Load `branch-access-lifecycle` and run `freeze` for this release branch. Do not call `rollback`. If the report says the branch is not frozen, keep the tag and the trunk merge, and copy that report into Phase 10. A missing skill stops the run with `npx skills add FuDesign2008/open-skills -g --skill branch-access-lifecycle --yes`.
 
 ---
 
