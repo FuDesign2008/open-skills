@@ -10,7 +10,7 @@ See `proposal.md` for why. `git-release-start` creates the remote branch and sto
 
 **Goals:**
 
-- One skill, `branch-access-lifecycle`, holds the policy and the host procedures.
+- One skill, `git-branch-protect`, holds the policy and the host procedures.
 - The live host rule, read with `glab` or `gh`, is the condition. There is no marker file.
 - Start compares the default deny and the new allow entry. Finish compares the freeze after tag and trunk merge. Each write waits for its own confirmation.
 - Trunk writes happen only on a direct invocation, after confirmation. Release skills only report trunk drift.
@@ -27,7 +27,7 @@ See `proposal.md` for why. `git-release-start` creates the remote branch and sto
 
 ### Skill shape
 
-`skills/branch-access-lifecycle/SKILL.md` names five operations: `ensure-default`, `allow-merge`, `freeze`, `check-trunk`, `rollback`. Host steps live in `references/gitlab.md` and `references/github.md`. The body tells the agent to read only the reference for the detected host.
+`skills/git-branch-protect/SKILL.md` names five operations: `ensure-default`, `allow-merge`, `freeze`, `check-trunk`, `rollback`. Host steps live in `references/gitlab.md` and `references/github.md`. The body tells the agent to read only the reference for the detected host.
 
 Alternative: copy the commands into both release skills. Rejected. The precedence rules would be written three times.
 
@@ -39,7 +39,7 @@ Alternative: a committed `branch-access.json`. Rejected. The user asked to judge
 
 ### Release skills do not declare a frontmatter dependency
 
-When `branch-access-lifecycle` is available, `git-release-start` and `git-release-finish` call its read. When it is not available, they skip the check and leave protection unchanged. They do not abort the release.
+When `git-branch-protect` is available, `git-release-start` and `git-release-finish` call its read. When it is not available, they skip the check and leave protection unchanged. They do not abort the release.
 
 Alternative: frontmatter `dependencies`. Rejected. This repo aborts a skill when a declared dependency is missing, which would stop every release in a partial install.
 

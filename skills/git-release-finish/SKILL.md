@@ -238,7 +238,7 @@ echo "main ahead of HEAD candidate: $(git rev-list --count origin/<HEAD_BRANCH>.
 **Checks (run in parallel per repo)**:
 
 1. **merge_method / merge-commit allowances** — Query the project's `merge_method` (GitLab) or `allow_merge_commit` / `allow_squash_merge` / `allow_rebase_merge` (GitHub) via your platform's API to detect ff-only mode.
-2. **Release-branch protection rules** — Query `protected_branches` for `release/*` and `*`; record `push_access_levels` and `merge_access_levels` to detect push=No one. When `branch-access-lifecycle` is available, also run its read-only `check-trunk` through `glab` or `gh`. Report a mismatch with "push denied, maintainer merge allowed". `set-trunk` runs only after the user accepts that write. When the skill is not available, keep this fingerprint and continue.
+2. **Release-branch protection rules** — Query `protected_branches` for `release/*` and `*`; record `push_access_levels` and `merge_access_levels` to detect push=No one. When `git-branch-protect` is available, also run its read-only `check-trunk` through `glab` or `gh`. Report a mismatch with "push denied, maintainer merge allowed". `set-trunk` runs only after the user accepts that write. When the skill is not available, keep this fingerprint and continue.
 3. **CI gate** — Query `only_allow_merge_if_pipeline_succeeds` (GitLab) or equivalent.
 4. **Descendant check (ff-mode decision)**:
 ```bash
@@ -470,7 +470,7 @@ git log origin/<MAIN_BRANCH> --oneline -5
 ```
 Confirm the latest commits include the release merge.
 
-4. **Freeze check** — after this phase's merge succeeded and the tag from Phase 2 exists, when `branch-access-lifecycle` is available. Read whether this release branch is frozen. When it already is, record the report. When it is not, show the live rule and ask the user to accept `freeze`; run it only after that acceptance. Do not call `rollback`. If the user declines, or the report says the branch is not frozen, keep the tag and the trunk merge, and copy that report into Phase 10. When the skill is not available, skip this step.
+4. **Freeze check** — after this phase's merge succeeded and the tag from Phase 2 exists, when `git-branch-protect` is available. Read whether this release branch is frozen. When it already is, record the report. When it is not, show the live rule and ask the user to accept `freeze`; run it only after that acceptance. Do not call `rollback`. If the user declines, or the report says the branch is not frozen, keep the tag and the trunk merge, and copy that report into Phase 10. When the skill is not available, skip this step.
 
 ---
 

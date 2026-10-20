@@ -87,7 +87,7 @@ open-skills/
 | figma-pixel-implement | 工具 | 无（被 solve / opsx-solve / jira-fix / opsx-jira-fix 强依赖） |
 | figma-pixel-verify | 工具 | 无（被 solve / opsx-solve / jira-fix / opsx-jira-fix 强依赖） |
 | git-commit | Git | 无 |
-| branch-access-lifecycle | 工具 | 无 |
+| git-branch-protect | 工具 | 无 |
 | jira-fix-workflow | Jira 工作流 | delivery-discipline、jira-read、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、competitive-research、analysis-core、test-suite-ensure、merge-discipline、staged-review-flow、jira-status-writeback、jira-wiki-markup、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、git-worktree-discipline、learn-and-improve、figma-pixel-implement、figma-pixel-verify、runtime-verification-discipline、ai-proxy-discipline |
 | opsx-jira-fix-workflow | Jira 工作流 | delivery-discipline、solution-review、code-design-review、hybrid-debug、runtime-evidence-debug、browser-debug-toolkit、node-version-discipline、workflow-mode-lifecycle、clarifying-question-discipline、known-issue-research、competitive-research、analysis-core、test-suite-ensure、merge-discipline、staged-review-flow、opsx-workspace-gate、jira-status-writeback、jira-wiki-markup、completion-evidence-discipline、domain-language-discipline、test-first-discipline、design-approval-gate、feature-branch-closeout、decision-fog-discipline、git-worktree-discipline、learn-and-improve、figma-pixel-implement、figma-pixel-verify、runtime-verification-discipline、ai-proxy-discipline、openspec 原生 skills（阶段 0 检查） |
 | jira-status-writeback | Jira 工具 | jira-wiki-markup |

@@ -54,7 +54,7 @@ At the start of a version iteration, create a release branch from the main devel
 | 1 | Confirm version number and base branch | — |
 | 2 | Analyze each repo's release-branch naming convention | `git branch -r` |
 | 3 | Create the release branch on remote | `<GIT_CLI>` api |
-| 3.5 | Read release protection; write only after the user accepts | `branch-access-lifecycle` when installed |
+| 3.5 | Read release protection; write only after the user accepts | `git-branch-protect` when installed |
 | 4 | Sync locally + set tracking | `git fetch` + `git checkout --track` |
 | 5 | Update environment file | `echo` / text write |
 | 6 | Verify | `git branch` + `cat` |
@@ -159,7 +159,7 @@ gh api repos/:owner/:repo/git/refs \
 
 ## Phase 3.5: Read release protection
 
-After the remote branch exists, load `branch-access-lifecycle` when it is available. It reads the live rules with `glab` or `gh` and compares them with two conditions: unmatched `release/*` branches deny push and deny merge, and this exact branch denies push and allows maintainer merge.
+After the remote branch exists, load `git-branch-protect` when it is available. It reads the live rules with `glab` or `gh` and compares them with two conditions: unmatched `release/*` branches deny push and deny merge, and this exact branch denies push and allows maintainer merge.
 
 | Read result | Action |
 |-------------|--------|

@@ -1,5 +1,5 @@
 ---
-name: branch-access-lifecycle
+name: git-branch-protect
 version: "1.0.0"
 user-invocable: true
 description: "Use when checking or changing who can push or merge release/*, an exact release branch, or main/master. Read the live rule with glab or gh, then whitelist the active release, freeze a finished release, set trunk protection, or roll a release branch back to a chosen commit. Also use when git-release-start or git-release-finish needs that check. Triggers — 「分支权限」「保护分支」「冻结 release」「release 白名单」「回退保护分支」 / branch protection, freeze release branch, release whitelist, protected branch permission. Do NOT use for creating the release branch, tagging and merging the release, or merging an ordinary change. A protection write waits for the user to confirm that command."

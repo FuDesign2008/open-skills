@@ -74,18 +74,18 @@ After both the tag and the merge into trunk have succeeded, `git-release-finish`
 - **THEN** start asks only for the new allow entry and does not rewrite the default
 
 ### Requirement: Trunk policy is not mutated by the release skills
-`branch-access-lifecycle` SHALL be the only skill that sets trunk (`main` or `master`) to push denied and merge allowed for maintainers, and only after the user confirms that write. The release skills SHALL only report when the live trunk rule differs from that policy.
+`git-branch-protect` SHALL be the only skill that sets trunk (`main` or `master`) to push denied and merge allowed for maintainers, and only after the user confirms that write. The release skills SHALL only report when the live trunk rule differs from that policy.
 
 #### Scenario: Trunk mismatch during release
 - **WHEN** a release skill reads trunk and trunk push is allowed
 - **THEN** the skill reports the mismatch and does not change the trunk rule
 
 #### Scenario: Direct trunk setup
-- **WHEN** the user invokes `branch-access-lifecycle` to set trunk policy and confirms the write
+- **WHEN** the user invokes `git-branch-protect` to set trunk policy and confirms the write
 - **THEN** trunk push is denied and maintainer merge stays allowed
 
 ### Requirement: Incident rollback is a direct operation
-Force-push rollback of a release branch SHALL run only when the user invokes `branch-access-lifecycle` for that incident. `git-release-finish` SHALL NOT perform it as part of a normal release.
+Force-push rollback of a release branch SHALL run only when the user invokes `git-branch-protect` for that incident. `git-release-finish` SHALL NOT perform it as part of a normal release.
 
 #### Scenario: Normal finish does not roll back
 - **WHEN** `git-release-finish` completes a release
