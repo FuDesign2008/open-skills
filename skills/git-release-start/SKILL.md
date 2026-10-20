@@ -54,6 +54,7 @@ At the start of a version iteration, create a release branch from the main devel
 | 1 | Confirm version number and base branch | — |
 | 2 | Analyze each repo's release-branch naming convention | `git branch -r` |
 | 3 | Create the release branch on remote | `<GIT_CLI>` api |
+| 3.5 | Read release protection; write only after the user accepts | `git-branch-protect` when installed |
 | 4 | Sync locally + set tracking | `git fetch` + `git checkout --track` |
 | 5 | Update environment file | `echo` / text write |
 | 6 | Verify | `git branch` + `cat` |
@@ -156,6 +157,20 @@ gh api repos/:owner/:repo/git/refs \
 
 ---
 
+## Phase 3.5: Read release protection
+
+After the remote branch exists, load `git-branch-protect` when it is available. It reads the live rules with `glab` or `gh` and compares them with two conditions: unmatched `release/*` branches deny push and deny merge, and this exact branch denies push and allows maintainer merge.
+
+| Read result | Action |
+|-------------|--------|
+| Skill is not available | Skip this phase. Leave protection unchanged |
+| Both conditions already hold | Record the report and continue |
+| A condition does not hold | Show the live rule and the target rule. Ask the user to accept each missing operation on its own. A yes for `ensure-default` is not acceptance of `allow-merge`. Run a write only after the user accepts that operation |
+
+A decline leaves the rules unchanged and the release continues. This phase does not write trunk rules and does not run `set-trunk`. Phase 6 treats a rejected push as success when the protection report says this branch denies push and allows maintainer merge. That report may be `already-met` or an accepted `allow-merge`.
+
+---
+
 ## Phase 4: Sync locally + set tracking
 
 > ⚠️ Use `--track` to ensure the local branch tracks `origin/<RELEASE_BRANCH>`.
@@ -202,12 +217,13 @@ git log --oneline -- release-branch | head -3
 Run the following verification for each repo:
 
 ```bash
-# Push channel is clear (no permission errors is enough)
 git push --dry-run origin <RELEASE_BRANCH>
-# Expected: shows what would be pushed, or "Everything up-to-date"; no "rejected" or permission errors
+# Pass when the protection report says push is denied and maintainer merge is allowed: the push is rejected
+# Pass when that report is absent, or the user declined a write and push is still allowed: the dry-run shows the update, or "Everything up-to-date"
+# When the user declined a write and the push is still rejected, record the dry-run and continue. Leave the protection rules unchanged
 ```
 
-**If any check fails, stop and fix it; only proceed to Phase 7 after confirming.**
+**If a check other than this push dry-run fails, stop and fix it; only proceed to Phase 7 after confirming.** A rejected dry-run is a pass when the protection report says this branch denies push and allows maintainer merge. A declined write does not turn that rejection into a failure, and it does not authorize a protection change.
 
 ---
 

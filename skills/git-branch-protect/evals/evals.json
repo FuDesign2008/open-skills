@@ -1,0 +1,23 @@
+{
+  "skill_name": "git-branch-protect",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "冻结 release/1.2.3，不要让 Maintainer 再合并进去",
+      "expected_output": "The skill loads, reads the live rule with glab or gh, and shows the freeze command. It does not run that write until the user accepts it. It does not create the release branch or merge a pull request.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "请创建 release/2.0.0。远程 release/* 目前仍允许合并，先不要改保护规则。",
+      "expected_output": "git-release-start creates the branch, reads the live rules, and does not call ensure-default or allow-merge.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "release/1.2.3 已经打完 tag 并合入 main，但 release/* 仍然允许合并。用户还没有确认冻结。",
+      "expected_output": "git-release-finish reads the live rule, reports the branch is not frozen, and does not run freeze or force-push.",
+      "files": []
+    }
+  ]
+}
