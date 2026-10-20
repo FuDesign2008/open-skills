@@ -4,6 +4,8 @@ Read this file only when `origin` is GitLab. Placeholders: `<path>` is the URL-e
 
 Access levels: `0` is no one, `40` is Maintainer. A role grants that role and every higher role.
 
+The read commands below run immediately. POST, PATCH, and DELETE change protection. Run one of those only after the user accepts that operation in `SKILL.md`. When the live rule already matches, stop with no write.
+
 ## Read rules
 
 ```bash
@@ -29,7 +31,7 @@ If `release/*` is missing or still allows merge, write the desired rule with the
 
 Create or update an exact rule for `<branch>`: `push_access_level=0`, `merge_access_level=40`, `allow_force_push=false`.
 
-Do not delete other exact rules. Run `ensure-default` first when the caller is `git-release-start`.
+Do not delete other exact rules. When the user has accepted both writes, run `ensure-default` before `allow-merge`.
 
 ## freeze
 
@@ -47,7 +49,7 @@ Read the rule for the trunk name (`main` or `master`). Expected: push `0`, merge
 
 ## set-trunk
 
-Same expected rule as `check-trunk`. Write it only when the user asked this skill to set trunk policy.
+Same expected rule as `check-trunk`. Write it only after the user accepts `set-trunk`.
 
 ## rollback
 

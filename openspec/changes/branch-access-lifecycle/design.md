@@ -11,14 +11,15 @@ See `proposal.md` for why. `git-release-start` creates the remote branch and sto
 **Goals:**
 
 - One skill, `branch-access-lifecycle`, holds the policy and the host procedures.
-- A committed `branch-access.json` is the only opt-in signal.
-- Start establishes a default deny for unmatched release branches, then allows the new branch. Finish removes that allow only after tag and trunk merge, and says so when the branch is still mergeable.
-- Trunk writes happen only on a direct invocation. Release skills only report trunk drift.
+- The live host rule, read with `glab` or `gh`, is the condition. There is no marker file.
+- Start compares the default deny and the new allow entry. Finish compares the freeze after tag and trunk merge. Each write waits for its own confirmation.
+- Trunk writes happen only on a direct invocation, after confirmation. Release skills only report trunk drift.
 
 **Non-Goals:**
 
 - Live calls to a Git host from this change's tests. The skill mutates protection rules; eval prompts are saved, not executed here.
-- Changing release behavior in repos that have no marker.
+- Writing protection rules without an explicit yes for that command.
+- Changing release behavior when this skill is not installed.
 - Code-owner approval, push rules, or deploy-key allow lists.
 - Deleting a pre-existing allow rule the user did not name.
 
@@ -30,36 +31,27 @@ See `proposal.md` for why. `git-release-start` creates the remote branch and sto
 
 Alternative: copy the commands into both release skills. Rejected. The precedence rules would be written three times.
 
-### Opt-in file
+### Remote read, confirmed write
 
-Path: `<repo-root>/branch-access.json`.
+The skill reads protection with `glab api` or `gh api` and compares the result with the operation. A matching rule ends the operation with no write. A differing rule is shown with the exact command. POST, PATCH, DELETE, and ruleset or classic protection updates run only after the user accepts that branch and that operation. Workflow auto-advance is not acceptance. A release skill naming the operation is not acceptance.
 
-```json
-{
-  "enabled": true,
-  "trunk": "main"
-}
-```
-
-`enabled` is required and must be JSON `true`. `trunk` is optional. A missing file, `enabled: false`, or invalid JSON means not opted in; the release skills do not touch protection. When `trunk` is set, checks use that branch. When it is omitted, the release skill passes the trunk name it already identified.
-
-Alternative: treat "skill is installed" as opt-in. Rejected. A global install would change every repo.
+Alternative: a committed `branch-access.json`. Rejected. The user asked to judge the condition from the remote branch, not from a config file.
 
 ### Release skills do not declare a frontmatter dependency
 
-`git-release-start` and `git-release-finish` look for the marker during their existing flow. Marker absent: no lookup, no protection writes, same flow as today. Marker present and `branch-access-lifecycle` is not available: abort that run and print `npx skills add FuDesign2008/open-skills -g --skill branch-access-lifecycle --yes`. Marker present and the skill is available: call it.
+When `branch-access-lifecycle` is available, `git-release-start` and `git-release-finish` call its read. When it is not available, they skip the check and leave protection unchanged. They do not abort the release.
 
-Alternative: frontmatter `dependencies`. Rejected. This repo aborts a skill when a declared dependency is missing, which would stop every release in a partial install even when the repo is not opted in.
+Alternative: frontmatter `dependencies`. Rejected. This repo aborts a skill when a declared dependency is missing, which would stop every release in a partial install.
 
 ### Default deny, then one allow entry
 
-On first opted-in start, if unmatched `release/*` branches can still be merged, the skill sets the default to deny merge and deny push, then adds an exact allow for the new branch (push denied, maintainer merge allowed). Later starts do not rewrite that default. Finish deletes only the exact allow for the shipped branch. If the effective result still allows merge, finish reports the surviving rule and does not claim a freeze.
+If unmatched `release/*` branches can still be merged, the skill shows `ensure-default` and writes it only after acceptance, then shows an exact allow for the new branch (push denied, maintainer merge allowed) and writes that only after its own acceptance. A default that already denies merge is left unchanged. Finish deletes only the exact allow for the shipped branch, and only after acceptance. If the effective result still allows merge, finish reports the surviving rule and does not claim a freeze.
 
 GitLab numbers in the reference: push `0`, merge `0` for the default; push `0`, merge `40` for an allow entry; `allow_force_push` false. GitHub has no access-level field. An allow entry is an exact classic rule that restricts pushes and is not locked, or a ruleset exclusion. A freeze is lock / loss of that exclusion. The skill does not add bypass actors and does not turn off an existing "include administrators" setting.
 
 ### Read both GitHub layers
 
-The skill lists classic branch-protection rules and rulesets. `release/*` is the wildcard. GitHub `*` does not match an extra `/`, so `release/*` matches `release/X.Y.Z`. When both layers target the branch, both are updated. When an organization ruleset or a GitLab group rule is looser and the caller cannot edit it, the operation stops and names that layer.
+The skill lists classic branch-protection rules and rulesets. `release/*` is the wildcard. GitHub `*` does not match an extra `/`, so `release/*` matches `release/X.Y.Z`. When both layers target the branch, both are updated after the user accepts those writes. When an organization ruleset or a GitLab group rule is looser and the caller cannot edit it, the operation stops and names that layer.
 
 ### Verify the permission result
 
@@ -84,12 +76,13 @@ English body, Chinese triggers in the description, description a single quoted l
 - [GitHub admins can bypass classic protection] → the skill does not claim admins are blocked unless the repo already enforces rules for admins.
 - [No open merge request, so `canMerge` cannot be queried] → report rule-level evidence and say the merge request was not observed.
 - [A long-lived exact allow stays open after the default is frozen] → list it; do not delete it.
-- [Partial skill install] → abort only when the marker is present and the skill is missing.
+- [Partial skill install] → skip the check when this skill is missing. A present skill still waits for confirmation before a write.
+- [Workflow auto-advance is mistaken for permission to change protection] → acceptance is an explicit yes to that command.
 
 ## Migration Plan
 
 1. Land the skill and the two release-skill edits on `feat/branch-access-lifecycle`.
-2. Consumer repos opt in by committing `branch-access.json`. Until that file exists, their release flow is unchanged.
+2. Consumer repos change protection only when a person confirms a write. Until then, a read does not change their rules. When this skill is not installed, the release flow is unchanged.
 3. Rollback of this change is reverting the skill files. Consumer protection rules already written are not reverted by reverting the skill.
 
 ## Open Questions

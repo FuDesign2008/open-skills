@@ -54,7 +54,7 @@ At the start of a version iteration, create a release branch from the main devel
 | 1 | Confirm version number and base branch | — |
 | 2 | Analyze each repo's release-branch naming convention | `git branch -r` |
 | 3 | Create the release branch on remote | `<GIT_CLI>` api |
-| 3.5 | Opt-in branch access: default deny, then allow this branch | `branch-access-lifecycle` when `branch-access.json` is enabled |
+| 3.5 | Read release protection; write only after the user accepts | `branch-access-lifecycle` when installed |
 | 4 | Sync locally + set tracking | `git fetch` + `git checkout --track` |
 | 5 | Update environment file | `echo` / text write |
 | 6 | Verify | `git branch` + `cat` |
@@ -157,19 +157,17 @@ gh api repos/:owner/:repo/git/refs \
 
 ---
 
-## Phase 3.5: Opt-in branch access
+## Phase 3.5: Read release protection
 
-Read `<repo-root>/branch-access.json` after the remote branch exists.
+After the remote branch exists, load `branch-access-lifecycle` when it is available. It reads the live rules with `glab` or `gh` and compares them with two conditions: unmatched `release/*` branches deny push and deny merge, and this exact branch denies push and allows maintainer merge.
 
-| Marker | Action |
-|--------|--------|
-| Missing, invalid JSON, or `"enabled"` is not `true` | Skip this phase. Do not look up `branch-access-lifecycle` and do not change protection |
-| `"enabled": true` and `branch-access-lifecycle` is not available | Stop. Print `npx skills add FuDesign2008/open-skills -g --skill branch-access-lifecycle --yes` |
-| `"enabled": true` and the skill is available | Load it. Run `ensure-default`, then `allow-merge` for this release branch |
+| Read result | Action |
+|-------------|--------|
+| Skill is not available | Skip this phase. Leave protection unchanged |
+| Both conditions already hold | Record the report and continue |
+| A condition does not hold | Show the live rule and the target rule. Ask the user to accept `ensure-default`, `allow-merge`, or both. Run a write only after the user accepts that operation |
 
-`trunk` in the marker, when set, is the branch name passed to a later trunk check. This phase does not write trunk rules.
-
-The allow entry denies push and allows maintainer merge. Phase 6 treats a rejected push as success only when this phase ran.
+A decline leaves the rules unchanged and the release continues. This phase does not write trunk rules. Phase 6 treats a rejected push as success only when the user accepted `allow-merge` and that report says this branch allows maintainer merge.
 
 ---
 
@@ -221,11 +219,11 @@ Run the following verification for each repo:
 ```bash
 # Push channel is clear (no permission errors is enough)
 git push --dry-run origin <RELEASE_BRANCH>
-# Expected when Phase 3.5 was skipped: shows what would be pushed, or "Everything up-to-date"; no "rejected" or permission errors
-# Expected when Phase 3.5 ran: the push is rejected. Push is denied on the whitelist entry. The allow-merge report is the pass signal
+# Expected when allow-merge was not accepted: shows what would be pushed, or "Everything up-to-date"; no "rejected" or permission errors
+# Expected when the user accepted allow-merge: the push is rejected. Push is denied on the whitelist entry. The allow-merge report is the pass signal
 ```
 
-**If any check fails, stop and fix it; only proceed to Phase 7 after confirming.** A rejected dry-run is a pass only when Phase 3.5 ran and its report says this branch allows maintainer merge.
+**If any check fails, stop and fix it; only proceed to Phase 7 after confirming.** A rejected dry-run is a pass only when the user accepted `allow-merge` and its report says this branch allows maintainer merge.
 
 ---
 

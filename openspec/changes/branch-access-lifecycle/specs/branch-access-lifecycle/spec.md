@@ -2,75 +2,94 @@
 
 ## Purpose
 
-Governs opt-in branch protection so one active release stays mergeable, finished releases freeze, and trunk push stays closed on GitLab and GitHub.
+Governs release and trunk protection so one active release stays mergeable, finished releases freeze, and trunk push stays closed on GitLab and GitHub. The condition is the live host rule. A protection write runs only after the user confirms it.
 
 ## ADDED Requirements
 
-### Requirement: Marker file gates release-skill protection changes
-`git-release-start` and `git-release-finish` SHALL change branch protection only when the target repo contains the committed opt-in marker. Without that marker they SHALL leave protection rules unchanged.
+### Requirement: Live host rules decide the condition
+The skill SHALL decide whether a branch meets the requested push and merge policy by reading the current protection rules with `glab` on GitLab or `gh` on GitHub. It SHALL NOT consult a committed marker file.
 
-#### Scenario: Marker absent
-- **WHEN** either release skill runs in a repo that has no opt-in marker
-- **THEN** it does not create, update, or delete protection rules
+#### Scenario: Remote rule already matches
+- **WHEN** the read shows the branch already has the requested push and merge result
+- **THEN** the skill reports the match and does not send a write
 
-#### Scenario: Marker present
-- **WHEN** either release skill runs in a repo whose opt-in marker is committed
-- **THEN** it performs only the protection action specified for that skill
+#### Scenario: Remote rule differs
+- **WHEN** the read shows a different push or merge result
+- **THEN** the skill reports the live rule and the target rule
+
+### Requirement: Protection writes wait for confirmation
+The skill SHALL send a protection create, update, or delete only after the user confirms that operation for that branch. `git-release-start` and `git-release-finish` SHALL read and report, and SHALL leave the rules unchanged until that confirmation. A read SHALL run without a confirmation prompt.
+
+#### Scenario: Release start finds a gap
+- **WHEN** start has created the remote release branch and the live rules do not yet allow maintainer merge on that branch
+- **THEN** start reports the gap and does not write until the user confirms `allow-merge`
+
+#### Scenario: User declines
+- **WHEN** the user declines the write
+- **THEN** the live rules stay as they were
+
+#### Scenario: Read is immediate
+- **WHEN** the operation only lists or computes rules
+- **THEN** the skill runs the host read without asking
 
 ### Requirement: Release start adds one whitelist entry
-When the marker is present, `git-release-start` SHALL add the newly created `release/X.Y.Z` to the merge whitelist after the remote branch exists, leaving push denied and merge allowed for maintainers.
+After the remote branch exists, `git-release-start` SHALL compare the live rules with a whitelist entry for that `release/X.Y.Z` (push denied, maintainer merge allowed). The entry SHALL be created or updated only after the user confirms `allow-merge`.
 
 #### Scenario: New release becomes mergeable
-- **WHEN** start creates `release/X.Y.Z` on the remote and the marker is present
+- **WHEN** the user confirms `allow-merge` for `release/X.Y.Z`
 - **THEN** a maintainer can merge into that branch and a direct push is still rejected
 
 #### Scenario: Other release branches stay as they were
-- **WHEN** start adds `release/X.Y.Z` to the whitelist
+- **WHEN** the confirmed write adds `release/X.Y.Z`
 - **THEN** other exact allow rules are not removed
 
 ### Requirement: Release finish freezes only the shipped branch
-When the marker is present, `git-release-finish` SHALL remove that release branch from the merge whitelist only after both the tag and the merge into trunk have succeeded.
+After both the tag and the merge into trunk have succeeded, `git-release-finish` SHALL read whether that release branch is frozen. It SHALL remove that branch from the merge whitelist only after the user confirms `freeze`.
 
 #### Scenario: Shipped branch freezes
-- **WHEN** the tag exists and the release-to-trunk merge has succeeded
+- **WHEN** the tag exists, the release-to-trunk merge has succeeded, and the user confirms `freeze`
 - **THEN** maintainers can no longer merge into that release branch
 
 #### Scenario: Finish stops before a successful ship
 - **WHEN** tagging or the trunk merge has not succeeded
-- **THEN** the release branch remains on the whitelist
+- **THEN** the skill does not ask to freeze and the release branch remains on the whitelist
+
+#### Scenario: User declines freeze
+- **WHEN** the user declines `freeze` after a successful ship
+- **THEN** the tag and the trunk merge stay, and the report says the release branch is still mergeable
 
 #### Scenario: A wider rule still allows merge
 - **WHEN** the shipped branch is removed from the whitelist and some other matching rule still allows maintainer merge
 - **THEN** finish reports the branch as not frozen and names that rule
 
 ### Requirement: Default release policy denies merge before whitelist use
-When the marker is present, `git-release-start` SHALL establish a default that denies merge for release branches with no allow entry before it adds the new branch. If that default already holds, start SHALL leave it unchanged.
+`git-release-start` SHALL compare unmatched release branches with a default that denies merge. It SHALL write that default only after the user confirms `ensure-default`. If that default already holds, start SHALL leave it unchanged and SHALL NOT ask to rewrite it.
 
-#### Scenario: First opted-in start
-- **WHEN** the marker is present, unmatched release branches still allow maintainer merge, and start creates `release/X.Y.Z`
+#### Scenario: Default still allows merge
+- **WHEN** unmatched release branches still allow maintainer merge and the user confirms `ensure-default` and then `allow-merge` for `release/X.Y.Z`
 - **THEN** unmatched release branches deny merge, `release/X.Y.Z` allows maintainer merge, and every pre-existing allow entry is listed
 
 #### Scenario: Default already denies merge
-- **WHEN** unmatched release branches already deny merge
-- **THEN** start adds only the new allow entry and does not rewrite the default
+- **WHEN** unmatched release branches already deny merge and the new branch has no allow entry
+- **THEN** start asks only for the new allow entry and does not rewrite the default
 
 ### Requirement: Trunk policy is not mutated by the release skills
-`branch-access-lifecycle` SHALL be the only skill that sets trunk (`main` or `master`) to push denied and merge allowed for maintainers. The release skills SHALL only report when the live trunk rule differs from that policy.
+`branch-access-lifecycle` SHALL be the only skill that sets trunk (`main` or `master`) to push denied and merge allowed for maintainers, and only after the user confirms that write. The release skills SHALL only report when the live trunk rule differs from that policy.
 
 #### Scenario: Trunk mismatch during release
-- **WHEN** a release skill runs with the marker present and trunk push is allowed
+- **WHEN** a release skill reads trunk and trunk push is allowed
 - **THEN** the skill reports the mismatch and does not change the trunk rule
 
 #### Scenario: Direct trunk setup
-- **WHEN** the user invokes `branch-access-lifecycle` to set trunk policy
+- **WHEN** the user invokes `branch-access-lifecycle` to set trunk policy and confirms the write
 - **THEN** trunk push is denied and maintainer merge stays allowed
 
 ### Requirement: Incident rollback is a direct operation
 Force-push rollback of a release branch SHALL run only when the user invokes `branch-access-lifecycle` for that incident. `git-release-finish` SHALL NOT perform it as part of a normal release.
 
 #### Scenario: Normal finish does not roll back
-- **WHEN** `git-release-finish` completes a release with the marker present
-- **THEN** it freezes the branch and does not force-push the branch pointer
+- **WHEN** `git-release-finish` completes a release
+- **THEN** it does not force-push the branch pointer, and it freezes the branch only after the user confirms `freeze`
 
 #### Scenario: Explicit rollback
 - **WHEN** the user invokes rollback for a named release branch and confirms the force-push

@@ -6,6 +6,8 @@ GitHub has no Maintainer access level. "Maintainer merge" here means people who 
 
 Two layers can both apply. Classic branch protection uses one winning rule: a specific branch name beats a pattern. Rulesets all apply, and the strictest setting wins, so a second ruleset cannot open a branch. A whitelist entry on a ruleset is an exclusion from the freeze ruleset.
 
+The read commands below run immediately. Creating, updating, or deleting a classic rule or a ruleset changes protection. Run one of those only after the user accepts that operation in `SKILL.md`. When the live rule already matches, stop with no write.
+
 ## Read rules
 
 ```bash
@@ -56,7 +58,7 @@ Read classic protection and rules for the trunk branch. Expected: direct push re
 
 ## set-trunk
 
-Apply the expected trunk policy only when the user asked this skill to set it. Preserve status checks and review rules already on that branch.
+Apply the expected trunk policy only after the user accepts `set-trunk`. Preserve status checks and review rules already on that branch.
 
 ## rollback
 
