@@ -38,6 +38,18 @@
         {"text": "Names learn-and-improve for the retrospective"},
         {"text": "Does not merge, remove the worktree, or run the retrospective itself"}
       ]
+    },
+    {
+      "id": 4,
+      "name": "close-unused-pages",
+      "prompt": "会话可以结束了。这次为了看结果打开了几个网页，中间路过的页面不用留，结果页我要留着。我自己早就开着的那个标签别关，也别退出浏览器。",
+      "expected_output": "Close pages this session opened that the finished task no longer needs, including pages only visited on the way. Keep the result page the user asked to keep and name how to close it. Leave the page that was already open. Do not quit the browser.",
+      "files": [],
+      "assertions": [
+        {"text": "Closes unused session-opened pages and confirms they are gone"},
+        {"text": "Keeps the result page the user asked to keep and names how to close it"},
+        {"text": "Leaves the pre-existing user page open and does not quit the browser"}
+      ]
     }
   ]
 }

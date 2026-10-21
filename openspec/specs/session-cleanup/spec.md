@@ -2,13 +2,13 @@
 
 ## Purpose
 
-End-of-conversation resource closeout. Inventory what this session created, preserve unique uncommitted content, stop background services this session started, delete disposable temp files, and report leftovers. Merge, the branch closeout menu, worktree removal, and retrospective stay with their owning skills.
+End-of-conversation resource closeout. Inventory what this session created, preserve unique uncommitted content, stop background services this session started, close browser pages this session opened and no longer needs, delete disposable temp files, and report leftovers. Merge, the branch closeout menu, worktree removal, and retrospective stay with their owning skills.
 
 ## Requirements
 
 ### Requirement: session-cleanup SHALL run before the agent ends a conversation that left resources behind
 
-`session-cleanup` MUST run before the agent says the conversation is finished when this session created temp files or started background services. It MUST also run when the user asks to clean temp files, stop background services, or close out the session. Trigger phrases include 「清理临时文件」「关闭后台服务」「会话收尾」「结束前清理」「会话清理」 and "session cleanup", "clean temp files", "stop background services".
+`session-cleanup` MUST run before the agent says the conversation is finished when this session created temp files, started background services, or opened browser pages. It MUST also run when the user asks to clean temp files, stop background services, close unused pages, or close out the session. Trigger phrases include 「清理临时文件」「关闭后台服务」「关闭网页」「清理不用的网页」「会话收尾」「结束前清理」「会话清理」 and "session cleanup", "clean temp files", "stop background services", "close unused pages".
 
 #### Scenario: Explicit cleanup request
 
@@ -22,7 +22,7 @@ End-of-conversation resource closeout. Inventory what this session created, pres
 
 ### Requirement: session-cleanup SHALL inventory and classify before any stop or delete
 
-Before stopping a process or deleting a path, the agent MUST list the candidates and classify each as unique uncommitted content, a session-started background service, a disposable temp file, or pre-existing user state. A path or process whose origin is unclear MUST be classified as unique uncommitted content.
+Before stopping a process, closing a page, or deleting a path, the agent MUST list the candidates and classify each as unique uncommitted content, a session-started background service, a session-opened browser page, a disposable temp file, or pre-existing user state. A path, process, or page whose origin is unclear MUST be classified as unique uncommitted content.
 
 #### Scenario: Unknown file is kept
 
@@ -78,9 +78,28 @@ A liveness check MUST identify the target process itself. A match whose only evi
 - **WHEN** a background process was already running before this session
 - **THEN** the agent does not stop it
 
+### Requirement: session-cleanup SHALL close browser pages this session opened and no longer needs
+
+After services are stopped, the agent MUST close browser pages this session opened for a finished task when the user did not ask to keep them, and MUST confirm each closed page is gone. A page the user asked to keep MUST stay open and appear in the leftover report with a close method. A page that was already open before this session, or that the user opened, MUST stay open. The agent MUST NOT quit the whole browser while those pages remain.
+
+#### Scenario: Unused page opened this session is closed
+
+- **WHEN** this session opened a page only to finish a task and the user did not ask to keep it
+- **THEN** the agent closes that page and confirms it is gone
+
+#### Scenario: User page stays open
+
+- **WHEN** a page was already open before this session or the user opened it
+- **THEN** the agent leaves that page open and does not quit the browser
+
+#### Scenario: Kept page is named
+
+- **WHEN** the user asked to keep a page this session opened
+- **THEN** the report names the page and a close method
+
 ### Requirement: session-cleanup SHALL delete disposable temp files after stops
 
-After the stop pass, the agent MUST delete temp files and directories that this session created and that are not the task's deliverable. Deliverables and pre-existing user files MUST remain.
+After unused session pages are closed, the agent MUST delete temp files and directories that this session created and that are not the task's deliverable. Deliverables and pre-existing user files MUST remain.
 
 #### Scenario: One-shot download is removed
 
@@ -94,7 +113,7 @@ After the stop pass, the agent MUST delete temp files and directories that this 
 
 ### Requirement: session-cleanup SHALL report leftovers before calling the session clean
 
-The closing report MUST name each item left in place, why it stayed, and how to remove it. The agent MUST claim a clean resource closeout only after the inventory shows no remaining session-started service and no remaining disposable temp file.
+The closing report MUST name each item left in place, why it stayed, and how to remove it. The agent MUST claim a clean resource closeout only after the inventory shows no remaining session-started service, no session-opened page the finished task no longer needs, and no remaining disposable temp file.
 
 #### Scenario: Kept server is named
 
@@ -117,4 +136,4 @@ The directory and frontmatter `name` MUST be `session-cleanup`. `user-invocable`
 #### Scenario: Description carries Chinese triggers and the boundary
 
 - **WHEN** the description is loaded for routing
-- **THEN** it includes Chinese phrases for cleaning temp files and stopping background services, and it points merge, branch closeout, and retrospective at their owning skills
+- **THEN** it includes Chinese phrases for cleaning temp files, stopping background services, and closing unused pages, and it points merge, branch closeout, and retrospective at their owning skills

@@ -2,27 +2,28 @@
 name: session-cleanup
 version: "1.0.0"
 user-invocable: true
-description: "End a finished conversation by inventorying temp files and background services this session created, keeping unique uncommitted work, stopping those services, and deleting disposable temps. Use for 「清理临时文件」「关闭后台服务」「会话收尾」「结束前清理」「会话清理」 / session cleanup, clean temp files, stop background services, including when the agent is about to finish and those resources are still around. Do NOT use for merge (merge-discipline), the branch closeout menu or worktree removal (feature-branch-closeout), or a retrospective (learn-and-improve)."
+description: "End a finished conversation by inventorying temp files, background services, and browser pages this session opened, keeping unique uncommitted work, stopping those services, closing unused pages, and deleting disposable temps. Use for 「清理临时文件」「关闭后台服务」「关闭网页」「清理不用的网页」「会话收尾」「结束前清理」「会话清理」 / session cleanup, clean temp files, stop background services, close unused pages, including when the agent is about to finish and those resources are still around. Do NOT use for merge (merge-discipline), the branch closeout menu or worktree removal (feature-branch-closeout), or a retrospective (learn-and-improve)."
 ---
 
 # Session Cleanup
 
-Run this skill before saying a conversation is finished when this session created temp files or started background services, and whenever the user asks to clean those up. Finish the report before the closing message.
+Run this skill before saying a conversation is finished when this session created temp files, started background services, or opened browser pages, and whenever the user asks to clean those up. Finish the report before the closing message.
 
 Resolve `<integration>` once and reuse it. Take the remote default branch (`git symbolic-ref --short refs/remotes/origin/HEAD`, drop the remote prefix). If that ref is missing, use the branch the current checkout tracks. Comparisons below use that name.
 
 ## Inventory
 
-List what this session actually did, in four groups:
+List what this session actually did, in five groups:
 
 1. Paths this session created.
 2. Background processes and services this session started, with the process id and any port that process bound.
-3. Uncommitted and untracked paths in the workspace.
-4. Paths and processes whose origin is unclear.
+3. Browser pages this session opened.
+4. Uncommitted and untracked paths in the workspace.
+5. Paths, processes, and pages whose origin is unclear.
 
-Classify each item as unique uncommitted content, a session-started background service, a disposable temp file, or pre-existing user state. Unclear origin is unique uncommitted content.
+Classify each item as unique uncommitted content, a session-started background service, a session-opened browser page, a disposable temp file, or pre-existing user state. Unclear origin is unique uncommitted content.
 
-Show the classified list before stopping anything or deleting anything.
+Show the classified list before stopping anything, closing a page, or deleting anything.
 
 ## Preserve
 
@@ -47,9 +48,19 @@ A process that was already running before this session stays running.
 
 Confirm the target by its process id, or by the port that process bound. Search text that also appears on the check command line identifies the checker. That hit is not the target.
 
+## Pages
+
+After the stop pass, close browser pages this session opened once the finished task no longer needs them. Confirm each closed page is gone.
+
+A page the user asked to keep stays open. The report names it and how to close it.
+
+A page that was already open before this session, or that the user opened, stays open. The agent does not quit the browser while those pages remain.
+
+When several pages were opened for one task, list the pages to keep and close the rest together. Pages only visited on the way to the result are not kept.
+
 ## Delete
 
-After every stop is confirmed, delete temp files and directories this session created that are not the deliverable. A one-shot download used as a working input goes away once the task no longer needs it. Pre-existing user files stay. Unique uncommitted content stays.
+After pages are closed, delete temp files and directories this session created that are not the deliverable. A one-shot download used as a working input goes away once the task no longer needs it. Pre-existing user files stay. Unique uncommitted content stays.
 
 The preserve copy sits outside the delete set.
 
@@ -58,12 +69,13 @@ The preserve copy sits outside the delete set.
 ```
 Preserved: <paths, or none>
 Stopped: <process id or port, or none>
+Closed pages: <pages, or none>
 Deleted: <paths, or none>
 Left in place: <what> — <why> — <how to remove>
 Hand off: <owning skill> — <what is still open>
 ```
 
-Claim a clean resource closeout only when no session-started service and no disposable temp file remain. A kept service is a "Left in place" line, not a clean closeout.
+Claim a clean resource closeout only when no session-started service, no session-opened page the finished task no longer needs, and no disposable temp file remain. A kept service or page is a "Left in place" line, not a clean closeout.
 
 Name the owner when that work is still open, and leave the work to that skill:
 

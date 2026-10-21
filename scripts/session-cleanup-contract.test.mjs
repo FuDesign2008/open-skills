@@ -29,6 +29,8 @@ test("session-cleanup contract", () => {
     "「会话收尾」",
     "「结束前清理」",
     "「会话清理」",
+    "「关闭网页」",
+    "「清理不用的网页」",
     "merge-discipline",
     "feature-branch-closeout",
     "learn-and-improve",
@@ -39,16 +41,20 @@ test("session-cleanup contract", () => {
   const inventory = sectionIndex(skill, "Inventory");
   const preserve = sectionIndex(skill, "Preserve");
   const stop = sectionIndex(skill, "Stop");
+  const pages = sectionIndex(skill, "Pages");
   const remove = sectionIndex(skill, "Delete");
   const report = sectionIndex(skill, "Report");
   assert.ok(inventory >= 0);
   assert.ok(inventory < preserve);
   assert.ok(preserve < stop);
-  assert.ok(stop < remove);
+  assert.ok(stop < pages);
+  assert.ok(pages < remove);
   assert.ok(remove < report);
 
   assert.match(skill, /git diff <integration> -- <path>/);
   assert.match(skill, /git show <integration>:<path>/);
   assert.match(skill, /command line/);
   assert.match(skill, /outside the delete set/);
+  assert.match(skill, /already open before this session/);
+  assert.match(skill, /does not quit the browser/);
 });
