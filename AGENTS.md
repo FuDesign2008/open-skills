@@ -112,6 +112,7 @@ open-skills/
 | runtime-verification-discipline | 工作流纪律 | 无 |
 | design-approval-gate | 工作流纪律 | 无 |
 | feature-branch-closeout | 工作流纪律 | merge-discipline、delivery-discipline |
+| session-cleanup | 工具 | 无 |
 | delivery-discipline | 工作流纪律 | git-commit |
 | decision-fog-discipline | 工作流纪律 | 无 |
 | intake-interview-discipline | 工作流纪律 | clarifying-question-discipline、decision-fog-discipline |

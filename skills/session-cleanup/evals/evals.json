@@ -1,0 +1,43 @@
+{
+  "skill_name": "session-cleanup",
+  "evals": [
+    {
+      "id": 1,
+      "name": "stop-server-and-delete-temp",
+      "prompt": "这个对话可以结束了。请清理临时文件，并关掉你这次启动的后台服务。",
+      "expected_output": "Inventory first. Stop only the server this session started and confirm the port is free. Delete the one-shot download. Leave files the session did not create. Report preserved, stopped, deleted, and anything left in place.",
+      "files": [],
+      "assertions": [
+        {"text": "Classifies the session-started server and the one-shot download before acting"},
+        {"text": "Stops that server and confirms it is gone"},
+        {"text": "Deletes the disposable download and keeps unrelated files"},
+        {"text": "Ends with a leftover report"}
+      ]
+    },
+    {
+      "id": 2,
+      "name": "preserve-uncommitted-notes",
+      "prompt": "工作区是脏的，结束前帮我会话清理。本地有一节从未进过集成分支的项目说明，对话开头加载过这份工作区文件。",
+      "expected_output": "Compare with git diff and git show against the integration ref. The loaded conversation copy is not proof the section is on the branch. Non-empty diff is preserved outside the delete set. No discard without an explicit user confirmation.",
+      "files": [],
+      "assertions": [
+        {"text": "Uses the integration ref, not the working tree or the conversation copy"},
+        {"text": "Refuses to discard the unique section without explicit confirmation"},
+        {"text": "Puts any preserve copy outside the delete set"}
+      ]
+    },
+    {
+      "id": 3,
+      "name": "handoff-not-merge",
+      "prompt": "会话收尾。顺手把功能分支合并掉，worktree 删掉，再做个复盘。",
+      "expected_output": "Resource cleanup still runs. Merge is named as merge-discipline, branch menu and worktree removal as feature-branch-closeout, retrospective as learn-and-improve. This skill does not perform those three.",
+      "files": [],
+      "assertions": [
+        {"text": "Names merge-discipline for the merge"},
+        {"text": "Names feature-branch-closeout for the branch menu and worktree removal"},
+        {"text": "Names learn-and-improve for the retrospective"},
+        {"text": "Does not merge, remove the worktree, or run the retrospective itself"}
+      ]
+    }
+  ]
+}
