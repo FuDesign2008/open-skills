@@ -17,30 +17,42 @@ description: "Read SMS verification codes on macOS via a direct SQLite read of t
 
 ## Pre-flight checks (first use, or when reads fail)
 
-```bash
-# 1. Permission check (authorization denied = not granted)
-sqlite3 ~/Library/Messages/chat.db "SELECT count(*) FROM message LIMIT 1;" 2>&1
-# authorization denied → guide the user: System Settings → Privacy & Security → Full Disk Access → add the terminal app (Terminal/iTerm2/VS Code) → restart the terminal for it to take effect
-# one-click panel: open "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles"
+### 1. Permission
 
-# 2. Sync health diagnosis (when no fresh code arrives)
+```bash
+sqlite3 ~/Library/Messages/chat.db "SELECT count(*) FROM message LIMIT 1;" 2>&1
+```
+
+`unable to open database file` (SQLITE_CANTOPEN) or `authorization denied` means Full Disk Access is missing. Guide the user: System Settings → Privacy & Security → Full Disk Access → add the terminal app (Terminal/iTerm2/VS Code) → restart the terminal. One-click panel: `open "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles"`.
+
+### 2. Sync health (when no fresh code arrives)
+
+Ask both infrastructure questions before any software probe:
+
+1. Is the iPhone on the same network as this Mac? A different network is complete sync loss. Attribute the miss to the network split and use the human-read fallback until the iPhone is back on this network.
+2. Is the iPhone battery above ~20%? Below ~20%, iOS power mode suspends Text Message Forwarding. Recovery is charging above ~20%.
+
+When both answers are healthy, run the software probes:
+
+```bash
 ls -la ~/Library/Messages/chat.db*   # db/wal mtime — mtime stuck hours ago = zero sync
 pgrep -lf Messages                    # process alive
-nc -z -w 3 courier.push.apple.com 5223 2>&1   # APNs reachable
-# db alive but no new SMS → iPhone side: re-toggle Text Message Forwarding (Settings → Apps → Messages → Text Message Forwarding)
+nc -z -w 3 courier.push.apple.com 5223 2>&1   # APNs reachable (ICMP unreachable is Apple-normal)
 ```
+
+Database mtime fresh, Messages alive, APNs reachable, and still no new SMS: the fault is on the iPhone side. Re-toggle Text Message Forwarding (Settings → Apps → Messages → Text Message Forwarding). Session rebuild takes minutes. Still broken after that → human-read fallback.
 
 ## Core read (call after the code is triggered)
 
 ```bash
-# Generic code (【XX】验证码：NNNNNN pattern, within 2-minute freshness)
+# Generic code (【XX】验证码：NNNNNN pattern, within the 0-240 s freshness window)
 sqlite3 ~/Library/Messages/chat.db "SELECT datetime(date/1000000000 + 978307200, 'unixepoch', 'localtime'), substr(text, instr(text, '验证码：')+4, 6) FROM message WHERE text LIKE '%验证码%' ORDER BY date DESC LIMIT 3;"
 
 # Specific sender (replace <sender> with the service name)
 sqlite3 ~/Library/Messages/chat.db "SELECT datetime(date/1000000000 + 978307200, 'unixepoch', 'localtime'), substr(text, instr(text, '验证码：')+4, 6) FROM message WHERE text LIKE '%<sender>%验证码%' ORDER BY date DESC LIMIT 1;"
 ```
 
-The pattern targets Chinese verification SMS (【sender】…验证码：NNNNNN); adjust the LIKE and extraction pattern for other message formats.
+The pattern targets Chinese verification SMS (【sender】…验证码：NNNNNN); adjust the LIKE and extraction pattern for other message formats. Validate the extraction before use: a valid code is all digits — a non-digit result means the anchor missed (e.g. 验证码为/验证码是 phrasing) and the value is position garbage, so re-anchor the extraction or fall back to a human read.
 
 **Freshness gate (mandatory)**: compare each returned timestamp against the current time and accept only codes 0-240 s old (codes are valid ~5 minutes; the window leaves sync-delay margin). Entering a stale code always fails (field lesson: during a sync delay a 6-hour-old code was read).
 
@@ -48,29 +60,29 @@ The pattern targets Chinese verification SMS (【sender】…验证码：NNNNNN)
 
 1. Trigger the code (click "get code" on the page) → the platform shows "sent" + a 60 s countdown
 2. Wait 30-90 s (iPhone reception + iCloud sync-to-Mac delay)
-3. Poll (every 15 s, up to 4 times) → take the first in-window code → enter it
-4. On sync failure run the sync health diagnosis (pre-flight check 2) → fix (re-toggle forwarding) → re-trigger and read
+3. Poll (every 15 s, up to 4 times) → take the first in-window, all-digit code → enter it
+4. On sync failure run sync-health diagnosis (infrastructure questions first; software probes only after both answers are healthy). Re-toggle forwarding only when the database is alive and no new SMS has landed, then re-trigger and read
 5. All attempts failed → fallback: ask the user to read the code from the iPhone (~10 s in the field)
 
 ## Known failure modes
 
 | Failure | Signature | Handling |
 |---|---|---|
-| Permission missing | authorization denied | Full Disk Access + restart the terminal |
-| Sync channel broken | db alive (mtime fresh) but no new SMS; yesterday's codes readable, today's missing | re-toggle Text Message Forwarding on the iPhone (session rebuild takes minutes); still broken → human-read fallback |
+| Permission missing | "unable to open database file" (SQLITE_CANTOPEN) or "authorization denied" | Full Disk Access + restart the terminal |
+| Sync channel broken | db alive (mtime fresh) but no new SMS; yesterday's codes readable, today's missing | infrastructure questions already passed → re-toggle Text Message Forwarding on the iPhone (session rebuild takes minutes); still broken → human-read fallback |
 | Stale code | timestamp judged STALE (e.g. 24555 s old) | discard, re-read/re-trigger — never enter a stale code |
-| **chat.db iCloud sync rollback** | a just-read code (within 2 minutes, judged FRESH) later disappears from the db on re-check; the latest record rolls back hours — iCloud sync overwrites the local WAL with an older snapshot | use the code the moment it is read (read → fill → submit in one motion, no interval re-checks); if the code fails to match, re-trigger "get code" and read again — trust the live read, not the db's "latest" record |
-| **Mac Messages sync stall** | no new code within the 270 s polling window + `chat.db-wal` mtime frozen (stuck at the last activity moment); Messages process alive + APNs reachable (iPhone side excluded) — Mac local db writing stalled | `killall Messages` + `open -a Messages` restart → wal mtime updates immediately, sync recovers in seconds; the failed step then goes through a recovery round (see the Mac-side stall section) |
+| **chat.db iCloud sync rollback** | a just-read in-window code (0-240 s, judged FRESH) later disappears from the db on re-check; the latest record rolls back hours — iCloud sync overwrites the local WAL with an older snapshot | use the code the moment it is read (read → fill → submit in one motion, no interval re-checks); if the code fails to match, re-trigger "get code" and read again — trust the live read, not the db's "latest" record |
+| **Mac Messages sync stall** | no new code within the 270 s no-code window + `chat.db-wal` mtime frozen (stuck at the last activity moment); Messages process alive + APNs reachable (iPhone side excluded) — Mac local db writing stalled | `killall Messages` + `open -a Messages` restart → wal mtime updates immediately, sync recovers in seconds; the failed step then goes through a recovery round (see the Mac-side stall section) |
 
 ## ⭐ Mac-side sync stall: criteria and recovery
 
-**Scenario**: the third sync-fault class, alongside the iPhone-side faults. In one field batch, 10 of 11 code triggers succeeded and the single failure was Mac-side: after a trigger, zero new codes landed in chat.db within the 270 s polling window → the discipline recorded NO_CODE and skipped (no re-trigger), and the chain continued with its later steps.
+**Scenario**: the third sync-fault class, alongside the iPhone-side faults. In one field batch, 10 of 11 code triggers succeeded and the single failure was Mac-side: after a trigger, zero new codes landed in chat.db within the 270 s no-code window → the discipline recorded NO_CODE and skipped (no re-trigger), and the chain continued with its later steps.
 
-**Three-step criteria** (when chat.db shows no new code for 270 s, run in order):
+**Three-step criteria** (when chat.db shows no new code for 270 s from the trigger — the four polls exhaust by ~150 s, and sync-health has already asked the same-network and battery questions in that gap — run in order):
 
 1. **`chat.db-wal` mtime frozen** — stuck at the last activity moment (>5 min without update) with no new code = Mac Messages sync stall signal;
 2. **Contrast-exclude the iPhone side**: `pgrep -lf Messages` process alive + `nc -z -w 3 courier.push.apple.com 5223` APNs reachable (ICMP unreachable is Apple-normal, not a fault) — both normal → the fault is **Mac local db writing**, not the forwarding link or gateway rate-limiting;
-3. **Distinguish from the three iPhone-side classes** (low battery / away on another network / night auto power mode): those have no Mac-side wal freeze — diagnose in reverse order (Mac wal mtime first, then the phone).
+3. **Distinguish the iPhone-side classes already asked in sync-health** (low battery / away on another network / night auto power mode): those have no Mac-side wal freeze. A frozen wal with a live Messages process and reachable APNs is Mac local database writing.
 
 **Recovery (seconds)**: `killall Messages` + `open -a Messages` → the wal mtime updates immediately and sync recovers (in the field case the next code landed right after the restart and was picked up; the later steps benefited directly). After recovery: ① an in-flight chain continues (its later steps verify the link is back); ② the failed step goes through a recovery round — re-trigger "get code" → poll chat.db → fill and submit (in the field case the recovery-round code arrived within ~2 s and the submission closed the loop).
 
@@ -81,7 +93,7 @@ The pattern targets Chinese verification SMS (【sender】…验证码：NNNNNN)
 **Low battery (<20%) → iOS power mode → Text Message Forwarding suspended** — the most likely root cause of "sync works on and off" (easily misjudged as network/session issues before this was pinned down).
 
 - Signature: irregular on/off sync (follows the battery level); recovers after charging above 20%
-- Triage order: ask the iPhone battery first, then network/switches
+- For this on/off signature: ask the iPhone battery first, then network and switches
 - Pre-unattended check: confirm the iPhone battery is above 50% (or plugged in)
 - Night auto power mode: an overnight run may lose sync while the battery check passes — the iPhone can enter power mode on a timer (field case: four polls + two re-triggers + full link diagnosis all STALE through a late-night window, recovered in the morning at home). Reserve a human code-reading fallback for overnight unattended runs; budget this variable into the plan.
 

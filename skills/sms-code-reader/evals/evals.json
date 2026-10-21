@@ -30,7 +30,7 @@
     {
       "id": 3,
       "name": "mac-side-stall-recovery",
-      "prompt": "触发验证码后轮询了 270 秒，chat.db 零新码；chat.db-wal 的 mtime 冻在几分钟前不动；Messages 进程活着，APNs 端口探测也通。怎么办？要不要再触发一次验证码？",
+      "prompt": "触发验证码后已过 270 秒（多轮轮询均落空），chat.db 零新码；chat.db-wal 的 mtime 冻在几分钟前不动；Messages 进程活着，APNs 端口探测也通。怎么办？要不要再触发一次验证码？",
       "expected_output": "应识别为 Mac 侧同步停滞（第三类同步故障）：wal mtime 冻结 + Messages 进程活 + APNs 通（对照排除 iPhone 侧）= Mac 本地库写入停滞；恢复配方为 killall Messages + open -a Messages 重启（wal mtime 立即更新、同步秒级恢复）；停滞期间不重复触发验证码（首轮码可能从未入库，重复触发烧限流额度），恢复后失败步骤走恢复轮——重触发一次→轮询→填码提交。",
       "files": [],
       "assertions": [

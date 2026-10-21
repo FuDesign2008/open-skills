@@ -44,7 +44,7 @@ When no fresh code arrives, the skill MUST check the infrastructure prerequisite
 
 ### Requirement: Mac-side sync stall SHALL be diagnosed by wal-mtime freeze and recovered by restarting Messages
 
-When chat.db shows no new code for the polling window (~270 s), the skill MUST run the three-step criteria: (1) `chat.db-wal` mtime frozen at the last activity moment (>5 min without update) = Mac-side stall signal; (2) contrast-exclude the iPhone side — Messages process alive plus APNs reachable (ICMP unreachable is Apple-normal) means the fault is Mac local database writing; (3) distinguish from the iPhone-side classes (low battery / away network / night auto power mode), which have no Mac-side wal freeze. Recovery MUST be `killall Messages` + `open -a Messages` (wal mtime updates immediately, sync recovers in seconds). While stalled, the skill MUST NOT re-trigger the code (the first code may never have synced; re-triggering burns the platform's rate-limit quota); after recovery one fresh trigger lands.
+When chat.db shows no new code for ~270 s from the trigger (the timing rhythm's four polls exhaust by ~150 s; the sync-health diagnosis covers the gap), the skill MUST run the three-step criteria: (1) `chat.db-wal` mtime frozen at the last activity moment (>5 min without update) = Mac-side stall signal; (2) contrast-exclude the iPhone side — Messages process alive plus APNs reachable (ICMP unreachable is Apple-normal) means the fault is Mac local database writing; (3) distinguish from the iPhone-side classes (low battery / away network / night auto power mode), which have no Mac-side wal freeze. Recovery MUST be `killall Messages` + `open -a Messages` (wal mtime updates immediately, sync recovers in seconds). While stalled, the skill MUST NOT re-trigger the code (the first code may never have synced; re-triggering burns the platform's rate-limit quota); after recovery one fresh trigger lands.
 
 #### Scenario: Stall diagnosed and recovered
 
@@ -53,7 +53,7 @@ When chat.db shows no new code for the polling window (~270 s), the skill MUST r
 
 #### Scenario: No re-trigger while stalled
 
-- **WHEN** the polling window closes with no code and the stall is confirmed
+- **WHEN** the no-code window closes and the stall is confirmed
 - **THEN** the skill records the miss and skips without re-triggering, and after recovery performs exactly one fresh trigger
 
 ### Requirement: iCloud sync rollback SHALL be countered by immediate use and re-trigger
