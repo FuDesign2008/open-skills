@@ -40,23 +40,23 @@ A file the user asked to keep is a deliverable. It stays in the workspace.
 
 ## Stop
 
-After preserve, stop each background process or service this session started for a task that is now finished. Confirm the process id is gone, or the port that process bound is free.
+After preserve, stop each background process or service this session started for a task that is now finished. Stop that recorded process id. The port that process bound only checks that same process. A different process now bound to the port stays running. Confirm the recorded process id is gone. The browser that holds the pages stays running. Its unused pages are closed in the next step.
 
 A service the user asked to keep stays running. The report names it and a stop method.
 
 A process that was already running before this session stays running.
 
-Confirm the target by its process id, or by the port that process bound. Search text that also appears on the check command line identifies the checker. That hit is not the target.
+Search text that also appears on the check command line identifies the checker. That hit is not the target.
 
 ## Pages
 
-After the stop pass, close browser pages this session opened once the finished task no longer needs them. Confirm each closed page is gone.
+After the stop pass, close browser pages this session opened once the finished task no longer needs them. Confirm each closed page is gone. Closing those pages leaves the browser running.
 
 A page the user asked to keep stays open. The report names it and how to close it.
 
-A page that was already open before this session, or that the user opened, stays open. The agent does not quit the browser while those pages remain.
+A page that was already open before this session, that the user opened, or whose origin is unclear stays open.
 
-When several pages were opened for one task, list the pages to keep and close the rest together. Pages only visited on the way to the result are not kept.
+When several pages were opened for one task, list the session-opened pages to keep and close the other session-opened pages together. A page only visited on the way to the result is not kept. Pages named in the previous paragraph stay open.
 
 ## Delete
 
@@ -66,19 +66,12 @@ The preserve copy sits outside the delete set.
 
 ## Report
 
-```
-Preserved: <paths, or none>
-Stopped: <process id or port, or none>
-Closed pages: <pages, or none>
-Deleted: <paths, or none>
-Left in place: <what> — <why> — <how to remove>
-Hand off: <owning skill> — <what is still open>
-```
+Report fields are in [reference.md](reference.md).
 
 Claim a clean resource closeout only when no session-started service, no session-opened page the finished task no longer needs, and no disposable temp file remain. A kept service or page is a "Left in place" line, not a clean closeout.
 
 Name the owner when that work is still open, and leave the work to that skill:
 
-- An unmerged result goes to `merge-discipline`.
-- A branch menu or worktree removal goes to `feature-branch-closeout`.
+- A requested merge goes to `merge-discipline`.
+- A branch that is still unmerged, the branch menu, or worktree removal goes to `feature-branch-closeout`.
 - A retrospective goes to `learn-and-improve`.

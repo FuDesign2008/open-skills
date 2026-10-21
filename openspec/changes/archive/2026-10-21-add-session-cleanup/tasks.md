@@ -5,7 +5,7 @@
 
 ## 2. Skill
 
-- [x] 2.1 Add `skills/session-cleanup/SKILL.md` (`user-invocable: true`, English body, single-line description) implementing inventory, classify, preserve, stop, delete, and report
+- [x] 2.1 Add `skills/session-cleanup/SKILL.md` (`user-invocable: true`, English body, single-line description) and `reference.md` implementing inventory, classify, preserve, stop, close unused pages, delete, and report
 - [x] 2.2 Add `skills/session-cleanup/evals/evals.json` with prompt cases for the same behaviors
 - [x] 2.3 Re-run the contract test and observe it pass
 

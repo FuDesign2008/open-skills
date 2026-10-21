@@ -12,15 +12,15 @@ End-of-conversation resource closeout. Inventory what this session created, pres
 
 #### Scenario: Explicit cleanup request
 
-- **WHEN** the user asks to clean temp files or stop background services
+- **WHEN** the user asks to clean temp files, stop background services, or close unused pages
 - **THEN** the agent completes the inventory and the later actions in this spec before claiming the session is clean
 
 #### Scenario: Exit with leftovers
 
-- **WHEN** the agent is about to end a conversation in which it created a temp file or started a background service
+- **WHEN** the agent is about to end a conversation in which it created a temp file, started a background service, or opened a browser page
 - **THEN** it runs this skill before the closing message
 
-### Requirement: session-cleanup SHALL inventory and classify before any stop or delete
+### Requirement: session-cleanup SHALL inventory and classify before any stop, close, or delete
 
 Before stopping a process, closing a page, or deleting a path, the agent MUST list the candidates and classify each as unique uncommitted content, a session-started background service, a session-opened browser page, a disposable temp file, or pre-existing user state. A path, process, or page whose origin is unclear MUST be classified as unique uncommitted content.
 
@@ -61,12 +61,12 @@ The agent MUST NOT discard, reset, or delete unique uncommitted content unless t
 
 After unique content is preserved, the agent MUST stop background processes and services that this session started for a task that is now finished, then confirm each one is no longer running. A service the user asked to keep MUST stay up and appear in the leftover report with a stop method. The agent MUST NOT stop a process this session did not start.
 
-A liveness check MUST identify the target process itself. A match whose only evidence is search text that also appears in the checker's own command line MUST NOT count as the target still running.
+A liveness check MUST identify the target process itself. A match whose only evidence is search text that also appears in the checker's own command line MUST NOT count as the target still running. The agent stops the recorded process id. The bound port only checks that same process. A different process now bound to the port stays running. The browser that holds the pages stays running. Unused pages are closed in the page step, and that browser process is not stopped.
 
 #### Scenario: Finished server is stopped
 
 - **WHEN** this session started a server for a task that is now finished and the user did not ask to keep it
-- **THEN** the agent stops it and confirms the process or its port is free
+- **THEN** the agent stops that recorded process id and confirms that process id is gone
 
 #### Scenario: Checker does not count itself
 
@@ -78,26 +78,36 @@ A liveness check MUST identify the target process itself. A match whose only evi
 - **WHEN** a background process was already running before this session
 - **THEN** the agent does not stop it
 
+#### Scenario: Reused port stays with its new process
+
+- **WHEN** the port recorded for this session's process is now held by a different process id
+- **THEN** the agent does not stop that other process
+
+#### Scenario: Session browser stays running
+
+- **WHEN** this session started the browser that shows the pages
+- **THEN** the agent leaves that browser process running and closes only the unused session pages
+
 ### Requirement: session-cleanup SHALL close browser pages this session opened and no longer needs
 
-After services are stopped, the agent MUST close browser pages this session opened for a finished task when the user did not ask to keep them, and MUST confirm each closed page is gone. A page the user asked to keep MUST stay open and appear in the leftover report with a close method. A page that was already open before this session, or that the user opened, MUST stay open. The agent MUST NOT quit the whole browser while those pages remain.
+After services are stopped, the agent MUST close browser pages this session opened for a finished task when the user did not ask to keep them, and MUST confirm each closed page is gone. Closing pages leaves the browser running. A page the user asked to keep MUST stay open and appear in the leftover report with a close method. A page that was already open before this session, that the user opened, or whose origin is unclear MUST stay open. Pages this session only visited on the way to a result are closed with the other unused session pages, and that close set does not include the pages that stay open.
 
 #### Scenario: Unused page opened this session is closed
 
 - **WHEN** this session opened a page only to finish a task and the user did not ask to keep it
-- **THEN** the agent closes that page and confirms it is gone
+- **THEN** the agent closes that page, confirms it is gone, and leaves the browser running
 
 #### Scenario: User page stays open
 
-- **WHEN** a page was already open before this session or the user opened it
-- **THEN** the agent leaves that page open and does not quit the browser
+- **WHEN** a page was already open before this session, the user opened it, or its origin is unclear
+- **THEN** the agent leaves that page open and leaves the browser running
 
 #### Scenario: Kept page is named
 
 - **WHEN** the user asked to keep a page this session opened
 - **THEN** the report names the page and a close method
 
-### Requirement: session-cleanup SHALL delete disposable temp files after stops
+### Requirement: session-cleanup SHALL delete disposable temp files after unused pages are closed
 
 After unused session pages are closed, the agent MUST delete temp files and directories that this session created and that are not the task's deliverable. Deliverables and pre-existing user files MUST remain.
 
@@ -124,9 +134,14 @@ The closing report MUST name each item left in place, why it stayed, and how to 
 
 The skill MUST NOT merge, present the feature-branch closeout menu, remove a worktree, or run a retrospective. When one of those is still open, the report MUST name the owning skill: `merge-discipline`, `feature-branch-closeout`, or `learn-and-improve`.
 
+#### Scenario: Requested merge is only named
+
+- **WHEN** the user asks this skill to merge a branch
+- **THEN** the report names `merge-discipline` and the agent does not merge
+
 #### Scenario: Unmerged branch is only named
 
-- **WHEN** a feature branch from this session is still unmerged
+- **WHEN** a feature branch from this session is still unmerged and the user did not ask to merge
 - **THEN** the report names `feature-branch-closeout` and the agent does not merge
 
 ### Requirement: session-cleanup package SHALL match repo skill rules
