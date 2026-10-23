@@ -11,7 +11,7 @@
 | [git-worktree-multi-repo-local-verify-case.md](git-worktree-multi-repo-local-verify-case.md) | 贡献者 / Skill 作者 | 多仓 git worktree 本地验证真案例：兄弟路径断裂、联调分层、对 `git-worktree-discipline` 的启示 |
 | [git-release-finish-multi-repo-analysis.md](git-release-finish-multi-repo-analysis.md) | 贡献者 / Skill 作者 | 多仓 release 收尾实战（5 仓 × 2 版本、8 个执行单元）：4 项改进建议 —— `merge_status` 卡住处置、ff 大规模冲突的 squash 变体、冲突子集差分验证、Phase 0 正则误报；附分支识别陷阱与 squash 路径的内容等价性验证手法 |
 | [merge-coverage-gate-bypass-incident.md](merge-coverage-gate-bypass-incident.md) | 贡献者 / Skill 作者 | 合并前覆盖率门控被绕过的事件复盘 |
-| [concept-explanation-dual-track.md](concept-explanation-dual-track.md) | 贡献者 / Skill 作者 | 双轨讲解法（理性+感性认识）方法论与两个脱敏 IPC 问答范例；`explain-simply` skill 的素材来源 |
+| [concept-explanation-dual-track.md](concept-explanation-dual-track.md) | 贡献者 / Skill 作者 | 双轨讲解法（理性+感性认识）方法论与两个脱敏 IPC 问答范例；`explain-clearly` skill 的素材来源 |
 | [goal-driven-intake-depth-analysis.md](goal-driven-intake-depth-analysis.md) | 贡献者 / Skill 作者 | 真实案例对照分析：goal-driven-* 与 solve-workflow 的核对粒度差距（6 个结构性根因 + 5 条改进建议）；granularity-alignment 变更的素材来源 |
 | [goal-driven-queue-child-question-leak-incident.md](goal-driven-queue-child-question-leak-incident.md) | 贡献者 / Skill 作者 | v2.14 首战复盘：入队深谈后子运行仍泄漏提问（5 根因 + 6 建议，stage-exit-policy 变更的素材来源；与上文互补：深度不足 vs 深度足够仍泄漏） |
 

@@ -94,7 +94,7 @@ open-skills/
 | jira-wiki-markup | Jira 工具 | 无（Referenced by Jira comment writers via frontmatter `dependencies`） |
 | jira-read | Jira 工具 | 无 |
 | typescript-check | 工具 | 无 |
-| explain-simply | 工具 | 无（与全局第三方 `teach` 靠 description 边界区分：概念问答归 explain-simply，上机教学归 teach） |
+| explain-clearly | 工具 | 无（与全局第三方 `teach` 靠 description 边界区分：概念问答归 explain-clearly，上机教学归 teach） |
 | article-writer | 内容创作 | 无 |
 | xquik-social-data | 数据采集 | 无 |
 | essence-diagnosis | 工作流 | multi-agent-debate |

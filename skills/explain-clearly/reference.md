@@ -1,4 +1,4 @@
-# explain-simply — Worked Examples
+# explain-clearly — Worked Examples
 
 Two complete examples calibrated from real Q&A sessions (de-identified: project details replaced with generic placeholders). Example 1 is a "what is X" mechanism question; Example 2 is a "can A talk to B" topology question.
 
@@ -21,7 +21,7 @@ Design context: in this app, an offline-rescue feature deliberately writes backu
 
 **4. Key design implication**: when a feature must survive network failure, route it over IPC and have the main process write locally — do not trust an HTTP endpoint with last-resort persistence.
 
-### Intuitive track
+### Auxiliary analogy
 
 Picture each process as a **separate house**: the walls are memory isolation; no house can see inside another; cooperation needs dedicated lines.
 
@@ -72,7 +72,7 @@ case 'saveNoteContent': { /* persist */ }
 
 **4. Key design implication**: this is why the rescue path is "renderer → main writes directly" rather than "renderer → server": (1) the renderer cannot reach the server without two hops; (2) the server may be entirely hung (the suspected root cause), so relaying through it could hang too. Having main handle the write itself removes both risks at once.
 
-### Intuitive track
+### Auxiliary analogy
 
 Picture three people, where **main is the switchboard operator**: renderer and server don't know each other and have no direct-dial numbers — every call goes through the operator, who transfers it.
 
@@ -82,6 +82,6 @@ In the rescue scenario, the server may already be "unreachable" (hung) — waiti
 
 ## Calibration notes
 
-- Depth: a broad "what is X" question gets the full 4+2 structure; a narrower question ("can A do B") still gets both tracks but leads with the direct answer.
+- Depth: a broad "what is X" question gets the four rational steps, then the auxiliary analogy. A narrower question ("can A do B") leads with the direct answer and still includes both.
 - Localization: when the user's codebase contains the concept, replace the generic table/snippets above with real files and lines read in-session — the structure stays, the evidence localizes.
 - Visuals: the channel table in Example 1 and the ASCII topology in Example 2 are instances of the skill's visual-aids rule — a table for the multi-channel mapping, a diagram for the relay topology. Copy this shape: match the visual form to what the concept is.
