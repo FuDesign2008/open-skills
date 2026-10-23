@@ -2,7 +2,7 @@
 name: explain-clearly
 version: "1.0.1"
 user-invocable: true
-description: "Explain a concept clearly in the shape the subject has. An analogy is only auxiliary. When the user has not named a form, ask once among the current session, HTML, Markdown, and plain text, and recommend HTML. Use whenever the user asks 「X 是什么」「为什么需要 X」「A 和 B 能不能/怎么通信」「给我讲讲 X」「用大白话解释 X」「帮我理解 X」「容易看懂」, \"what is X\", \"how does X work\", \"why does X exist\", \"explain X\" about mechanisms, architecture, protocols, or processes — even if they never say \"explain\". Do NOT use for hands-on tutorials (teach), marketing articles (article-writer), or design-doc rewriting (tech-review-doc)."
+description: "Explain a concept clearly in the shape the subject has. Use whenever the user asks 「X 是什么」「为什么需要 X」「A 和 B 能不能/怎么通信」「给我讲讲 X」「用大白话解释 X」「帮我理解 X」「容易看懂」, \"what is X\", \"how does X work\", \"why does X exist\", \"explain X\" about mechanisms, architecture, protocols, or processes — even if they never say \"explain\". Do NOT use for hands-on tutorials (teach), marketing articles (article-writer), or design-doc rewriting (tech-review-doc)."
 ---
 
 # Explain Clearly
@@ -30,7 +30,7 @@ When the user has already named a form, use that form. When they have not, ask o
 
 ## What every explanation contains
 
-Name the subject in one sentence under the title. Then give the causally relevant account in the shape under Visuals. Do not add four prose sections.
+Name the subject in one sentence under the title. The shape under Visuals is the whole explanation.
 
 Include a fact only when the picture cannot show it, when it is evidence for that cause, or when the user is choosing an action.
 
@@ -42,12 +42,12 @@ Include a fact only when the picture cannot show it, when it is evidence for tha
 
 Apply the first match. Draw only relationships that exist.
 
-1. A role-handoff flow: the diagram is the explanation and the diagram leads the page. Distinguish the roles, show order, and put the handed-off items on the diagram. A comparison table does not satisfy that flow. Do not also require the step player. Put the sentence the picture cannot show next to that step of the diagram.
+1. A role-handoff flow: the diagram is the explanation and the diagram leads the page. Distinguish the roles, show order, and put the handed-off items on the diagram. A comparison table does not satisfy that flow. Do not also require the step player. Put the sentence the picture cannot show next to the part of the diagram it belongs to.
 2. The subject happens step by step in time: lead with those steps. HTML shows one step at a time, opens on the first step, provides previous and next, and does not autoplay. HTML may contain one inline script, and that script only operates the player. Markdown, plain text, and the current session show the same steps as a numbered sequence and do not add those controls. A position mark is not a message. Each step shows only what is true at that moment. Put the sentence the picture cannot show next to that step. Put the code that proves a step on that step.
-3. Comparison, mapping, topology, or flow, and not time-ordered: one static diagram leads. Comparison or mapping uses a table, one row per item. Put the sentence the picture cannot show next to that step of the diagram.
+3. Comparison or mapping, and not time-ordered: one table leads, one row per item. Topology or flow, and not time-ordered: one static diagram leads. Put the sentence the picture cannot show next to that table or diagram.
 4. No such shape: leave the visual out. A few sentences of the relevant cause are the explanation.
 
-HTML and Markdown include that visual. Plain text stays prose. The current session uses a numbered sequence when the subject is time-ordered, and otherwise a table or a text diagram in the chat.
+HTML and Markdown include that visual when the concept has a shape. Plain text stays prose. The current session uses the same first match: a diagram for a role-handoff flow, a numbered sequence only when the subject is time-ordered and not a role-handoff flow, a table or diagram for the other shapes, and no visual when the concept has no shape.
 
 ## Deliver
 
@@ -56,10 +56,10 @@ Create the workspace-root directory `.explain-clearly/` when a file form needs i
 Do not edit the workspace gitignore.
 
 - **current session** — put the explanation in the chat. Include the visual when the concept has a shape. Write no file.
-- **HTML** — write `.explain-clearly/<name>.html` in the user's language. Read `assets/explanation-shell.html` as a reference for a page: inline CSS, and text written as text. The example sections are not a required outline. The shell itself has no script. The written page has no script except one inline script for a time-ordered player. The English words in that file are examples, because this skill is written in English. Omit the visual block when the concept has no shape. Open that local HTML file in the browser. In the chat, give the file path and ask the user to view the page. Do not paste the full explanation. If the browser cannot be opened, still give the file path.
+- **HTML** — write `.explain-clearly/<name>.html` in the user's language. Read `assets/explanation-shell.html` as a reference for a page: inline CSS, and text written as text. The page is a title, one sentence under the title, and the visual for that shape. The shell itself has no script. The written page has no script except one inline script for a time-ordered player. The English words in that file are examples, because this skill is written in English. Omit the visual block when the concept has no shape. Open that local HTML file in the browser. In the chat, give the file path and ask the user to view the page. Do not paste the full explanation. If the browser cannot be opened, still give the file path.
 - **Markdown** — write `.explain-clearly/<name>.md` in the same shape as the visuals rules. Include the visual when the concept has a shape. In the chat, give the file path and do not paste the full explanation.
 - **plain text** — write `.explain-clearly/<name>.txt` as prose only. In the chat, give the file path and do not paste the full explanation.
 
 ## Worked examples
 
-Two calibrated examples live in [reference.md](reference.md). Read them to match depth and to see how a generic example is labeled when the codebase has no footprint. Do not copy their four headings into every explanation.
+Two calibrated examples live in [reference.md](reference.md). Read them to match depth and to see how a generic example is labeled when the codebase has no footprint.

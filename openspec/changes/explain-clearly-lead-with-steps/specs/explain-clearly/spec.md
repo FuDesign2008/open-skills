@@ -35,11 +35,25 @@ A concept answer MUST name the subject in one sentence. It MUST then give the ca
 #### Scenario: Concept question leads with the rational track
 
 - **WHEN** the user asks what a mechanism is
-- **THEN** the answer names the subject in one sentence and gives the relevant causes, and does not add four prose sections
+- **THEN** the answer names the subject in one sentence and gives the relevant causes in the shape the subject requires
+
+### Requirement: explain-clearly evidence SHALL be authentic
+
+File, line, and API evidence MUST come from files actually read in the session. When the concept has no footprint in the current codebase, the explanation MUST use a canonical public example labeled as such, next to the step or part it proves. When no canonical public example is available, the explanation MUST say that no concrete example is available. Invented paths, line numbers, or APIs are a hard failure.
+
+#### Scenario: No codebase footprint
+
+- **WHEN** the asked concept does not appear in the current codebase
+- **THEN** the explanation uses a labeled public example next to the part it proves, instead of fabricated project evidence
+
+#### Scenario: No canonical example available
+
+- **WHEN** the concept has no codebase footprint and no canonical public example serves it
+- **THEN** the explanation says that no concrete example is available
 
 ### Requirement: explain-clearly SHALL draw a visual only when the concept has a shape
 
-When the concept has a comparison, a multi-item mapping, or a topology or flow, and it is not a time-ordered mechanism and not a role-handoff flow, the HTML and Markdown forms MUST lead with one static diagram of the real relationships. The sentence the picture cannot show MUST sit next to that diagram. Plain text MUST stay prose. A concept with no such shape MUST NOT get a forced visual. A visual MUST NOT invent relationships. A time-ordered mechanism follows the step-sequence rule instead of this static diagram.
+When the concept has a comparison or a multi-item mapping, and it is not a time-ordered mechanism and not a role-handoff flow, the HTML and Markdown forms MUST lead with one table, one row per item. When the concept has a topology or flow, and it is not time-ordered and not a role-handoff flow, the HTML and Markdown forms MUST lead with one static diagram of the real relationships. The sentence the picture cannot show MUST sit next to that table or diagram. Plain text MUST stay prose. A concept with no such shape MUST NOT get a forced visual. A visual MUST NOT invent relationships. A time-ordered mechanism follows the step-sequence rule instead of this table or diagram.
 
 #### Scenario: Topology gets a figure
 
@@ -51,9 +65,14 @@ When the concept has a comparison, a multi-item mapping, or a topology or flow, 
 - **WHEN** the concept has no comparison, mapping, or flow
 - **THEN** the answer omits a visual
 
+#### Scenario: Comparison uses a table
+
+- **WHEN** the user asks how two channels differ, the subject is not time-ordered, and the form is HTML
+- **THEN** the page leads with one table, one row per item
+
 ### Requirement: explain-clearly SHALL open HTML and point at its path
 
-After writing HTML, the agent MUST open that local file in the browser and MUST tell the user to view it, including the file path. The bundled shell is a reference for a page. Its example sections are not a required outline. The written page MUST be in the user's language and MUST write text as text. The written page MUST contain no script except one inline script whose only effect is the previous-step and next-step player, and only when the subject is time-ordered. If the browser cannot be opened, the path MUST still be given. The chat for HTML MUST NOT repeat the full explanation.
+After writing HTML, the agent MUST open that local file in the browser and MUST tell the user to view it, including the file path. The bundled shell is a reference for a page. Its page is a title, one sentence under the title, and the visual for that shape. The written page MUST be in the user's language and MUST write text as text. The written page MUST contain no script except one inline script whose only effect is the previous-step and next-step player, and only when the subject is time-ordered. If the browser cannot be opened, the path MUST still be given. The chat for HTML MUST NOT repeat the full explanation.
 
 #### Scenario: HTML opens and the chat points at the path
 

@@ -14,6 +14,10 @@
 - [x] 3.1 Change the contract test so it requires the shape-first explanation and rejects a mandatory four-section outline. Run it and verify the new assertions fail before the skill text changes.
 - [x] 3.2 Update the skill, the shell comment, the delta spec, the proposal, and the design so the shape is the explanation and four prose sections are not required. Re-run the contract test, the project suite, and strict validation.
 
+## 4. Review fixes
+
+- [x] 4.1 Align the evidence requirement, the table-versus-diagram split, the current-session first match, the shell page, the worked examples, and the description with the shape-first explanation. Re-run the contract test, the project suite, and strict validation.
+
 ## Workflow follow-up
 
 - Archive only after the user confirms. Auto mode stops before that confirmation.
