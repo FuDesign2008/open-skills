@@ -54,3 +54,7 @@ No data migration. Rollback is reverting the skill text and the contract tests. 
 ## Open Questions
 
 None.
+
+## Verification Notes
+
+【覆盖率门控跳过】工程偏好 coverage-gate: never。时间：2026-10-23T12:05:00Z。决策人：项目配置。

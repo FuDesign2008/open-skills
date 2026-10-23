@@ -141,3 +141,12 @@ Phase 8 SHALL ensure `tasks.md` is complete, delta specs represent the implement
 
 - **WHEN** `opsx-solve-workflow` loads and `competitive-research` is not installed
 - **THEN** the workflow aborts and names the missing skill and an install command
+
+### Requirement: opsx-solve-workflow queue child SHALL report three facts and not write HTML
+
+When opsx-solve-workflow runs as a queue child, the completion report MUST include the problem, the cause, and the completed fix. The workflow MUST NOT write the review HTML.
+
+#### Scenario: Queue child report carries the three facts
+
+- **WHEN** opsx-solve-workflow finishes as a queue child
+- **THEN** the completion report includes the problem, the cause, and the completed fix, and this run does not write the HTML page
