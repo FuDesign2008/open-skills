@@ -45,6 +45,7 @@ test("explain-clearly contract", () => {
   assert.match(skill, /role-handoff flow/);
   assert.match(skill, /diagram is the explanation/);
   assert.match(skill, /comparison table does not satisfy/);
+  assert.match(skill, /put the diagram section before the four prose sections/);
   assert.doesNotMatch(skill, /xdg-open|open -a/);
   assert.doesNotMatch(skill, /copy `assets\/explanation-shell\.html`/);
 
@@ -52,4 +53,6 @@ test("explain-clearly contract", () => {
   assert.match(shell, /Reference layout only/);
   assert.match(shell, /<style/i);
   assert.doesNotMatch(shell, /<script/i);
+  assert.match(shell, /move this section before the four prose sections/);
+  assert.match(shell, /A comparison table does not fill this slot/);
 });

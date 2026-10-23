@@ -35,7 +35,7 @@ The dispatcher follows `explain-clearly` and names HTML, so the form question do
 
 ### The diagram rule is a lead, not a second visual system
 
-In `explain-clearly`, when the subject is roles handing work onward, the diagram is the first visual: distinct roles, order, and the handed-off items. A comparison table may sit beside it and does not satisfy the flow. A concept with no shape still gets no diagram. Ordinary explanations still ask for a form when none was named.
+In `explain-clearly`, when the subject is roles handing work onward, the diagram is the first visual and it comes before the four prose sections: distinct roles, order, and the handed-off items. A comparison table may sit beside it and does not satisfy the flow. A concept with no shape still gets no diagram. Ordinary explanations still ask for a form when none was named.
 
 ### Tests lock sentences, not rendered pages
 

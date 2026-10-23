@@ -50,7 +50,7 @@ Add a visual when the concept has a comparison, a multi-item mapping, or a topol
 - Topology, layering, or flow → a diagram.
 - No such shape → leave the visual out.
 
-When the subject is a role-handoff flow, the diagram is the explanation and it leads the page. Distinguish the roles, show order, and put the handed-off items on the diagram. A comparison table does not satisfy that flow.
+When the subject is a role-handoff flow, the diagram is the explanation and it leads the page: put the diagram section before the four prose sections. Distinguish the roles, show order, and put the handed-off items on the diagram. A comparison table does not satisfy that flow.
 
 HTML and Markdown include that visual. Plain text stays prose. The current session uses a table or a text diagram in the chat.
 
@@ -61,8 +61,8 @@ Create the workspace-root directory `.explain-clearly/` when a file form needs i
 Do not edit the workspace gitignore.
 
 - **current session** — put the explanation in the chat. Include the visual when the concept has a shape. Write no file.
-- **HTML** — write `.explain-clearly/<name>.html` in the user's language. Read `assets/explanation-shell.html` as a reference for structure: the same sections, inline CSS, no script, and text written as text. The English words in that file are examples, because this skill is written in English. Omit the visual block when the concept has no shape. Open that local HTML file in the browser. In the chat, give the file path and ask the user to view the page. Do not paste the full explanation. If the browser cannot be opened, still give the file path.
-- **Markdown** — write `.explain-clearly/<name>.md` with the same sections. Include the visual when the concept has a shape. In the chat, give the file path and do not paste the full explanation.
+- **HTML** — write `.explain-clearly/<name>.html` in the user's language. Read `assets/explanation-shell.html` as a reference for structure: the same sections, inline CSS, no script, and text written as text. For a role-handoff flow, put the diagram section before the four prose sections. The English words in that file are examples, because this skill is written in English. Omit the visual block when the concept has no shape. Open that local HTML file in the browser. In the chat, give the file path and ask the user to view the page. Do not paste the full explanation. If the browser cannot be opened, still give the file path.
+- **Markdown** — write `.explain-clearly/<name>.md` with the same sections. For a role-handoff flow, put the diagram section before the four prose sections. Include the visual when the concept has a shape. In the chat, give the file path and do not paste the full explanation.
 - **plain text** — write `.explain-clearly/<name>.txt` as prose only. In the chat, give the file path and do not paste the full explanation.
 
 ## Worked examples
