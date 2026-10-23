@@ -50,6 +50,8 @@ Add a visual when the concept has a comparison, a multi-item mapping, or a topol
 - Topology, layering, or flow → a diagram.
 - No such shape → leave the visual out.
 
+When the subject is a role-handoff flow, the diagram is the explanation and it leads the page. Distinguish the roles, show order, and put the handed-off items on the diagram. A comparison table does not satisfy that flow.
+
 HTML and Markdown include that visual. Plain text stays prose. The current session uses a table or a text diagram in the chat.
 
 ## Deliver

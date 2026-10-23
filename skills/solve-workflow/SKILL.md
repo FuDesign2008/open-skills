@@ -335,6 +335,8 @@ If stage 5's plan or stage 6's execution report involves testing (unit tests, in
 
 Follow `staged-review-flow`'s verification-report honesty rule and `completion-evidence-discipline` (fresh current-turn evidence before pass claims) to label each result.
 
+When this turn's dispatch inlines a frozen task card, the verification report includes the problem, the cause, and the completed fix, and this run does not write the HTML page.
+
 ### Output Format
 
 Output format is in [reference.md](reference.md) § Stage 7 — Verification Results.

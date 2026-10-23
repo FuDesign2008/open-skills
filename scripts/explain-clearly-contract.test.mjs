@@ -42,6 +42,9 @@ test("explain-clearly contract", () => {
   assert.match(skill, /reference for structure/);
   assert.match(skill, /user's language/);
   assert.match(skill, /file path/);
+  assert.match(skill, /role-handoff flow/);
+  assert.match(skill, /diagram is the explanation/);
+  assert.match(skill, /comparison table does not satisfy/);
   assert.doesNotMatch(skill, /xdg-open|open -a/);
   assert.doesNotMatch(skill, /copy `assets\/explanation-shell\.html`/);
 
