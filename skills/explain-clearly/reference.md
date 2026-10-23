@@ -82,6 +82,6 @@ In the rescue scenario, the server may already be "unreachable" (hung) — waiti
 
 ## Calibration notes
 
-- Depth: a broad "what is X" question gets the four rational steps, then the auxiliary analogy. A narrower question ("can A do B") leads with the direct answer and still includes both.
+- Depth: match the amount of cause the question needs. A broad "what is X" still names the subject and then gives the relevant mechanism. Do not copy the four headings below into every explanation. A narrower question ("can A do B") leads with the direct answer.
 - Localization: when the user's codebase contains the concept, replace the generic table/snippets above with real files and lines read in-session — the structure stays, the evidence localizes.
 - Visuals: the channel table in Example 1 and the ASCII topology in Example 2 are instances of the skill's visual-aids rule — a table for the multi-channel mapping, a diagram for the relay topology. Copy this shape: match the visual form to what the concept is.
