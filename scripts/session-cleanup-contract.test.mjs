@@ -52,6 +52,9 @@ test("session-cleanup contract", () => {
   assert.ok(pages < remove);
   assert.ok(remove < reportSection);
 
+  const deleteSection = skill.slice(remove, reportSection);
+  assert.match(deleteSection, /waits for the user to confirm the classified delete list/);
+
   assert.match(skill, /git diff <integration> -- <path>/);
   assert.match(skill, /git show <integration>:<path>/);
   assert.match(skill, /command line/);

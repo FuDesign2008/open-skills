@@ -1,6 +1,6 @@
 ---
 name: session-cleanup
-version: "1.0.0"
+version: "1.1.0"
 user-invocable: true
 description: "End a finished conversation by inventorying temp files, background services, and browser pages this session opened, keeping unique uncommitted work, stopping those services, closing unused pages, and deleting disposable temps. Use for 「清理临时文件」「关闭后台服务」「关闭网页」「清理不用的网页」「会话收尾」「结束前清理」「会话清理」 / session cleanup, clean temp files, stop background services, close unused pages, including when the agent is about to finish and those resources are still around. Do NOT use for merge (merge-discipline), the branch closeout menu or worktree removal (feature-branch-closeout), or a retrospective (learn-and-improve)."
 ---
@@ -60,7 +60,7 @@ When several pages were opened for one task, list the session-opened pages to ke
 
 ## Delete
 
-After pages are closed, delete temp files and directories this session created that are not the deliverable. A one-shot download used as a working input goes away once the task no longer needs it. Pre-existing user files stay. Unique uncommitted content stays.
+After pages are closed, list every file proposed for deletion, grouped by class. The delete pass waits for the user to confirm the classified delete list. After that confirmation, delete temp files and directories this session created that are not the deliverable. A one-shot download used as a working input goes away once the task no longer needs it and the user has confirmed. A file the user declines to delete stays and is reported as left in place. Pre-existing user files stay. Unique uncommitted content stays.
 
 The preserve copy sits outside the delete set.
 
