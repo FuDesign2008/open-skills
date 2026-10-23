@@ -308,6 +308,8 @@ Verification must cover three layers:
 
 Verification conclusions must be based on commands you ran and personally read the output of this round — never report "a scenario was designed" as "passed".
 
+When this turn's dispatch inlines a frozen task card, the verification report includes the problem, the cause, and the completed fix, and this run does not write the HTML page.
+
 Output format: see [reference.md](reference.md)「Stage 7 Check & Verify」.
 
 > Label each result per `staged-review-flow`'s verification-report honesty rule and `completion-evidence-discipline` (no pass claims without fresh current-turn evidence).
