@@ -6,6 +6,10 @@ const root = new URL("..", import.meta.url);
 const skillUrl = new URL("skills/explain-clearly/SKILL.md", root);
 const shellUrl = new URL("skills/explain-clearly/assets/explanation-shell.html", root);
 const referenceUrl = new URL("skills/explain-clearly/reference.md", root);
+const specUrl = new URL(
+  "openspec/changes/explain-clearly-lead-with-steps/specs/explain-clearly/spec.md",
+  root,
+);
 
 test("explain-clearly skill file exists", () => {
   assert.equal(fs.existsSync(skillUrl), true);
@@ -93,4 +97,20 @@ test("explain-clearly leads a time-ordered mechanism with steps", () => {
   const reference = fs.readFileSync(referenceUrl, "utf8");
   assert.doesNotMatch(reference, /One-sentence definition|Key design implication|Rational track|four headings/);
   assert.match(reference, /one row per item/);
+});
+
+test("a role-handoff flow does not also lead with numbered steps", () => {
+  const spec = fs.readFileSync(specUrl, "utf8");
+  assert.match(
+    spec,
+    /When the subject is time-ordered and is not a role-handoff flow, Markdown MUST lead with the numbered steps/,
+  );
+  assert.match(
+    spec,
+    /happens step by step in time, is not a role-handoff flow, and the form is Markdown/,
+  );
+  assert.match(
+    spec,
+    /happens step by step in time, is not a role-handoff flow, and the form is HTML/,
+  );
 });

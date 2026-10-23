@@ -17,6 +17,7 @@
 ## 4. Review fixes
 
 - [x] 4.1 Align the evidence requirement, the table-versus-diagram split, the current-session first match, the shell page, the worked examples, and the description with the shape-first explanation. Re-run the contract test, the project suite, and strict validation.
+- [x] 4.2 Keep numbered steps off a role-handoff flow in the time-ordered scenarios and in the Markdown requirement. Re-run the contract test and strict validation.
 
 ## Workflow follow-up
 

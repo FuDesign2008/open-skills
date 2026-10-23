@@ -8,17 +8,17 @@ When the subject happens step by step in time and is not a role-handoff flow, th
 
 #### Scenario: HTML opens on the first step
 
-- **WHEN** the subject happens step by step in time and the form is HTML
+- **WHEN** the subject happens step by step in time, is not a role-handoff flow, and the form is HTML
 - **THEN** the page leads with one step at a time, opens on the first step, and does not autoplay
 
 #### Scenario: Other forms use numbered steps
 
-- **WHEN** the subject happens step by step in time and the form is Markdown, plain text, or the current session
+- **WHEN** the subject happens step by step in time, is not a role-handoff flow, and the form is Markdown, plain text, or the current session
 - **THEN** the explanation leads with the same steps as a numbered sequence and has no previous or next controls
 
 #### Scenario: A static diagram does not replace the steps
 
-- **WHEN** the subject happens step by step in time and the page also includes a diagram
+- **WHEN** the subject happens step by step in time, is not a role-handoff flow, and the page also includes a diagram
 - **THEN** the numbered or stepped sequence is still present and still leads
 
 #### Scenario: A role-handoff flow keeps its diagram
@@ -53,7 +53,7 @@ File, line, and API evidence MUST come from files actually read in the session. 
 
 ### Requirement: explain-clearly SHALL draw a visual only when the concept has a shape
 
-When the concept has a comparison or a multi-item mapping, and it is not a time-ordered mechanism and not a role-handoff flow, the HTML and Markdown forms MUST lead with one table, one row per item. When the concept has a topology or flow, and it is not time-ordered and not a role-handoff flow, the HTML and Markdown forms MUST lead with one static diagram of the real relationships. The sentence the picture cannot show MUST sit next to that table or diagram. Plain text MUST stay prose. A concept with no such shape MUST NOT get a forced visual. A visual MUST NOT invent relationships. A time-ordered mechanism follows the step-sequence rule instead of this table or diagram.
+When the concept has a comparison or a multi-item mapping, and it is not a time-ordered mechanism and not a role-handoff flow, the HTML and Markdown forms MUST lead with one table, one row per item. When the concept has a topology or flow, and it is not time-ordered and not a role-handoff flow, the HTML and Markdown forms MUST lead with one static diagram of the real relationships. The sentence the picture cannot show MUST sit next to that table or diagram. Plain text MUST stay prose. A concept with no such shape MUST NOT get a forced visual. A visual MUST NOT invent relationships. A time-ordered mechanism that is not a role-handoff flow follows the step-sequence rule instead of this table or diagram.
 
 #### Scenario: Topology gets a figure
 
@@ -72,7 +72,7 @@ When the concept has a comparison or a multi-item mapping, and it is not a time-
 
 ### Requirement: explain-clearly SHALL open HTML and point at its path
 
-After writing HTML, the agent MUST open that local file in the browser and MUST tell the user to view it, including the file path. The bundled shell is a reference for a page. Its page is a title, one sentence under the title, and the visual for that shape. The written page MUST be in the user's language and MUST write text as text. The written page MUST contain no script except one inline script whose only effect is the previous-step and next-step player, and only when the subject is time-ordered. If the browser cannot be opened, the path MUST still be given. The chat for HTML MUST NOT repeat the full explanation.
+After writing HTML, the agent MUST open that local file in the browser and MUST tell the user to view it, including the file path. The bundled shell is a reference for a page. Its page is a title, one sentence under the title, and the visual for that shape. The written page MUST be in the user's language and MUST write text as text. The written page MUST contain no script except one inline script whose only effect is the previous-step and next-step player, and only when the subject is time-ordered and is not a role-handoff flow. If the browser cannot be opened, the path MUST still be given. The chat for HTML MUST NOT repeat the full explanation.
 
 #### Scenario: HTML opens and the chat points at the path
 
@@ -91,12 +91,12 @@ After writing HTML, the agent MUST open that local file in the browser and MUST 
 
 #### Scenario: A step-player script does nothing else
 
-- **WHEN** a time-ordered HTML page includes a script
+- **WHEN** a time-ordered HTML page that is not a role-handoff flow includes a script
 - **THEN** that script only operates the previous and next step controls
 
 ### Requirement: explain-clearly SHALL deliver Markdown and plain text as files
 
-Markdown MUST include a leading visual when the concept has a shape and is not time-ordered. When the subject is time-ordered, Markdown MUST lead with the numbered steps. Plain text MUST be prose only, and when the subject is time-ordered those numbered steps are prose and lead. For both forms, the chat MUST give the file path and MUST NOT repeat the full explanation.
+Markdown MUST include a leading visual when the concept has a shape and is not time-ordered. When the subject is time-ordered and is not a role-handoff flow, Markdown MUST lead with the numbered steps. Plain text MUST be prose only, and when the subject is time-ordered and is not a role-handoff flow those numbered steps are prose and lead. For both forms, the chat MUST give the file path and MUST NOT repeat the full explanation.
 
 #### Scenario: Plain text has no figure
 
@@ -105,7 +105,7 @@ Markdown MUST include a leading visual when the concept has a shape and is not t
 
 #### Scenario: Time-ordered plain text leads with numbered steps
 
-- **WHEN** the user chooses plain text for a mechanism that happens step by step in time
+- **WHEN** the user chooses plain text for a mechanism that happens step by step in time and is not a role-handoff flow
 - **THEN** the file leads with those steps as numbered prose, and the chat gives its path
 
 ### Requirement: explain-clearly package SHALL match repo skill rules

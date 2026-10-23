@@ -35,7 +35,7 @@ Those matches are the whole explanation, plus one sentence under the title. A se
 
 ### HTML may add one inline script; the shell stays without one
 
-The written HTML page, only when the subject is time-ordered, may contain one inline script. That script only shows and hides steps and only responds to previous and next. It does not load a remote URL, does not autoplay, and opens on the first step. The bundled shell stays a script-free reference. Its page is a title, one sentence under the title, and the visual. For a time-ordered subject, the player is the body. Alternative considered: a script-free radio or `details` control. Rejected because the interaction has to be previous and next, and a script is acceptable for that player.
+The written HTML page, only when the first match is the time-ordered sequence, may contain one inline script. That script only shows and hides steps and only responds to previous and next. It does not load a remote URL, does not autoplay, and opens on the first step. The bundled shell stays a script-free reference. Its page is a title, one sentence under the title, and the visual. For a time-ordered subject, the player is the body. Alternative considered: a script-free radio or `details` control. Rejected because the interaction has to be previous and next, and a script is acceptable for that player.
 
 ### Other forms lead with numbered steps
 
