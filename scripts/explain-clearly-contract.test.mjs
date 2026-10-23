@@ -39,10 +39,14 @@ test("explain-clearly contract", () => {
   assert.match(skill, /plain text/);
   assert.match(skill, /auxiliary/);
   assert.match(skill, /assets\/explanation-shell\.html/);
+  assert.match(skill, /reference for structure/);
+  assert.match(skill, /user's language/);
   assert.match(skill, /file path/);
   assert.doesNotMatch(skill, /xdg-open|open -a/);
+  assert.doesNotMatch(skill, /copy `assets\/explanation-shell\.html`/);
 
   const shell = fs.readFileSync(shellUrl, "utf8");
+  assert.match(shell, /Reference layout only/);
   assert.match(shell, /<style/i);
   assert.doesNotMatch(shell, /<script/i);
 });

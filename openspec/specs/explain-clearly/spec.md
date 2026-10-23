@@ -80,7 +80,7 @@ HTML, Markdown, and plain text MUST be new files under the workspace-root direct
 
 ### Requirement: explain-clearly SHALL open HTML and point at its path
 
-After writing HTML, the agent MUST open that local file in the browser and MUST tell the user to view it, including the file path. The page MUST come from the skill's script-free shell, and filled text MUST be written as text. If the browser cannot be opened, the path MUST still be given. The chat for HTML MUST NOT repeat the full explanation.
+After writing HTML, the agent MUST open that local file in the browser and MUST tell the user to view it, including the file path. The bundled shell is a reference for structure. The written page MUST follow that structure, MUST be in the user's language, MUST contain no script, and MUST write text as text. If the browser cannot be opened, the path MUST still be given. The chat for HTML MUST NOT repeat the full explanation.
 
 #### Scenario: HTML opens and the chat points at the path
 
@@ -91,6 +91,11 @@ After writing HTML, the agent MUST open that local file in the browser and MUST 
 
 - **WHEN** the environment cannot open a browser
 - **THEN** the chat still gives the file path
+
+#### Scenario: HTML follows the reference in the user's language
+
+- **WHEN** the user asks in Chinese and the form is HTML
+- **THEN** the written page uses Chinese for its headings and prose, and the bundled shell is only the structural reference
 
 ### Requirement: explain-clearly SHALL deliver Markdown and plain text as files
 
@@ -112,7 +117,7 @@ Tutorial or onboarding requests MUST route to a teaching skill. explain-clearly 
 
 ### Requirement: explain-clearly package SHALL match repo skill rules
 
-The directory and frontmatter `name` MUST be `explain-clearly`. `user-invocable` MUST be true. The description MUST be one double-quoted line of at most 1024 characters and MUST include Chinese concept triggers plus the tutorial, article, and design-doc boundaries. The body MUST be English and MUST NOT name a platform-specific opener. The bundled HTML shell MUST contain no script.
+The directory and frontmatter `name` MUST be `explain-clearly`. `user-invocable` MUST be true. The description MUST be one double-quoted line of at most 1024 characters and MUST include Chinese concept triggers plus the tutorial, article, and design-doc boundaries. The body MUST be English and MUST NOT name a platform-specific opener. The bundled HTML shell is a reference layout, its example text is English, and it MUST contain no script.
 
 #### Scenario: Description stays a single routing line
 

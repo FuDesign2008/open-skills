@@ -1,6 +1,6 @@
 ---
 name: explain-clearly
-version: "1.0.0"
+version: "1.0.1"
 user-invocable: true
 description: "Explain a concept clearly: the rational track comes first and the analogy is only auxiliary. When the user has not named a form, ask once among the current session, HTML, Markdown, and plain text, and recommend HTML. Use whenever the user asks 「X 是什么」「为什么需要 X」「A 和 B 能不能/怎么通信」「给我讲讲 X」「用大白话解释 X」「帮我理解 X」, \"what is X\", \"how does X work\", \"why does X exist\", \"explain X\" about mechanisms, architecture, protocols, or processes — even if they never say \"explain\". Do NOT use for hands-on tutorials (teach), marketing articles (article-writer), or design-doc rewriting (tech-review-doc)."
 ---
@@ -59,7 +59,7 @@ Create the workspace-root directory `.explain-clearly/` when a file form needs i
 Do not edit the workspace gitignore.
 
 - **current session** — put the explanation in the chat. Include the visual when the concept has a shape. Write no file.
-- **HTML** — copy `assets/explanation-shell.html` from this skill to `.explain-clearly/<name>.html` and fill it. Put text in as text. Omit the visual block when the concept has no shape. Open that local HTML file in the browser. In the chat, give the file path and ask the user to view the page. Do not paste the full explanation. If the browser cannot be opened, still give the file path.
+- **HTML** — write `.explain-clearly/<name>.html` in the user's language. Read `assets/explanation-shell.html` as a reference for structure: the same sections, inline CSS, no script, and text written as text. The English words in that file are examples, because this skill is written in English. Omit the visual block when the concept has no shape. Open that local HTML file in the browser. In the chat, give the file path and ask the user to view the page. Do not paste the full explanation. If the browser cannot be opened, still give the file path.
 - **Markdown** — write `.explain-clearly/<name>.md` with the same sections. Include the visual when the concept has a shape. In the chat, give the file path and do not paste the full explanation.
 - **plain text** — write `.explain-clearly/<name>.txt` as prose only. In the chat, give the file path and do not paste the full explanation.
 
