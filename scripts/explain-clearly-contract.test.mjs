@@ -6,10 +6,7 @@ const root = new URL("..", import.meta.url);
 const skillUrl = new URL("skills/explain-clearly/SKILL.md", root);
 const shellUrl = new URL("skills/explain-clearly/assets/explanation-shell.html", root);
 const referenceUrl = new URL("skills/explain-clearly/reference.md", root);
-const specUrl = new URL(
-  "openspec/changes/explain-clearly-lead-with-steps/specs/explain-clearly/spec.md",
-  root,
-);
+const specUrl = new URL("openspec/specs/explain-clearly/spec.md", root);
 
 test("explain-clearly skill file exists", () => {
   assert.equal(fs.existsSync(skillUrl), true);
