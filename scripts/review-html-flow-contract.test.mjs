@@ -11,7 +11,7 @@ test("goal-driven-queue writes one review HTML per done card", () => {
   assert.match(skill, /form fixed to HTML/);
   assert.match(skill, /manual, auto, or ai-proxy/);
   assert.match(skill, /problem, the cause, and the completed fix/);
-  assert.match(skill, /not done does not get this page/);
+  assert.match(skill, /not done does not get the review HTML page/);
   assert.match(skill, /verification\.md section records that HTML path/);
 });
 
@@ -37,6 +37,9 @@ test("standalone goal-driven-workflow writes one page and a queue child does not
 test("goal-driven-queue writes one evidence page per done card", () => {
   const skill = read("skills/goal-driven-queue/SKILL.md");
   const reference = read("skills/goal-driven-queue/reference.md");
+  assert.match(skill, /evidence list on the child completion report/);
+  assert.match(skill, /each done card's evidence page path/);
+  assert.match(skill, /The explanation \(说明\), the evidence record \(证据留痕\), and the acceptance verdict \(验收裁决\) stay separate/);
   assert.match(skill, /evidence\/<card>\.html/);
   assert.match(skill, /page title is 证据留痕/);
   assert.match(skill, /no path separator/);
@@ -71,7 +74,10 @@ test("standalone goal-driven-workflow writes an evidence page and a queue child 
   assert.match(skill, /did not open a UI/);
   assert.match(skill, /missing or empty image is pending/);
   assert.match(skill, /Do not invent an image/);
+  assert.match(skill, /no checks were recorded/);
+  assert.match(skill, /an evidence list\. Each evidence item is an opened-UI check citing a png, jpg, jpeg, or webp path/);
   assert.match(skill, /evidence page path on the completion report/);
+  assert.match(skill, /The explanation \(说明\), the evidence record \(证据留痕\), and the acceptance verdict \(验收裁决\) stay separate/);
   assert.match(skill, /review page links to the evidence page/);
   assert.match(skill, /evidence list/);
   assert.match(skill, /does not write the evidence HTML/);
