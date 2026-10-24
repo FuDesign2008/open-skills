@@ -136,6 +136,7 @@ Example: all tests in test/auth pass and the lint step is clean, stop after 20 t
 ### Actual deliverables
 - Change/artifact list (path + one-line note)
 - Verification evidence (build/test output summaries, coverage, etc.) — per completion-evidence-discipline
+- Evidence page: <path to `.goal-driven/runs/<local-YYYYMMDD-HHmm>/evidence.html` on a standalone run>
 
 ### Leftovers and risks
 - Incomplete items / known risks / decisions needed

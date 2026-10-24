@@ -111,6 +111,8 @@ HTML, Markdown, and plain text MUST be new files under the workspace-root direct
 
 After writing HTML, the agent MUST open that local file in the browser and MUST tell the user to view it, including the file path. The bundled shell is a reference for a page. Its page is a title, one sentence under the title, and the visual for that shape. The written page MUST be in the user's language and MUST write text as text. The written page MUST contain no script except one inline script whose only effect is the previous-step and next-step player, and only when the subject is time-ordered and is not a role-handoff flow. If the browser cannot be opened, the path MUST still be given. The chat for HTML MUST NOT repeat the full explanation.
 
+When the caller fixes the form to HTML and supplies an evidence-page path, the written page MUST keep the title, the one sentence, and the visual, and MUST add one link to that path after the visual. The link MUST NOT replace the visual. A call that does not supply an evidence-page path MUST NOT add that link.
+
 #### Scenario: HTML opens and the chat points at the path
 
 - **WHEN** an HTML explanation has been written and a browser can open local files
@@ -131,6 +133,15 @@ After writing HTML, the agent MUST open that local file in the browser and MUST 
 - **WHEN** a time-ordered HTML page that is not a role-handoff flow includes a script
 - **THEN** that script only operates the previous and next step controls
 
+#### Scenario: Fixed review page adds one evidence link
+
+- **WHEN** the caller fixes the form to HTML and supplies an evidence-page path
+- **THEN** the page still has its title, one sentence, and visual, and one link to that path sits after the visual
+
+#### Scenario: Ordinary HTML has no evidence link
+
+- **WHEN** the caller does not supply an evidence-page path
+- **THEN** the page has no evidence link
 ### Requirement: explain-clearly SHALL deliver Markdown and plain text as files
 
 Markdown MUST include a leading visual when the concept has a shape and is not time-ordered. When the subject is time-ordered and is not a role-handoff flow, Markdown MUST lead with the numbered steps. Plain text MUST be prose only, and when the subject is time-ordered and is not a role-handoff flow those numbered steps are prose and lead. For both forms, the chat MUST give the file path and MUST NOT repeat the full explanation.
