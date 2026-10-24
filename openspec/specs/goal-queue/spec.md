@@ -570,7 +570,7 @@ For every card that reaches done, under stage-exit policy manual, auto, or ai-pr
 
 The child completion report MUST include an evidence list. Each item MUST be either an opened-UI check citing a png, jpg, jpeg, or webp path, or a non-UI check citing the command and a short output summary. The dispatcher MUST copy each cited image that exists and is non-empty into `evidence/<card>/` under that same batch directory. The page MUST reference those copies by a relative path. The page MUST NOT depend on the child worktree remaining.
 
-An opened-UI item whose file is missing or empty MUST appear as pending and MUST state the capture still required. The page MUST NOT invent an image for it. A non-UI item MUST show the command and the output summary and MUST NOT include an image. A done card whose evidence list is empty MUST still get the page, and that page MUST state that no checks were recorded and MUST NOT include an image.
+An opened-UI item whose file is missing or empty MUST appear as pending and MUST state the capture still required. The page MUST NOT invent an image for it. Before an opened-UI image supports the check, the agent MUST look at the saved image in this turn. A blank frame, a solid black frame, or an image with no readable interface MUST stay pending, MUST state that the capture is still required, and MUST NOT be treated as the expected capture. A readable interface that is not the screen this check was supposed to open MUST stay pending, MUST state the expected screen and what the image shows, and MUST NOT be treated as the expected capture. If the image was not inspected, the item MUST stay pending and MUST state that the image was not inspected. The file MUST be kept. The evidence page MUST show the copied image and that inspection. A non-UI item MUST show the command and the output summary and MUST NOT include an image. A done card whose evidence list is empty MUST still get the page, and that page MUST state that no checks were recorded and MUST NOT include an image.
 
 The card's `verification.md` section MUST record this page's path. A card that is not done MUST NOT get this page. An enqueue shell MUST NOT write it. A queue child MUST NOT write it.
 
@@ -598,6 +598,21 @@ The card's `verification.md` section MUST record this page's path. A card that i
 
 - **WHEN** a done card's evidence list cites an opened UI and the file is missing or empty
 - **THEN** the evidence page marks that item pending, states the capture still required, and does not contain an invented image
+
+#### Scenario: A blank or black frame stays pending on the evidence page
+
+- **WHEN** a done card's copied image is a blank frame, a solid black frame, or has no readable interface
+- **THEN** the evidence page shows the copied image, marks the item pending, states that the capture is still required, and does not treat it as the expected capture
+
+#### Scenario: A different screen stays pending on the evidence page
+
+- **WHEN** a done card's copied image has a readable interface that is not the screen this check was supposed to open
+- **THEN** the evidence page shows the copied image, marks the item pending, states the expected screen and what the image shows, and does not treat it as the expected capture
+
+#### Scenario: An uninspected image stays pending on the evidence page
+
+- **WHEN** a done card's copied image was not inspected
+- **THEN** the evidence page marks the item pending and states that the image was not inspected
 
 #### Scenario: A non-UI check has no image
 

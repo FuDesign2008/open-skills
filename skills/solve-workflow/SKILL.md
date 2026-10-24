@@ -335,7 +335,7 @@ If stage 5's plan or stage 6's execution report involves testing (unit tests, in
 
 Follow `staged-review-flow`'s verification-report honesty rule and `completion-evidence-discipline` (fresh current-turn evidence before pass claims) to label each result.
 
-When this turn's dispatch inlines a frozen task card, the verification report includes the problem, the cause, and the completed fix, and an evidence list. Each evidence item is an opened-UI check citing a png, jpg, jpeg, or webp path, or a non-UI check citing the command and a short output summary. A missing or empty image is pending and states the capture still required. Do not invent an image. This run does not write the HTML page and does not write the evidence HTML.
+When this turn's dispatch inlines a frozen task card, the verification report includes the problem, the cause, and the completed fix, and an evidence list. Each evidence item is an opened-UI check citing a png, jpg, jpeg, or webp path, or a non-UI check citing the command and a short output summary. A missing or empty image is pending and states the capture still required. Do not invent an image. Before an opened-UI image supports the check, look at the saved image in this turn. A blank frame, a solid black frame, or an image with no readable interface stays pending and states that the capture is still required. A readable interface that is not the screen this check was supposed to open stays pending and states the expected screen and what the image shows. If the image was not inspected, the item stays pending and states that the image was not inspected. Keep the file. Do not treat any of those as the expected capture. This run does not write the HTML page and does not write the evidence HTML.
 
 ### Output Format
 

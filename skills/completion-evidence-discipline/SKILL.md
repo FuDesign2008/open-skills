@@ -25,7 +25,7 @@ When about to claim any of: tests passed, typecheck/build OK, verification compl
 1. **Run** the relevant command/check in this turn, **or**
 2. **Label Pending** with the exact manual action still required — and **do not** say it passed.
 
-When the check opened a UI, that fresh evidence includes a filesystem path to a non-empty png, jpg, jpeg, or webp saved this turn. A path with no such file does not support a pass claim. Checks that did not open a UI do not require an image.
+When the check opened a UI, that fresh evidence includes a filesystem path to a non-empty png, jpg, jpeg, or webp saved this turn. A path with no such file does not support a pass claim. Checks that did not open a UI do not require an image. Before an opened-UI image supports the check, look at the saved image in this turn. A blank frame, a solid black frame, or an image with no readable interface stays pending and states that the capture is still required. A readable interface that is not the screen this check was supposed to open stays pending and states the expected screen and what the image shows. If the image was not inspected, the item stays pending and states that the image was not inspected. Keep the file. Do not treat any of those as the expected capture.
 
 Compose with `staged-review-flow` verification honesty:
 
