@@ -34,6 +34,66 @@ test("standalone goal-driven-workflow writes one page and a queue child does not
   assert.match(skill, /does not write the HTML page/);
 });
 
+test("goal-driven-queue writes one evidence page per done card", () => {
+  const skill = read("skills/goal-driven-queue/SKILL.md");
+  const reference = read("skills/goal-driven-queue/reference.md");
+  assert.match(skill, /evidence\/<card>\.html/);
+  assert.match(skill, /page title is 证据留痕/);
+  assert.match(skill, /no path separator/);
+  assert.match(skill, /relative path/);
+  assert.match(skill, /did not open a UI/);
+  assert.match(skill, /has no image/);
+  assert.match(skill, /missing or empty image is pending/);
+  assert.match(skill, /Do not invent an image/);
+  assert.match(skill, /no checks were recorded/);
+  assert.match(skill, /does not get an evidence page/);
+  assert.match(skill, /enqueue shell does not write the evidence page/);
+  assert.match(skill, /one link to that card's evidence page/);
+  assert.match(skill, /verification\.md section records the evidence page path/);
+  assert.match(reference, /Evidence page:/);
+  for (const rel of [
+    "skills/jira-fix-queue/SKILL.md",
+    "skills/opsx-jira-fix-queue/SKILL.md",
+  ]) {
+    const shell = read(rel);
+    assert.doesNotMatch(shell, /evidence\/<card>\.html/, rel);
+    assert.doesNotMatch(shell, /证据留痕/, rel);
+  }
+});
+
+test("standalone goal-driven-workflow writes an evidence page and a queue child does not", () => {
+  const skill = read("skills/goal-driven-workflow/SKILL.md");
+  const reference = read("skills/goal-driven-workflow/reference.md");
+  assert.match(skill, /\.goal-driven\/runs\/<local-YYYYMMDD-HHmm>\/evidence\.html/);
+  assert.match(skill, /page title is 证据留痕/);
+  assert.match(skill, /Do not overwrite an existing directory/);
+  assert.match(skill, /relative path/);
+  assert.match(skill, /did not open a UI/);
+  assert.match(skill, /missing or empty image is pending/);
+  assert.match(skill, /Do not invent an image/);
+  assert.match(skill, /evidence page path on the completion report/);
+  assert.match(skill, /review page links to the evidence page/);
+  assert.match(skill, /evidence list/);
+  assert.match(skill, /does not write the evidence HTML/);
+  assert.match(reference, /Evidence page:/);
+});
+
+test("queue-child engines report an evidence list and do not write HTML", () => {
+  for (const rel of [
+    "skills/jira-fix-workflow/SKILL.md",
+    "skills/opsx-jira-fix-workflow/SKILL.md",
+    "skills/opsx-solve-workflow/SKILL.md",
+    "skills/solve-workflow/SKILL.md",
+  ]) {
+    const skill = read(rel);
+    assert.match(skill, /evidence list/, rel);
+    assert.match(skill, /png, jpg, jpeg, or webp/, rel);
+    assert.match(skill, /missing or empty image is pending/, rel);
+    assert.match(skill, /Do not invent an image/, rel);
+    assert.match(skill, /does not write the evidence HTML/, rel);
+  }
+});
+
 test("queue-child engines report three facts and do not write HTML", () => {
   for (const rel of [
     "skills/jira-fix-workflow/SKILL.md",

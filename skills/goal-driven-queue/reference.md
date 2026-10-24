@@ -125,6 +125,7 @@ Path: `.goal-driven/queues/<queue-id>/runs/<batch-id>/verification.md` — the d
 - Goal condition: <verbatim>
 - Engine: <engine>   Result: <result tier>   Branch: <tip>
 - Report: <path>
+- Evidence page: <path to evidence/<slug>.html when the card reached done>
 - Layered acceptance: hard <…> / soft <…> / human <outcome items>
 - Verification checklist (from the engine report):
   1. …

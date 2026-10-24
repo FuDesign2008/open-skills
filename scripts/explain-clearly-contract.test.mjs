@@ -62,6 +62,17 @@ test("explain-clearly contract", () => {
   assert.doesNotMatch(shell, /id="definition"|id="why"|id="implication"|id="analogy"/);
 });
 
+test("explain-clearly adds one evidence link only when a path is supplied", () => {
+  const skill = fs.readFileSync(skillUrl, "utf8");
+  assert.match(skill, /fixes the form to HTML and supplies an evidence-page path/);
+  assert.match(skill, /one link after the visual/);
+  assert.match(skill, /link text is 证据留痕/);
+  assert.match(skill, /relative path from this file to the evidence page/);
+  assert.match(skill, /does not replace the visual/);
+  assert.match(skill, /does not supply an evidence-page path/);
+  assert.match(skill, /do not add that link/);
+});
+
 test("explain-clearly leads a time-ordered mechanism with steps", () => {
   const skill = fs.readFileSync(skillUrl, "utf8");
   const description = skill.split("\n").find((line) => line.startsWith("description:"));

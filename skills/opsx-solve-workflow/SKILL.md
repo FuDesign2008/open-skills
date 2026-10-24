@@ -308,7 +308,7 @@ Verification must cover three layers:
 
 Verification conclusions must be based on commands you ran and personally read the output of this round — never report "a scenario was designed" as "passed".
 
-When this turn's dispatch inlines a frozen task card, the verification report includes the problem, the cause, and the completed fix, and this run does not write the HTML page.
+When this turn's dispatch inlines a frozen task card, the verification report includes the problem, the cause, and the completed fix, and an evidence list. Each evidence item is an opened-UI check citing a png, jpg, jpeg, or webp path, or a non-UI check citing the command and a short output summary. A missing or empty image is pending and states the capture still required. Do not invent an image. This run does not write the HTML page and does not write the evidence HTML.
 
 Output format: see [reference.md](reference.md)「Stage 7 Check & Verify」.
 
