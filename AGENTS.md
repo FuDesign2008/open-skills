@@ -12,6 +12,7 @@
 8. **能力断言必须实证** — 凡涉及「某工具/Skill 能做什么、不能做什么」「某能力市场上无竞品」等能力断言，写入文档或 Skill 前必须经一手实证：本地源码实证（目标 skill 的 SKILL.md / API 文档）+ 外部官方数据（GitHub、官方文档），不接受二手转述或「看起来合理」的推断。能力对比类文档需在文首标注核验日期与来源，便于后续刷新。
 9. **改契约必须反查「提及它的需求」** — 修改一条 OpenSpec 需求（MODIFIED / RENAMED）时，清单不能只列「行为需要变的需求」，必须**加上所有提及被改项的其他需求**并一并同步。描述性引用——如清单式枚举、`branch isolation` 这类措辞、`consumption order` 这类术语、场景里的逐项列举——**不会被编号 grep 捕获**，只能人工遍历。自查：`grep` 被改项的关键措辞与旧需求名，命中处逐一判定是否需同步；`openspec validate` 通过**不代表**一致（它只查格式，不查语义引用）。判定口径：需求名、术语、枚举三项与人改项相关的，视同需同步。
 10. **门禁与默认解锁的输入必须可核验** — 设计任何门禁、放行条件，或「满足即自动放行」的默认值时，其判定输入必须是**可独立核验的事实**（文件/符号存在性、分支拓扑、路径集、字段值），不得是 AI 的自由判断（`preference`）。若门禁吃的是判断，则门禁本身不被任何下游实证覆盖——这是最隐蔽的护栏泄漏：看起来有门，实则无门。自查：写下门禁条件后逐条问「这个输入能否被一条命令或一次 grep 证实？」任一为否，即须把该判断拆成可核验信号（如把「难度档」拆成可逆性/既有证据/影响半径/依赖形态四项），或把门禁降级为「须人确认」。
+11. **任何开发推进都在 Git worktree 中进行** — 本仓库会有多个 AI 进程同时推进开发。凡会写入仓库的推进（文档或代码），先开独立 Git worktree，在其中创建 feature 分支再写；主检出只做只读查阅，避免并行进程改同一工作区、互相覆盖或产生冲突。创建 worktree 失败时停下来报告原因，不退回主检出继续写。本仓声明 `worktree-gate: always`，由 `git-worktree-discipline` 在首个非平凡持久化写入之前创建或复用隔离工作区。
 
 ### 合并偏好（merge-discipline Part C / Part R）
 
@@ -19,11 +20,13 @@
 
 `pr-review-gate: non-code-light`
 
+`worktree-gate: always`
+
 > 本仓库为 Markdown skills 库，合并前不默认跑 `test-coverage-analyzer`。其他工程可在 `AGENTS.md` / `CLAUDE.md` 声明 `coverage-gate: always` | `never` | `ask`（未声明 ≡ 每次合并询问）。
 >
 > `pr-review-gate`：`always`（全量 `pr-code-review`）| `never`（跳过 Part R，须留痕）| `ask`（每次询问 full/light/skip）| `non-code-light`（非应用代码表面用 light 深度，否则 full）| `auto`（内容匹配深度：surface 分类 + 大 diff/破坏性信号/fail 重提升级）。**未声明 ≡ `auto`**（merge-discipline v1.7.0 起；升级信号任一命中仍 full，仅「非应用代码且无升级信号」走 light —— 非未分类一刀切）。本仓默认 `non-code-light`：docs/skills/openspec 等表面走轻量双轴审查；含 workflows / `scripts/` / 运行时源码扩展则仍 full。
 >
-> `worktree-gate`：`always` | `never` | `ask`（未声明 ≡ `ask`）。由 `git-worktree-discipline` 在首个非平凡持久化写入（文档或代码）之前解析；`ask` 下先按仓库状态给出适合度推荐再询问是否创建隔离工作区。
+> 本仓库 `worktree-gate: always`（铁律 11）：多个 AI 进程会同时推进开发，首个非平凡持久化写入（文档或代码）之前由 `git-worktree-discipline` 创建或复用 Git worktree，不再询问。取值仍是 `always` | `never` | `ask`；其他工程未声明时 ≡ `ask`，`ask` 下先按仓库状态给出适合度推荐再询问是否创建隔离工作区。
 
 ### Skill 调用分层（User- vs Model-invoked）
 
@@ -216,7 +219,7 @@ Skill 内容...
 
 ## Git 工作流
 
-- **执行计划前先开分支**：开始修改代码前，先创建 feature 分支
+- **执行计划前先开 Git worktree**：开始修改文档或代码前，按铁律 11 创建隔离 worktree，并在其中创建 feature 分支
 - **禁止直接推送 main**：必须先创建 feature 分支
 - **合并 PR 时**：默认使用「Create a merge commit」。是否 Squash 由 merge-discipline Part D 合并前 squash 决策按 MR commit 质量给推荐并经用户确认（决策空间收敛时不发问：恰好一个 commit 或平台仅允许一种合并方式时，直接给出结论与理由执行）：琐碎堆积（fixup/typo/wip/CI 重试）的 MR 可 Squash；将续开发的分支避免 Squash——Squash 会切断 main 与 feature 分支的提交图，后续在同一分支继续开发再合并 main 时易产生冲突。
 - **PR 合并后同步主分支**：合并 PR 后，本地工作区按 `merge-discipline` Part D 的 post-merge workspace sync 行为契约切回目标分支并快进（目标分支以 MR base 为准，不必然是 main/master；即「Merge PR 与发布流程」第 4 步的机器可执行版）。
@@ -249,6 +252,7 @@ Skill 内容...
 
 - ❌ 手动修改版本号
 - ❌ 直接推送 main 分支
+- ❌ 在主检出直接改文档或代码推进开发（见 AI 铁律 11，须先开 Git worktree）
 - ❌ SKILL.md 缺少 frontmatter 或遗漏触发词
 - ❌ Skill 正文把某一 Agent 专属工具作为必需/首选，或枚举「X 平台用 A、Y 平台用 B」（仍硬编码 + 武断假设其他平台能力）。应描述意图（要达成什么），让各 Agent 用原生能力实现，无对应能力时退回通用格式（如 prose）
 - ❌ 英文 skill 的触发词只有英文，缺失中文触发词（中文用户无法自然唤起）
