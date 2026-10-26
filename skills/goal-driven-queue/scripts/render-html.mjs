@@ -3,9 +3,10 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { spawn } from "node:child_process";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ESCAPES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+const SKILL_DIR = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
 const CSS = `:root {
   color-scheme: light dark;
@@ -825,6 +826,18 @@ export function renderMarkdown(markdown, options = {}) {
   return renderShell({ title, body, options, generatedAt, sourcePath });
 }
 
+function listRunDirs(root) {
+  try {
+    return fs
+      .readdirSync(path.join(root, "runs"), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => path.join(root, "runs", entry.name))
+      .sort();
+  } catch {
+    return [];
+  }
+}
+
 export function renderFile(sourcePath, options = {}) {
   const absoluteSource = path.resolve(sourcePath);
   const outPath = path.resolve(options.outPath || absoluteSource.replace(/\.md$/i, ".html"));
@@ -850,21 +863,29 @@ export function renderFile(sourcePath, options = {}) {
   const fileLink = (value) => {
     if (!options.fileRoot) return null;
     const candidate = String(value).trim();
-    if (!candidate || /^https?:\/\//i.test(candidate)) return null;
-    const looksLikePath =
-      candidate.includes("/") ||
-      candidate.includes("\\") ||
-      /\.(md|mjs|js|ts|tsx|json|html|css|sh|yml|yaml|toml|txt)$/i.test(candidate);
-    if (!looksLikePath) return null;
+    if (!candidate || /^https?:\/\//i.test(candidate) || /[*?]/.test(candidate)) return null;
 
-    const bases = [options.fileRoot, root, path.dirname(absoluteSource), path.dirname(outPath)];
-    const found = bases
-      .map((base) => path.resolve(base, candidate))
-      .find((candidatePath) => fs.existsSync(candidatePath));
-    if (!found) return null;
-
-    const href = path.relative(path.dirname(outPath), found);
-    return href || path.basename(found);
+    const tiers = [
+      [path.dirname(absoluteSource)],
+      [root],
+      [options.fileRoot],
+      listRunDirs(root),
+      [SKILL_DIR],
+    ];
+    for (const tier of tiers) {
+      const matches = new Set(
+        tier
+          .filter(Boolean)
+          .map((base) => path.resolve(base, candidate))
+          .filter((candidatePath) => fs.existsSync(candidatePath)),
+      );
+      if (matches.size === 0) continue;
+      if (matches.size > 1) return null;
+      const [found] = matches;
+      const href = path.relative(path.dirname(outPath), found);
+      return href || path.basename(found);
+    }
+    return null;
   };
 
   const markdown = fs.readFileSync(absoluteSource, "utf8");

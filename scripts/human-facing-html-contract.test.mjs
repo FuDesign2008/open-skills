@@ -44,7 +44,8 @@ test("goal-driven-queue defines human-facing HTML views", () => {
   assert.match(skill, /light and dark themes/);
   assert.match(skill, /prefers-color-scheme/);
   assert.match(reference, /prefers-color-scheme/);
-  assert.match(skill, /Inline code that names an existing file becomes a link/);
+  assert.match(skill, /Inline code that names an existing file or directory becomes a link/);
+  assert.match(skill, /record directory, the queue root, the workspace root, the batch directories, then the skill directory/);
   assert.match(reference, /--file-root <workspace-root>/);
   assert.ok(skill.includes("Plain `http(s)` URLs in body text become links"));
   assert.match(reference, /URLs in body text become links/);

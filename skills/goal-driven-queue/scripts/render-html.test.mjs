@@ -380,6 +380,62 @@ test("links inline file paths that exist and leaves commands plain", () => {
   assert.doesNotMatch(html, /file-link[^>]*>npm test/);
 });
 
+test("links bare file and directory names by existence, not by extension", () => {
+  const workspace = tmp();
+  fs.writeFileSync(path.join(workspace, "config"), "x\n", "utf8");
+  fs.mkdirSync(path.join(workspace, "scripts"), { recursive: true });
+  const source = path.join(workspace, "doc.md");
+  fs.writeFileSync(source, "See `config` and `scripts/`; keep `md` and `notes/*.md` plain.\n", "utf8");
+
+  renderFile(source, { root: workspace, fileRoot: workspace, generatedAt: AT });
+
+  const html = fs.readFileSync(path.join(workspace, "doc.html"), "utf8");
+  assert.match(html, /class="file-link" href="config"/);
+  assert.match(html, /class="file-link" href="scripts"/);
+  assert.match(html, /<code>md<\/code>/);
+  assert.match(html, /<code>notes\/\*\.md<\/code>/);
+});
+
+test("resolves bare names against the skill directory", () => {
+  const workspace = tmp();
+  const source = path.join(workspace, "doc.md");
+  fs.writeFileSync(source, "See `reference.md`.\n", "utf8");
+
+  renderFile(source, { root: workspace, fileRoot: workspace, generatedAt: AT });
+
+  const html = fs.readFileSync(path.join(workspace, "doc.html"), "utf8");
+  assert.match(html, /class="file-link" href="[^"]*reference\.md"/);
+});
+
+test("resolves record names inside the queue's batch directories", () => {
+  const queue = tmp();
+  const run = path.join(queue, "runs/20260101-0000");
+  fs.mkdirSync(run, { recursive: true });
+  fs.writeFileSync(path.join(run, "progress.md"), "# p\n", "utf8");
+  const source = path.join(queue, "card.md");
+  fs.writeFileSync(source, "See `progress.md`.\n", "utf8");
+
+  renderFile(source, { root: queue, fileRoot: queue, generatedAt: AT });
+
+  const html = fs.readFileSync(path.join(queue, "card.html"), "utf8");
+  assert.match(html, /class="file-link" href="runs\/20260101-0000\/progress\.md"/);
+});
+
+test("keeps a bare name plain when several batch directories match", () => {
+  const queue = tmp();
+  for (const batch of ["a", "b"]) {
+    fs.mkdirSync(path.join(queue, "runs", batch), { recursive: true });
+    fs.writeFileSync(path.join(queue, "runs", batch, "progress.md"), "# p\n", "utf8");
+  }
+  const source = path.join(queue, "card.md");
+  fs.writeFileSync(source, "See `progress.md`.\n", "utf8");
+
+  renderFile(source, { root: queue, fileRoot: queue, generatedAt: AT });
+
+  const html = fs.readFileSync(path.join(queue, "card.html"), "utf8");
+  assert.doesNotMatch(html, /class="file-link"/);
+});
+
 test("generates the review page from structured data", () => {
   const html = renderReviewPage(
     {
