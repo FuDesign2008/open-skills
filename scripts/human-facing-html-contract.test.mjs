@@ -25,6 +25,8 @@ test("goal-driven-queue defines human-facing HTML views", () => {
   assert.match(skill, /auto-opens `verification\.html` at the Stage 3 handback only when/);
   assert.match(skill, /An explicit view request opens the requested page regardless of the recorded trigger/);
   assert.match(skill, /An enqueue shell does not write a view\./);
+  assert.match(skill, /written in the language the human used in the conversation/);
+  assert.match(reference, /written in the language the human used in the conversation/);
 
   assert.match(reference, /## Human-Facing HTML Views/);
   assert.match(reference, /Trigger: interactive \| scheduled/);

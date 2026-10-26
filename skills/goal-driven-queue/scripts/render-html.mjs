@@ -363,7 +363,7 @@ export function renderMarkdown(markdown, options = {}) {
 <body>
 <main>
 ${body}
-<footer>Source: <code>${escapeHtml(sourcePath)}</code>${sourceLabel} · Generated: <time datetime="${escapeHtml(generatedAt)}">${escapeHtml(generatedAt)}</time></footer>
+<footer>${escapeHtml(options.sourceLabelText || "Source")}: <code>${escapeHtml(sourcePath)}</code>${sourceLabel} · ${escapeHtml(options.generatedLabelText || "Generated")}: <time datetime="${escapeHtml(generatedAt)}">${escapeHtml(generatedAt)}</time></footer>
 </main>
 </body>
 </html>
@@ -396,6 +396,18 @@ export function renderEntryPage(options = {}) {
   const generatedAt = options.generatedAt || new Date().toISOString();
   const root = path.resolve(options.root || process.cwd());
   const entryPath = path.resolve(options.entryPath || path.join(root, "verification.html"));
+  const labels = {
+    progress: "Progress",
+    triage: "Triage",
+    content: "Verification content",
+    card: "Card",
+    report: "Report",
+    review: "Review",
+    evidence: "Evidence",
+    unavailable: "unavailable",
+    ...(options.labels || {}),
+  };
+  const title = options.title || "Human Verification";
 
   const resolve = (value) => {
     if (!value) return null;
@@ -409,7 +421,7 @@ export function renderEntryPage(options = {}) {
   const link = (label, value) => {
     const target = resolve(value);
     if (!target || !target.exists) {
-      return `<li>${escapeHtml(label)}: <em>unavailable</em></li>`;
+      return `<li>${escapeHtml(label)}: <em>${escapeHtml(labels.unavailable)}</em></li>`;
     }
     return `<li>${escapeHtml(label)}: <a href="${escapeHtml(target.href)}">${escapeHtml(value)}</a></li>`;
   };
@@ -417,29 +429,29 @@ export function renderEntryPage(options = {}) {
   const cardLinks = (options.cards || [])
     .map((card) =>
       [
-        link(`Card ${card.slug}`, card.viewPath),
-        link(`Report ${card.slug}`, card.reportPath),
-        link(`Review ${card.slug}`, card.reviewPath),
-        link(`Evidence ${card.slug}`, card.evidencePath),
+        link(`${labels.card} ${card.slug}`, card.viewPath),
+        link(`${labels.report} ${card.slug}`, card.reportPath),
+        link(`${labels.review} ${card.slug}`, card.reviewPath),
+        link(`${labels.evidence} ${card.slug}`, card.evidencePath),
       ].join(""),
     )
     .join("");
 
-  const body = `<h1>Human Verification — ${escapeHtml(options.batchId || "batch")}</h1>
-<ul>${link("Progress", options.progressPath)}${link("Triage", options.triagePath)}${cardLinks}</ul>`;
+  const body = `<h1>${escapeHtml(title)} — ${escapeHtml(options.batchId || "batch")}</h1>
+<ul>${link(labels.progress, options.progressPath)}${link(labels.triage, options.triagePath)}${link(labels.content, options.contentPath)}${cardLinks}</ul>`;
 
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Human Verification — ${escapeHtml(options.batchId || "batch")}</title>
+<title>${escapeHtml(title)} — ${escapeHtml(options.batchId || "batch")}</title>
 <style>${CSS}</style>
 </head>
 <body>
 <main>
 ${body}
-<footer>Generated: <time datetime="${escapeHtml(generatedAt)}">${escapeHtml(generatedAt)}</time></footer>
+<footer>${escapeHtml(options.generatedLabelText || "Generated")}: <time datetime="${escapeHtml(generatedAt)}">${escapeHtml(generatedAt)}</time></footer>
 </main>
 </body>
 </html>
