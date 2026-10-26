@@ -14,6 +14,7 @@ import {
   readTrigger,
   maybeAutoOpen,
   openInBrowser,
+  renderNav,
 } from "./render-html.mjs";
 
 const AT = "2026-10-26T00:00:00.000Z";
@@ -285,6 +286,40 @@ test("entry page links every category and annotates missing targets", () => {
   assert.match(zeroDone, /<em>unavailable<\/em>/);
 });
 
+test("renders long metadata values as full-width rows instead of pills", () => {
+  const markdown = `# 文档 — b1
+
+- 状态：done
+- 说明：${"很长的说明".repeat(20)}
+
+## 章节
+
+- 条目
+`;
+
+  const html = renderDocument(markdown, {
+    sourcePath: "/tmp/doc.md",
+    root: "/tmp",
+    kind: "card",
+    generatedAt: AT,
+  });
+
+  assert.match(html, /class="meta-row"/);
+  assert.match(html, /class="meta-key">说明</);
+  assert.match(html, /class="chip"/);
+});
+
+test("renders inline Markdown in the document title", () => {
+  const html = renderDocument("# Goal: Use `skill-name` now\n\n## 章节\n\n- 条目\n", {
+    sourcePath: "/tmp/doc.md",
+    root: "/tmp",
+    kind: "card",
+    generatedAt: AT,
+  });
+  assert.match(html, /<h1>Use <code>skill-name<\/code> now<\/h1>/);
+  assert.doesNotMatch(html, /<h1>[^<]*`skill-name`/);
+});
+
 test("renders a designed document page with header, toc, kpis and verdict", () => {
   const dir = tmp();
   const markdown = `# 人工核对 — b1
@@ -451,6 +486,22 @@ test("keeps a bare name plain when several batch directories match", () => {
 
   const html = fs.readFileSync(path.join(queue, "card.html"), "utf8");
   assert.doesNotMatch(html, /class="file-link"/);
+});
+
+test("marks the current page in the navigation even before its file exists", () => {
+  const root = tmp();
+  fs.writeFileSync(path.join(root, "progress.html"), "", "utf8");
+  const nav = renderNav(
+    [
+      { label: "Entry", path: "verification.html" },
+      { label: "Progress", path: "progress.html" },
+      { label: "Missing", path: "missing.html" },
+    ],
+    { root, fromPath: path.join(root, "verification.html"), unavailableLabel: "unavailable" },
+  );
+  assert.match(nav, /<a href="verification\.html" aria-current="page">Entry<\/a>/);
+  assert.match(nav, /<a href="progress\.html">Progress<\/a>/);
+  assert.match(nav, /queue-nav-unavailable/);
 });
 
 test("generates the review page from structured data", () => {
