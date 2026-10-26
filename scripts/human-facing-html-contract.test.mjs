@@ -39,6 +39,9 @@ test("goal-driven-queue defines human-facing HTML views", () => {
   assert.match(skill, /single HTML generator/);
   assert.match(reference, /renderReviewPage/);
   assert.match(reference, /renderEvidencePage/);
+  assert.match(skill, /light and dark themes/);
+  assert.match(skill, /prefers-color-scheme/);
+  assert.match(reference, /prefers-color-scheme/);
 
   assert.match(reference, /## Human-Facing HTML Views/);
   assert.match(reference, /Trigger: interactive \| scheduled/);
