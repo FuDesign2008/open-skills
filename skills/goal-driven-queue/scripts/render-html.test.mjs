@@ -174,6 +174,31 @@ test("reads the recorded trigger and opens only for interactive", () => {
   assert.equal(calls.length, 1);
 });
 
+test("injects a cross-navigation block with relative links and unavailable markers", () => {
+  const dir = tmp();
+  fs.writeFileSync(path.join(dir, "verification.html"), "", "utf8");
+  fs.writeFileSync(path.join(dir, "progress.html"), "", "utf8");
+  fs.writeFileSync(path.join(dir, "card.md"), "# Card\n", "utf8");
+
+  renderFile(path.join(dir, "card.md"), {
+    root: dir,
+    navRoot: dir,
+    generatedAt: AT,
+    nav: [
+      { label: "入口", path: "verification.html" },
+      { label: "进度", path: "progress.html" },
+      { label: "报告", path: "missing.html" },
+    ],
+    unavailableLabel: "不可用",
+  });
+
+  const html = fs.readFileSync(path.join(dir, "card.html"), "utf8");
+  assert.match(html, /<nav class="queue-nav"/);
+  assert.match(html, /href="verification\.html"/);
+  assert.match(html, /href="progress\.html"/);
+  assert.match(html, /报告（不可用）/);
+});
+
 test("entry page links every category and annotates missing targets", () => {
   const dir = tmp();
   for (const rel of [

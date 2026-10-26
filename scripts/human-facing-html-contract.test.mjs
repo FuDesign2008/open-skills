@@ -27,6 +27,9 @@ test("goal-driven-queue defines human-facing HTML views", () => {
   assert.match(skill, /An enqueue shell does not write a view\./);
   assert.match(skill, /written in the language the human used in the conversation/);
   assert.match(reference, /written in the language the human used in the conversation/);
+  assert.match(skill, /Every generated human-facing HTML view carries a navigation block/);
+  assert.match(skill, /mark a missing target as unavailable/);
+  assert.match(reference, /shared navigation block/);
 
   assert.match(reference, /## Human-Facing HTML Views/);
   assert.match(reference, /Trigger: interactive \| scheduled/);

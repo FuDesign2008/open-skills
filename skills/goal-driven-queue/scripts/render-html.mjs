@@ -22,6 +22,10 @@ th, td { border: 1px solid rgba(127, 127, 127, 0.35); padding: 0.4rem 0.6rem; te
 blockquote { margin: 1rem 0; padding: 0.25rem 1rem; border-left: 4px solid rgba(127, 127, 127, 0.4); }
 footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid rgba(127, 127, 127, 0.3); font-size: 0.85rem; opacity: 0.8; }
 img { max-width: 100%; height: auto; }
+.queue-nav { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; margin: 0 0 1.5rem; padding: 0.55rem 0.75rem; border: 1px solid rgba(127, 127, 127, 0.3); border-radius: 8px; font-size: 0.9rem; }
+.queue-nav a { text-decoration: none; }
+.queue-nav-sep { opacity: 0.5; }
+.queue-nav-unavailable { opacity: 0.6; }
 `;
 
 export function escapeHtml(value) {
@@ -335,6 +339,24 @@ function renderBlocks(lines, context) {
   return blocks.join("\n");
 }
 
+export function renderNav(items, options = {}) {
+  if (!Array.isArray(items) || !items.length) return "";
+  const root = path.resolve(options.root || process.cwd());
+  const fromPath = path.resolve(options.fromPath || path.join(root, "index.html"));
+  const unavailable = options.unavailableLabel || "unavailable";
+
+  const links = items.map((item) => {
+    const absolute = path.resolve(root, item.path);
+    const href = path.relative(path.dirname(fromPath), absolute);
+    if (!fs.existsSync(absolute)) {
+      return `<span class="queue-nav-unavailable">${escapeHtml(item.label)}（${escapeHtml(unavailable)}）</span>`;
+    }
+    return `<a href="${escapeHtml(href)}">${escapeHtml(item.label)}</a>`;
+  });
+
+  return `<nav class="queue-nav" aria-label="文档导航">${links.join('<span class="queue-nav-sep">·</span>')}</nav>`;
+}
+
 export function renderMarkdown(markdown, options = {}) {
   const sourcePath = options.sourcePath || "document.md";
   const generatedAt = options.generatedAt || new Date().toISOString();
@@ -362,6 +384,7 @@ export function renderMarkdown(markdown, options = {}) {
 </head>
 <body>
 <main>
+${options.navHtml || ""}
 ${body}
 <footer>${escapeHtml(options.sourceLabelText || "Source")}: <code>${escapeHtml(sourcePath)}</code>${sourceLabel} · ${escapeHtml(options.generatedLabelText || "Generated")}: <time datetime="${escapeHtml(generatedAt)}">${escapeHtml(generatedAt)}</time></footer>
 </main>
@@ -379,11 +402,25 @@ export function renderFile(sourcePath, options = {}) {
     throw new Error(`refusing to write outside the queue root: ${outPath}`);
   }
 
+  let navItems = options.nav;
+  if (!navItems && options.navManifest) {
+    const manifest = JSON.parse(fs.readFileSync(options.navManifest, "utf8"));
+    navItems = Array.isArray(manifest) ? manifest : manifest.items;
+  }
+  const navHtml = navItems
+    ? renderNav(navItems, {
+        fromPath: outPath,
+        root: options.navRoot || root,
+        unavailableLabel: options.unavailableLabel,
+      })
+    : "";
+
   const markdown = fs.readFileSync(absoluteSource, "utf8");
   const html = renderMarkdown(markdown, {
     ...options,
     sourcePath: absoluteSource,
     root,
+    navHtml,
   });
 
   const temporary = `${outPath}.tmp`;
@@ -511,6 +548,9 @@ function parseArguments(argv) {
     progress: undefined,
     generatedAt: undefined,
     sourceLabel: undefined,
+    nav: undefined,
+    navRoot: undefined,
+    unavailableLabel: undefined,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -521,6 +561,9 @@ function parseArguments(argv) {
     };
 
     if (argument === "--root") options.root = takeValue();
+    else if (argument === "--nav") options.navManifest = takeValue();
+    else if (argument === "--nav-root") options.navRoot = takeValue();
+    else if (argument === "--unavailable") options.unavailableLabel = takeValue();
     else if (argument === "--open") options.open = takeValue();
     else if (argument === "--auto-open") options.autoOpen = takeValue();
     else if (argument === "--progress") options.progress = takeValue();
