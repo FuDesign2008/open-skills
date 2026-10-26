@@ -820,6 +820,7 @@ export function renderEntryPage(options = {}) {
     )
     .join("");
 
+  const extras = (options.extras || []).map((item) => link(item.label, item.path)).join("");
   const kpis = options.kpis ? renderKpiRow(options.kpis) : "";
   const body = `<header class="doc-header">
 <p class="doc-kicker">验收入口</p>
@@ -827,7 +828,7 @@ export function renderEntryPage(options = {}) {
 <p class="doc-subtitle">${escapeHtml(options.subtitle || "打开任意页面即可横向查看本次运行的记录；缺失目标标注为不可用。")}</p>
 ${kpis}
 </header>
-<div class="link-grid">${link(labels.progress, options.progressPath)}${link(labels.triage, options.triagePath)}${link(labels.content, options.contentPath)}${cardLinks}</div>`;
+<div class="link-grid">${link(labels.progress, options.progressPath)}${link(labels.triage, options.triagePath)}${link(labels.content, options.contentPath)}${cardLinks}${extras}</div>`;
 
   return renderShell({
     title: `${title} — ${options.batchId || "batch"}`,
