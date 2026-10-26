@@ -44,7 +44,7 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
   font-size: 17px;
   line-height: 1.78;
   letter-spacing: 0.003em;
@@ -57,13 +57,13 @@ a:hover { text-decoration-thickness: 0.14em; }
 ::selection { background: var(--accent); color: var(--paper); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 h1, h2, h3, h4, h5, h6 {
-  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
   font-weight: 600;
   line-height: 1.22;
-  letter-spacing: -0.012em;
+  letter-spacing: -0.014em;
   text-wrap: balance;
 }
-h1 { font-size: clamp(2.1rem, 4.2vw, 3rem); line-height: 1.14; margin: 0.4rem 0 0.6rem; }
+h1 { font-size: clamp(2rem, 3.8vw, 2.7rem); font-weight: 700; line-height: 1.18; letter-spacing: -0.022em; margin: 0.4rem 0 0.6rem; }
 h2 { font-size: 1.35rem; margin: 0 0 0.8rem; }
 h3 { font-size: 1.1rem; margin: 1.1rem 0 0.4rem; }
 h4 { font-size: 1rem; margin: 1rem 0 0.35rem; }
@@ -71,6 +71,12 @@ p, li { text-wrap: pretty; }
 p { margin: 0 0 1em; }
 strong { font-weight: 600; }
 .doc-section p, .doc-section li { max-width: 74ch; }
+.doc-section p, .doc-section > ul:not(.field-list):not(.timeline), .doc-section > ol:not(.condition-list) {
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Songti SC", SimSun, STSong, "Noto Serif CJK SC", "Source Han Serif SC", serif;
+  font-size: 18px;
+  line-height: 1.9;
+  letter-spacing: 0.008em;
+}
 code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.86em; font-family: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-variant-ligatures: none; }
 .file-link { text-decoration: none; border-bottom: 1px dotted var(--accent); }
 .file-link code { color: var(--accent); }
@@ -161,7 +167,7 @@ figure { margin: 1.25rem 0; }
 figure img { border: 1px solid var(--line); border-radius: 10px; }
 figcaption { margin-top: 0.4rem; font-size: 0.85rem; color: var(--muted); }
 .evidence-item { border: 1px solid var(--line); border-radius: 8px; padding: 0.6rem 0.8rem; margin: 0.5rem 0; background: var(--paper); }
-.evidence-label { margin: 0 0 0.3rem; font-weight: 600; }
+.doc-section .evidence-label { margin: 0 0 0.3rem; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; font-size: 0.95rem; line-height: 1.6; letter-spacing: 0.003em; }
 .evidence-link { margin-top: 1.5rem; }
 
 @media (max-width: 860px) {
@@ -176,6 +182,7 @@ figcaption { margin-top: 0.4rem; font-size: 0.85rem; color: var(--muted); }
   .queue-nav, .toc { display: none; }
   .doc-layout { display: block; }
   body { background: #fff; color: #000; font-size: 10.5pt; }
+  .doc-section p, .doc-section > ul:not(.field-list):not(.timeline), .doc-section > ol:not(.condition-list) { font-size: 10.5pt; line-height: 1.55; }
   .doc-section, .kpi, .link-card { background: #fff; border-color: #ccc; }
   h1, h2, h3, h4 { color: #000; }
 }
