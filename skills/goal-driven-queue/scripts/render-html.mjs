@@ -26,6 +26,78 @@ img { max-width: 100%; height: auto; }
 .queue-nav a { text-decoration: none; }
 .queue-nav-sep { opacity: 0.5; }
 .queue-nav-unavailable { opacity: 0.6; }
+:root {
+  --bg: #f7f7f8;
+  --fg: #1d1d1f;
+  --muted: #6b6b70;
+  --line: #d9d9de;
+  --card: #ffffff;
+  --accent: #2563eb;
+  --green: #15803d;
+  --amber: #b45309;
+  --red: #b91c1c;
+  --blue: #1d4ed8;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111113;
+    --fg: #ececf0;
+    --muted: #a1a1a8;
+    --line: #2c2c31;
+    --card: #1a1a1e;
+    --accent: #60a5fa;
+    --green: #4ade80;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --blue: #93c5fd;
+  }
+}
+body { background: var(--bg); color: var(--fg); }
+.doc-header { padding: 1rem 0 1.25rem; border-bottom: 1px solid var(--line); margin-bottom: 1.5rem; }
+.doc-kicker { margin: 0; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.doc-subtitle { margin: 0.25rem 0 1rem; color: var(--muted); max-width: 72ch; }
+.chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.chip { display: inline-flex; align-items: baseline; gap: 0.35rem; padding: 0.25rem 0.6rem; border: 1px solid var(--line); border-radius: 999px; background: var(--card); font-size: 0.82rem; }
+.chip-key { color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.pill { display: inline-block; padding: 0.1rem 0.55rem; border-radius: 999px; font-size: 0.78rem; font-weight: 600; border: 1px solid transparent; }
+.pill-done, .pill-verified { color: var(--green); border-color: currentColor; background: rgba(21, 128, 61, 0.08); }
+.pill-awaiting, .pill-pending, .pill-in-progress, .pill-waiting-dependency { color: var(--amber); border-color: currentColor; background: rgba(180, 83, 9, 0.08); }
+.pill-failed, .pill-returned, .pill-conflict-pending-confirmation { color: var(--red); border-color: currentColor; background: rgba(185, 28, 28, 0.08); }
+.pill-skipped, .pill-parked { color: var(--muted); border-color: currentColor; background: rgba(127, 127, 127, 0.08); }
+.kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.7rem; margin: 1.1rem 0 0; }
+.kpi { border: 1px solid var(--line); border-radius: 10px; background: var(--card); padding: 0.7rem 0.8rem; }
+.kpi-value { font-size: 1.5rem; font-weight: 700; line-height: 1.1; }
+.kpi-label { font-size: 0.78rem; color: var(--muted); }
+.doc-layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 2rem; align-items: start; }
+.toc { position: sticky; top: 1rem; border: 1px solid var(--line); border-radius: 10px; background: var(--card); padding: 0.8rem; font-size: 0.88rem; }
+.toc-title { margin: 0 0 0.5rem; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.toc a { display: block; padding: 0.25rem 0.4rem; border-radius: 6px; text-decoration: none; color: var(--fg); }
+.toc a:hover { background: rgba(127, 127, 127, 0.1); }
+.doc-main { min-width: 0; }
+.doc-section { border: 1px solid var(--line); border-radius: 12px; background: var(--card); padding: 1.1rem 1.25rem; margin-bottom: 1rem; }
+.doc-section h2 { display: flex; gap: 0.55rem; align-items: baseline; margin: 0 0 0.75rem; font-size: 1.15rem; }
+.section-index { font-size: 0.78rem; color: var(--muted); }
+.callout { border-left: 4px solid var(--accent); }
+.callout-problem { border-left-color: var(--red); }
+.callout-cause { border-left-color: var(--amber); }
+.callout-fix { border-left-color: var(--green); }
+.callout-decision { border-left-color: var(--blue); }
+.field-list { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.5rem; }
+.field-list > li { border: 1px solid var(--line); border-radius: 8px; padding: 0.5rem 0.7rem; background: var(--bg); }
+.field-list > li.verdict { grid-column: 1 / -1; border: 2px solid var(--green); background: var(--card); }
+.condition-list { list-style: none; padding: 0; display: grid; gap: 0.6rem; }
+.condition-list > li { border: 1px solid var(--line); border-radius: 10px; padding: 0.7rem 0.8rem; background: var(--bg); }
+.timeline { list-style: none; padding: 0; margin: 0.5rem 0 0 0.5rem; border-left: 2px solid var(--line); }
+.timeline > li { position: relative; padding: 0.25rem 0 0.75rem 1rem; }
+.timeline > li::before { content: ""; position: absolute; left: -5px; top: 0.55rem; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.link-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.7rem; margin-top: 1rem; }
+.link-card { display: flex; flex-direction: column; gap: 0.25rem; border: 1px solid var(--line); border-radius: 10px; background: var(--card); padding: 0.8rem 0.9rem; text-decoration: none; color: var(--fg); }
+.link-card:hover { border-color: var(--accent); }
+.link-card-label { font-weight: 600; }
+.link-card-path { font-size: 0.78rem; color: var(--muted); word-break: break-all; }
+.link-card.unavailable { opacity: 0.65; }
+@media (max-width: 860px) { .doc-layout { grid-template-columns: 1fr; } .toc { position: static; } }
+@media print { .queue-nav, .toc { display: none; } .doc-layout { display: block; } body { background: #fff; color: #000; } }
 `;
 
 export function escapeHtml(value) {
@@ -357,25 +429,178 @@ export function renderNav(items, options = {}) {
   return `<nav class="queue-nav" aria-label="文档导航">${links.join('<span class="queue-nav-sep">·</span>')}</nav>`;
 }
 
-export function renderMarkdown(markdown, options = {}) {
-  const sourcePath = options.sourcePath || "document.md";
-  const generatedAt = options.generatedAt || new Date().toISOString();
-  const context = {
-    sourcePath,
-    root: options.root || path.dirname(sourcePath),
-    linkExists: options.linkExists,
-  };
+function slugifyStatus(value) {
+  return String(value).toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9一-龥-]/g, "");
+}
 
+function parseMetaLine(line) {
+  const match = /^-\s+([^:：]+)[:：]\s*(.*)$/.exec(line);
+  if (!match) return null;
+  return { key: match[1].trim(), value: match[2].trim() };
+}
+
+function parseDocument(markdown) {
   const lines = String(markdown).replace(/\r\n?/g, "\n").split("\n");
-  const body = renderBlocks(lines, context);
-  const titleMatch = /^#{1,6}\s+(.+)$/m.exec(markdown);
-  const title = titleMatch ? titleMatch[1] : path.basename(sourcePath).replace(/\.md$/i, "");
+  let title = "";
+  const meta = [];
+  const overview = [];
+  const sections = [];
+  let current = null;
+  let inMeta = true;
+
+  for (const line of lines) {
+    if (!title && /^#\s+/.test(line)) {
+      title = line.replace(/^#\s+/, "").trim();
+      continue;
+    }
+    if (/^##\s+/.test(line)) {
+      if (current) sections.push(current);
+      current = { title: line.replace(/^##\s+/, "").trim(), lines: [] };
+      inMeta = false;
+      continue;
+    }
+    if (inMeta && /^-\s+/.test(line)) {
+      meta.push(line);
+      continue;
+    }
+    if (inMeta) {
+      if (current) current.lines.push(line);
+      else overview.push(line);
+      continue;
+    }
+    if (current) current.lines.push(line);
+  }
+
+  if (current) sections.push(current);
+  if (overview.some((line) => line.trim())) sections.unshift({ title: "概览", lines: overview });
+
+  return { title, meta: meta.map(parseMetaLine).filter(Boolean), sections };
+}
+
+function renderRichValue(value, context) {
+  const trimmed = value.trim();
+  if (/^(done|verified|awaiting|returned|failed|skipped|pending|in progress|parked|waiting dependency|conflict pending confirmation)$/i.test(trimmed)) {
+    return `<span class="pill pill-${slugifyStatus(trimmed)}">${escapeHtml(trimmed)}</span>`;
+  }
+  const url = /(https?:\/\/\S+)/.exec(value);
+  if (url) {
+    const before = value.slice(0, url.index);
+    const after = value.slice(url.index + url[1].length);
+    return `${renderInline(before, context)}<a href="${escapeHtml(url[1])}">${escapeHtml(url[1])}</a>${renderInline(after, context)}`;
+  }
+  return renderInline(value, context);
+}
+
+function renderMetaChips(meta, context) {
+  return meta
+    .map((item) => {
+      const value = renderRichValue(item.value, context);
+      return `<span class="chip"><span class="chip-key">${escapeHtml(item.key)}</span><span class="chip-value">${value}</span></span>`;
+    })
+    .join("");
+}
+
+function kindLabel(kind) {
+  return {
+    card: "任务卡",
+    triage: "Triage 记录",
+    progress: "进度文档",
+    verification: "人工核对",
+    report: "完成报告",
+    document: "队列文档",
+  }[kind] || "队列文档";
+}
+
+function metaValue(doc, needle) {
+  const item = doc.meta.find((entry) => entry.key.includes(needle));
+  return item ? item.value : "";
+}
+
+function deriveSubtitle(doc, kind) {
+  if (kind === "card") {
+    return [metaValue(doc, "Status"), metaValue(doc, "Engine")].filter(Boolean).join(" · ");
+  }
+  if (kind === "progress") {
+    return [metaValue(doc, "窗口"), metaValue(doc, "触顶")].filter(Boolean).join(" · ");
+  }
+  if (kind === "verification") return metaValue(doc, "核对");
+  if (kind === "report") return [metaValue(doc, "结果"), metaValue(doc, "MR")].filter(Boolean).join(" · ");
+  if (kind === "triage") return metaValue(doc, "本批卡片");
+  return "";
+}
+
+function renderKpiRow(items) {
+  if (!items.length) return "";
+  return `<div class="kpi-row">${items
+    .map(([label, value]) => `<div class="kpi"><div class="kpi-value">${escapeHtml(value)}</div><div class="kpi-label">${escapeHtml(label)}</div></div>`)
+    .join("")}</div>`;
+}
+
+function renderKpis(doc, kind) {
+  if (kind === "verification") {
+    const counts = metaValue(doc, "核对");
+    const other = metaValue(doc, "其他结果");
+    const items = [];
+    const first = /Verified\s+(\d+)\s*\/\s*Awaiting\s+(\d+)\s*\/\s*Returned\s+(\d+)/i.exec(counts);
+    if (first) items.push(["Verified", first[1]], ["Awaiting", first[2]], ["Returned", first[3]]);
+    const second = /Failed\s+(\d+)\s*\/\s*Skipped\s+(\d+)\s*\/\s*Parked\s+(\d+)\s*\/\s*Left pending\s+(\d+)/i.exec(other);
+    if (second) items.push(["Failed", second[1]], ["Skipped", second[2]], ["Parked", second[3]], ["Left pending", second[4]]);
+    return renderKpiRow(items);
+  }
+
+  if (kind === "progress") {
+    const overview = doc.sections.find((section) => section.title === "概览");
+    if (!overview) return "";
+    const rows = overview.lines.filter(
+      (line) => line.trim().startsWith("|") && !line.includes("---"),
+    );
+    const dataRows = rows.slice(1);
+    const done = dataRows.filter((line) => /\bdone\b/.test(line)).length;
+    const failed = dataRows.filter((line) => /\bfailed\b/.test(line)).length;
+    return renderKpiRow([
+      ["任务", String(dataRows.length)],
+      ["done", String(done)],
+      ["failed", String(failed)],
+      ["其他", String(Math.max(0, dataRows.length - done - failed))],
+    ]);
+  }
+
+  return "";
+}
+
+function sectionClass(title) {
+  if (/问题/.test(title)) return "callout callout-problem";
+  if (/原因/.test(title)) return "callout callout-cause";
+  if (/已完成的修复|修复/.test(title)) return "callout callout-fix";
+  if (/需要你决定|待人工/.test(title)) return "callout callout-decision";
+  return "";
+}
+
+function renderSection(section, index, context) {
+  let body = renderBlocks(section.lines, context);
+  if (/关键事件/.test(section.title)) {
+    body = body.replace(/^<ul>/, '<ul class="timeline">');
+  }
+  if (/目标条件/.test(section.title)) {
+    body = body.replace(/^<ol>/, '<ol class="condition-list">');
+  }
+  if (/^卡片[：:]/.test(section.title)) {
+    body = body.replace(/^<ul>/, '<ul class="field-list">');
+    body = body.replace(/<li>裁决：/g, '<li class="verdict">裁决：');
+  }
+  if (/核对清单|冻结决策|约束|我替你做的决定|验收摘要|证据清单|需要你决定/.test(section.title)) {
+    body = body.replace(/^<ul>/, '<ul class="item-list">').replace(/^<ol>/, '<ol class="item-list">');
+  }
+
+  return `<section class="doc-section ${sectionClass(section.title)}" id="sec-${index}"><h2><span class="section-index">${String(index).padStart(2, "0")}</span>${renderInline(section.title, context)}</h2>${body}</section>`;
+}
+
+function renderShell({ title, body, options = {}, generatedAt, sourcePath }) {
   const sourceLabel = options.sourceLabel
     ? ` (original: <code>${escapeHtml(options.sourceLabel)}</code>)`
     : "";
-
   return `<!doctype html>
-<html lang="en">
+<html lang="${escapeHtml(options.lang || "en")}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -391,6 +616,61 @@ ${body}
 </body>
 </html>
 `;
+}
+
+export function renderDocument(markdown, options = {}) {
+  const sourcePath = options.sourcePath || "document.md";
+  const generatedAt = options.generatedAt || new Date().toISOString();
+  const context = {
+    sourcePath,
+    root: options.root || path.dirname(sourcePath),
+    linkExists: options.linkExists,
+  };
+  const doc = parseDocument(markdown);
+  const kind = options.kind || "document";
+  const title = doc.title.replace(/^Goal:\s*/i, "").trim() || path.basename(sourcePath).replace(/\.md$/i, "");
+  const subtitle = deriveSubtitle(doc, kind);
+  const metaChips = renderMetaChips(doc.meta, context);
+  const kpis = renderKpis(doc, kind);
+  const toc = doc.sections
+    .map((section, index) => `<a href="#sec-${index + 1}">${String(index + 1).padStart(2, "0")} · ${escapeHtml(section.title)}</a>`)
+    .join("");
+  const sections = doc.sections
+    .map((section, index) => renderSection(section, index + 1, context))
+    .join("\n");
+
+  const body = `<header class="doc-header">
+<p class="doc-kicker">${escapeHtml(kindLabel(kind))}</p>
+<h1>${escapeHtml(title)}</h1>
+${subtitle ? `<p class="doc-subtitle">${escapeHtml(subtitle)}</p>` : ""}
+${metaChips ? `<div class="chips">${metaChips}</div>` : ""}
+${kpis}
+</header>
+<div class="doc-layout">
+<aside class="toc"><p class="toc-title">本页目录</p>${toc}</aside>
+<div class="doc-main">
+${sections}
+</div>
+</div>`;
+
+  return renderShell({ title, body, options, generatedAt, sourcePath });
+}
+
+export function renderMarkdown(markdown, options = {}) {
+  const sourcePath = options.sourcePath || "document.md";
+  const generatedAt = options.generatedAt || new Date().toISOString();
+  const context = {
+    sourcePath,
+    root: options.root || path.dirname(sourcePath),
+    linkExists: options.linkExists,
+  };
+
+  const lines = String(markdown).replace(/\r\n?/g, "\n").split("\n");
+  const body = renderBlocks(lines, context);
+  const titleMatch = /^#{1,6}\s+(.+)$/m.exec(markdown);
+  const title = titleMatch ? titleMatch[1] : path.basename(sourcePath).replace(/\.md$/i, "");
+
+  return renderShell({ title, body, options, generatedAt, sourcePath });
 }
 
 export function renderFile(sourcePath, options = {}) {
@@ -416,7 +696,8 @@ export function renderFile(sourcePath, options = {}) {
     : "";
 
   const markdown = fs.readFileSync(absoluteSource, "utf8");
-  const html = renderMarkdown(markdown, {
+  const render = options.kind ? renderDocument : renderMarkdown;
+  const html = render(markdown, {
     ...options,
     sourcePath: absoluteSource,
     root,
@@ -458,9 +739,9 @@ export function renderEntryPage(options = {}) {
   const link = (label, value) => {
     const target = resolve(value);
     if (!target || !target.exists) {
-      return `<li>${escapeHtml(label)}: <em>${escapeHtml(labels.unavailable)}</em></li>`;
+      return `<div class="link-card unavailable"><span class="link-card-label">${escapeHtml(label)}</span><span class="link-card-path"><em>${escapeHtml(labels.unavailable)}</em></span></div>`;
     }
-    return `<li>${escapeHtml(label)}: <a href="${escapeHtml(target.href)}">${escapeHtml(value)}</a></li>`;
+    return `<a class="link-card" href="${escapeHtml(target.href)}"><span class="link-card-label">${escapeHtml(label)}</span><span class="link-card-path">${escapeHtml(value)}</span></a>`;
   };
 
   const cardLinks = (options.cards || [])
@@ -474,25 +755,22 @@ export function renderEntryPage(options = {}) {
     )
     .join("");
 
-  const body = `<h1>${escapeHtml(title)} — ${escapeHtml(options.batchId || "batch")}</h1>
-<ul>${link(labels.progress, options.progressPath)}${link(labels.triage, options.triagePath)}${link(labels.content, options.contentPath)}${cardLinks}</ul>`;
+  const kpis = options.kpis ? renderKpiRow(options.kpis) : "";
+  const body = `<header class="doc-header">
+<p class="doc-kicker">验收入口</p>
+<h1>${escapeHtml(title)} — ${escapeHtml(options.batchId || "batch")}</h1>
+<p class="doc-subtitle">${escapeHtml(options.subtitle || "打开任意页面即可横向查看本次运行的记录；缺失目标标注为不可用。")}</p>
+${kpis}
+</header>
+<div class="link-grid">${link(labels.progress, options.progressPath)}${link(labels.triage, options.triagePath)}${link(labels.content, options.contentPath)}${cardLinks}</div>`;
 
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escapeHtml(title)} — ${escapeHtml(options.batchId || "batch")}</title>
-<style>${CSS}</style>
-</head>
-<body>
-<main>
-${body}
-<footer>${escapeHtml(options.generatedLabelText || "Generated")}: <time datetime="${escapeHtml(generatedAt)}">${escapeHtml(generatedAt)}</time></footer>
-</main>
-</body>
-</html>
-`;
+  return renderShell({
+    title: `${title} — ${options.batchId || "batch"}`,
+    body,
+    options,
+    generatedAt,
+    sourcePath: entryPath,
+  });
 }
 
 export function readTrigger(progressPath) {
@@ -561,6 +839,7 @@ function parseArguments(argv) {
     };
 
     if (argument === "--root") options.root = takeValue();
+    else if (argument === "--kind") options.kind = takeValue();
     else if (argument === "--nav") options.navManifest = takeValue();
     else if (argument === "--nav-root") options.navRoot = takeValue();
     else if (argument === "--unavailable") options.unavailableLabel = takeValue();

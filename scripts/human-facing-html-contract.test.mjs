@@ -30,6 +30,11 @@ test("goal-driven-queue defines human-facing HTML views", () => {
   assert.match(skill, /Every generated human-facing HTML view carries a navigation block/);
   assert.match(skill, /mark a missing target as unavailable/);
   assert.match(reference, /shared navigation block/);
+  assert.match(skill, /designed reading documents, not a line-by-line Markdown translation/);
+  assert.match(skill, /section table of contents/);
+  assert.match(skill, /KPI tiles/);
+  assert.match(skill, /verdict card/);
+  assert.ok(reference.includes("--kind card|triage|progress|verification|report"));
 
   assert.match(reference, /## Human-Facing HTML Views/);
   assert.match(reference, /Trigger: interactive \| scheduled/);

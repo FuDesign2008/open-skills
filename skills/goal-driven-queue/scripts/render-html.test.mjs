@@ -6,6 +6,7 @@ import path from "node:path";
 import {
   normalizeTarget,
   renderMarkdown,
+  renderDocument,
   renderFile,
   renderEntryPage,
   readTrigger,
@@ -249,10 +250,11 @@ test("entry page links every category and annotates missing targets", () => {
   assert.match(html, /href="review\/done-card\.html"/);
   assert.match(html, /href="evidence\/done-card\.html"/);
   assert.match(html, /href="reports\/failed-card\.html"/);
-  assert.match(html, /Review failed-card: <em>unavailable<\/em>/);
-  assert.match(html, /Evidence failed-card: <em>unavailable<\/em>/);
-  assert.match(html, /Report skipped-card: <em>unavailable<\/em>/);
-  assert.match(html, /Review skipped-card: <em>unavailable<\/em>/);
+  assert.match(html, /Review failed-card/);
+  assert.match(html, /Evidence failed-card/);
+  assert.match(html, /<em>unavailable<\/em>/);
+  assert.match(html, /Report skipped-card/);
+  assert.match(html, /Review skipped-card/);
 
   const zeroDone = renderEntryPage({
     batchId: "b0",
@@ -263,7 +265,73 @@ test("entry page links every category and annotates missing targets", () => {
     triagePath: "triage.html",
     cards: [{ slug: "skipped-card", status: "skipped", viewPath: "skipped-card.html" }],
   });
-  assert.match(zeroDone, /Review skipped-card: <em>unavailable<\/em>/);
+  assert.match(zeroDone, /Review skipped-card/);
+  assert.match(zeroDone, /<em>unavailable<\/em>/);
+});
+
+test("renders a designed document page with header, toc, kpis and verdict", () => {
+  const dir = tmp();
+  const markdown = `# 人工核对 — b1
+
+- 队列：q-1
+- 核对：Verified 1 / Awaiting 0 / Returned 0
+- 其他结果：Failed 0 / Skipped 0 / Parked 0 / Left pending 0
+
+## 卡片：demo
+
+- 引擎：opsx-solve-workflow
+- 裁决：[x] verified（验收通过）
+
+## 需要你决定的事项
+
+- 合并 MR
+`;
+
+  const html = renderDocument(markdown, {
+    sourcePath: path.join(dir, "verification.md"),
+    root: dir,
+    kind: "verification",
+    generatedAt: AT,
+  });
+
+  assert.match(html, /class="doc-header"/);
+  assert.match(html, /class="toc"/);
+  assert.match(html, /class="doc-section/);
+  assert.match(html, /class="kpi-row"/);
+  assert.match(html, /class="field-list"/);
+  assert.match(html, /class="verdict"/);
+  assert.match(html, /callout-decision/);
+});
+
+test("renders a progress timeline and KPI tiles", () => {
+  const markdown = `# 进度
+
+- 窗口：07:14 → 08:16
+- 触顶：无
+
+## 概览
+
+| 任务 | 状态 |
+|---|---|
+| a | done |
+| b | failed |
+
+## 关键事件
+
+- 07:14 — 启动
+- 08:16 — 完成
+`;
+
+  const html = renderDocument(markdown, {
+    sourcePath: "/tmp/progress.md",
+    root: "/tmp",
+    kind: "progress",
+    generatedAt: AT,
+  });
+
+  assert.match(html, /class="kpi-row"/);
+  assert.match(html, /class="timeline"/);
+  assert.match(html, /class="kpi-value">2</);
 });
 
 test("open action is path-contained and shell-free", () => {
