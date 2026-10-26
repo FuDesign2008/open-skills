@@ -930,6 +930,11 @@ export function renderReviewPage(data = {}, options = {}) {
 export function renderEvidencePage(data = {}, options = {}) {
   const generatedAt = options.generatedAt || new Date().toISOString();
   const title = data.title || "证据留痕";
+  const context = {
+    sourcePath: options.sourcePath || "evidence.html",
+    root: options.root || process.cwd(),
+    fileLink: options.fileLink,
+  };
   const sections = (data.groups || [])
     .map((group) => {
       const items = (group.items || [])
@@ -938,7 +943,7 @@ export function renderEvidencePage(data = {}, options = {}) {
             return `<figure><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.alt || item.label || "")}"><figcaption>${escapeHtml(item.label || "")}</figcaption></figure>`;
           }
           const command = item.command ? `<p><code>${escapeHtml(item.command)}</code></p>` : "";
-          const output = item.output ? `<p>${escapeHtml(item.output)}</p>` : "";
+          const output = item.output ? `<p>${renderInline(item.output, context)}</p>` : "";
           return `<div class="evidence-item"><p class="evidence-label">${escapeHtml(item.label || "")}</p>${command}${output}</div>`;
         })
         .join("");
