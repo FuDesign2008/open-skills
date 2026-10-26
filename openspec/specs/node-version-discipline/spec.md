@@ -32,6 +32,10 @@ When probing CI/Docker config files for Node pins, the agent MUST check each can
 - **THEN** it MUST consider at least `.gitlab-ci.yml`, `.github/workflows/*` (when present), and common Dockerfiles by safe per-path checks
 - **AND** it MUST recognize pins expressed as `image: node:<ver>`, `node-version:`, `NODE_VERSION`, or `FROM node:<ver>`
 
+#### Scenario: Quoted YAML pins are recognized
+- **WHEN** a CI/Docker file pins Node with optional quotes (e.g. `node-version: '18'` or `image: "node:14"`)
+- **THEN** the probe MUST extract the same version it would from the unquoted form (`18` / `14`)
+
 ### Requirement: Degenerate engines ranges are non-authoritative
 The skill MUST treat clearly obsolete or placeholder `engines.node` ranges that cannot represent a modern project pin (including `>=0.8.0`) as non-authoritative: continue the probe chain and MUST NOT present them to the user as a peer candidate alongside real pins or README anecdotes when a later authoritative source exists or when asking for a version.
 

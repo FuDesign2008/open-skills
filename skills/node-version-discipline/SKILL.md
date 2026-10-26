@@ -1,6 +1,6 @@
 ---
 name: node-version-discipline
-version: "1.2.0"
+version: "1.2.1"
 user-invocable: true
 description: "Node version discipline — before running tsc / eslint / build / test / install in any Node project, align the Node version to the project's declared version (.nvmrc / .node-version / .tool-versions / volta / engines.node) and disclose it in the verification report, preventing false-pass / false-fail when the host default Node mismatches the project-pinned version; when the project declares no Node version at all, ask the user for the version and offer to persist a declaration file so future sessions/CI auto-align. Use this skill whenever the user is about to run a version-sensitive Node command, or mentions Node version mismatch / wrong Node / version conflict. 中文触发词「node 版本对齐」「nvm 对齐」「.nvmrc」「Node 版本纪律」「对齐 Node 版本」「切换 node 版本」「版本不匹配」「初始化 node 版本管理」「为工程增加 node 版本声明」「给工程加 .nvmrc」「无 .nvmrc 时补一个」「工程没有 node 版本管理」, English aliases node version discipline, nvm use, align node version, switch node version, add nvmrc, initialize node version."
 ---
@@ -48,7 +48,7 @@ If `npm install` / `npm ci` prints `Exit handler never called!` (or similar corr
 | 3 | `.tool-versions` | exact | asdf native |
 | 4 | `package.json` → `"volta".node` | exact | Volta native — the only source Volta reads |
 | 5 | `package.json` → `engines.node` | range | Only when **non-degenerate** (see below); npm warns unless `engine-strict`; pick an installed version inside the range |
-| 6 | CI / Docker Node pin | exact | Inference — label the source in the report. Candidates: `.gitlab-ci.yml`, `.github/workflows/*`, `Jenkinsfile`, common `Dockerfile` / `Dockerfile.*` names. Recognize `image: node:<ver>`, `node-version:`, `NODE_VERSION`, `FROM node:<ver>` |
+| 6 | CI / Docker Node pin | exact | Inference — label the source in the report. Candidates: `.gitlab-ci.yml`, `.github/workflows/*`, `Jenkinsfile`, common `Dockerfile` / `Dockerfile.*` names. Recognize `image: node:<ver>`, `node-version:`, `NODE_VERSION`, `FROM node:<ver>` (optional YAML quotes around the image/version token) |
 
 Walk up the directory tree for files (rows 1-3); read `package.json` and CI/Docker config from the project root. The two cross-tool blind spots in rows 1 and 2 are non-obvious — see §4.
 
@@ -215,7 +215,9 @@ probe_file() {  # $1 = filename; prints a version walking up the tree
   done
 }
 extract_node_pin() {  # stdin → first node major/minor/patch from CI/Docker idioms
-  grep -Eo '(image:[[:space:]]*node:|FROM[[:space:]]+node:|node-version:[[:space:]]*|NODE_VERSION[=:[:space:]]+)v?[0-9]+(\.[0-9]+){0,2}' \
+  # Strip YAML/Actions quotes so `node-version: '18'` / `image: "node:14"` still match.
+  sed -E "s/[\"']//g" \
+    | grep -Eo '(image:[[:space:]]*node:|FROM[[:space:]]+node:|node-version:[[:space:]]*|NODE_VERSION[=:[:space:]]+)v?[0-9]+(\.[0-9]+){0,2}' \
     | head -1 | grep -Eo 'v?[0-9]+(\.[0-9]+){0,2}' | head -1 | sed 's/^v//'
 }
 probe_ci() {
