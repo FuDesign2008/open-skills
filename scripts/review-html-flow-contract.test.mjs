@@ -51,7 +51,8 @@ test("goal-driven-queue writes one evidence page per done card", () => {
   assert.match(skill, /no checks were recorded/);
   assert.match(skill, /does not get an evidence page/);
   assert.match(skill, /enqueue shell does not write the evidence page/);
-  assert.match(skill, /one link to that card's evidence page/);
+  assert.match(skill, /does not add a standalone evidence link/);
+  assert.match(skill, /shared navigation reach the evidence page/);
   assert.match(skill, /verification\.md section records the evidence page path/);
   assert.match(reference, /Evidence page:/);
   for (const rel of [

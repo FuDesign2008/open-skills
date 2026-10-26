@@ -176,7 +176,6 @@ figure img { border: 1px solid var(--line); border-radius: 10px; }
 figcaption { margin-top: 0.4rem; font-size: 0.85rem; color: var(--muted); }
 .evidence-item { border: 1px solid var(--line); border-radius: 8px; padding: 0.6rem 0.8rem; margin: 0.5rem 0; background: var(--paper); }
 .doc-section .evidence-label { margin: 0 0 0.3rem; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; font-size: 0.95rem; line-height: 1.6; letter-spacing: 0.003em; }
-.evidence-link { margin-top: 1.5rem; }
 
 @media (max-width: 860px) {
   .doc-layout { grid-template-columns: 1fr; }
@@ -967,10 +966,7 @@ export function renderReviewPage(data = {}, options = {}) {
         `<section class="doc-section ${className}"><h2>${escapeHtml(label)}</h2>${renderBlocks(String(text || "").split("\n"), context)}</section>`,
     )
     .join("");
-  const evidence = data.evidencePath
-    ? `<p class="evidence-link"><a href="${escapeHtml(data.evidencePath)}">证据留痕</a></p>`
-    : "";
-  const body = `<header class="doc-header"><p class="doc-kicker">变更说明</p><h1>${escapeHtml(title)}</h1>${data.lead ? `<p class="doc-subtitle">${escapeHtml(data.lead)}</p>` : ""}</header>${cards}${evidence}`;
+  const body = `<header class="doc-header"><p class="doc-kicker">变更说明</p><h1>${escapeHtml(title)}</h1>${data.lead ? `<p class="doc-subtitle">${escapeHtml(data.lead)}</p>` : ""}</header>${cards}`;
   return renderShell({ title, body, options, generatedAt, sourcePath: context.sourcePath });
 }
 

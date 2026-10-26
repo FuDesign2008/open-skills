@@ -396,8 +396,8 @@ test("generates the review page from structured data", () => {
   assert.match(html, /callout-problem/);
   assert.match(html, /callout-cause/);
   assert.match(html, /callout-fix/);
-  assert.match(html, /href="evidence\.html"/);
-  assert.match(html, /证据留痕/);
+  assert.doesNotMatch(html, /href="evidence\.html"/);
+  assert.doesNotMatch(html, /证据留痕/);
 });
 
 test("generates the evidence page from structured data", () => {

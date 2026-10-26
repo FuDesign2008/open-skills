@@ -561,7 +561,7 @@ After a batch run ends (caps hit or queue empty) and the acceptance package is a
 
 ### Requirement: goal-queue SHALL write one review HTML per completed card
 
-For every card that reaches done, under stage-exit policy manual, auto, or ai-proxy, the dispatcher MUST write one HTML page by following explain-clearly with the form fixed to HTML. The page MUST state the problem, the cause, and the completed fix. The page MUST include one link to that card's evidence HTML page after the explanation visual. The link MUST NOT replace the problem, the cause, or the completed fix. The acceptance package MUST record that file's path. A card that is not done MUST NOT get this page. An enqueue shell MUST NOT write it.
+For every card that reaches done, under stage-exit policy manual, auto, or ai-proxy, the dispatcher MUST write one HTML page by following explain-clearly with the form fixed to HTML. The page MUST state the problem, the cause, and the completed fix. The page MUST NOT add a standalone link to the evidence page after the explanation; the shared navigation block and the acceptance entry page reach that evidence page. The acceptance package MUST record that file's path. A card that is not done MUST NOT get this page. An enqueue shell MUST NOT write it.
 
 #### Scenario: Five completed cards produce five files
 
@@ -576,12 +576,12 @@ For every card that reaches done, under stage-exit policy manual, auto, or ai-pr
 #### Scenario: Manual policy still writes the file
 
 - **WHEN** a card reaches done and its stage-exit policy is manual
-- **THEN** the dispatcher still writes that card's review HTML page, the page links to that card's evidence page, and the acceptance package records the review path
+- **THEN** the dispatcher still writes that card's review HTML page, and the acceptance package records the review path
 
 #### Scenario: Review page links to the evidence page
 
-- **WHEN** a card reaches done and its evidence page has been written
-- **THEN** the review HTML contains one link to that evidence page after the explanation visual, and the visual still states the problem, the cause, and the completed fix
+- **WHEN** a card reaches done, the review HTML and its evidence page both exist
+- **THEN** the shared navigation block on the review page links to the evidence page, and the review body carries no standalone evidence link
 
 ### Requirement: goal-queue SHALL write one evidence HTML per completed card
 
