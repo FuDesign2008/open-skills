@@ -60,6 +60,9 @@ h2 { font-size: 1.25rem; margin: 0 0 0.8rem; }
 h3 { font-size: 1.05rem; margin: 1.1rem 0 0.4rem; }
 h4 { font-size: 0.98rem; margin: 1rem 0 0.35rem; }
 code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.9em; }
+.file-link { text-decoration: none; border-bottom: 1px dotted var(--accent); }
+.file-link code { color: var(--accent); }
+.file-link-icon { font-size: 0.75em; margin-left: 0.15em; opacity: 0.8; }
 pre { background: var(--code-bg); padding: 1rem; overflow: auto; border-radius: 10px; }
 pre code { background: none; padding: 0; }
 table { width: 100%; border-collapse: collapse; margin: 0.5rem 0 1rem; }
@@ -235,6 +238,14 @@ function renderImage(alt, rawTarget, title, context) {
   return `<img src="${escapeHtml(normalized.value)}" alt="${escapeHtml(alt)}"${titleAttribute}>`;
 }
 
+function renderCodeSpan(content, context) {
+  const escaped = `<code>${escapeHtml(content)}</code>`;
+  if (!context.fileLink) return escaped;
+  const href = context.fileLink(content);
+  if (!href) return escaped;
+  return `<a class="file-link" href="${escapeHtml(href)}" title="打开文件">${escaped}<span class="file-link-icon" aria-hidden="true">↗</span></a>`;
+}
+
 export function renderInline(text, context) {
   let output = "";
   let index = 0;
@@ -245,7 +256,7 @@ export function renderInline(text, context) {
     if (character === "`") {
       const end = text.indexOf("`", index + 1);
       if (end !== -1) {
-        output += `<code>${escapeHtml(text.slice(index + 1, end))}</code>`;
+        output += renderCodeSpan(text.slice(index + 1, end), context);
         index = end + 1;
         continue;
       }
@@ -690,6 +701,7 @@ export function renderDocument(markdown, options = {}) {
     sourcePath,
     root: options.root || path.dirname(sourcePath),
     linkExists: options.linkExists,
+    fileLink: options.fileLink,
   };
   const doc = parseDocument(markdown);
   const kind = options.kind || "document";
@@ -728,6 +740,7 @@ export function renderMarkdown(markdown, options = {}) {
     sourcePath,
     root: options.root || path.dirname(sourcePath),
     linkExists: options.linkExists,
+    fileLink: options.fileLink,
   };
 
   const lines = String(markdown).replace(/\r\n?/g, "\n").split("\n");
@@ -760,6 +773,26 @@ export function renderFile(sourcePath, options = {}) {
       })
     : "";
 
+  const fileLink = (value) => {
+    if (!options.fileRoot) return null;
+    const candidate = String(value).trim();
+    if (!candidate || /^https?:\/\//i.test(candidate)) return null;
+    const looksLikePath =
+      candidate.includes("/") ||
+      candidate.includes("\\") ||
+      /\.(md|mjs|js|ts|tsx|json|html|css|sh|yml|yaml|toml|txt)$/i.test(candidate);
+    if (!looksLikePath) return null;
+
+    const bases = [options.fileRoot, root, path.dirname(absoluteSource), path.dirname(outPath)];
+    const found = bases
+      .map((base) => path.resolve(base, candidate))
+      .find((candidatePath) => fs.existsSync(candidatePath));
+    if (!found) return null;
+
+    const href = path.relative(path.dirname(outPath), found);
+    return href || path.basename(found);
+  };
+
   const markdown = fs.readFileSync(absoluteSource, "utf8");
   const render = options.kind ? renderDocument : renderMarkdown;
   const html = render(markdown, {
@@ -767,6 +800,7 @@ export function renderFile(sourcePath, options = {}) {
     sourcePath: absoluteSource,
     root,
     navHtml,
+    fileLink,
   });
 
   const temporary = `${outPath}.tmp`;
@@ -846,6 +880,7 @@ export function renderReviewPage(data = {}, options = {}) {
     sourcePath: options.sourcePath || "review.md",
     root: options.root || process.cwd(),
     linkExists: options.linkExists,
+    fileLink: options.fileLink,
   };
   const cards = [
     ["问题", data.problem, "callout-problem"],
@@ -953,6 +988,7 @@ function parseArguments(argv) {
 
     if (argument === "--root") options.root = takeValue();
     else if (argument === "--kind") options.kind = takeValue();
+    else if (argument === "--file-root") options.fileRoot = takeValue();
     else if (argument === "--nav") options.navManifest = takeValue();
     else if (argument === "--nav-root") options.navRoot = takeValue();
     else if (argument === "--unavailable") options.unavailableLabel = takeValue();

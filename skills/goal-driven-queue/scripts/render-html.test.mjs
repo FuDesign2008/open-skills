@@ -336,6 +336,22 @@ test("renders a progress timeline and KPI tiles", () => {
   assert.match(html, /class="kpi-value">2</);
 });
 
+test("links inline file paths that exist and leaves commands plain", () => {
+  const workspace = tmp();
+  fs.mkdirSync(path.join(workspace, "skills/demo"), { recursive: true });
+  fs.writeFileSync(path.join(workspace, "skills/demo/SKILL.md"), "# demo\n", "utf8");
+  const source = path.join(workspace, "doc.md");
+  fs.writeFileSync(source, "See `skills/demo/SKILL.md` and run `npm test`.\n", "utf8");
+
+  renderFile(source, { root: workspace, fileRoot: workspace, generatedAt: AT });
+
+  const html = fs.readFileSync(path.join(workspace, "doc.html"), "utf8");
+  assert.match(html, /class="file-link"/);
+  assert.match(html, /href="skills\/demo\/SKILL\.md"/);
+  assert.match(html, /<code>npm test<\/code>/);
+  assert.doesNotMatch(html, /file-link[^>]*>npm test/);
+});
+
 test("generates the review page from structured data", () => {
   const html = renderReviewPage(
     {
