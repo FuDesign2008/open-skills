@@ -7,6 +7,8 @@ import {
   normalizeTarget,
   renderMarkdown,
   renderDocument,
+  renderReviewPage,
+  renderEvidencePage,
   renderFile,
   renderEntryPage,
   readTrigger,
@@ -332,6 +334,46 @@ test("renders a progress timeline and KPI tiles", () => {
   assert.match(html, /class="kpi-row"/);
   assert.match(html, /class="timeline"/);
   assert.match(html, /class="kpi-value">2</);
+});
+
+test("generates the review page from structured data", () => {
+  const html = renderReviewPage(
+    {
+      title: "变更说明",
+      lead: "一句话说明",
+      problem: "问题",
+      cause: "原因",
+      fix: "修复",
+      evidencePath: "evidence.html",
+    },
+    { root: "/tmp", generatedAt: AT },
+  );
+  assert.match(html, /class="doc-header"/);
+  assert.match(html, /callout-problem/);
+  assert.match(html, /callout-cause/);
+  assert.match(html, /callout-fix/);
+  assert.match(html, /href="evidence\.html"/);
+  assert.match(html, /证据留痕/);
+});
+
+test("generates the evidence page from structured data", () => {
+  const html = renderEvidencePage(
+    {
+      title: "证据留痕",
+      groups: [
+        { heading: "打开 UI 的检查", items: [{ label: "截图", image: "a.png" }] },
+        {
+          heading: "未打开 UI 的检查",
+          items: [{ label: "测试", command: "npm test", output: "78/78" }],
+        },
+      ],
+    },
+    { root: "/tmp", generatedAt: AT },
+  );
+  assert.match(html, /<img src="a\.png"/);
+  assert.match(html, /<code>npm test<\/code>/);
+  assert.match(html, /78\/78/);
+  assert.doesNotMatch(html, /<img[^>]+src="[^"]*test/);
 });
 
 test("open action is path-contained and shell-free", () => {

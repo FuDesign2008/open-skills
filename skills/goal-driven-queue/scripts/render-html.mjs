@@ -98,6 +98,12 @@ body { background: var(--bg); color: var(--fg); }
 .link-card.unavailable { opacity: 0.65; }
 @media (max-width: 860px) { .doc-layout { grid-template-columns: 1fr; } .toc { position: static; } }
 @media print { .queue-nav, .toc { display: none; } .doc-layout { display: block; } body { background: #fff; color: #000; } }
+figure { margin: 1.25rem 0; }
+figure img { border: 1px solid var(--line); border-radius: 10px; }
+figcaption { margin-top: 0.4rem; font-size: 0.85rem; color: var(--muted); }
+.evidence-item { border: 1px solid var(--line); border-radius: 8px; padding: 0.6rem 0.8rem; margin: 0.5rem 0; background: var(--bg); }
+.evidence-label { margin: 0 0 0.3rem; font-weight: 600; }
+.evidence-link { margin-top: 1.5rem; }
 `;
 
 export function escapeHtml(value) {
@@ -771,6 +777,53 @@ ${kpis}
     generatedAt,
     sourcePath: entryPath,
   });
+}
+
+export function renderReviewPage(data = {}, options = {}) {
+  const generatedAt = options.generatedAt || new Date().toISOString();
+  const title = data.title || "变更说明";
+  const context = {
+    sourcePath: options.sourcePath || "review.md",
+    root: options.root || process.cwd(),
+    linkExists: options.linkExists,
+  };
+  const cards = [
+    ["问题", data.problem, "callout-problem"],
+    ["原因", data.cause, "callout-cause"],
+    ["已完成的修复", data.fix, "callout-fix"],
+  ]
+    .map(
+      ([label, text, className]) =>
+        `<section class="doc-section ${className}"><h2>${escapeHtml(label)}</h2>${renderBlocks(String(text || "").split("\n"), context)}</section>`,
+    )
+    .join("");
+  const evidence = data.evidencePath
+    ? `<p class="evidence-link"><a href="${escapeHtml(data.evidencePath)}">证据留痕</a></p>`
+    : "";
+  const body = `<header class="doc-header"><p class="doc-kicker">变更说明</p><h1>${escapeHtml(title)}</h1>${data.lead ? `<p class="doc-subtitle">${escapeHtml(data.lead)}</p>` : ""}</header>${cards}${evidence}`;
+  return renderShell({ title, body, options, generatedAt, sourcePath: context.sourcePath });
+}
+
+export function renderEvidencePage(data = {}, options = {}) {
+  const generatedAt = options.generatedAt || new Date().toISOString();
+  const title = data.title || "证据留痕";
+  const sections = (data.groups || [])
+    .map((group) => {
+      const items = (group.items || [])
+        .map((item) => {
+          if (item.image) {
+            return `<figure><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.alt || item.label || "")}"><figcaption>${escapeHtml(item.label || "")}</figcaption></figure>`;
+          }
+          const command = item.command ? `<p><code>${escapeHtml(item.command)}</code></p>` : "";
+          const output = item.output ? `<p>${escapeHtml(item.output)}</p>` : "";
+          return `<div class="evidence-item"><p class="evidence-label">${escapeHtml(item.label || "")}</p>${command}${output}</div>`;
+        })
+        .join("");
+      return `<section class="doc-section"><h2>${escapeHtml(group.heading || "")}</h2>${items}</section>`;
+    })
+    .join("");
+  const body = `<header class="doc-header"><p class="doc-kicker">证据留痕</p><h1>${escapeHtml(title)}</h1>${data.intro ? `<p class="doc-subtitle">${escapeHtml(data.intro)}</p>` : ""}</header>${sections}`;
+  return renderShell({ title, body, options, generatedAt, sourcePath: options.sourcePath || "evidence.html" });
 }
 
 export function readTrigger(progressPath) {
