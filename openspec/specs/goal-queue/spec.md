@@ -946,7 +946,7 @@ Inline code that names an existing file SHALL render as a link to that file; non
 
 ### Requirement: Plain URLs in human-facing HTML views SHALL be links
 
-Plain `http(s)` URLs in body text SHALL render as links. URLs inside code spans and Markdown links SHALL keep their own rendering. Trailing punctuation SHALL remain outside the link.
+Plain `http(s)` URLs in body text SHALL render as links. URLs inside code spans and Markdown links SHALL keep their own rendering. A URL SHALL end at whitespace, CJK punctuation, or fullwidth forms; trailing punctuation and any following text SHALL remain outside the link.
 
 #### Scenario: A plain URL becomes a link
 
@@ -962,6 +962,16 @@ Plain `http(s)` URLs in body text SHALL render as links. URLs inside code spans 
 
 - **WHEN** the source already contains a Markdown link
 - **THEN** the renderer keeps that link and does not create a second one
+
+#### Scenario: A URL followed by CJK punctuation ends at the URL
+
+- **WHEN** body text contains `https://example.com/pull/341；Node ...` with no space after the fullwidth semicolon
+- **THEN** the link ends at `341` and the semicolon and following text stay outside the link
+
+#### Scenario: Fullwidth brackets stay outside the link
+
+- **WHEN** body text contains `（https://example.com/x）。`
+- **THEN** the link is exactly `https://example.com/x`
 
 ### Requirement: Wide tables SHALL render as labeled record cards
 

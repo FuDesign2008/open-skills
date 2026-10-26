@@ -357,6 +357,13 @@ test("linkifies plain URLs in body text but not inside code spans", () => {
   assert.doesNotMatch(html, /<a href="https:\/\/example\.com\/y"/);
 });
 
+test("stops a plain URL at CJK punctuation", () => {
+  const html = render("MR：https://example.com/pull/341；见（https://example.com/x）。");
+  assert.match(html, /<a href="https:\/\/example\.com\/pull\/341">https:\/\/example\.com\/pull\/341<\/a>；见/);
+  assert.match(html, /<a href="https:\/\/example\.com\/x">https:\/\/example\.com\/x<\/a>）。/);
+  assert.doesNotMatch(html, /href="https:\/\/example\.com\/pull\/341；/);
+});
+
 test("links inline file paths that exist and leaves commands plain", () => {
   const workspace = tmp();
   fs.mkdirSync(path.join(workspace, "skills/demo"), { recursive: true });

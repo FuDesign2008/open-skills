@@ -270,7 +270,8 @@ function renderImage(alt, rawTarget, title, context) {
 }
 
 function renderPlainUrl(text, index) {
-  const match = /^https?:\/\/[^\s<>"']+/i.exec(text.slice(index));
+  // CJK punctuation and fullwidth forms never belong to a URL and often follow one without a space.
+  const match = /^https?:\/\/[^\s<>"'\u3000-\u303f\uff01-\uff65]+/i.exec(text.slice(index));
   if (!match) return null;
 
   let url = match[0];
