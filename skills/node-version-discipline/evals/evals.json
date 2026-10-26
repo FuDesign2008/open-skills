@@ -39,6 +39,19 @@
         "在询问中说明项目无声明，并提示建议后续添加 .nvmrc",
         "未在用户回答前自行执行 npm run build"
       ]
+    },
+    {
+      "id": 4,
+      "name": "gitlab-ci-pin-shell-safe",
+      "prompt": "这个 Angular 老项目没有 .nvmrc / .node-version，package.json engines 是 \">=0.8.0\"，根目录有 .gitlab-ci.yml（image: node:14），没有 Dockerfile。我要 npm install 再跑 build，帮我执行。注意不要因为 Dockerfile 不存在就误判没有 CI。",
+      "expected_output": "AI 应走完整探测链，用 shell-safe 方式确认 .gitlab-ci.yml 存在并读取 image: node:14；跳过退化 engines；在 Node 14 下再 install/build；不得因 Dockerfile* glob 失败报告「无 CI / 无声明」。",
+      "expectations": [
+        "探测时用逐路径存在性检查（或等价安全方式），不因缺失 Dockerfile* 而跳过 .gitlab-ci.yml",
+        "从 .gitlab-ci.yml 识别 Node 14（image: node:14）作为权威声明",
+        "不把 engines >=0.8.0 当作与 CI 并列的有效候选版本",
+        "在对齐到 Node 14 之后才执行 npm install / build（同一 shell 内 source && nvm use && …）",
+        "未向用户报告「没有 CI 配置」或「工程没有权威 Node 版本声明」"
+      ]
     }
   ]
 }

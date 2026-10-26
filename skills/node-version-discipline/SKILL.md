@@ -1,6 +1,6 @@
 ---
 name: node-version-discipline
-version: "1.1.0"
+version: "1.2.0"
 user-invocable: true
 description: "Node version discipline — before running tsc / eslint / build / test / install in any Node project, align the Node version to the project's declared version (.nvmrc / .node-version / .tool-versions / volta / engines.node) and disclose it in the verification report, preventing false-pass / false-fail when the host default Node mismatches the project-pinned version; when the project declares no Node version at all, ask the user for the version and offer to persist a declaration file so future sessions/CI auto-align. Use this skill whenever the user is about to run a version-sensitive Node command, or mentions Node version mismatch / wrong Node / version conflict. 中文触发词「node 版本对齐」「nvm 对齐」「.nvmrc」「Node 版本纪律」「对齐 Node 版本」「切换 node 版本」「版本不匹配」「初始化 node 版本管理」「为工程增加 node 版本声明」「给工程加 .nvmrc」「无 .nvmrc 时补一个」「工程没有 node 版本管理」, English aliases node version discipline, nvm use, align node version, switch node version, add nvmrc, initialize node version."
 ---
@@ -32,12 +32,14 @@ If the project declares a Node version **by any means** (see the priority chain 
 - `eslint` / `npm run lint`
 - `npm run build` / `webpack` / any build script
 - `npm test` / `jest` / any test command
-- `npm install` / `npm ci` (installing deps on the wrong version pulls wrong native modules)
+- `npm install` / `npm ci` (installing deps on the wrong version pulls wrong native modules — **never install before the probe+align step completes**)
 - any `npm run <script>` (scripts may invoke version-sensitive tools internally)
+
+If `npm install` / `npm ci` prints `Exit handler never called!` (or similar corrupt-install noise), treat the install as **failed** even when the process exit code is `0`: stop using that `node_modules`, re-align Node, clean reinstall, then continue. Do not proceed to tsc/build/test on a suspect tree.
 
 ### Version-declaration priority chain
 
-`.nvmrc` is the nvm convention, not the only one. Node version managers disagree on which file they read, so probe the whole chain in order — first hit wins:
+`.nvmrc` is the nvm convention, not the only one. Node version managers disagree on which file they read, so probe the whole chain in order — first **authoritative** hit wins:
 
 | # | Source | Kind | Cross-tool notes |
 |---|--------|------|------------------|
@@ -45,10 +47,14 @@ If the project declares a Node version **by any means** (see the priority chain 
 | 2 | `.node-version` | exact | fnm / nodenv / nvs native; asdf needs legacy flag; **nvm ignores** |
 | 3 | `.tool-versions` | exact | asdf native |
 | 4 | `package.json` → `"volta".node` | exact | Volta native — the only source Volta reads |
-| 5 | `package.json` → `engines.node` | range | declarative only (npm warns, doesn't enforce unless `engine-strict`); pick an installed version inside the range |
-| 6 | CI config `node-version` (e.g. `.github/workflows/*.yml`) | exact | inference — label it as such in the report |
+| 5 | `package.json` → `engines.node` | range | Only when **non-degenerate** (see below); npm warns unless `engine-strict`; pick an installed version inside the range |
+| 6 | CI / Docker Node pin | exact | Inference — label the source in the report. Candidates: `.gitlab-ci.yml`, `.github/workflows/*`, `Jenkinsfile`, common `Dockerfile` / `Dockerfile.*` names. Recognize `image: node:<ver>`, `node-version:`, `NODE_VERSION`, `FROM node:<ver>` |
 
-Walk up the directory tree for files (rows 1-3); read `package.json` and CI config from the project root. The two cross-tool blind spots in rows 1 and 2 are non-obvious — see §4.
+Walk up the directory tree for files (rows 1-3); read `package.json` and CI/Docker config from the project root. The two cross-tool blind spots in rows 1 and 2 are non-obvious — see §4.
+
+**Degenerate `engines.node`:** treat placeholder / ancient lower bounds that cannot be a modern project pin as **non-authoritative** — at minimum `>=0.8.0`, `>0.8.0`, `>=0.10.0`, and similarly stale floors. Continue the chain; do **not** present them as peer candidates next to a real CI pin or a README anecdote when asking the user.
+
+**Shell-safe CI/Docker probing:** check each candidate path with `[ -f path ]` (or `find` / a nullglob-safe loop). Never put required literals and optional globs in one expandable argv under zsh `nomatch` (e.g. `ls .gitlab-ci.yml Dockerfile*` — a missing `Dockerfile*` aborts before `.gitlab-ci.yml` is checked). Prefer a small fixed name list (`Dockerfile`, `Dockerfile.web`, …) plus per-path tests; project-specific names get their own `[ -f ]`, not a risky multi-glob `ls`.
 
 ### When no declaration exists
 
@@ -144,6 +150,9 @@ After switching, always `node -v` before the real command. `nvm use` can fail si
 | "Higher version passed" ≡ "pinned version passes" | False pass | Pinned version is the source of truth |
 | Project has `.node-version` but you're on nvm | nvm ignores `.node-version` → silent fall-back to default | Probe the full chain (§2); if only `.node-version` exists, `nvm use $(cat .node-version)` |
 | Project pins via Volta (`package.json` `"volta"`) but you're on nvm/fnm | Volta's pin is invisible to nvm/fnm | Read `package.json` `"volta".node` and `nvm use` that exact version |
+| `ls .gitlab-ci.yml Dockerfile*` (zsh, no Dockerfile) | Glob fails → whole command never runs → false "no CI" | Per-path `[ -f ]` / §7 CI probe; never mix literals with unmatched globs |
+| Trust `engines: ">=0.8.0"` as the pin | Skips real CI pin; offers nonsense candidates | Degenerate engines → continue chain (§2) |
+| `npm install` before align; ignore `Exit handler never called!` when exit 0 | Corrupt `node_modules` / lockfile; later checks untrustworthy | Align first; treat that message as install failure (§2) |
 
 ## 5. Verification report disclosure
 
@@ -197,20 +206,53 @@ No `dependencies` declared, no precondition check — relies on the AI invoking 
 ## 7. Self-contained detection script (paste-ready)
 
 ```bash
-# Probe the full version-declaration chain (cross-tool), then switch via nvm.
-# First hit in priority order wins. See §2 for why we probe beyond .nvmrc.
+# Probe the full version-declaration chain (cross-tool), including CI/Docker, then switch via nvm.
+# First authoritative hit wins. Shell-safe: per-path [ -f ], no mixed literal+glob ls.
+# See §2 for priority, degenerate engines, and CI rules.
 probe_file() {  # $1 = filename; prints a version walking up the tree
   for d in . .. ../.. ../../..; do
     [ -f "$d/$1" ] && { cat "$d/$1" | grep -Eo 'v?[0-9]+(\.[0-9]+){0,2}' | head -1 | sed 's/^v//'; return; }
   done
 }
+extract_node_pin() {  # stdin → first node major/minor/patch from CI/Docker idioms
+  grep -Eo '(image:[[:space:]]*node:|FROM[[:space:]]+node:|node-version:[[:space:]]*|NODE_VERSION[=:[:space:]]+)v?[0-9]+(\.[0-9]+){0,2}' \
+    | head -1 | grep -Eo 'v?[0-9]+(\.[0-9]+){0,2}' | head -1 | sed 's/^v//'
+}
+probe_ci() {
+  # Fixed literals only — never `ls … Dockerfile*` under zsh nomatch.
+  for f in .gitlab-ci.yml Jenkinsfile Dockerfile Dockerfile.web Dockerfile.node; do
+    [ -f "$f" ] || continue
+    ver="$(extract_node_pin < "$f")"
+    [ -n "$ver" ] && { echo "$ver"; return; }
+  done
+  if [ -d .github/workflows ]; then
+    # find avoids shell glob expansion failures
+    while IFS= read -r f; do
+      [ -f "$f" ] || continue
+      ver="$(extract_node_pin < "$f")"
+      [ -n "$ver" ] && { echo "$ver"; return; }
+    done < <(find .github/workflows -type f \( -name '*.yml' -o -name '*.yaml' \) 2>/dev/null)
+  fi
+}
+is_degenerate_engines() {
+  case "$1" in
+    '>=0.8.0'|'>0.8.0'|'>=0.10.0'|'>0.10.0'|'>=0.12.0') return 0 ;;
+    *) return 1 ;;
+  esac
+}
 NODE_VER="$(probe_file .nvmrc)"
 [ -z "$NODE_VER" ] && NODE_VER="$(probe_file .node-version)"
 [ -z "$NODE_VER" ] && NODE_VER="$(probe_file .tool-versions)"
-# package.json: volta.node (exact) preferred over engines.node (range — handled manually)
 if [ -z "$NODE_VER" ] && [ -f package.json ]; then
   NODE_VER="$(node -e "const p=require('./package.json'); console.log(p.volta?.node || '')" 2>/dev/null)"
 fi
+if [ -z "$NODE_VER" ] && [ -f package.json ]; then
+  ENG="$(node -e "const p=require('./package.json'); console.log((p.engines&&p.engines.node)||'')" 2>/dev/null)"
+  if [ -n "$ENG" ] && ! is_degenerate_engines "$ENG"; then
+    NODE_VER="$(printf '%s' "$ENG" | grep -Eo '[0-9]+(\.[0-9]+){0,2}' | head -1)"
+  fi
+fi
+[ -z "$NODE_VER" ] && NODE_VER="$(probe_ci)"
 if [ -n "$NODE_VER" ]; then
   source ~/.nvm/nvm.sh 2>/dev/null && nvm use "$NODE_VER" >/dev/null 2>&1
   echo "✅ Node: $(node -v) (aligned to $NODE_VER)"
@@ -235,5 +277,6 @@ The SOP assumes nvm (Unix / macOS). Other environments:
 ## 9. Related
 
 - Origin: a real-world fix where a mobile project pinned `.nvmrc` = v14.21.3 while the host defaulted to v22, producing tsc/eslint false-passes under the higher version.
+- CI false-negative: a project whose only pin was `.gitlab-ci.yml` `image: node:14` was misreported as undeclared after a zsh glob abort — §2 shell-safe probing + §7 `probe_ci` close that gap.
 - No-declaration path: when a project declares no Node version at all, §2 turns the user's answer into a persistent declaration file (§2.1 picks the type via §2.2's toolchain probe), closing the loop so the next session reads it on the first probe instead of asking again.
 - **Referenced by**: PDCA hosts and related tools via frontmatter `dependencies` (hosts are SoT; this skill does not maintain an integrator name list). `test-suite-ensure` may soft-reference alignment before tests.
