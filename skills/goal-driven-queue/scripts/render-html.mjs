@@ -44,33 +44,45 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans CJK SC", "Segoe UI", sans-serif;
-  line-height: 1.75;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  font-size: 17px;
+  line-height: 1.78;
+  letter-spacing: 0.003em;
+  font-optical-sizing: auto;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
 }
 main { max-width: 1040px; margin: 0 auto; padding: 0 1.25rem 4rem; }
-a { color: var(--accent); overflow-wrap: anywhere; }
+a { color: var(--accent); overflow-wrap: anywhere; text-underline-offset: 0.18em; text-decoration-thickness: 0.08em; }
+a:hover { text-decoration-thickness: 0.14em; }
+::selection { background: var(--accent); color: var(--paper); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 h1, h2, h3, h4, h5, h6 {
-  font-family: Georgia, "Songti SC", "Noto Serif CJK SC", serif;
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", serif;
   font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
+  line-height: 1.22;
+  letter-spacing: -0.012em;
+  text-wrap: balance;
 }
-h1 { font-size: clamp(2rem, 4vw, 2.9rem); margin: 0.4rem 0 0.6rem; }
-h2 { font-size: 1.25rem; margin: 0 0 0.8rem; }
-h3 { font-size: 1.05rem; margin: 1.1rem 0 0.4rem; }
-h4 { font-size: 0.98rem; margin: 1rem 0 0.35rem; }
-code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.9em; }
+h1 { font-size: clamp(2.1rem, 4.2vw, 3rem); line-height: 1.14; margin: 0.4rem 0 0.6rem; }
+h2 { font-size: 1.35rem; margin: 0 0 0.8rem; }
+h3 { font-size: 1.1rem; margin: 1.1rem 0 0.4rem; }
+h4 { font-size: 1rem; margin: 1rem 0 0.35rem; }
+p, li { text-wrap: pretty; }
+p { margin: 0 0 1em; }
+strong { font-weight: 600; }
+.doc-section p, .doc-section li { max-width: 74ch; }
+code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.86em; font-family: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; font-variant-ligatures: none; }
 .file-link { text-decoration: none; border-bottom: 1px dotted var(--accent); }
 .file-link code { color: var(--accent); }
 .file-link-icon { font-size: 0.75em; margin-left: 0.15em; opacity: 0.8; }
 pre { background: var(--code-bg); padding: 1rem; overflow: auto; border-radius: 10px; }
 pre code { background: none; padding: 0; }
-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0 1rem; }
+table { width: 100%; border-collapse: collapse; margin: 0.5rem 0 1rem; font-variant-numeric: tabular-nums; }
 th, td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
 th { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 tbody tr:nth-child(even) { background: rgba(127, 127, 127, 0.04); }
-blockquote { margin: 1rem 0; padding: 0.25rem 1rem; border-left: 4px solid var(--line); color: var(--muted); }
-footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: 0.8rem; color: var(--muted); }
+blockquote { margin: 1rem 0; padding: 0.25rem 1rem; border-left: 4px solid var(--line); color: var(--muted); font-family: "Iowan Old Style", Palatino, "Songti SC", "Noto Serif CJK SC", serif; font-style: italic; font-size: 1.04em; }
+footer { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: 0.82rem; color: var(--muted); letter-spacing: 0.01em; }
 img { max-width: 100%; height: auto; }
 
 .queue-nav {
@@ -108,7 +120,7 @@ img { max-width: 100%; height: auto; }
 
 .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin: 1.25rem 0 0; }
 .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 0.8rem 1rem; }
-.kpi-value { font-family: Georgia, serif; font-size: 1.8rem; font-weight: 600; line-height: 1.1; }
+.kpi-value { font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Songti SC", serif; font-size: 1.85rem; font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .kpi-label { font-size: 0.74rem; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
 
 .doc-layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 2.5rem; align-items: start; }
@@ -117,6 +129,7 @@ img { max-width: 100%; height: auto; }
 .toc a { display: block; color: var(--ink); text-decoration: none; padding: 0.22rem 0; border-bottom: 1px dotted transparent; }
 .toc a:hover { border-bottom-color: var(--accent); color: var(--accent); }
 .doc-main { min-width: 0; }
+[id] { scroll-margin-top: 4rem; }
 
 .doc-section { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem 1.4rem; margin-bottom: 1rem; }
 .doc-section h2 { display: flex; gap: 0.5rem; align-items: baseline; }
@@ -162,7 +175,7 @@ figcaption { margin-top: 0.4rem; font-size: 0.85rem; color: var(--muted); }
 @media print {
   .queue-nav, .toc { display: none; }
   .doc-layout { display: block; }
-  body { background: #fff; color: #000; }
+  body { background: #fff; color: #000; font-size: 10.5pt; }
   .doc-section, .kpi, .link-card { background: #fff; border-color: #ccc; }
   h1, h2, h3, h4 { color: #000; }
 }
