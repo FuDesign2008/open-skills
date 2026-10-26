@@ -44,6 +44,8 @@ test("goal-driven-queue defines human-facing HTML views", () => {
   assert.match(reference, /prefers-color-scheme/);
   assert.match(skill, /Inline code that names an existing file becomes a link/);
   assert.match(reference, /--file-root <workspace-root>/);
+  assert.ok(skill.includes("Plain `http(s)` URLs in body text become links"));
+  assert.match(reference, /URLs in body text become links/);
 
   assert.match(reference, /## Human-Facing HTML Views/);
   assert.match(reference, /Trigger: interactive \| scheduled/);

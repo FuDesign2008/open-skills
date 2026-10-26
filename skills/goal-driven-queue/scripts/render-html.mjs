@@ -48,7 +48,7 @@ body {
   line-height: 1.75;
 }
 main { max-width: 1040px; margin: 0 auto; padding: 0 1.25rem 4rem; }
-a { color: var(--accent); }
+a { color: var(--accent); overflow-wrap: anywhere; }
 h1, h2, h3, h4, h5, h6 {
   font-family: Georgia, "Songti SC", "Noto Serif CJK SC", serif;
   font-weight: 600;
@@ -238,6 +238,25 @@ function renderImage(alt, rawTarget, title, context) {
   return `<img src="${escapeHtml(normalized.value)}" alt="${escapeHtml(alt)}"${titleAttribute}>`;
 }
 
+function renderPlainUrl(text, index) {
+  const match = /^https?:\/\/[^\s<>"']+/i.exec(text.slice(index));
+  if (!match) return null;
+
+  let url = match[0];
+  let trailing = "";
+  const trailingMatch = /[.,;:!?，。；：！？]+$/.exec(url);
+  if (trailingMatch) {
+    trailing = trailingMatch[0];
+    url = url.slice(0, -trailing.length);
+  }
+  if (!url) return null;
+
+  return {
+    html: `<a href="${escapeHtml(url)}">${escapeHtml(url)}</a>${escapeHtml(trailing)}`,
+    length: match[0].length,
+  };
+}
+
 function renderCodeSpan(content, context) {
   const escaped = `<code>${escapeHtml(content)}</code>`;
   if (!context.fileLink) return escaped;
@@ -300,6 +319,15 @@ export function renderInline(text, context) {
           index = end + 1;
           continue;
         }
+      }
+    }
+
+    if (character === "h" || character === "H") {
+      const url = renderPlainUrl(text, index);
+      if (url) {
+        output += url.html;
+        index += url.length;
+        continue;
       }
     }
 

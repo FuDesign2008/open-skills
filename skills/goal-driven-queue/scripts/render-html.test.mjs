@@ -336,6 +336,13 @@ test("renders a progress timeline and KPI tiles", () => {
   assert.match(html, /class="kpi-value">2</);
 });
 
+test("linkifies plain URLs in body text but not inside code spans", () => {
+  const html = render("See https://example.com/x and `https://example.com/y`.");
+  assert.match(html, /<a href="https:\/\/example\.com\/x">https:\/\/example\.com\/x<\/a>/);
+  assert.match(html, /<code>https:\/\/example\.com\/y<\/code>/);
+  assert.doesNotMatch(html, /<a href="https:\/\/example\.com\/y"/);
+});
+
 test("links inline file paths that exist and leaves commands plain", () => {
   const workspace = tmp();
   fs.mkdirSync(path.join(workspace, "skills/demo"), { recursive: true });
