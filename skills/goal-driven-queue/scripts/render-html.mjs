@@ -826,6 +826,16 @@ export function renderMarkdown(markdown, options = {}) {
   return renderShell({ title, body, options, generatedAt, sourcePath });
 }
 
+function findRepoRoot(startPath) {
+  let current = path.dirname(path.resolve(startPath));
+  while (true) {
+    if (fs.existsSync(path.join(current, ".git"))) return current;
+    const parent = path.dirname(current);
+    if (parent === current) return null;
+    current = parent;
+  }
+}
+
 function listRunDirs(root) {
   try {
     return fs
@@ -869,6 +879,7 @@ export function renderFile(sourcePath, options = {}) {
       [path.dirname(absoluteSource)],
       [root],
       [options.fileRoot],
+      [findRepoRoot(absoluteSource)],
       listRunDirs(root),
       [SKILL_DIR],
     ];

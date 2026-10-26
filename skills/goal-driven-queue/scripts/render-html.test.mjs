@@ -421,6 +421,23 @@ test("resolves record names inside the queue's batch directories", () => {
   assert.match(html, /class="file-link" href="runs\/20260101-0000\/progress\.md"/);
 });
 
+test("resolves names against the record repository root when the workspace is a different tree", () => {
+  const recordRepo = tmp();
+  fs.mkdirSync(path.join(recordRepo, ".git"));
+  const queue = path.join(recordRepo, "queue");
+  fs.mkdirSync(queue);
+  fs.mkdirSync(path.join(recordRepo, "records"));
+  fs.writeFileSync(path.join(recordRepo, "records/data.md"), "x\n", "utf8");
+  const source = path.join(queue, "doc.md");
+  fs.writeFileSync(source, "See `records/data.md`.\n", "utf8");
+  const workspace = tmp();
+
+  renderFile(source, { root: queue, fileRoot: workspace, generatedAt: AT });
+
+  const html = fs.readFileSync(path.join(queue, "doc.html"), "utf8");
+  assert.match(html, /class="file-link" href="\.\.\/records\/data\.md"/);
+});
+
 test("keeps a bare name plain when several batch directories match", () => {
   const queue = tmp();
   for (const batch of ["a", "b"]) {

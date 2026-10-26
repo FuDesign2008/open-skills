@@ -927,7 +927,7 @@ Human-facing HTML views SHALL provide a light palette and a dark palette and SHA
 
 ### Requirement: File references in human-facing HTML views SHALL link to the source files
 
-Inline code that names an existing file or directory SHALL render as a link. Resolution SHALL be nearest-first across tiers: the record directory, the queue root, the workspace root, the batch directories, then the skill directory. A name that matches several distinct paths inside one tier, a glob, and a non-file code span SHALL stay plain. The link SHALL be a local relative path.
+Inline code that names an existing file or directory SHALL render as a link. Resolution SHALL be nearest-first across tiers: the record directory, the queue root, the workspace root, the record's repository root, the batch directories, then the skill directory. A name that matches several distinct paths inside one tier, a glob, and a non-file code span SHALL stay plain. The link SHALL be a local relative path.
 
 #### Scenario: A real file path becomes a link
 
@@ -968,6 +968,11 @@ Inline code that names an existing file or directory SHALL render as a link. Res
 
 - **WHEN** inline code is a glob such as `approaches/*.md`
 - **THEN** the view leaves it plain code with no link
+
+#### Scenario: The record's repository root backs cross-tree references
+
+- **WHEN** the record lives in one repository checkout and `--file-root` points at another checkout that carries the code
+- **THEN** paths belonging to the record's repository resolve through that repository root, and paths belonging to the code resolve through the workspace root
 
 ### Requirement: Plain URLs in human-facing HTML views SHALL be links
 
