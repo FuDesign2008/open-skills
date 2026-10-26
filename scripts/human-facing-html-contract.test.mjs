@@ -13,6 +13,8 @@ test("goal-driven-queue defines human-facing HTML views", () => {
   assert.match(skill, /the Markdown file remains the canonical record/);
   assert.match(skill, /`config` and `approaches\/\*\.md` stay Markdown-only/);
   assert.match(skill, /`verification\.html` is the acceptance entry page/);
+  assert.match(skill, /re-renders immediately before any open/);
+  assert.match(skill, /links to `progress\.html`, the triage HTML view, each card's HTML view, each executed card's packaged engine report's HTML view/);
   assert.match(skill, /A target that does not exist is annotated as unavailable/);
   assert.match(skill, /`reports\/<card-slug>\.md`/);
   assert.match(skill, /`reports\/<card-slug>\.html`/);
