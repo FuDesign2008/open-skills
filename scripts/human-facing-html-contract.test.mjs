@@ -35,6 +35,8 @@ test("goal-driven-queue defines human-facing HTML views", () => {
   assert.match(skill, /KPI tiles/);
   assert.match(skill, /verdict card/);
   assert.ok(reference.includes("--kind card|triage|progress|verification|report"));
+  assert.match(reference, /Tables with seven or more columns render as labeled record cards/);
+  assert.match(reference, /horizontal scroll container with minimum column widths/);
   assert.match(skill, /never hand-writes human-facing HTML/);
   assert.match(skill, /single HTML generator/);
   assert.match(reference, /renderReviewPage/);

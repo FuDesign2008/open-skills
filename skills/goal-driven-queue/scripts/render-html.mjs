@@ -83,8 +83,16 @@ code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 4px; fo
 .file-link-icon { font-size: 0.75em; margin-left: 0.15em; opacity: 0.8; }
 pre { background: var(--code-bg); padding: 1rem; overflow: auto; border-radius: 10px; }
 pre code { background: none; padding: 0; }
-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0 1rem; font-variant-numeric: tabular-nums; }
-th, td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+.table-wrap { overflow-x: auto; margin: 0.5rem 0 1rem; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--line); vertical-align: top; min-width: 6.5rem; overflow-wrap: anywhere; }
+.table-wrap th:last-child, .table-wrap td:last-child { min-width: 12rem; }
+.record-list { margin: 0.5rem 0 1rem; display: grid; gap: 0.7rem; }
+.record { border: 1px solid var(--line); border-radius: 10px; padding: 0.45rem 0.8rem; background: var(--paper); }
+.record-field { display: grid; grid-template-columns: minmax(5.5rem, 7rem) minmax(0, 1fr); gap: 0.75rem; padding: 0.3rem 0; }
+.record-field + .record-field { border-top: 1px dashed var(--line); }
+.record-field dt { color: var(--muted); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; padding-top: 0.15rem; }
+.record-field dd { margin: 0; min-width: 0; font-size: 0.98rem; line-height: 1.7; overflow-wrap: anywhere; }
 th { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 tbody tr:nth-child(even) { background: rgba(127, 127, 127, 0.04); }
 blockquote { margin: 1rem 0; padding: 0.25rem 1rem; border-left: 4px solid var(--line); color: var(--muted); font-family: "Iowan Old Style", Palatino, "Songti SC", "Noto Serif CJK SC", serif; font-style: italic; font-size: 1.04em; }
@@ -183,7 +191,10 @@ figcaption { margin-top: 0.4rem; font-size: 0.85rem; color: var(--muted); }
   .doc-layout { display: block; }
   body { background: #fff; color: #000; font-size: 10.5pt; }
   .doc-section p, .doc-section > ul:not(.field-list):not(.timeline), .doc-section > ol:not(.condition-list) { font-size: 10.5pt; line-height: 1.55; }
-  .doc-section, .kpi, .link-card { background: #fff; border-color: #ccc; }
+  .table-wrap { overflow: visible; }
+  th, td { min-width: 0; font-size: 8.5pt; }
+  .doc-section, .kpi, .link-card, .record { background: #fff; border-color: #ccc; }
+  .record { break-inside: avoid; }
   h1, h2, h3, h4 { color: #000; }
 }
 `;
@@ -396,6 +407,21 @@ function renderTable(lines, start, context) {
     index += 1;
   }
 
+  if (header.length >= 7 && rows.length) {
+    const records = rows
+      .map(
+        (row) =>
+          `<div class="record">${header
+            .map(
+              (cell, column) =>
+                `<div class="record-field"><dt>${renderInline(cell, context)}</dt><dd>${renderInline(row[column] || "", context)}</dd></div>`,
+            )
+            .join("")}</div>`,
+      )
+      .join("");
+    return { html: `<dl class="record-list">${records}</dl>`, next: index };
+  }
+
   const head = `<thead><tr>${header.map((cell) => `<th>${renderInline(cell, context)}</th>`).join("")}</tr></thead>`;
   const body = rows.length
     ? `<tbody>${rows
@@ -403,7 +429,7 @@ function renderTable(lines, start, context) {
         .join("")}</tbody>`
     : "";
 
-  return { html: `<table>${head}${body}</table>`, next: index };
+  return { html: `<div class="table-wrap"><table>${head}${body}</table></div>`, next: index };
 }
 
 function renderList(lines, start, context, baseIndent) {

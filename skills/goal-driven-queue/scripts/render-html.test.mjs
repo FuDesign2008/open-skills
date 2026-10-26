@@ -49,6 +49,20 @@ test("renders tables and honors escaped pipes", () => {
   assert.match(html, /<td>1<\/td>/);
 });
 
+test("wraps tables in a horizontal scroll container so wide tables stay readable", () => {
+  const html = render("| A | B |\n|---|---|\n| 1 | 2 |");
+  assert.match(html, /<div class="table-wrap"><table>/);
+  assert.match(html, /<\/table><\/div>/);
+});
+
+test("renders wide tables as labeled record cards instead of crushed columns", () => {
+  const html = render("| A | B | C | D | E | F | G |\n|---|---|---|---|---|---|---|\n| 1 | 2 | 3 | 4 | 5 | 6 | 7 |");
+  assert.match(html, /<dl class="record-list"><div class="record">/);
+  assert.match(html, /<dt>A<\/dt><dd>1<\/dd>/);
+  assert.match(html, /<dt>G<\/dt><dd>7<\/dd>/);
+  assert.doesNotMatch(html, /<table>/);
+});
+
 test("renders ordered, unordered, nested lists and read-only checkboxes", () => {
   const html = render("- [x] done\n- [ ] todo\n  - nested\n1. one\n2. two");
   assert.match(html, /<input type="checkbox" disabled checked>/);
