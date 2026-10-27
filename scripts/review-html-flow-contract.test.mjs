@@ -28,8 +28,8 @@ test("enqueue shells do not write the review HTML", () => {
 
 test("standalone goal-driven-workflow writes one page and a queue child does not", () => {
   const skill = read("skills/goal-driven-workflow/SKILL.md");
-  assert.match(skill, /standalone run, write one HTML page/);
-  assert.match(skill, /form fixed to HTML/);
+  assert.match(skill, /standalone run, write one review JSON/);
+  assert.match(skill, /renderReviewPage/);
   assert.match(skill, /queue child, the completion report includes the problem, the cause, and the completed fix/);
   assert.match(skill, /does not write the HTML page/);
 });
@@ -69,7 +69,7 @@ test("standalone goal-driven-workflow writes an evidence page and a queue child 
   const skill = read("skills/goal-driven-workflow/SKILL.md");
   const reference = read("skills/goal-driven-workflow/reference.md");
   assert.match(skill, /\.goal-driven\/runs\/<local-YYYYMMDD-HHmm>\/evidence\.html/);
-  assert.match(skill, /page title is 证据留痕/);
+  assert.match(skill, /title and kicker follow the human's conversation language/);
   assert.match(skill, /Do not overwrite an existing directory/);
   assert.match(skill, /relative path/);
   assert.match(skill, /did not open a UI/);
@@ -79,7 +79,7 @@ test("standalone goal-driven-workflow writes an evidence page and a queue child 
   assert.match(skill, /an evidence list\. Each evidence item is an opened-UI check citing a png, jpg, jpeg, or webp path/);
   assert.match(skill, /evidence page path on the completion report/);
   assert.match(skill, /The explanation \(说明\), the evidence record \(证据留痕\), and the acceptance verdict \(验收裁决\) stay separate/);
-  assert.match(skill, /review page links to the evidence page/);
+  assert.match(skill, /does not add a standalone evidence link/);
   assert.match(skill, /evidence list/);
   assert.match(skill, /does not write the evidence HTML/);
   assert.match(reference, /Evidence page:/);
