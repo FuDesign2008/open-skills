@@ -1119,7 +1119,7 @@ export function renderEvidencePage(data = {}, options = {}) {
     fileLink: options.fileLink,
   };
   const groups = data.groups || [];
-  const emptyNote =
+  const emptyMessage =
     groups.length === 0
       ? `<p class="evidence-empty">${escapeHtml(data.intro || chrome.evidenceEmpty)}</p>`
       : "";
@@ -1153,7 +1153,7 @@ export function renderEvidencePage(data = {}, options = {}) {
       : data.intro
         ? `<p class="doc-subtitle">${escapeHtml(data.intro)}</p>`
         : "";
-  const body = `<header class="doc-header"><p class="doc-kicker">${escapeHtml(chrome.evidenceKicker)}</p><h1>${escapeHtml(title)}</h1>${intro}</header>${emptyNote}${sections}`;
+  const body = `<header class="doc-header"><p class="doc-kicker">${escapeHtml(chrome.evidenceKicker)}</p><h1>${escapeHtml(title)}</h1>${intro}</header>${emptyMessage}${sections}`;
   const shellOptions = {
     ...options,
     sourceLabelText: options.sourceLabelText || chrome.source,
