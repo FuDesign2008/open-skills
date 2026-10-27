@@ -30,9 +30,9 @@ A blank frame, a solid black frame, or an image with no readable interface state
 
 `runtime-verification-discipline` hands subjective UX to a person. Blank, black, unreadable, and wrong-screen images are inspections in the same turn. The skill states that this look is not category C.
 
-### Tests lock the sentences
+### Tests lock the authority prose and thin host pointers
 
-`scripts/screenshot-inspection-contract.test.mjs` locks the inspection sentences in the skills that record or display the image. Do not snapshot rendered HTML.
+`completion-evidence-discipline` owns the inspection sentences. Hosts and `runtime-verification-discipline` keep a one-line pointer to that skill (plus the category-C boundary on runtime). `scripts/screenshot-inspection-contract.test.mjs` locks the authority prose and those thin pointers. Do not snapshot rendered HTML. Do not paste the inspection methodology into hosts.
 
 ## Risks / Trade-offs
 

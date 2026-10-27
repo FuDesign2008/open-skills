@@ -42,7 +42,7 @@ Compose with `staged-review-flow` verification honesty:
 
 ## Integration guide
 
-- Hosts: one-line pointer at verification / closeout — load this skill; do not paste the Iron Law prose.
+- Hosts: one-line pointer at verification / closeout — load this skill; do not paste the Iron Law or opened-UI screenshot inspection prose.
 - `staged-review-flow`: honesty rule MUST compose with this gate (Executed ⇒ fresh evidence).
 - Orthogonal to `runtime-verification-discipline`: this skill gates evidence *freshness* (did you run it this turn); that skill gates verification *environment and executor* (which tier, who ran it, sufficient?). A pass claim must satisfy both.
 - Prefer `user-invocable: false`; users reach it through PDCA hosts.
