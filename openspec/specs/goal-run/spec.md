@@ -351,7 +351,7 @@ On **standalone** invocations, that field MUST NOT skip stages 1–3 confirmatio
 
 ### Requirement: goal-run SHALL write one review HTML when standalone
 
-When a standalone run reaches stage 5, goal-driven-workflow MUST write one HTML page by following explain-clearly with the form fixed to HTML. The page MUST state the problem, the cause, and the completed fix. The page MUST include one link to that run's evidence HTML page after the explanation visual. The link MUST NOT replace the problem, the cause, or the completed fix. The completion report MUST record that file's path.
+When a standalone run reaches stage 5, goal-driven-workflow MUST write one review JSON stating the problem, the cause, and the completed fix, then generate the review HTML with `renderReviewPage`. It MUST NOT hand-write that HTML and MUST NOT follow explain-clearly to produce it. The review body MUST NOT add a standalone link to the evidence page; navigation reaches that evidence page. The completion report MUST record that file's path.
 
 #### Scenario: Standalone stage 5 writes the page
 
@@ -368,7 +368,7 @@ When this invocation is a queue child, the completion report MUST include the pr
 
 ### Requirement: goal-run SHALL write one evidence HTML when standalone
 
-When a standalone run reaches stage 5, goal-driven-workflow MUST write one HTML page at `.goal-driven/runs/<local-YYYYMMDD-HHmm>/evidence.html`. The page title MUST be 证据留痕. The directory name MUST be that timestamp, and a later run MUST NOT overwrite an existing directory.
+When a standalone run reaches stage 5, goal-driven-workflow MUST write one evidence JSON input and generate the evidence HTML with `renderEvidencePage` at `.goal-driven/runs/<local-YYYYMMDD-HHmm>/evidence.html`. It MUST NOT hand-write that HTML. The page title and kicker MUST follow the human's conversation language. The directory name MUST be that timestamp, and a later run MUST NOT overwrite an existing directory.
 
 The page MUST show each opened-UI check as the image copied into that same directory, referenced by a relative path. The page MUST show each non-UI check as the command and a short output summary and MUST NOT include an image for it. A missing or empty image MUST appear as pending with the capture still required, and the page MUST NOT invent an image. Before an opened-UI image supports the check, the agent MUST look at the saved image in this turn. A blank frame, a solid black frame, or an image with no readable interface MUST stay pending and MUST state that the capture is still required. A readable interface that is not the screen this check was supposed to open MUST stay pending and MUST state the expected screen and what the image shows. If the image was not inspected, the item MUST stay pending and MUST state that the image was not inspected. The file MUST be kept and shown. None of those results are the expected capture. An empty evidence list MUST still produce the page, stating that no checks were recorded, with no image.
 
