@@ -1,6 +1,6 @@
 ---
 name: merge-discipline
-version: "1.8.0"
+version: "1.9.0"
 user-invocable: true
 description: "Hard gate before merging into a protected branch: run Parts A→B→C→R→D (OpenSpec archive association, rebase/conflict pre-check, coverage preference, pr-code-review with content-matched depth via pr-review-gate (unset ≡ auto), squash decision from commit quality + tip-pin merge). Do NOT merge while an associated OpenSpec change is still active; do NOT skip on a direct \"merge MR\" command; do NOT auto-select squash when two viable strategies exist — ask with a commit-quality recommendation; a single-commit or single-permitted-strategy MR concludes without prompting; after merging, sync the local workspace onto the resolved target branch. Triggers — 「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」「合并前 code-review」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, pr code review before merge."
 dependencies:
@@ -259,14 +259,25 @@ No escalation hit → `light` (including application-code). Thresholds and the s
 | Result | Action |
 |---|---|
 | Pass — neither axis retains ≥80 Critical/Important | Proceed to Part D |
-| Fail — either axis has ≥80 Critical/Important | **Block merge.** Fix on the source tip, re-enter from Part A, or user **explicit** skip with 留痕 |
-| Skill ineligible skip (closed/draft/already reviewed this session) | Treat as pass for this Part only if the PR is still the merge candidate and a prior ≥80-clean dual-axis review exists on this tip; otherwise pause for user |
+| Fail — either axis has ≥80 Critical/Important | **Block Part D.** Do **not** treat source-tip fixes alone as unlock. Either: (1) fix on the source tip, then **mandatory** re-run Part R on the new tip (§3.5), or (2) user **explicit** skip / accept-residual 留痕. Re-enter from Part A only when Part A/B association or rebase rules require it — not as a substitute for re-review. |
+| Skill ineligible skip (closed/draft/already reviewed this session) | Treat as pass for this Part only if the PR is still the merge candidate and a prior ≥80-clean dual-axis review exists on **this tip**; otherwise pause for user. A clean review of a **previous** tip after fixes does **not** count. |
+
+### 3.5 Fail → fix → re-review until clean (round cap)
+
+When a review **run** fails and the agent applies source-tip fixes (not an explicit skip/accept 留痕):
+
+1. Count each `pr-code-review` invocation in this merge attempt as one **round** (the initial fail is round 1).
+2. After fixes land on the tip, **re-resolve depth** (§1–2.5; post-fail re-entry → full when that signal hits) and **re-run** `pr-code-review` on the new tip before Part D.
+3. **Exit to Part D** only when a round **passes** (no ≥80 Critical/Important on either axis) or the user writes explicit skip / accept-residual 留痕.
+4. **Cap = 3 rounds.** If round 3 still fails: **pause** and ask the user — continue (exactly one more review round; fail → pause again) / accept residual blocking with 留痕 / abort merge. Do **not** auto-enter Part D.
+5. Preference `never` / ask-skip paths that never ran Part R do **not** enter this loop.
 
 ### 留痕
 
 | Case | Template |
 |------|----------|
 | User explicit skip | `【PR code-review 门控跳过】用户显式跳过 Part R（pr-code-review）。时间：<ISO>。决策人：用户。PR：<url or id>。` |
+| Accept residual after round cap | `【PR code-review 残留接受】用户在 Part R 轮次封顶后接受残留 ≥80 Critical/Important。时间：<ISO>。决策人：用户。PR：<url or id>。轮次：<n>。` |
 | Project preference never | `【PR code-review 门控跳过】工程偏好 pr-review-gate: never。时间：<ISO>。决策人：项目配置。` |
 | Light path used | Optional note in the review comment: `pr-review-gate: <non-code-light\|auto>; surface=<non-application-code\|application-code>; scale=<ok\|escalated>; sensitive=<ok\|hit>`; `depth=<light\|full>` |
 
@@ -277,6 +288,7 @@ No escalation hit → `light` (including application-code). Thresholds and the s
 - Calling Claude Code `/code-review` plugin as a substitute without loading `pr-code-review`
 - Collapsing Standards and Spec into one ranked list and treating “overall look fine” as Part R pass
 - Treating application-code as always-`full` under `auto` or `non-code-light` (full requires an escalation hit, or preference `always`)
+- Entering Part D after fixing Part R findings **without** a new dual-axis-clean review on that tip (unless explicit skip/accept-residual 留痕)
 
 ---
 

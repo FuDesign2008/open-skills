@@ -1,6 +1,6 @@
 ---
 name: pr-code-review
-version: "1.2.0"
+version: "1.3.0"
 user-invocable: true
 description: "Dual-axis (Standards∥Spec) multi-perspective PR review with confidence ≥80 filtering, severity calibration, plan alignment, and optional GitHub/GitLab review comment. Best-of: Claude /code-review pipeline + mattpocock dual-axis + Superpowers plan/severity habits. Triggers — 「PR 代码审查」「审查这个 PR」「code-review」「/code-review」「审 PR」「pull request review」「双轴审查 PR」 / pr code review, review this PR. Do NOT use as a name alias for mattpocock code-review or Superpowers requesting-code-review."
 ---
@@ -63,7 +63,7 @@ Pre-existing; lookalike non-bugs; pedantic nits; linter/typechecker/compiler cat
 
 - Run against the **open PR/MR about to merge**, at the depth Part R selected (`full` or `light`).
 - **Pass** → neither axis retains ≥80 **Critical** or **Important** issues (Minor-only or all scores below 80 = pass). Light depth MUST NOT weaken this gate.
-- **Fail** → block merge until fixed or user **explicit** Part R skip 留痕.
+- **Fail** → report fail to the caller. `merge-discipline` Part R owns fix → **re-review until clean** (or user **explicit** Part R skip / accept-residual 留痕) before Part D. Implementing findings alone is **not** a Part R pass.
 - CI green / coverage skip is **not** a substitute.
 - Do **not** require a full receiving-code-review loop to pass Part R.
 
