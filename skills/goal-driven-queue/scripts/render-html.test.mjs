@@ -569,3 +569,91 @@ test("open action is path-contained and shell-free", () => {
   );
   assert.equal(calls.length, 1);
 });
+
+test("renders field cards for card detail and acceptance summary", () => {
+  const markdown = `# Card
+
+## 卡片详情
+
+- Engine: solve-workflow
+- Status: done
+
+## 验收摘要
+
+- Result: pass
+`;
+  const html = renderDocument(markdown, {
+    sourcePath: "/tmp/card.md",
+    root: "/tmp",
+    kind: "card",
+    generatedAt: AT,
+  });
+  assert.equal((html.match(/class="field-list"/g) || []).length, 2);
+});
+
+test("evidence page shows inspection, pending status, and empty-list copy", () => {
+  const pending = renderEvidencePage(
+    {
+      title: "证据留痕",
+      groups: [
+        {
+          heading: "打开 UI 的检查",
+          items: [
+            {
+              label: "截图",
+              image: "a.png",
+              status: "pending",
+              note: "blank frame — capture still required",
+            },
+          ],
+        },
+      ],
+    },
+    { root: "/tmp", generatedAt: AT },
+  );
+  assert.match(pending, /pending/);
+  assert.match(pending, /blank frame — capture still required/);
+  assert.match(pending, /待补/);
+
+  const empty = renderEvidencePage({ groups: [] }, { root: "/tmp", generatedAt: AT });
+  assert.match(empty, /未记录任何检查/);
+  assert.doesNotMatch(empty, /<img /);
+
+  const english = renderEvidencePage(
+    { groups: [] },
+    { root: "/tmp", generatedAt: AT, lang: "en" },
+  );
+  assert.match(english, /Evidence record/);
+  assert.match(english, /No checks were recorded/);
+  assert.doesNotMatch(english, /证据留痕/);
+});
+
+test("chrome labels follow lang for toc and entry kicker", () => {
+  const zh = renderDocument("# T\n\n## 章节\n\n- a\n", {
+    sourcePath: "/tmp/doc.md",
+    root: "/tmp",
+    kind: "progress",
+    generatedAt: AT,
+  });
+  assert.match(zh, /本页目录/);
+
+  const en = renderDocument("# T\n\n## Section\n\n- a\n", {
+    sourcePath: "/tmp/doc.md",
+    root: "/tmp",
+    kind: "progress",
+    generatedAt: AT,
+    lang: "en",
+  });
+  assert.match(en, /On this page/);
+  assert.doesNotMatch(en, /本页目录/);
+
+  const entry = renderEntryPage({
+    root: "/tmp",
+    entryPath: "/tmp/verification.html",
+    batchId: "b1",
+    lang: "en",
+    generatedAt: AT,
+  });
+  assert.match(entry, /Acceptance entry/);
+  assert.doesNotMatch(entry, /验收入口/);
+});

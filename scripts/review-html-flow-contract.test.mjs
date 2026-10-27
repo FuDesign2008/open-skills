@@ -7,10 +7,10 @@ const read = (rel) => fs.readFileSync(new URL(rel, root), "utf8");
 
 test("goal-driven-queue writes one review HTML per done card", () => {
   const skill = read("skills/goal-driven-queue/SKILL.md");
-  assert.match(skill, /one HTML page/);
-  assert.match(skill, /form fixed to HTML/);
+  assert.match(skill, /writes one review JSON/);
+  assert.match(skill, /renderReviewPage/);
   assert.match(skill, /manual, auto, or ai-proxy/);
-  assert.match(skill, /problem, the cause, and the completed fix/);
+  assert.match(skill, /problem, cause, fix from the child report/);
   assert.match(skill, /not done does not get the review HTML page/);
   assert.match(skill, /verification\.md section records that HTML path/);
 });
@@ -22,7 +22,7 @@ test("enqueue shells do not write the review HTML", () => {
   ]) {
     const skill = read(rel);
     assert.doesNotMatch(skill, /form fixed to HTML/);
-    assert.doesNotMatch(skill, /one HTML page/);
+    assert.doesNotMatch(skill, /renderReviewPage/);
   }
 });
 
@@ -41,7 +41,7 @@ test("goal-driven-queue writes one evidence page per done card", () => {
   assert.match(skill, /each done card's evidence page path/);
   assert.match(skill, /The explanation \(说明\), the evidence record \(证据留痕\), and the acceptance verdict \(验收裁决\) stay separate/);
   assert.match(skill, /evidence\/<card>\.html/);
-  assert.match(skill, /page title is 证据留痕/);
+  assert.match(skill, /title and kicker follow the human's conversation language/);
   assert.match(skill, /no path separator/);
   assert.match(skill, /relative path/);
   assert.match(skill, /did not open a UI/);

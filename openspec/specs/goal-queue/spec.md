@@ -561,7 +561,7 @@ After a batch run ends (caps hit or queue empty) and the acceptance package is a
 
 ### Requirement: goal-queue SHALL write one review HTML per completed card
 
-For every card that reaches done, under stage-exit policy manual, auto, or ai-proxy, the dispatcher MUST write one HTML page by following explain-clearly with the form fixed to HTML. The page MUST state the problem, the cause, and the completed fix. The page MUST NOT add a standalone link to the evidence page after the explanation; the shared navigation block and the acceptance entry page reach that evidence page. The acceptance package MUST record that file's path. A card that is not done MUST NOT get this page. An enqueue shell MUST NOT write it.
+For every card that reaches done, under stage-exit policy manual, auto, or ai-proxy, the dispatcher MUST write one review JSON input stating the problem, the cause, and the completed fix, then generate the review HTML with `renderReviewPage`. The dispatcher MUST NOT hand-write that HTML and MUST NOT follow explain-clearly to produce it. The page MUST NOT add a standalone link to the evidence page after the explanation; the shared navigation block and the acceptance entry page reach that evidence page. The acceptance package MUST record that file's path. A card that is not done MUST NOT get this page. An enqueue shell MUST NOT write it.
 
 #### Scenario: Five completed cards produce five files
 
@@ -585,7 +585,7 @@ For every card that reaches done, under stage-exit policy manual, auto, or ai-pr
 
 ### Requirement: goal-queue SHALL write one evidence HTML per completed card
 
-For every card that reaches done, under stage-exit policy manual, auto, or ai-proxy, the dispatcher MUST write one HTML page at `.goal-driven/queues/<queue-id>/runs/<batch-id>/evidence/<card>.html` during the same sole-writer record step that records that completion. The `<card>` segment MUST be that card's slug and MUST contain no path separator. The page title MUST be 证据留痕.
+For every card that reaches done, under stage-exit policy manual, auto, or ai-proxy, the dispatcher MUST write one evidence JSON input and generate the evidence HTML with `renderEvidencePage` at `.goal-driven/queues/<queue-id>/runs/<batch-id>/evidence/<card>.html` during the same sole-writer record step that records that completion. The dispatcher MUST NOT hand-write that HTML. The `<card>` segment MUST be that card's slug and MUST contain no path separator. The page title and kicker MUST follow the human's conversation language (Chinese conversations use 证据留痕; English conversations use an English equivalent such as Evidence record).
 
 The child completion report MUST include an evidence list. Each item MUST be either an opened-UI check citing a png, jpg, jpeg, or webp path, or a non-UI check citing the command and a short output summary. The dispatcher MUST copy each cited image that exists and is non-empty into `evidence/<card>/` under that same batch directory. The page MUST reference those copies by a relative path. The page MUST NOT depend on the child worktree remaining.
 
@@ -904,7 +904,7 @@ The dispatcher SHALL write Markdown for records and small JSON for the review/ev
 #### Scenario: The review page is generated from structured data
 
 - **WHEN** the dispatcher writes a review JSON input
-- **THEN** the renderer generates the review page with the problem, cause, fix, and evidence link
+- **THEN** the renderer generates the review page with the problem, cause, and fix; the review body carries no standalone evidence link
 
 #### Scenario: The evidence page is generated from structured data
 

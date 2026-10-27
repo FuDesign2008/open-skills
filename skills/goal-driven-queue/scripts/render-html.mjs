@@ -169,6 +169,10 @@ img { max-width: 100%; height: auto; }
 .field-list { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.55rem; }
 .field-list > li { border: 1px solid var(--line-soft); border-radius: 10px; padding: 0.6rem 0.75rem; background: var(--paper); }
 .field-list > li.verdict { grid-column: 1 / -1; border: 1px solid var(--line-soft); border-left: 4px solid var(--green); background: var(--card); }
+.evidence-item.pending, figure.pending { border: 1px solid var(--line-soft); border-left: 4px solid var(--amber, #c47b1a); padding: 0.6rem 0.75rem; border-radius: 10px; background: var(--paper); }
+.evidence-status { margin: 0.35rem 0 0; }
+.evidence-empty { color: var(--muted); }
+
 .condition-list { list-style: none; padding: 0; display: grid; gap: 0.6rem; }
 .condition-list > li { border: 1px solid var(--line-soft); border-radius: 10px; padding: 0.7rem 0.8rem; background: var(--paper); }
 .item-list { padding-left: 1.1rem; }
@@ -674,15 +678,76 @@ function renderMetaChips(meta, context) {
     .join("");
 }
 
-function kindLabel(kind) {
-  return {
-    card: "任务卡",
-    triage: "Triage 记录",
-    progress: "进度文档",
-    verification: "人工核对",
-    report: "完成报告",
-    document: "队列文档",
-  }[kind] || "队列文档";
+function kindLabel(kind, labels = {}) {
+  const kinds = labels.kinds || {};
+  return (
+    kinds[kind] ||
+    {
+      card: "任务卡",
+      triage: "Triage 记录",
+      progress: "进度文档",
+      verification: "人工核对",
+      report: "完成报告",
+      document: "队列文档",
+    }[kind] ||
+    "队列文档"
+  );
+}
+
+function chromeLabels(options = {}) {
+  const lang = String(options.lang || "zh").toLowerCase();
+  const english = lang.startsWith("en");
+  const defaults = english
+    ? {
+        toc: "On this page",
+        entryKicker: "Acceptance entry",
+        entrySubtitle:
+          "Open any page to browse this run; missing targets are marked unavailable.",
+        evidenceKicker: "Evidence record",
+        evidenceTitle: "Evidence record",
+        evidenceEmpty: "No checks were recorded.",
+        reviewKicker: "Change note",
+        reviewTitle: "Change note",
+        problem: "Problem",
+        cause: "Cause",
+        fix: "Completed fix",
+        pending: "pending",
+        source: "Source",
+        generated: "Generated",
+        kinds: {
+          card: "Task card",
+          triage: "Triage record",
+          progress: "Progress",
+          verification: "Human verification",
+          report: "Completion report",
+          document: "Queue document",
+        },
+      }
+    : {
+        toc: "本页目录",
+        entryKicker: "验收入口",
+        entrySubtitle: "打开任意页面即可横向查看本次运行的记录；缺失目标标注为不可用。",
+        evidenceKicker: "证据留痕",
+        evidenceTitle: "证据留痕",
+        evidenceEmpty: "未记录任何检查，且不含图片。",
+        reviewKicker: "变更说明",
+        reviewTitle: "变更说明",
+        problem: "问题",
+        cause: "原因",
+        fix: "已完成的修复",
+        pending: "待补",
+        source: "Source",
+        generated: "Generated",
+        kinds: {
+          card: "任务卡",
+          triage: "Triage 记录",
+          progress: "进度文档",
+          verification: "人工核对",
+          report: "完成报告",
+          document: "队列文档",
+        },
+      };
+  return { ...defaults, ...(options.labels || {}), kinds: { ...defaults.kinds, ...((options.labels || {}).kinds || {}) } };
 }
 
 function metaValue(doc, needle) {
@@ -758,11 +823,12 @@ function renderSection(section, index, context) {
   if (/目标条件/.test(section.title)) {
     body = body.replace(/^<ol>/, '<ol class="condition-list">');
   }
-  if (/^卡片[：:]/.test(section.title)) {
+  if (/^卡片[：:]|卡片详情|验收摘要|Card detail|Acceptance summary/i.test(section.title)) {
     body = body.replace(/^<ul>/, '<ul class="field-list">');
     body = body.replace(/<li>裁决：/g, '<li class="verdict">裁决：');
+    body = body.replace(/<li>Verdict:/gi, '<li class="verdict">Verdict:');
   }
-  if (/核对清单|冻结决策|约束|我替你做的决定|验收摘要|证据清单|需要你决定/.test(section.title)) {
+  if (/核对清单|冻结决策|约束|我替你做的决定|证据清单|需要你决定|Checklist|Frozen decisions|Constraints/i.test(section.title)) {
     body = body.replace(/^<ul>/, '<ul class="item-list">').replace(/^<ol>/, '<ol class="item-list">');
   }
 
@@ -814,21 +880,27 @@ export function renderDocument(markdown, options = {}) {
     .map((section, index) => renderSection(section, index + 1, context))
     .join("\n");
 
+  const chrome = chromeLabels(options);
+  const shellOptions = {
+    ...options,
+    sourceLabelText: options.sourceLabelText || chrome.source,
+    generatedLabelText: options.generatedLabelText || chrome.generated,
+  };
   const body = `<header class="doc-header">
-<p class="doc-kicker">${escapeHtml(kindLabel(kind))}</p>
+<p class="doc-kicker">${escapeHtml(kindLabel(kind, chrome))}</p>
 <h1>${renderInline(title, context)}</h1>
 ${subtitle ? `<p class="doc-subtitle">${escapeHtml(subtitle)}</p>` : ""}
 ${metaChips ? `<div class="chips">${metaChips}</div>` : ""}
 ${kpis}
 </header>
 <div class="doc-layout">
-<aside class="toc"><p class="toc-title">本页目录</p>${toc}</aside>
+<aside class="toc"><p class="toc-title">${escapeHtml(chrome.toc)}</p>${toc}</aside>
 <div class="doc-main">
 ${sections}
 </div>
 </div>`;
 
-  return renderShell({ title, body, options, generatedAt, sourcePath });
+  return renderShell({ title, body, options: shellOptions, generatedAt, sourcePath });
 }
 
 export function renderMarkdown(markdown, options = {}) {
@@ -985,10 +1057,16 @@ export function renderEntryPage(options = {}) {
 
   const extras = (options.extras || []).map((item) => link(item.label, item.path)).join("");
   const kpis = options.kpis ? renderKpiRow(options.kpis) : "";
+  const chrome = chromeLabels(options);
+  const shellOptions = {
+    ...options,
+    sourceLabelText: options.sourceLabelText || chrome.source,
+    generatedLabelText: options.generatedLabelText || chrome.generated,
+  };
   const body = `<header class="doc-header">
-<p class="doc-kicker">验收入口</p>
+<p class="doc-kicker">${escapeHtml(chrome.entryKicker)}</p>
 <h1>${escapeHtml(title)} — ${escapeHtml(options.batchId || "batch")}</h1>
-<p class="doc-subtitle">${escapeHtml(options.subtitle || "打开任意页面即可横向查看本次运行的记录；缺失目标标注为不可用。")}</p>
+<p class="doc-subtitle">${escapeHtml(options.subtitle || chrome.entrySubtitle)}</p>
 ${kpis}
 </header>
 <div class="link-grid">${link(labels.progress, options.progressPath)}${link(labels.triage, options.triagePath)}${link(labels.content, options.contentPath)}${cardLinks}${extras}</div>`;
@@ -996,7 +1074,7 @@ ${kpis}
   return renderShell({
     title: `${title} — ${options.batchId || "batch"}`,
     body,
-    options,
+    options: shellOptions,
     generatedAt,
     sourcePath: entryPath,
   });
@@ -1004,7 +1082,8 @@ ${kpis}
 
 export function renderReviewPage(data = {}, options = {}) {
   const generatedAt = options.generatedAt || new Date().toISOString();
-  const title = data.title || "变更说明";
+  const chrome = chromeLabels(options);
+  const title = data.title || chrome.reviewTitle;
   const context = {
     sourcePath: options.sourcePath || "review.md",
     root: options.root || process.cwd(),
@@ -1012,44 +1091,81 @@ export function renderReviewPage(data = {}, options = {}) {
     fileLink: options.fileLink,
   };
   const cards = [
-    ["问题", data.problem, "callout-problem"],
-    ["原因", data.cause, "callout-cause"],
-    ["已完成的修复", data.fix, "callout-fix"],
+    [chrome.problem, data.problem, "callout-problem"],
+    [chrome.cause, data.cause, "callout-cause"],
+    [chrome.fix, data.fix, "callout-fix"],
   ]
     .map(
-      ([label, text, className]) =>
-        `<section class="doc-section ${className}"><h2>${escapeHtml(label)}</h2>${renderBlocks(String(text || "").split("\n"), context)}</section>`,
+      ([label, value, className]) =>
+        `<section class="doc-section ${className}"><h2>${escapeHtml(label)}</h2>${renderBlocks(String(value || "").split("\n"), context)}</section>`,
     )
     .join("");
-  const body = `<header class="doc-header"><p class="doc-kicker">变更说明</p><h1>${escapeHtml(title)}</h1>${data.lead ? `<p class="doc-subtitle">${escapeHtml(data.lead)}</p>` : ""}</header>${cards}`;
-  return renderShell({ title, body, options, generatedAt, sourcePath: context.sourcePath });
+  const body = `<header class="doc-header"><p class="doc-kicker">${escapeHtml(chrome.reviewKicker)}</p><h1>${escapeHtml(title)}</h1>${data.lead ? `<p class="doc-subtitle">${escapeHtml(data.lead)}</p>` : ""}</header>${cards}`;
+  const shellOptions = {
+    ...options,
+    sourceLabelText: options.sourceLabelText || chrome.source,
+    generatedLabelText: options.generatedLabelText || chrome.generated,
+  };
+  return renderShell({ title, body, options: shellOptions, generatedAt, sourcePath: context.sourcePath });
 }
 
 export function renderEvidencePage(data = {}, options = {}) {
   const generatedAt = options.generatedAt || new Date().toISOString();
-  const title = data.title || "证据留痕";
+  const chrome = chromeLabels(options);
+  const title = data.title || chrome.evidenceTitle;
   const context = {
     sourcePath: options.sourcePath || "evidence.html",
     root: options.root || process.cwd(),
     fileLink: options.fileLink,
   };
-  const sections = (data.groups || [])
+  const groups = data.groups || [];
+  const emptyNote =
+    groups.length === 0
+      ? `<p class="evidence-empty">${escapeHtml(data.intro || chrome.evidenceEmpty)}</p>`
+      : "";
+  const sections = groups
     .map((group) => {
       const items = (group.items || [])
         .map((item) => {
+          const status = String(item.status || "").toLowerCase();
+          const pending = status === "pending" || Boolean(item.pending);
+          const note = item.note || item.inspection || "";
+          const statusHtml = pending
+            ? `<p class="evidence-status"><span class="chip">${escapeHtml(chrome.pending)}</span> ${escapeHtml(note || item.label || "")}</p>`
+            : note
+              ? `<p class="evidence-note">${escapeHtml(note)}</p>`
+              : "";
+          const classes = pending ? "evidence-item pending" : "evidence-item";
           if (item.image) {
-            return `<figure><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.alt || item.label || "")}"><figcaption>${escapeHtml(item.label || "")}</figcaption></figure>`;
+            return `<figure class="${classes}"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.alt || item.label || "")}"><figcaption>${escapeHtml(item.label || "")}</figcaption>${statusHtml}</figure>`;
           }
           const command = item.command ? `<p><code>${escapeHtml(item.command)}</code></p>` : "";
           const output = item.output ? `<p>${renderInline(item.output, context)}</p>` : "";
-          return `<div class="evidence-item"><p class="evidence-label">${escapeHtml(item.label || "")}</p>${command}${output}</div>`;
+          return `<div class="${classes}"><p class="evidence-label">${escapeHtml(item.label || "")}</p>${command}${output}${statusHtml}</div>`;
         })
         .join("");
       return `<section class="doc-section"><h2>${escapeHtml(group.heading || "")}</h2>${items}</section>`;
     })
     .join("");
-  const body = `<header class="doc-header"><p class="doc-kicker">证据留痕</p><h1>${escapeHtml(title)}</h1>${data.intro ? `<p class="doc-subtitle">${escapeHtml(data.intro)}</p>` : ""}</header>${sections}`;
-  return renderShell({ title, body, options, generatedAt, sourcePath: options.sourcePath || "evidence.html" });
+  const intro =
+    groups.length === 0
+      ? ""
+      : data.intro
+        ? `<p class="doc-subtitle">${escapeHtml(data.intro)}</p>`
+        : "";
+  const body = `<header class="doc-header"><p class="doc-kicker">${escapeHtml(chrome.evidenceKicker)}</p><h1>${escapeHtml(title)}</h1>${intro}</header>${emptyNote}${sections}`;
+  const shellOptions = {
+    ...options,
+    sourceLabelText: options.sourceLabelText || chrome.source,
+    generatedLabelText: options.generatedLabelText || chrome.generated,
+  };
+  return renderShell({
+    title,
+    body,
+    options: shellOptions,
+    generatedAt,
+    sourcePath: options.sourcePath || "evidence.html",
+  });
 }
 
 export function readTrigger(progressPath) {
