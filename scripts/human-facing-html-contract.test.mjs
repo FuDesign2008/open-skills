@@ -91,3 +91,24 @@ test("agent-only records and enqueue shells stay out of the view contract", () =
     assert.doesNotMatch(shell, /MR: opened/, rel);
   }
 });
+
+test("live specs forbid hand-written HTML fallback and wire standalone nav", () => {
+  const goalQueue = read("openspec/specs/goal-queue/spec.md");
+  const goalRun = read("openspec/specs/goal-run/spec.md");
+  const workflow = read("skills/goal-driven-workflow/SKILL.md");
+
+  assert.doesNotMatch(goalQueue, /write the same HTML directly/);
+  assert.doesNotMatch(goalQueue, /writes the same escaped, self-contained HTML/);
+  assert.match(goalQueue, /print the `\.md` paths instead of writing HTML by hand/);
+  assert.match(goalQueue, /that card's review HTML page, that card's evidence HTML page/);
+  assert.match(goalQueue, /path of its review HTML page and the path of its evidence HTML page/);
+
+  assert.match(goalRun, /same shared navigation block into both the review page and the evidence page/);
+  assert.match(goalRun, /review ↔ evidence/);
+  assert.match(goalRun, /evidence page MUST receive the same shared navigation block/);
+
+  assert.match(workflow, /Pass the same shared navigation block into both pages/);
+  assert.match(workflow, /cross-link review ↔ evidence/);
+  assert.match(workflow, /skills\/goal-driven-queue\/scripts\/render-html\.mjs/);
+  assert.match(workflow, /if that module is missing, stop and print/);
+});

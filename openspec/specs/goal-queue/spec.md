@@ -247,12 +247,12 @@ The system SHALL enforce three independent queue-level caps: a maximum number of
 
 ### Requirement: 进度文档与验收包
 
-The system SHALL maintain a persistent progress document (path `.goal-driven/queues/<queue-id>/runs/<batch-id>/progress.md`, minimum fields: task, mode, status, result summary, branch name, **MR URL**, notes) whose **sole writer is the dispatcher** — a child run reports back and MUST NOT write it, and completions arriving together are recorded sequentially so no entry is lost. The first progress-document entry SHALL record `Trigger: interactive | scheduled` from the actual run trigger. Every run SHALL end with an acceptance package in that same `runs/<batch-id>/` directory: the batch progress document and its generated `progress.html` view, the triage record and its generated HTML view, each executed task's engine completion report copied into the package together with its generated HTML view, the **dedicated verification document `verification.md` and its generated `verification.html` entry page** carrying one section per executed card plus its verdict line and that card's HTML view path, for each card that reached done that card's evidence HTML page and the image files that page displays, and the branch list awaiting human review — with each branch's **conflicts pre-computed in a temporary scratch worktree** so the human reviews real conflicts rather than performing N unassisted merge decisions; the prediction MUST NOT push, force-push, or rewrite a branch that already carries an open MR, and only genuine conflicts plus each card's MR URL reach the human. The branch list SHALL record each card's MR URL or its recorded no-diff/failure reason. The package SHALL mark every executed card `Verification: awaiting` until a present human records a verdict, and the batch MUST NOT be presented as accepted while any executed card is still `awaiting`. Merge decisions remain exclusively human; the package labels claims per `completion-evidence-discipline` inherited from the engine reports.
+The system SHALL maintain a persistent progress document (path `.goal-driven/queues/<queue-id>/runs/<batch-id>/progress.md`, minimum fields: task, mode, status, result summary, branch name, **MR URL**, notes) whose **sole writer is the dispatcher** — a child run reports back and MUST NOT write it, and completions arriving together are recorded sequentially so no entry is lost. The first progress-document entry SHALL record `Trigger: interactive | scheduled` from the actual run trigger. Every run SHALL end with an acceptance package in that same `runs/<batch-id>/` directory: the batch progress document and its generated `progress.html` view, the triage record and its generated HTML view, each executed task's engine completion report copied into the package together with its generated HTML view, the **dedicated verification document `verification.md` and its generated `verification.html` entry page** carrying one section per executed card plus its verdict line and that card's HTML view path, for each card that reached done that card's review HTML page, that card's evidence HTML page and the image files that page displays, and the branch list awaiting human review — with each branch's **conflicts pre-computed in a temporary scratch worktree** so the human reviews real conflicts rather than performing N unassisted merge decisions; the prediction MUST NOT push, force-push, or rewrite a branch that already carries an open MR, and only genuine conflicts plus each card's MR URL reach the human. The branch list SHALL record each card's MR URL or its recorded no-diff/failure reason. The package SHALL mark every executed card `Verification: awaiting` until a present human records a verdict, and the batch MUST NOT be presented as accepted while any executed card is still `awaiting`. Merge decisions remain exclusively human; the package labels claims per `completion-evidence-discipline` inherited from the engine reports.
 
 #### Scenario: 人回归验收
 
 - **WHEN** 用户在同一对话回来查看「昨晚跑了什么」
-- **THEN** 系统呈现该队列进度文档路径及其 `progress.html` 视图、triage 记录的 HTML 视图、独立核对文档 `verification.md` 路径及其 `verification.html` 入口页与最终摘要：每个任务的结果、证据来源、每张完成卡的证据页路径、对应分支与 MR URL（或无 diff/失败原因）、待人工逐卡裁决的核对节，以及待人工判定的 outcome 型事项清单
+- **THEN** 系统呈现该队列进度文档路径及其 `progress.html` 视图、triage 记录的 HTML 视图、独立核对文档 `verification.md` 路径及其 `verification.html` 入口页与最终摘要：每个任务的结果、证据来源、每张完成卡的 review HTML 路径与证据页路径、对应分支与 MR URL（或无 diff/失败原因）、待人工逐卡裁决的核对节，以及待人工判定的 outcome 型事项清单
 
 #### Scenario: 单写者记账不丢条目
 
@@ -277,7 +277,7 @@ The system SHALL maintain a persistent progress document (path `.goal-driven/que
 #### Scenario: 验收包记录 MR 与 HTML 入口
 
 - **WHEN** 批次收尾组装验收包
-- **THEN** 验收包含 `progress.html`、triage HTML 视图、`verification.html`、每份引擎报告的副本及其 HTML 视图，以及每张卡的 MR URL 或无 diff/失败原因
+- **THEN** 验收包含 `progress.html`、triage HTML 视图、`verification.html`、每份引擎报告的副本及其 HTML 视图、每张完成卡的 review HTML 与证据页，以及每张卡的 MR URL 或无 diff/失败原因
 
 #### Scenario: 核对节记录卡片 HTML 视图路径
 
@@ -522,7 +522,7 @@ The system SHALL consume queued cards through the slot dispatch defined by 并�
 After a batch run ends (caps hit or queue empty) and the acceptance package is assembled, `goal-driven-queue` SHALL run a **mandatory human per-card verification gate** before the batch may be treated as accepted.
 
 - Every **executed** card SHALL enter the verification state `awaiting` at package-assembly time, recorded in the card's Acceptance Summary (`Verification: awaiting | verified | returned — <reason>`) and in a `Verification` column of the progress document; `done` keeps its existing meaning of "engine completed".
-- The system SHALL produce a **dedicated, consolidated verification document** at `.goal-driven/queues/<queue-id>/runs/<batch-id>/verification.md`, written by the dispatcher (sole writer). One section per executed card SHALL gather, in one place: card slug, verbatim goal condition, engine, result tier, branch tip, report path, **that card's HTML view path**, **the card's MR URL or its no-diff/failure reason**, layered acceptance status (hard / soft / human), the engine report's numbered verification checklist, side effects (functional and non-functional), the card's decision/assumption ledger items awaiting judgment, that branch's conflict pre-run result, and, when that card reached done, the path of its evidence HTML page — followed by a verdict line (`verified` / `returned` + reason + who/when).
+- The system SHALL produce a **dedicated, consolidated verification document** at `.goal-driven/queues/<queue-id>/runs/<batch-id>/verification.md`, written by the dispatcher (sole writer). One section per executed card SHALL gather, in one place: card slug, verbatim goal condition, engine, result tier, branch tip, report path, **that card's HTML view path**, **the card's MR URL or its no-diff/failure reason**, layered acceptance status (hard / soft / human), the engine report's numbered verification checklist, side effects (functional and non-functional), the card's decision/assumption ledger items awaiting judgment, that branch's conflict pre-run result, and, when that card reached done, the path of its review HTML page and the path of its evidence HTML page — followed by a verdict line (`verified` / `returned` + reason + who/when).
 - The batch SHALL NOT be presented as **accepted** (and its batch summary SHALL show `Verified: N / Awaiting: M / Returned: K`) until every executed card carries a human verdict.
 - The per-card verdict SHALL be **human-only**: with `Stage-exit policy: ai-proxy`, the proxy MAY still run the record-step report-checklist check, but MUST NOT fill, infer, or pre-fill a per-card acceptance verdict; a card whose verdict is absent stays `awaiting`.
 - A `returned` verdict SHALL route its findings back as new or revised cards (the existing acceptance-findings loop); it MUST NOT merge, revert, or silently drop the branch.
@@ -532,7 +532,7 @@ After a batch run ends (caps hit or queue empty) and the acceptance package is a
 #### Scenario: 批次收尾生成独立核对文档
 
 - **WHEN** 一次队列运行收尾（触顶或清空）并组装验收包
-- **THEN** 系统在 `runs/<batch-id>/` 生成独立的 `verification.md`，每张已执行卡一节、就地汇总其目标条件/引擎结果/分支报告/该卡 HTML 视图路径/该卡 MR URL 或无 diff/失败原因/分层验收/引擎核对清单/副作用/台账项/冲突预演与完成卡的证据页路径，并留裁决行；所有已执行卡标 `Verification: awaiting`
+- **THEN** 系统在 `runs/<batch-id>/` 生成独立的 `verification.md`，每张已执行卡一节、就地汇总其目标条件/引擎结果/分支报告/该卡 HTML 视图路径/该卡 MR URL 或无 diff/失败原因/分层验收/引擎核对清单/副作用/台账项/冲突预演与完成卡的 review HTML 路径及证据页路径，并留裁决行；所有已执行卡标 `Verification: awaiting`
 
 #### Scenario: 未逐卡裁决不得表述为已验收
 
@@ -656,7 +656,7 @@ The HTML views SHALL be generated at the Stage 1 approval handoff (task card and
 
 The renderer SHALL use Node built-ins only and SHALL NOT add a runtime dependency. It SHALL escape `&`, `<`, `>`, `"`, and `'`, and SHALL NOT pass raw HTML from card or report content. It SHALL use inline CSS with no external stylesheet, script, font, image, or `@import`; content anchors to `http`/`https` are allowed. It SHALL normalize each link target by trimming whitespace, removing control characters, and lowercasing the scheme, and SHALL allow only relative paths (not starting with `/` or `//`), fragments, `http`, `https`, and `mailto`; it SHALL reject `javascript:`, `data:`, `vbscript:`, `file:`, root-relative paths, protocol-relative URLs, and backslash-prefixed paths, and SHALL escape attribute values. It SHALL split table cells on unescaped `|`, honor `\|` inside a cell, and protect code spans from link rewriting. It SHALL rewrite a relative `.md` link to an existing `.html` view except inside code fences, SHALL record the source path and generation time in the page footer, SHALL be deterministic for the same source and generation time, and SHALL NOT modify the `.md` source.
 
-When Node is unavailable, the dispatcher SHALL write the same HTML directly under the same escaping, self-containment, and footer rules. If the dispatcher cannot guarantee those rules, it SHALL print the `.md` paths instead of writing unsafe HTML. The contract is the rendered content, not the tool.
+When Node is unavailable, the dispatcher SHALL print the `.md` paths instead of writing HTML by hand. It SHALL NOT hand-write human-facing HTML as a fallback.
 
 The first progress-document entry SHALL record `Trigger: interactive | scheduled` from the actual run trigger. The dispatcher SHALL auto-open `verification.html` at the Stage 3 handback only when that recorded value is `interactive`. An explicit view request SHALL open the requested page regardless of the recorded trigger; the request itself is the presence input. A scheduled or unattended run SHALL NOT auto-open; it SHALL print the paths and MAY open a page only on an explicit request. The open action SHALL resolve the file under the queue directory and SHALL use an argument vector rather than a shell; tests SHALL inject the opener and SHALL NOT launch a browser. Generated HTML SHALL NOT be committed: delivery SHALL stage only the card's allowed paths, and verification SHALL show the diff excludes `.goal-driven/`.
 
@@ -745,10 +745,10 @@ The first progress-document entry SHALL record `Trigger: interactive | scheduled
 - **WHEN** the source links to another `.md` file
 - **THEN** the renderer rewrites the link to its `.html` view only when that view exists and the link is not inside a code fence
 
-#### Scenario: The no-Node fallback keeps the same contract
+#### Scenario: The no-Node fallback prints Markdown paths
 
 - **WHEN** Node is unavailable
-- **THEN** the dispatcher writes the same escaped, self-contained HTML with the source and generation time in the footer, or prints the `.md` paths instead of writing unsafe HTML
+- **THEN** the dispatcher prints the `.md` paths and does not hand-write human-facing HTML
 
 #### Scenario: The open action is path-contained and shell-free
 
