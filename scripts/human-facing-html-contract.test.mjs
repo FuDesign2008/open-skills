@@ -112,3 +112,23 @@ test("live specs forbid hand-written HTML fallback and wire standalone nav", () 
   assert.match(workflow, /skills\/goal-driven-queue\/scripts\/render-html\.mjs/);
   assert.match(workflow, /if that module is missing, stop and print/);
 });
+
+test("review and evidence paths and templates stay synchronized", () => {
+  const skill = read("skills/goal-driven-queue/SKILL.md");
+  const reference = read("skills/goal-driven-queue/reference.md");
+  const workflow = read("skills/goal-driven-workflow/SKILL.md");
+  const workflowRef = read("skills/goal-driven-workflow/reference.md");
+  const goalQueue = read("openspec/specs/goal-queue/spec.md");
+  const goalRun = read("openspec/specs/goal-run/spec.md");
+
+  assert.match(skill, /review\/<card>\.html/);
+  assert.match(skill, /Pass the same shared navigation block into both pages/);
+  assert.match(skill, /review\/<card-slug>\.html/);
+  assert.match(reference, /Review page: <path to review\/<slug>\.html/);
+  assert.match(workflow, /review\.html/);
+  assert.match(workflow, /Record the review page path and the evidence page path/);
+  assert.match(workflowRef, /Review page: <path to `\.goal-driven\/runs\/<local-YYYYMMDD-HHmm>\/review\.html`/);
+  assert.match(goalQueue, /review\/<card>\.html/);
+  assert.match(goalQueue, /same shared navigation block into both the review page and the evidence page/);
+  assert.match(goalRun, /review\.html/);
+});

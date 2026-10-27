@@ -351,7 +351,7 @@ On **standalone** invocations, that field MUST NOT skip stages 1–3 confirmatio
 
 ### Requirement: goal-run SHALL write one review HTML when standalone
 
-When a standalone run reaches stage 5, goal-driven-workflow MUST write one review JSON stating the problem, the cause, and the completed fix, then generate the review HTML with `renderReviewPage`. It MUST NOT hand-write that HTML and MUST NOT follow explain-clearly to produce it. The review body MUST NOT add a standalone link to the evidence page. The dispatcher MUST pass the same shared navigation block into both the review page and the evidence page (via `navHtml` / `--nav`), with relative items that at least cross-link review ↔ evidence; a missing target is marked unavailable. The completion report MUST record that file's path.
+When a standalone run reaches stage 5, goal-driven-workflow MUST write one review JSON stating the problem, the cause, and the completed fix, then generate the review HTML with `renderReviewPage` at `.goal-driven/runs/<local-YYYYMMDD-HHmm>/review.html`. It MUST NOT hand-write that HTML and MUST NOT follow explain-clearly to produce it. The review body MUST NOT add a standalone link to the evidence page. The dispatcher MUST pass the same shared navigation block into both the review page and the evidence page (via `navHtml` / `--nav`), with relative items that at least cross-link review ↔ evidence; a missing target is marked unavailable. The completion report MUST record that file's path.
 
 #### Scenario: Standalone stage 5 writes the page
 

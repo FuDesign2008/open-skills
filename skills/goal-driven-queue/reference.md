@@ -149,6 +149,7 @@ Path: `.goal-driven/queues/<queue-id>/runs/<batch-id>/verification.md` — the d
 - Card HTML view: <path>
 - MR: <url | skipped — no reviewable diff (<status output>; <diff output>) | failed — <reason>>
 - Entry page links: progress.html, triage HTML, each card HTML, each executed card's report HTML, each done card's review/evidence page (unavailable targets annotated)
+- Review page: <path to review/<slug>.html when the card reached done>
 - Evidence page: <path to evidence/<slug>.html when the card reached done>
 - Layered acceptance: hard <…> / soft <…> / human <outcome items>
 - Verification checklist (from the engine report):
