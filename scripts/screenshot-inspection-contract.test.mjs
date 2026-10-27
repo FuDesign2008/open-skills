@@ -57,7 +57,7 @@ test("hosts thin-ref the authority skill instead of restating inspection", () =>
   const queue = read("skills/goal-driven-queue/SKILL.md");
   assert.match(
     queue,
-    /The evidence page shows the copied image and that inspection\./,
+    /evidence page shows the copied image and that inspection/,
   );
   const goalRun = read("skills/goal-driven-workflow/SKILL.md");
   assert.equal(

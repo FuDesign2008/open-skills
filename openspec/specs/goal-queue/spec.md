@@ -3,7 +3,9 @@
 ## Purpose
 
 Persistent goal-backlog queue lifecycle owned by the user-invocable `goal-driven-queue` skill: durable task-card backlog, intake-time high-impact pre-approval with 留痕, enqueue-time batch triage with a derived certainty/difficulty band feeding both ordering and routing, slot-based concurrent consumption whose concurrency is settled at enqueue and reused by absent runs, worktree-mandatory isolation above concurrency 1 with same-module exploration amortized, queue-level budget and stopping rules over three caps, a per-run progress document with single-writer accounting and recorded effective concurrency, and a batch acceptance package that pre-runs merge conflicts so only real ones reach the human. Scheduling stays platform-native; this layer treats any trigger — manual or scheduled — as "consume the queue until it drains or caps hit".
+
 ## Requirements
+
 ### Requirement: 持久 backlog 载体
 
 The system SHALL maintain the queue as a persistent project-local tree under `.goal-driven/queues/<queue-id>/` holding one markdown task card per goal, where each card records: measurable goal condition, mandatory turn/time budget clause, constraints, priority, a coarse advisory duration estimate, status, acceptance summary fields, a **certainty/difficulty assessment** (coarse band + named signals, marked `factual`/`preference`, per `goal-queue-triage`), a machine-readable `Modules:` field (the card's normalized module/target-path set extracted from Constraints — one set serving both the triage equivalence match and the concurrent-admission overlap check, per `goal-queue-concurrency`), an optional machine-readable `Waits-on` dependency field, and an optional `Reusable: yes | no` mark (default `no`, per `goal-queue-reuse`). Priority SHALL use a three-level vocabulary — `P0` (urgent, highest), `P1` (normal, default when unstated), `P2` (background, lowest). Within one priority level the **admission sequence** SHALL be: information leverage descending (the card whose resolution can retire the most other pending cards first), then the assessment band (high-certainty, low-cost first), and FIFO by card `Created` timestamp as the final tie-break — this sequence decides the order in which cards are admitted, not how many run at once. Cards MUST be git-trackable so backlog state survives **within the bound conversation** and reviewable in diffs. Each card SHALL also carry a **Decisions-I-made-for-you** section listing intake self-answered decisions with impact tiers (empty when none), and MAY carry an optional `Traceability: openspec/<change-name>` field when the user opted into OpenSpec sedimentation at enqueue. File SoT is the bound queue directory: the same conversation resumes from those files without depending on chat history for card content; a new conversation mints a fresh queue and does not auto-bind another conversation's directory. Legacy cards directly under `.goal-driven/` remain readable as queue-id `default` per 对话自动隔离, and a legacy card carrying none of the new fields is consumed exactly as before.
@@ -245,12 +247,12 @@ The system SHALL enforce three independent queue-level caps: a maximum number of
 
 ### Requirement: 进度文档与验收包
 
-The system SHALL maintain a persistent progress document (path `.goal-driven/queues/<queue-id>/runs/<batch-id>/progress.md`, minimum fields: task, mode, status, result summary, branch name, notes) whose **sole writer is the dispatcher** — a child run reports back and MUST NOT write it, and completions arriving together are recorded sequentially so no entry is lost. Every run SHALL end with an acceptance package in that same `runs/<batch-id>/` directory: the batch progress document, the triage record by path, each executed task's engine completion report, the **dedicated verification document `verification.md`** carrying one section per executed card plus its verdict line, for each card that reached done that card's evidence HTML page and the image files that page displays, and the branch list awaiting human review — with each branch **auto-rebased onto the latest main and its conflicts pre-computed** so the human reviews real conflicts rather than performing N unassisted merge decisions. The package SHALL mark every executed card `Verification: awaiting` until a present human records a verdict, and the batch MUST NOT be presented as accepted while any executed card is still `awaiting`. Merge decisions remain exclusively human; the package labels claims per `completion-evidence-discipline` inherited from the engine reports.
+The system SHALL maintain a persistent progress document (path `.goal-driven/queues/<queue-id>/runs/<batch-id>/progress.md`, minimum fields: task, mode, status, result summary, branch name, **MR URL**, notes) whose **sole writer is the dispatcher** — a child run reports back and MUST NOT write it, and completions arriving together are recorded sequentially so no entry is lost. The first progress-document entry SHALL record `Trigger: interactive | scheduled` from the actual run trigger. Every run SHALL end with an acceptance package in that same `runs/<batch-id>/` directory: the batch progress document and its generated `progress.html` view, the triage record and its generated HTML view, each executed task's engine completion report copied into the package together with its generated HTML view, the **dedicated verification document `verification.md` and its generated `verification.html` entry page** carrying one section per executed card plus its verdict line and that card's HTML view path, for each card that reached done that card's review HTML page, that card's evidence HTML page and the image files that page displays, and the branch list awaiting human review — with each branch's **conflicts pre-computed in a temporary scratch worktree** so the human reviews real conflicts rather than performing N unassisted merge decisions; the prediction MUST NOT push, force-push, or rewrite a branch that already carries an open MR, and only genuine conflicts plus each card's MR URL reach the human. The branch list SHALL record each card's MR URL or its recorded no-diff/failure reason. The package SHALL mark every executed card `Verification: awaiting` until a present human records a verdict, and the batch MUST NOT be presented as accepted while any executed card is still `awaiting`. Merge decisions remain exclusively human; the package labels claims per `completion-evidence-discipline` inherited from the engine reports.
 
 #### Scenario: 人回归验收
 
 - **WHEN** 用户在同一对话回来查看「昨晚跑了什么」
-- **THEN** 系统呈现该队列进度文档路径、独立核对文档 `verification.md` 路径与最终摘要：每个任务的结果、证据来源、每张完成卡的证据页路径、对应分支，待人工逐卡裁决的核对节，以及待人工判定的 outcome 型事项清单
+- **THEN** 系统呈现该队列进度文档路径及其 `progress.html` 视图、triage 记录的 HTML 视图、独立核对文档 `verification.md` 路径及其 `verification.html` 入口页与最终摘要：每个任务的结果、证据来源、每张完成卡的 review HTML 路径与证据页路径、对应分支与 MR URL（或无 diff/失败原因）、待人工逐卡裁决的核对节，以及待人工判定的 outcome 型事项清单
 
 #### Scenario: 单写者记账不丢条目
 
@@ -271,6 +273,22 @@ The system SHALL maintain a persistent progress document (path `.goal-driven/que
 
 - **WHEN** 批次收尾组装验收包
 - **THEN** 验收包含独立核对文档，且每张已执行卡在获得真人裁决前保持 `Verification: awaiting`，批次不得被表述为已验收
+
+#### Scenario: 验收包记录 MR 与 HTML 入口
+
+- **WHEN** 批次收尾组装验收包
+- **THEN** 验收包含 `progress.html`、triage HTML 视图、`verification.html`、每份引擎报告的副本及其 HTML 视图、每张完成卡的 review HTML 与证据页，以及每张卡的 MR URL 或无 diff/失败原因
+
+#### Scenario: 核对节记录卡片 HTML 视图路径
+
+- **WHEN** 组装独立核对文档
+- **THEN** 每张已执行卡的核对节记录该卡 HTML 视图的路径
+
+#### Scenario: 冲突预演不重写已开 MR 分支
+
+- **WHEN** 待审查分支已携带打开的 MR
+- **THEN** 冲突预演只在临时 scratch worktree 中进行，不推送、不强推、不重写该分支；只有真冲突与 MR URL 呈报给人
+
 ### Requirement: 编排层薄引用引擎方法论
 
 The skill body MUST thin-reference `goal-driven-workflow` for single-run methodology (acceptance layering, `/goal` condition design, sub-agent context management, launch companions, completion reporting) and MUST NOT restate that content. The frontmatter MUST declare the single-direction dependency and pass the prerequisite check at startup, aborting with install guidance when missing. The Delegate step's card supply MAY add exactly one line noting that the dispatched engine enforces its own context budget (phase-boundary resets and ledger handoff per the engine's context discipline); context-budget enforcement is unconditional — the queue MUST NOT add a card-level opt-in field for it and MUST NOT restate the engine's methodology.
@@ -504,7 +522,7 @@ The system SHALL consume queued cards through the slot dispatch defined by 并�
 After a batch run ends (caps hit or queue empty) and the acceptance package is assembled, `goal-driven-queue` SHALL run a **mandatory human per-card verification gate** before the batch may be treated as accepted.
 
 - Every **executed** card SHALL enter the verification state `awaiting` at package-assembly time, recorded in the card's Acceptance Summary (`Verification: awaiting | verified | returned — <reason>`) and in a `Verification` column of the progress document; `done` keeps its existing meaning of "engine completed".
-- The system SHALL produce a **dedicated, consolidated verification document** at `.goal-driven/queues/<queue-id>/runs/<batch-id>/verification.md`, written by the dispatcher (sole writer). One section per executed card SHALL gather, in one place: card slug, verbatim goal condition, engine, result tier, branch tip, report path, layered acceptance status (hard / soft / human), the engine report's numbered verification checklist, side effects (functional and non-functional), the card's decision/assumption ledger items awaiting judgment, that branch's conflict pre-run result, and, when that card reached done, the path of its evidence HTML page — followed by a verdict line (`verified` / `returned` + reason + who/when).
+- The system SHALL produce a **dedicated, consolidated verification document** at `.goal-driven/queues/<queue-id>/runs/<batch-id>/verification.md`, written by the dispatcher (sole writer). One section per executed card SHALL gather, in one place: card slug, verbatim goal condition, engine, result tier, branch tip, report path, **that card's HTML view path**, **the card's MR URL or its no-diff/failure reason**, layered acceptance status (hard / soft / human), the engine report's numbered verification checklist, side effects (functional and non-functional), the card's decision/assumption ledger items awaiting judgment, that branch's conflict pre-run result, and, when that card reached done, the path of its review HTML page and the path of its evidence HTML page — followed by a verdict line (`verified` / `returned` + reason + who/when).
 - The batch SHALL NOT be presented as **accepted** (and its batch summary SHALL show `Verified: N / Awaiting: M / Returned: K`) until every executed card carries a human verdict.
 - The per-card verdict SHALL be **human-only**: with `Stage-exit policy: ai-proxy`, the proxy MAY still run the record-step report-checklist check, but MUST NOT fill, infer, or pre-fill a per-card acceptance verdict; a card whose verdict is absent stays `awaiting`.
 - A `returned` verdict SHALL route its findings back as new or revised cards (the existing acceptance-findings loop); it MUST NOT merge, revert, or silently drop the branch.
@@ -514,7 +532,7 @@ After a batch run ends (caps hit or queue empty) and the acceptance package is a
 #### Scenario: 批次收尾生成独立核对文档
 
 - **WHEN** 一次队列运行收尾（触顶或清空）并组装验收包
-- **THEN** 系统在 `runs/<batch-id>/` 生成独立的 `verification.md`，每张已执行卡一节、就地汇总其目标条件/引擎结果/分支报告/分层验收/引擎核对清单/副作用/台账项/冲突预演与完成卡的证据页路径，并留裁决行；所有已执行卡标 `Verification: awaiting`
+- **THEN** 系统在 `runs/<batch-id>/` 生成独立的 `verification.md`，每张已执行卡一节、就地汇总其目标条件/引擎结果/分支报告/该卡 HTML 视图路径/该卡 MR URL 或无 diff/失败原因/分层验收/引擎核对清单/副作用/台账项/冲突预演与完成卡的 review HTML 路径及证据页路径，并留裁决行；所有已执行卡标 `Verification: awaiting`
 
 #### Scenario: 未逐卡裁决不得表述为已验收
 
@@ -540,9 +558,10 @@ After a batch run ends (caps hit or queue empty) and the acceptance package is a
 
 - **WHEN** 查看引入本能力之前完成的批次
 - **THEN** 不要求补做逐卡裁决，行为与引入前逐字一致
+
 ### Requirement: goal-queue SHALL write one review HTML per completed card
 
-For every card that reaches done, under stage-exit policy manual, auto, or ai-proxy, the dispatcher MUST write one HTML page by following explain-clearly with the form fixed to HTML. The page MUST state the problem, the cause, and the completed fix. The page MUST include one link to that card's evidence HTML page after the explanation visual. The link MUST NOT replace the problem, the cause, or the completed fix. The acceptance package MUST record that file's path. A card that is not done MUST NOT get this page. An enqueue shell MUST NOT write it.
+For every card that reaches done, under stage-exit policy manual, auto, or ai-proxy, the dispatcher MUST write one review JSON input stating the problem, the cause, and the completed fix, then generate the review HTML with `renderReviewPage` at `.goal-driven/queues/<queue-id>/runs/<batch-id>/review/<card>.html`. The dispatcher MUST NOT hand-write that HTML and MUST NOT follow explain-clearly to produce it. The page MUST NOT add a standalone link to the evidence page after the explanation. The dispatcher MUST pass the same shared navigation block into both the review page and the evidence page (via `navHtml` / `--nav`), with relative items that at least cross-link review ↔ evidence and reach the acceptance entry page; a missing target is marked unavailable. The acceptance entry page also reaches that evidence page. The acceptance package MUST record that file's path. A card that is not done MUST NOT get this page. An enqueue shell MUST NOT write it.
 
 #### Scenario: Five completed cards produce five files
 
@@ -557,16 +576,16 @@ For every card that reaches done, under stage-exit policy manual, auto, or ai-pr
 #### Scenario: Manual policy still writes the file
 
 - **WHEN** a card reaches done and its stage-exit policy is manual
-- **THEN** the dispatcher still writes that card's review HTML page, the page links to that card's evidence page, and the acceptance package records the review path
+- **THEN** the dispatcher still writes that card's review HTML page, and the acceptance package records the review path
 
 #### Scenario: Review page links to the evidence page
 
-- **WHEN** a card reaches done and its evidence page has been written
-- **THEN** the review HTML contains one link to that evidence page after the explanation visual, and the visual still states the problem, the cause, and the completed fix
+- **WHEN** a card reaches done, the review HTML and its evidence page both exist
+- **THEN** the shared navigation block on the review page links to the evidence page, and the review body carries no standalone evidence link
 
 ### Requirement: goal-queue SHALL write one evidence HTML per completed card
 
-For every card that reaches done, under stage-exit policy manual, auto, or ai-proxy, the dispatcher MUST write one HTML page at `.goal-driven/queues/<queue-id>/runs/<batch-id>/evidence/<card>.html` during the same sole-writer record step that records that completion. The `<card>` segment MUST be that card's slug and MUST contain no path separator. The page title MUST be 证据留痕.
+For every card that reaches done, under stage-exit policy manual, auto, or ai-proxy, the dispatcher MUST write one evidence JSON input and generate the evidence HTML with `renderEvidencePage` at `.goal-driven/queues/<queue-id>/runs/<batch-id>/evidence/<card>.html` during the same sole-writer record step that records that completion. The dispatcher MUST NOT hand-write that HTML. The `<card>` segment MUST be that card's slug and MUST contain no path separator. The page title and kicker MUST follow the human's conversation language (Chinese conversations use 证据留痕; English conversations use an English equivalent such as Evidence record).
 
 The child completion report MUST include an evidence list. Each item MUST be either an opened-UI check citing a png, jpg, jpeg, or webp path, or a non-UI check citing the command and a short output summary. The dispatcher MUST copy each cited image that exists and is non-empty into `evidence/<card>/` under that same batch directory. The page MUST reference those copies by a relative path. The page MUST NOT depend on the child worktree remaining.
 
@@ -628,3 +647,397 @@ The card's `verification.md` section MUST record this page's path. A card that i
 
 - **WHEN** the done card's slug is `sync-dns`
 - **THEN** the evidence page path ends with `evidence/sync-dns.html` and its copied images sit under `evidence/sync-dns/`
+
+### Requirement: Human-facing queue records SHALL have generated HTML views
+
+The queue SHALL keep every human-facing record's Markdown file as the canonical source and SHALL generate a self-contained HTML view beside it. The covered set SHALL be the task cards, the triage record, `progress.md`, `verification.md`, and each engine completion report packaged into the acceptance package. `config` and `approaches/*.md` SHALL remain Markdown-only. The existing review HTML and evidence HTML pages SHALL keep their current contract.
+
+The HTML views SHALL be generated at the Stage 1 approval handoff (task card and triage record) and at Stage 3 package assembly (all covered records), and SHALL be regenerated immediately before any open so a stale view is never opened. `verification.html` SHALL be the acceptance entry page and SHALL link to `progress.html`, the triage HTML view, each card's HTML view, each executed card's packaged engine report's HTML view, and, for each done card, that card's review page and evidence page. A target that does not exist SHALL be annotated as unavailable for any batch, including a current batch with failed, skipped, or zero done cards; the entry page SHALL NOT invent a file. Each executed card's packaged engine report SHALL use a deterministic filename (`reports/<card-slug>.md`) and its view `reports/<card-slug>.html`, with the original path named in the footer.
+
+The renderer SHALL use Node built-ins only and SHALL NOT add a runtime dependency. It SHALL escape `&`, `<`, `>`, `"`, and `'`, and SHALL NOT pass raw HTML from card or report content. It SHALL use inline CSS with no external stylesheet, script, font, image, or `@import`; content anchors to `http`/`https` are allowed. It SHALL normalize each link target by trimming whitespace, removing control characters, and lowercasing the scheme, and SHALL allow only relative paths (not starting with `/` or `//`), fragments, `http`, `https`, and `mailto`; it SHALL reject `javascript:`, `data:`, `vbscript:`, `file:`, root-relative paths, protocol-relative URLs, and backslash-prefixed paths, and SHALL escape attribute values. It SHALL split table cells on unescaped `|`, honor `\|` inside a cell, and protect code spans from link rewriting. It SHALL rewrite a relative `.md` link to an existing `.html` view except inside code fences, SHALL record the source path and generation time in the page footer, SHALL be deterministic for the same source and generation time, and SHALL NOT modify the `.md` source.
+
+When Node is unavailable, the dispatcher SHALL print the `.md` paths instead of writing HTML by hand. It SHALL NOT hand-write human-facing HTML as a fallback.
+
+The first progress-document entry SHALL record `Trigger: interactive | scheduled` from the actual run trigger. The dispatcher SHALL auto-open `verification.html` at the Stage 3 handback only when that recorded value is `interactive`. An explicit view request SHALL open the requested page regardless of the recorded trigger; the request itself is the presence input. A scheduled or unattended run SHALL NOT auto-open; it SHALL print the paths and MAY open a page only on an explicit request. The open action SHALL resolve the file under the queue directory and SHALL use an argument vector rather than a shell; tests SHALL inject the opener and SHALL NOT launch a browser. Generated HTML SHALL NOT be committed: delivery SHALL stage only the card's allowed paths, and verification SHALL show the diff excludes `.goal-driven/`.
+
+#### Scenario: Every covered record gets an HTML sibling
+
+- **WHEN** the queue generates human-facing views for a batch
+- **THEN** each task card, the triage record, `progress.md`, `verification.md`, and each packaged engine report has a sibling `.html` view
+
+#### Scenario: Markdown remains canonical and byte-unchanged
+
+- **WHEN** a view is rendered
+- **THEN** the `.md` source is unchanged byte-for-byte and remains the record agents edit
+
+#### Scenario: Agent-only records stay Markdown-only
+
+- **WHEN** the queue generates HTML views
+- **THEN** `config` and `approaches/*.md` get no HTML view
+
+#### Scenario: Verification HTML is the entry page with resolving links
+
+- **WHEN** the acceptance package is assembled
+- **THEN** `verification.html` links to progress, triage, each card, each executed card's packaged report, and, for each done card, that card's review page and evidence page; every existing target resolves, and a missing target is annotated as unavailable
+
+#### Scenario: A pre-change batch links only existing targets
+
+- **WHEN** a view is generated for a batch that predates this capability
+- **THEN** the entry page links only to existing targets or annotates a missing target as unavailable, and does not invent a file
+
+#### Scenario: A failed card has no review or evidence link
+
+- **WHEN** a current batch contains a failed card that was executed and has a packaged report
+- **THEN** the entry page links that card's HTML view and packaged report, and annotates the absent review/evidence target as unavailable
+
+#### Scenario: A skipped card has no packaged report
+
+- **WHEN** a card is `skipped (covered)` and was never executed
+- **THEN** the entry page links that card's HTML view and annotates the missing report, review, and evidence targets as unavailable
+
+#### Scenario: A zero-done batch still gets an entry page
+
+- **WHEN** a batch finishes with zero done cards
+- **THEN** `verification.html` still exists and links progress, triage, each card, each executed card's packaged report, and annotates every review/evidence target as unavailable
+
+#### Scenario: The auto-open gate reads the recorded trigger
+
+- **WHEN** the first progress entry records `Trigger: interactive`
+- **THEN** the dispatcher may auto-open the Stage 3 entry page; when it records `Trigger: scheduled`, the dispatcher prints paths and does not auto-open, while an explicit view request may still open the requested page
+
+#### Scenario: Protocol-relative and obfuscated schemes are rejected
+
+- **WHEN** a link target is `//example.com/x`, `file:...`, `JaVaScRiPt:...`, `java\tscript:...`, or a backslash-prefixed path
+- **THEN** normalization rejects the target and the renderer emits no active link for it
+
+#### Scenario: Interactive handback opens the entry page
+
+- **WHEN** the first progress entry records `Trigger: interactive` and the Stage 3 handback runs
+- **THEN** the dispatcher auto-opens `verification.html` in the system default browser
+
+#### Scenario: On-demand view opens the requested page
+
+- **WHEN** the human explicitly asks to view a covered record, regardless of the recorded trigger
+- **THEN** the dispatcher regenerates that view if stale and opens it in the system default browser; the request itself is the presence input
+
+#### Scenario: Unattended runs do not auto-open a browser
+
+- **WHEN** a scheduled or unattended run assembles the package
+- **THEN** no browser auto-opens and the dispatcher prints the view paths; an explicit view request may still open a page
+
+#### Scenario: A stale view is regenerated before opening
+
+- **WHEN** the `.md` source is newer than its HTML view
+- **THEN** the dispatcher re-renders the view before opening it
+
+#### Scenario: The renderer escapes content and stays self-contained
+
+- **WHEN** the source contains `<script>`, `&`, quotes, or heading placeholders such as `<batch-id>`
+- **THEN** the output escapes them, contains inline CSS only, and contains no external stylesheet, script, font, image, or `@import`
+
+#### Scenario: Unsafe link schemes and attributes are blocked
+
+- **WHEN** the source contains a `javascript:`, `data:`, or `vbscript:` link, or a link with special characters in its target
+- **THEN** the renderer blocks the scheme or escapes the attribute value
+
+#### Scenario: Link rewriting skips code fences and missing targets
+
+- **WHEN** the source links to another `.md` file
+- **THEN** the renderer rewrites the link to its `.html` view only when that view exists and the link is not inside a code fence
+
+#### Scenario: The no-Node fallback prints Markdown paths
+
+- **WHEN** Node is unavailable
+- **THEN** the dispatcher prints the `.md` paths and does not hand-write human-facing HTML
+
+#### Scenario: The open action is path-contained and shell-free
+
+- **WHEN** the dispatcher opens a view
+- **THEN** the path resolves under the queue directory and the opener receives an argument vector, not a shell command
+
+### Requirement: Completed queue cards SHALL auto-submit an MR
+
+Every executed card that reaches `done` with a reviewable diff SHALL automatically commit, push its feature branch, and open a PR/MR before its completion report is final. The child SHALL commit its work first, then establish a reviewable diff only when the scoped work tree is clean (`git status --porcelain -- . ':(exclude).goal-driven' ':(exclude).explain-clearly'` prints nothing) and `git diff --stat "$(git merge-base origin/main HEAD)" HEAD` prints at least one changed file; the completion report SHALL record both commands and a short output summary. A scoped status that still prints a change SHALL NOT be reported as no reviewable diff: the child SHALL commit the work or report a delivery failure. If `origin/main` or the merge base is unavailable, the child SHALL report `MR: failed — <reason>`. The report SHALL use exactly one of these states: `MR: opened <url>`, `MR: failed — <reason>`, or `MR: skipped — no reviewable diff (<status output>; <diff output>)`.
+
+The completion report SHALL record the MR URL. The progress document, the verification document, and the acceptance package SHALL record the same URL. A done card with a reviewable diff and neither an opened URL nor a failure reason SHALL bounce; the queue SHALL NOT fake a URL.
+
+The queue SHALL carry the auto-MR rule in the card supply. It SHALL NOT edit a child engine's completion-report template. Merge, release, protected-branch operations, and any auto-merge SHALL remain human-only. An MR failure SHALL be reported as a delivery failure; the card SHALL NOT be presented as done-with-MR until the MR is open. The dispatcher SHALL record the failure reason and set the card status to `failed`. A done card with a reviewable diff and neither an opened URL nor a failure reason SHALL also be set to `failed` (a bounce). Only a scope or constraint change beyond the frozen card uses `conflict pending confirmation`.
+
+Conflict prediction SHALL stay local: the pre-run rebase SHALL happen in a temporary scratch worktree, SHALL NOT push, force-push, or rewrite a branch that already carries an open MR, and only genuine conflicts plus the MR URL SHALL reach the human.
+
+#### Scenario: A done card with a reviewable diff opens an MR
+
+- **WHEN** an executed card reaches done and the diff command prints at least one changed file
+- **THEN** the child commits, pushes its feature branch, opens a PR/MR, and records `MR: opened <url>` before the completion report is final
+
+#### Scenario: The MR URL reaches every human-facing record
+
+- **WHEN** a card opens an MR
+- **THEN** the URL appears in the completion report, the progress document, the verification document, and the acceptance package
+
+#### Scenario: A done card with no diff records the reason
+
+- **WHEN** the diff command prints no changed file
+- **THEN** the report records `MR: skipped — no reviewable diff (<status output>; <diff output>)` and no MR is opened
+
+#### Scenario: A done card with a diff and no MR state bounces
+
+- **WHEN** a done card has a reviewable diff but neither an MR URL nor a failure reason
+- **THEN** the dispatcher bounces the card and does not present it as done-with-MR
+
+#### Scenario: MR failure is reported and not faked
+
+- **WHEN** the child cannot open an MR (no remote, auth, or network)
+- **THEN** the report records `MR: failed — <reason>`, the dispatcher records the delivery failure, and no URL is invented
+
+#### Scenario: Merge remains human
+
+- **WHEN** an MR is open
+- **THEN** the queue does not merge, release, push a protected branch, or enable auto-merge
+
+#### Scenario: The queue does not edit engine templates
+
+- **WHEN** the auto-MR rule is applied
+- **THEN** the queue carries it in the card supply and does not change any child engine's completion-report template
+
+#### Scenario: Conflict prediction does not rewrite an open-MR branch
+
+- **WHEN** a waiting branch already carries an open MR
+- **THEN** the prediction rebase runs only in a scratch worktree and never pushes, force-pushes, or rewrites that branch; only genuine conflicts and the MR URL reach the human
+
+#### Scenario: Uncommitted work is not skipped
+
+- **WHEN** the scoped status command prints a change and the commit has not been made
+- **THEN** the child commits the work or reports `MR: failed — <reason>`; it SHALL NOT report `MR: skipped — no reviewable diff`
+
+#### Scenario: Merge-base failure is a delivery failure
+
+- **WHEN** `origin/main` or the merge base is unavailable
+- **THEN** the report records `MR: failed — <reason>` and the card is not presented as done-with-MR
+
+### Requirement: Human-facing queue records SHALL use the human's language
+
+The queue SHALL write every human-facing record — task cards, the triage record, the progress document, the verification document, completion reports, and their HTML views — in the language the human used in the conversation. `SKILL.md`, agent-only reference/spec files, and code identifiers SHALL remain English. The dispatcher SHALL localize entry-page labels and HTML footers to the human's language.
+
+#### Scenario: A Chinese conversation produces Chinese records
+
+- **WHEN** the human writes in Chinese
+- **THEN** the task card, triage record, progress document, verification document, completion report, and HTML views are written in Chinese
+
+#### Scenario: The skill body stays English
+
+- **WHEN** the human-facing records are Chinese
+- **THEN** `SKILL.md`, agent-only reference/spec files, and code identifiers remain English
+
+#### Scenario: Entry-page labels and footers are localized
+
+- **WHEN** the human-facing records are Chinese
+- **THEN** the entry-page labels and HTML footers are Chinese
+
+### Requirement: Human-facing HTML views SHALL carry cross-navigation
+
+Every generated human-facing HTML view SHALL carry a navigation block linking to the entry page (`verification.html`) and the other covered views. Links SHALL be relative, SHALL resolve to existing files, and SHALL mark a missing target as unavailable. The block SHALL mark the page being viewed as the current page and SHALL treat that page as available even before its file exists. The block SHALL need no script and SHALL work offline.
+
+#### Scenario: Any view can jump to any other view
+
+- **WHEN** a reader opens a covered HTML view (card, triage, progress, verification, report, review, or evidence)
+- **THEN** the view shows a navigation block whose links reach the entry page and the other covered views
+
+#### Scenario: Missing targets are marked
+
+- **WHEN** a navigation target does not exist
+- **THEN** the block shows that label as unavailable instead of an active link
+
+#### Scenario: Navigation is offline and script-free
+
+- **WHEN** the HTML file is opened from disk without network access
+- **THEN** the navigation links work and the page contains no navigation script
+
+#### Scenario: The current page is marked
+
+- **WHEN** a view is rendered and its own path is in the navigation manifest
+- **THEN** the block marks that entry as the current page, and still renders it as a link even when the file has not been written yet
+
+### Requirement: Human-facing HTML views SHALL be designed reading documents
+
+Human-facing HTML views SHALL be designed reading documents, not a line-by-line Markdown translation. Each view SHALL provide a document header with metadata chips for short values and labeled full-width rows for long values, a section table of contents, section cards, and status pills. Document titles SHALL render inline Markdown. A verification view SHALL provide KPI tiles and a verdict card. A progress view SHALL provide a timeline for events and KPI tiles. A task-card view SHALL provide condition cards and field cards. The entry page SHALL provide a status KPI strip and a grid of link cards. The Markdown file SHALL remain canonical, and the HTML SHALL stay self-contained with no script or external asset.
+
+#### Scenario: A verification view is designed for scanning
+
+- **WHEN** the verification document is rendered
+- **THEN** the page shows a document header, metadata chips, a section table of contents, KPI tiles, section cards, and a verdict card
+
+#### Scenario: A progress view shows a timeline
+
+- **WHEN** the progress document is rendered
+- **THEN** the page shows KPI tiles, section cards, and a timeline for the key events
+
+#### Scenario: A task card uses condition and field cards
+
+- **WHEN** the task card is rendered
+- **THEN** the page shows metadata chips, numbered condition cards, and field cards for the card detail and acceptance summary
+
+#### Scenario: The entry page is a dashboard
+
+- **WHEN** the entry page is rendered
+- **THEN** it shows a status KPI strip and a grid of link cards for the covered views
+
+#### Scenario: The Markdown source remains canonical
+
+- **WHEN** a designed HTML view is generated
+- **THEN** the `.md` source is unchanged and remains the record agents edit
+
+#### Scenario: Long metadata becomes a labeled row
+
+- **WHEN** a header metadata value is long
+- **THEN** the header shows a labeled full-width row instead of an oversized pill, while short values stay as chips
+
+#### Scenario: A title with inline Markdown renders
+
+- **WHEN** the document title contains a code span or emphasis
+- **THEN** the header renders it inline instead of showing the literal markers
+
+### Requirement: All human-facing HTML SHALL be generated by the renderer
+
+The dispatcher SHALL write Markdown for records and small JSON for the review/evidence templates, then run the renderer. It SHALL NOT hand-write human-facing HTML. The renderer SHALL generate the review and evidence pages from those JSON inputs. The Markdown SHALL remain canonical.
+
+#### Scenario: The review page is generated from structured data
+
+- **WHEN** the dispatcher writes a review JSON input
+- **THEN** the renderer generates the review page with the problem, cause, and fix; the review body carries no standalone evidence link
+
+#### Scenario: The evidence page is generated from structured data
+
+- **WHEN** the dispatcher writes an evidence JSON input
+- **THEN** the renderer generates the evidence page, showing images only for items that cite one and command/output for the rest
+
+#### Scenario: No hand-written human-facing HTML
+
+- **WHEN** a human-facing page is needed
+- **THEN** the dispatcher writes Markdown or JSON and runs the renderer; it does not write the HTML itself
+
+### Requirement: Human-facing HTML views SHALL follow the system light/dark preference
+
+Human-facing HTML views SHALL provide a light palette and a dark palette and SHALL select the palette automatically with `prefers-color-scheme`, without requiring a script. Print SHALL use the light palette.
+
+#### Scenario: A dark system preference selects the dark palette
+
+- **WHEN** the operating system is in dark mode
+- **THEN** the view opens with the dark palette
+
+#### Scenario: A light system preference selects the light palette
+
+- **WHEN** the operating system is in light mode
+- **THEN** the view opens with the light palette
+
+#### Scenario: Printing uses the light palette
+
+- **WHEN** the view is printed
+- **THEN** the light palette is used and the navigation and table of contents are hidden
+
+#### Scenario: No script is required
+
+- **WHEN** the view is opened from disk
+- **THEN** the theme follows the system preference without any script
+
+### Requirement: File references in human-facing HTML views SHALL link to the source files
+
+Inline code that names an existing file or directory SHALL render as a link. Resolution SHALL be nearest-first across tiers: the record directory, the queue root, the workspace root, the record's repository root, the batch directories, then the skill directory. A name that matches several distinct paths inside one tier, a glob, and a non-file code span SHALL stay plain. The link SHALL be a local relative path.
+
+#### Scenario: A real file path becomes a link
+
+- **WHEN** inline code names an existing file
+- **THEN** the view renders it as a link to that file
+
+#### Scenario: A command or placeholder stays plain
+
+- **WHEN** inline code is a command, a placeholder, or a non-file string
+- **THEN** the view leaves it as plain code with no link
+
+#### Scenario: The link resolves locally
+
+- **WHEN** the reader clicks a file link
+- **THEN** the browser opens the local source file through a relative path
+
+#### Scenario: A bare name links without an extension or a slash
+
+- **WHEN** inline code names `config`, which exists in the queue root, or `scripts/`, which exists in the workspace root
+- **THEN** the view links each to its existing file or directory
+
+#### Scenario: A bare name resolves against the nearest tier
+
+- **WHEN** inline code names `progress.md` and exactly one batch directory contains it
+- **THEN** the view links it to that batch's file
+
+#### Scenario: The skill directory backs sibling references
+
+- **WHEN** inline code names `reference.md` and only the skill directory contains it
+- **THEN** the view links it to the skill's `reference.md`
+
+#### Scenario: An ambiguous name stays plain
+
+- **WHEN** inline code names `progress.md` and two batch directories contain it
+- **THEN** the view leaves it plain code with no link
+
+#### Scenario: A glob stays plain
+
+- **WHEN** inline code is a glob such as `approaches/*.md`
+- **THEN** the view leaves it plain code with no link
+
+#### Scenario: The record's repository root backs cross-tree references
+
+- **WHEN** the record lives in one repository checkout and `--file-root` points at another checkout that carries the code
+- **THEN** paths belonging to the record's repository resolve through that repository root, and paths belonging to the code resolve through the workspace root
+
+### Requirement: Plain URLs in human-facing HTML views SHALL be links
+
+Plain `http(s)` URLs in body text SHALL render as links. URLs inside code spans and Markdown links SHALL keep their own rendering. A URL SHALL end at whitespace, CJK punctuation, or fullwidth forms; trailing punctuation and any following text SHALL remain outside the link.
+
+#### Scenario: A plain URL becomes a link
+
+- **WHEN** body text contains a plain `http(s)` URL
+- **THEN** the view renders it as a link to that URL
+
+#### Scenario: A URL inside code stays plain
+
+- **WHEN** a URL appears inside an inline code span
+- **THEN** it stays plain code and is not wrapped in a link
+
+#### Scenario: A Markdown link keeps its target
+
+- **WHEN** the source already contains a Markdown link
+- **THEN** the renderer keeps that link and does not create a second one
+
+#### Scenario: A URL followed by CJK punctuation ends at the URL
+
+- **WHEN** body text contains `https://example.com/pull/341；Node ...` with no space after the fullwidth semicolon
+- **THEN** the link ends at `341` and the semicolon and following text stay outside the link
+
+#### Scenario: Fullwidth brackets stay outside the link
+
+- **WHEN** body text contains `（https://example.com/x）。`
+- **THEN** the link is exactly `https://example.com/x`
+
+### Requirement: Wide tables SHALL render as labeled record cards
+
+A table with seven or more columns SHALL render as labeled record cards instead of table columns. Each source row SHALL become one record; each header cell SHALL label its value in the same record. The value SHALL keep inline rendering (links, code spans). A table with fewer columns SHALL render as a table inside a horizontal scroll container, so a long value cannot overflow the section card. Print SHALL keep tables inside the page width.
+
+#### Scenario: A nine-column overview table renders as a record card
+
+- **WHEN** a progress document whose overview table has nine columns is rendered
+- **THEN** each row becomes one record card with the header cells as field labels and the row values beside them, and no horizontal scrolling is required to read the record
+
+#### Scenario: A narrow table stays a table and cannot burst out of the card
+
+- **WHEN** a document contains a three-column table with a long value
+- **THEN** the table renders inside a horizontal scroll container with readable minimum column widths
+
+#### Scenario: Values keep their inline rendering
+
+- **WHEN** a record field or table cell contains a link, a file path, or a URL
+- **THEN** the value keeps the same link and code rendering as before
+
+#### Scenario: Print keeps tables inside the page
+
+- **WHEN** a page with a table is printed
+- **THEN** the table is not clipped by a scroll container and column widths shrink to the page width

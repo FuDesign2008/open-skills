@@ -73,6 +73,8 @@ Path: `.goal-driven/queues/<queue-id>/config` — one file per queue, holding th
 
 Path: `.goal-driven/queues/<queue-id>/runs/<batch-id>/progress.md` (`batch-id` = run start timestamp `YYYYMMDD-HHMM`). Create at batch start; update on every status change. Legacy runs may still sit at `.goal-driven/runs/` when the bound id is `default`.
 
+Batch header: `- Trigger: interactive | scheduled` (from the actual trigger; the only input to the automatic open gate).
+
 | Field | Meaning |
 |-------|---------|
 | Task | card slug |
@@ -81,6 +83,7 @@ Path: `.goal-driven/queues/<queue-id>/runs/<batch-id>/progress.md` (`batch-id` =
 | Status | pending / in progress / done / failed / skipped (covered) / waiting dependency / conflict pending confirmation |
 | Result summary | one line: what happened, or why parked/failed |
 | Branch | task branch tip |
+| MR | the opened PR/MR URL for a done card, or the recorded no-diff/failure reason |
 | Report | path to the engine completion report |
 | Verification | `awaiting` / `verified` / `returned` — the human per-card verdict; `awaiting` from package assembly until a present human records a verdict (legacy rows without it are unchanged) |
 | Notes | relationships (covered-by / waits-on), blockers, human asks, and a `reordering` note whenever a leverage recomputation moves the queue head |
@@ -90,6 +93,24 @@ The dispatcher is the **sole writer** of this document — a child run reports b
 
 Written into the bound queue directory as `triage-<timestamp>.md`: the **triage record** — the batch's merges, root-cause clusters, suggested kills and parked items, each with its basis (which card covers which, which member cards a cluster folded, what evidence produced a mechanical verdict, and which decisions the proxy made). A pre-run enqueue has no batch directory yet, so the record lives here rather than in `runs/<batch-id>/`. It rides the acceptance package, presented by path, and is the audit trail for "why did my card disappear".
 
+## Human-Facing HTML Views
+
+Every covered human-facing record has a sibling `.html` view; the `.md` file stays canonical.
+
+| Record | Source | View |
+|--------|--------|------|
+| Task card | `.goal-driven/queues/<queue-id>/<slug>.md` | `<slug>.html` |
+| Triage record | `.goal-driven/queues/<queue-id>/triage-<timestamp>.md` | `triage-<timestamp>.html` |
+| Progress | `runs/<batch-id>/progress.md` | `runs/<batch-id>/progress.html` |
+| Verification | `runs/<batch-id>/verification.md` | `runs/<batch-id>/verification.html` |
+| Engine report | `runs/<batch-id>/reports/<card-slug>.md` | `runs/<batch-id>/reports/<card-slug>.html` |
+
+`config` and `approaches/*.md` have no view. The review/evidence pages keep their contract.
+
+Render with `node skills/goal-driven-queue/scripts/render-html.mjs <source.md>... --root <queue-dir> [--at <iso>] [--source-label <original-path>] [--open <file>] [--auto-open <file> --progress <progress.md>]`. Generate at the Stage 1 approval handoff (card + triage) and Stage 3 package assembly (all covered records); re-render immediately before any open. `verification.html` is the entry page and links to `progress.html`, the triage view, each card's view, each executed card's report view, and each done card's review/evidence pages; a missing target is annotated as unavailable.
+
+The first progress entry records `Trigger: interactive | scheduled`. Auto-open `verification.html` at the Stage 3 handback only when it is `interactive`; an explicit view request opens the requested page regardless; a scheduled/unattended run prints paths only. The renderer uses Node built-ins, escapes content, emits inline CSS with no external assets, and records the source path and generation time in the footer. When Node is unavailable, print the `.md` paths instead of writing HTML by hand. Human-facing records and their HTML views are written in the language the human used in the conversation; the skill body and agent-only records stay English. Localize entry-page labels and footers to that language. Every view carries a shared navigation block generated from a manifest: `--nav <manifest.json> --nav-root <workspace-root> --unavailable <text>`. The manifest is `{ "items": [{ "label": "...", "path": "..." }] }` with paths relative to the nav root; missing targets are marked unavailable, the current page is marked, and the block needs no script. HTML views are designed reading documents, not a line-by-line Markdown dump. Pass `--kind card|triage|progress|verification|report` to get the document header, table of contents, section cards, status pills, KPI tiles, callouts, timeline, and verdict card. Short metadata renders as chips, long metadata as labeled rows in the header, and the document title renders inline Markdown. Tables with seven or more columns render as labeled record cards (one card per source row, header cells as field labels) so wide rows stay readable in the reading column; narrower tables render inside a horizontal scroll container with minimum column widths. The Markdown file remains canonical. Review and evidence pages are generated from small JSON inputs by `renderReviewPage` / `renderEvidencePage`; never hand-write their HTML. HTML views support light and dark themes and follow the operating system preference automatically via `prefers-color-scheme`; no script is required. Print uses a light palette. Inline code that names an existing file or directory becomes a link, so the reader can jump from the HTML to the source. Resolution is nearest-first — the record directory, the queue root, the workspace root, the record's repository root, the batch directories, then the skill directory — and a name that matches several paths inside one tier, a glob, or a non-file code span stays plain. Use `--file-root <workspace-root>`. Plain `http(s)` URLs in body text become links; URLs inside code spans and Markdown links keep their own rendering. A URL ends at whitespace or CJK punctuation, so following text stays outside the link.
+
 ## Batch Summary (closing output of Stage 3)
 
 ```markdown
@@ -98,8 +119,10 @@ Written into the bound queue directory as `triage-<timestamp>.md`: the **triage 
 - Concurrency: resolved <N> / effective <M>   (a gap means slots idled on module overlap or the platform degraded)
 - Done: N   Failed: M   Skipped: K   Parked: P   Left pending: L
 - Verification: <path to verification.md> — Verified: V   Awaiting: A   Returned: R   (batch accepted only when Awaiting = 0)
-- Branches awaiting review:
-  - <branch> — <task slug> — <result tier> — report: <path>
+- Review / evidence pages (done cards):
+  - <slug> — review: <path to review/<slug>.html> — evidence: <path to evidence/<slug>.html>
+- Branches / MRs awaiting review:
+  - <branch> — <task slug> — <result tier> — MR: <url | skipped — no reviewable diff (<status output>; <diff output>) | failed — <reason>> — report: <path>
 - Needs your judgment:
   - <outcome-type item per engine report>
   - <ledger rollup per intake-interview-discipline: unresolved tickets / low-confidence assumptions / high-impact-if-wrong entries; clean-stop tickets with options>
@@ -125,6 +148,10 @@ Path: `.goal-driven/queues/<queue-id>/runs/<batch-id>/verification.md` — the d
 - Goal condition: <verbatim>
 - Engine: <engine>   Result: <result tier>   Branch: <tip>
 - Report: <path>
+- Card HTML view: <path>
+- MR: <url | skipped — no reviewable diff (<status output>; <diff output>) | failed — <reason>>
+- Entry page links: progress.html, triage HTML, each card HTML, each executed card's report HTML, each done card's review/evidence page (unavailable targets annotated)
+- Review page: <path to review/<slug>.html when the card reached done>
 - Evidence page: <path to evidence/<slug>.html when the card reached done>
 - Layered acceptance: hard <…> / soft <…> / human <outcome items>
 - Verification checklist (from the engine report):
