@@ -636,6 +636,11 @@ test("chrome labels follow lang for toc and entry kicker", () => {
     generatedAt: AT,
   });
   assert.match(zh, /本页目录/);
+  assert.match(zh, /<html lang="zh">/);
+  assert.match(zh, /来源:/);
+  assert.match(zh, /生成:/);
+  assert.doesNotMatch(zh, /Source:/);
+  assert.doesNotMatch(zh, /Generated:/);
 
   const en = renderDocument("# T\n\n## Section\n\n- a\n", {
     sourcePath: "/tmp/doc.md",
@@ -645,7 +650,11 @@ test("chrome labels follow lang for toc and entry kicker", () => {
     lang: "en",
   });
   assert.match(en, /On this page/);
+  assert.match(en, /<html lang="en">/);
+  assert.match(en, /Source:/);
+  assert.match(en, /Generated:/);
   assert.doesNotMatch(en, /本页目录/);
+  assert.doesNotMatch(en, /来源:/);
 
   const entry = renderEntryPage({
     root: "/tmp",
@@ -656,4 +665,23 @@ test("chrome labels follow lang for toc and entry kicker", () => {
   });
   assert.match(entry, /Acceptance entry/);
   assert.doesNotMatch(entry, /验收入口/);
+});
+
+test("evidence page image src goes through normalizeTarget", () => {
+  const safe = renderEvidencePage(
+    {
+      groups: [{ heading: "UI", items: [{ label: "shot", image: "copies/a.png" }] }],
+    },
+    { root: "/tmp", generatedAt: AT },
+  );
+  assert.match(safe, /<img src="copies\/a\.png"/);
+
+  for (const bad of ["javascript:alert(1)", "/etc/passwd", "//evil.example/x.png", "data:image/png;base64,xx"]) {
+    const html = renderEvidencePage(
+      { groups: [{ heading: "UI", items: [{ label: "shot", image: bad }] }] },
+      { root: "/tmp", generatedAt: AT },
+    );
+    assert.doesNotMatch(html, /<img /);
+    assert.doesNotMatch(html, /javascript:/i);
+  }
 });

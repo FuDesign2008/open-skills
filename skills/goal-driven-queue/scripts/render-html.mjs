@@ -736,8 +736,8 @@ function chromeLabels(options = {}) {
         cause: "原因",
         fix: "已完成的修复",
         pending: "待补",
-        source: "Source",
-        generated: "Generated",
+        source: "来源",
+        generated: "生成",
         kinds: {
           card: "任务卡",
           triage: "Triage 记录",
@@ -835,12 +835,19 @@ function renderSection(section, index, context) {
   return `<section class="doc-section ${sectionClass(section.title)}" id="sec-${index}"><h2><span class="section-index">${String(index).padStart(2, "0")}</span>${renderInline(section.title, context)}</h2>${body}</section>`;
 }
 
+function resolveDocumentLang(options = {}) {
+  const lang = String(options.lang || "zh").toLowerCase();
+  return lang.startsWith("en") ? "en" : "zh";
+}
+
 function renderShell({ title, body, options = {}, generatedAt, sourcePath }) {
+  const chrome = chromeLabels(options);
+  const documentLang = resolveDocumentLang(options);
   const sourceLabel = options.sourceLabel
     ? ` (original: <code>${escapeHtml(options.sourceLabel)}</code>)`
     : "";
   return `<!doctype html>
-<html lang="${escapeHtml(options.lang || "en")}">
+<html lang="${escapeHtml(documentLang)}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -851,7 +858,7 @@ function renderShell({ title, body, options = {}, generatedAt, sourcePath }) {
 <main>
 ${options.navHtml || ""}
 ${body}
-<footer>${escapeHtml(options.sourceLabelText || "Source")}: <code>${escapeHtml(sourcePath)}</code>${sourceLabel} · ${escapeHtml(options.generatedLabelText || "Generated")}: <time datetime="${escapeHtml(generatedAt)}">${escapeHtml(generatedAt)}</time></footer>
+<footer>${escapeHtml(options.sourceLabelText || chrome.source)}: <code>${escapeHtml(sourcePath)}</code>${sourceLabel} · ${escapeHtml(options.generatedLabelText || chrome.generated)}: <time datetime="${escapeHtml(generatedAt)}">${escapeHtml(generatedAt)}</time></footer>
 </main>
 </body>
 </html>
@@ -917,8 +924,14 @@ export function renderMarkdown(markdown, options = {}) {
   const body = renderBlocks(lines, context);
   const titleMatch = /^#{1,6}\s+(.+)$/m.exec(markdown);
   const title = titleMatch ? titleMatch[1] : path.basename(sourcePath).replace(/\.md$/i, "");
+  const chrome = chromeLabels(options);
+  const shellOptions = {
+    ...options,
+    sourceLabelText: options.sourceLabelText || chrome.source,
+    generatedLabelText: options.generatedLabelText || chrome.generated,
+  };
 
-  return renderShell({ title, body, options, generatedAt, sourcePath });
+  return renderShell({ title, body, options: shellOptions, generatedAt, sourcePath });
 }
 
 function findRepoRoot(startPath) {
@@ -1137,7 +1150,12 @@ export function renderEvidencePage(data = {}, options = {}) {
               : "";
           const classes = pending ? "evidence-item pending" : "evidence-item";
           if (item.image) {
-            return `<figure class="${classes}"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.alt || item.label || "")}"><figcaption>${escapeHtml(item.label || "")}</figcaption>${statusHtml}</figure>`;
+            const normalized = normalizeTarget(item.image);
+            const imageHtml =
+              normalized.kind === "relative"
+                ? `<img src="${escapeHtml(normalized.value)}" alt="${escapeHtml(item.alt || item.label || "")}">`
+                : "";
+            return `<figure class="${classes}">${imageHtml}<figcaption>${escapeHtml(item.label || "")}</figcaption>${statusHtml}</figure>`;
           }
           const command = item.command ? `<p><code>${escapeHtml(item.command)}</code></p>` : "";
           const output = item.output ? `<p>${renderInline(item.output, context)}</p>` : "";

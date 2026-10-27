@@ -119,6 +119,8 @@ The first progress entry records `Trigger: interactive | scheduled`. Auto-open `
 - Concurrency: resolved <N> / effective <M>   (a gap means slots idled on module overlap or the platform degraded)
 - Done: N   Failed: M   Skipped: K   Parked: P   Left pending: L
 - Verification: <path to verification.md> — Verified: V   Awaiting: A   Returned: R   (batch accepted only when Awaiting = 0)
+- Review / evidence pages (done cards):
+  - <slug> — review: <path to review/<slug>.html> — evidence: <path to evidence/<slug>.html>
 - Branches / MRs awaiting review:
   - <branch> — <task slug> — <result tier> — MR: <url | skipped — no reviewable diff (<status output>; <diff output>) | failed — <reason>> — report: <path>
 - Needs your judgment:

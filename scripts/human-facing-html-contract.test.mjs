@@ -44,6 +44,19 @@ test("goal-driven-queue defines human-facing HTML views", () => {
   assert.match(reference, /verification\.html/);
   assert.match(reference, /reports\/<card-slug>\.html/);
   assert.match(reference, /written in the language the human used in the conversation/);
+  assert.match(reference, /Review \/ evidence pages \(done cards\)/);
+  assert.match(reference, /review: <path to review\/<slug>\.html>/);
+  assert.match(reference, /evidence: <path to evidence\/<slug>\.html>/);
+});
+
+test("renderer localizes footers and sanitizes evidence image targets", () => {
+  const renderer = read("skills/goal-driven-queue/scripts/render-html.mjs");
+  assert.match(renderer, /source: "来源"/);
+  assert.match(renderer, /generated: "生成"/);
+  assert.match(renderer, /resolveDocumentLang/);
+  assert.match(renderer, /options\.lang \|\| "zh"/);
+  assert.match(renderer, /normalizeTarget\(item\.image\)/);
+  assert.match(renderer, /normalized\.kind === "relative"/);
 });
 
 test("goal-driven-queue defines queue-wide auto-MR", () => {
