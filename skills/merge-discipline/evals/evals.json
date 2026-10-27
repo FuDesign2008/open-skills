@@ -112,6 +112,28 @@
         "以 depth=full 调用 pr-code-review",
         "不走规模/风险降档"
       ]
+    },
+    {
+      "id": 10,
+      "name": "fail-fix-requires-rereview",
+      "prompt": "Parts A–C 已通过。Part R 首次 pr-code-review（depth=full）双轴留下 ≥80 Important。你已在源 tip 推送修复 commit。说明下一步能否进入 Part D（dry-run）。",
+      "expected_output": "不得因「已修好」进入 Part D；必须在新 tip 再跑 Part R；通过或显式 skip/accept-residual 留痕后才能 Part D；本轮计入 fail→fix→re-review 轮次",
+      "expectations": [
+        "不得仅因修复 commit 进入 Part D",
+        "必须在新 tip 再调用 pr-code-review",
+        "再审通过或显式 skip/accept-residual 留痕才进 Part D"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "rereview-round-cap-pause",
+      "prompt": "同一合并尝试中 Part R 已连续 3 次 pr-code-review 均保留 ≥80 Critical/Important（中间有修复推送）。说明下一步（dry-run）。",
+      "expected_output": "达到 3 轮封顶：暂停等人（再审一轮 / 接受残留留痕 / 中止合并）；不得自动进入 Part D",
+      "expectations": [
+        "识别已满 3 轮",
+        "暂停并给出三选一",
+        "不得自动进入 Part D"
+      ]
     }
   ]
 }

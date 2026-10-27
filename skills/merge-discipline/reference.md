@@ -33,7 +33,9 @@
 - [ ] If review **run**: strong dependency `pr-code-review` present? (else abort with per-skill `npx skills add … --skill pr-code-review --yes`)
 - [ ] If review **run**: `pr-code-review` invoked at selected `depth=full|light` on the open PR/MR tip (Standards∥Spec)?
 - [ ] If **skip** (`never` or user-explicit skip): 留痕 written?
-- [ ] Pass = neither axis has ≥80 Critical/Important → Part D; else block (or explicit skip 留痕)
+- [ ] Pass = neither axis has ≥80 Critical/Important → Part D
+- [ ] On fail: source-tip fixes alone do **not** unlock Part D — mandatory re-run Part R on the new tip until clean, or explicit skip / accept-residual 留痕
+- [ ] Fail→fix→re-review rounds counted (each `pr-code-review` = 1)? Cap 3 then pause (continue one round / accept residual / abort) — no auto Part D
 
 **Merge squash decision + tip pinning (Part D):**
 
