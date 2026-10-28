@@ -33,7 +33,7 @@
 | 类型 | `user-invocable` | 典型例子 |
 |------|------------------|----------|
 | **编排入口** | `true` | `solve-workflow`、`opsx-solve-workflow`、`jira-fix-workflow`、`perf-optimize-workflow`、`write-workflow`、`brainstorm-workflow` |
-| **共享纪律 / 方法论** | 默认 `false`，经 frontmatter `dependencies` 加载 | `*-discipline`、`analysis-core`、`staged-review-flow`、`design-approval-gate`、`feature-branch-closeout` |
+| **共享纪律 / 方法论** | 默认 `false`，经 frontmatter `dependencies` 加载 | `*-discipline`、`analysis-core`、`staged-review-flow`、`design-approval-gate`、`feature-branch-closeout`、`report-output-discipline` |
 | **可独立触发的横切动作** | 显式 `true`（例外） | `merge-discipline`、`delivery-discipline`、`test-suite-ensure`、`solution-review`、`learn-and-improve`、`pr-code-review` |
 
 新增 skill 时按上表选型；`user-invocable: false` 的 skill 必须被其他 skill 引用，否则视为死 skill。本仓库不分发斜杠命令文件；用户靠 skill 名与触发词唤起。贡献者本仓 OpenSpec 入口在 `.claude/commands/opsx/`。
@@ -80,11 +80,11 @@ open-skills/
 | perf-optimize-workflow | 工作流 | clarifying-question-discipline、known-issue-research（证据纪律为文内节；迭代循环为运行时环境强依赖） |
 | write-workflow | 工作流 | clarifying-question-discipline、tech-review-doc、workflow-mode-lifecycle、humanizer（外置）、humanizer-zh（外置） |
 | brainstorm-workflow | 工作流 | brainstorming（外置）、solve-workflow |
-| goal-driven-workflow | 工作流 | clarifying-question-discipline、completion-evidence-discipline、design-approval-gate、intake-interview-discipline、ai-proxy-discipline |
-| goal-driven-queue | 工作流 | goal-driven-workflow、design-approval-gate、intake-interview-discipline、ai-proxy-discipline、jira-fix-workflow、opsx-jira-fix-workflow |
+| goal-driven-workflow | 工作流 | report-output-discipline、clarifying-question-discipline、completion-evidence-discipline、design-approval-gate、intake-interview-discipline、ai-proxy-discipline |
+| goal-driven-queue | 工作流 | report-output-discipline、goal-driven-workflow、design-approval-gate、intake-interview-discipline、ai-proxy-discipline、jira-fix-workflow、opsx-jira-fix-workflow |
 | jira-fix-queue | Jira 编排壳 | goal-driven-queue（解析多票 Jira，列表入队；不跑修复） |
 | opsx-jira-fix-queue | Jira 编排壳 | goal-driven-queue（解析多票 Jira，Engine 冻结为 opsx-jira-fix-workflow） |
-| tech-review-doc | 内容创作 | clarifying-question-discipline |
+| tech-review-doc | 内容创作 | clarifying-question-discipline、report-output-discipline |
 | android-webview-debug | 工具 | 无 |
 | astrill-control | 工具 | 无 |
 | figma-pixel-implement | 工具 | 无（被 solve / opsx-solve / jira-fix / opsx-jira-fix 强依赖） |
@@ -107,6 +107,7 @@ open-skills/
 | runtime-evidence-debug | 调试方法论 | 无 |
 | hybrid-debug | 调试方法论 | 无 |
 | browser-debug-toolkit | 调试方法论 | 无 |
+| report-output-discipline | 工作流纪律 | 无（报告类宿主经 frontmatter `dependencies` 引用） |
 | workflow-mode-lifecycle | 工作流纪律 | 无 |
 | clarifying-question-discipline | 工作流纪律 | 无 |
 | completion-evidence-discipline | 工作流纪律 | 无 |

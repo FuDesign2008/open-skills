@@ -1,10 +1,11 @@
 ---
 name: tech-review-doc
-version: "1.0.1"
+version: "1.1.0"
 user-invocable: true
 description: "Turn a technical design doc into a product/QA-readable technical review markdown (business language + Mermaid). Hard-gates §1 background/goals until the user explicitly approves before writing the file. Triggers — 「技术评审文档」「生成评审文档」「design to review」「tech review doc」「写技术评审」. Do NOT use for marketing articles (article-writer), code PDCA (solve-workflow), or AI de-slop rewriting (humanizer)."
 dependencies:
   - clarifying-question-discipline
+  - report-output-discipline
 ---
 
 # Technical Design → Technical Review Document
@@ -39,6 +40,8 @@ Write the file **next to the input document**, named `tech-review-{topic}-{YYYY-
 
 Derive `{topic}` from the design title keywords; use the current date for `YYYY-MM-DD`.
 
+Registry row: `技术评审文档` in `report-output-discipline/reference.md` (`human` + `接入`). After the Markdown file is written, derive `tech-review-{topic}-{YYYY-MM-DD}.html` beside it following `report-output-discipline`, and report both paths.
+
 ---
 
 ## Flow (five steps, hard gate)
@@ -65,9 +68,9 @@ Step 5 Complete §§5–7 and write the file
 
 ## Prerequisite skill check
 
-On load, verify `clarifying-question-discipline` is available. If missing, abort and print:
+On load, verify `clarifying-question-discipline` and `report-output-discipline` are available. If either is missing, abort and print:
 
-`npx skills add FuDesign2008/open-skills -g --skill clarifying-question-discipline --yes`
+`npx skills add FuDesign2008/open-skills -g --skill '*' --yes`
 
 Do not silently fall back.
 
@@ -206,6 +209,7 @@ When invoked under `write-workflow` **auto mode**:
 | Skill | Relationship |
 |-------|--------------|
 | `clarifying-question-discipline` | Strong dependency for Step 1 |
+| `report-output-discipline` | Owns the derived HTML contract |
 | `write-workflow` | Optional host (eight-stage) that routes here by default for tech-review writing |
 
 ---

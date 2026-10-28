@@ -1,9 +1,10 @@
 ---
 name: goal-driven-queue
-version: "0.17.0"
+version: "0.18.0"
 user-invocable: true
 description: "Queue orchestrator over child engines (goal-driven / solve / opsx-solve / jira-fix / opsx-jira-fix). Triggers:「goal 批量」「跑队列」「任务队列」「无人值守队列」「把需求加入队列」「空闲时段跑任务」「批量 triage」「确定度评估」「解法复用」「并发跑队列」/ goal-driven-queue, goal batch, run queue, unattended task queue, batch triage, certainty assessment, approach reuse, concurrent queue. Backlog auto-isolated per conversation under .goal-driven/queues/. Enqueue adds batch triage (equivalence merge, root-cause clustering, suggested kill), a derived certainty band as ordering key and routing feed, and approach reuse. Consumption is slot-based, concurrency settled at enqueue and reused when absent; a slot takes only a card whose module set does not overlap an in-flight card, and acceptance pre-runs merge conflicts. Jira lists enqueue here (also via jira-fix-queue / opsx-jira-fix-queue). Do NOT use for a single ad-hoc long run (goal-driven-workflow), a single Jira issue, or setting up cron/schedulers."
 dependencies:
+  - report-output-discipline
   - goal-driven-workflow
   - design-approval-gate
   - intake-interview-discipline
@@ -23,7 +24,7 @@ The value proposition is the detach-run-accept cycle: a human drops approved goa
 
 ## Prerequisite Skill Check
 
-Run at startup against frontmatter `dependencies`: scan available skills; abort immediately with install guidance (`npx skills add FuDesign2008/open-skills -g`) if `goal-driven-workflow`, `design-approval-gate`, or `intake-interview-discipline` is missing; abort likewise for `ai-proxy-discipline` when any card records `Stage-exit policy: ai-proxy`, for `jira-fix-workflow` / `opsx-jira-fix-workflow` when any card names them as `Engine`, and for `git-worktree-discipline` when the queue's resolved concurrency is ≥ 2 (missing at concurrency 1 is not a failure); missing with no such card or concurrency is not a failure. No silent downgrade — a missing engine means queued tasks cannot execute correctly; a missing intake discipline means enqueue-time depth collapses to a shallow one-shot confirm; a missing proxy discipline means opted-in cards lose their checkpoint challenge; a missing worktree discipline means concurrent children would lose their isolation.
+Run at startup against frontmatter `dependencies`: scan available skills; abort immediately with install guidance (`npx skills add FuDesign2008/open-skills -g`) if `report-output-discipline`, `goal-driven-workflow`, `design-approval-gate`, or `intake-interview-discipline` is missing; abort likewise for `ai-proxy-discipline` when any card records `Stage-exit policy: ai-proxy`, for `jira-fix-workflow` / `opsx-jira-fix-workflow` when any card names them as `Engine`, and for `git-worktree-discipline` when the queue's resolved concurrency is ≥ 2 (missing at concurrency 1 is not a failure); missing with no such card or concurrency is not a failure. No silent downgrade — a missing engine means queued tasks cannot execute correctly; a missing intake discipline means enqueue-time depth collapses to a shallow one-shot confirm; a missing proxy discipline means opted-in cards lose their checkpoint challenge; a missing worktree discipline means concurrent children would lose their isolation.
 
 ## Queue Layout
 
@@ -62,7 +63,7 @@ Card format and all output templates live in [reference.md](reference.md).
 
 ## Human-Facing HTML Views
 
-Every human-facing queue record has a generated HTML view; the Markdown file remains the canonical record. `config` and `approaches/*.md` stay Markdown-only. The dispatcher never hand-writes human-facing HTML — the renderer at `skills/goal-driven-queue/scripts/render-html.mjs` is the single HTML generator (Markdown for records, small JSON for review/evidence via `renderReviewPage` / `renderEvidencePage`). When Node is unavailable, print the `.md` paths instead of writing HTML by hand.
+Every human-facing queue record has a generated HTML view; the Markdown file remains the canonical record. `config` and `approaches/*.md` stay Markdown-only. The dispatcher never hand-writes human-facing HTML — the single HTML generator is this skill's adapter `scripts/render-html.mjs` (Markdown for records, small JSON for review/evidence via `renderReviewPage` / `renderEvidencePage`), which uses the shared core from `report-output-discipline`. When Node or the shared renderer is unavailable, print the `.md` paths instead of writing HTML by hand. Ensure the target repository ignores `.goal-driven/**/*.html` by appending that line (never overwriting existing rules), so derived views stay out of the change set.
 
 Covered views render at Stage 1 approval handoff and Stage 3 package assembly, and re-render immediately before any open. `verification.html` is the acceptance entry page. Auto-open it at Stage 3 handback only when the first progress entry records `Trigger: interactive`; scheduled/unattended runs print paths. An enqueue shell does not write a view. Human-facing records and HTML chrome follow the human's conversation language; localize labels and footers via renderer `lang` / `labels`.
 

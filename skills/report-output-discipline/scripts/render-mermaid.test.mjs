@@ -1,0 +1,117 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { parseFlowchart, renderMermaid } from "./render-mermaid.mjs";
+
+test("renders a basic flowchart with nodes and a labelled edge", () => {
+  const svg = renderMermaid("flowchart TB\n  A[开始] -->|下一步| B[结束]");
+  assert.ok(svg.startsWith("<svg"));
+  assert.match(svg, /开始/);
+  assert.match(svg, /结束/);
+  assert.match(svg, /下一步/);
+  assert.doesNotMatch(svg, /<script/i);
+  assert.doesNotMatch(svg, /\b(?:src|href)=/i);
+});
+
+test("supports every declared direction", () => {
+  for (const direction of ["TB", "TD", "BT", "LR", "RL"]) {
+    const svg = renderMermaid(`flowchart ${direction}\n  A --> B`);
+    assert.ok(svg, `${direction} should render`);
+  }
+});
+
+test("renders every declared node shape", () => {
+  const svg = renderMermaid("flowchart TB\n  A[rect] --> B(round)\n  B --> C{diamond}\n  C --> D([stadium])\n  D --> E((circle))");
+  assert.ok(svg);
+  assert.match(svg, /<rect/);
+  assert.match(svg, /<polygon/);
+  assert.match(svg, /<ellipse/);
+});
+
+test("renders quoted subgraph titles", () => {
+  const svg = renderMermaid('flowchart TB\n  subgraph Client["客户端"]\n    A[应用]\n  end\n  B[服务]');
+  assert.ok(svg);
+  assert.match(svg, /客户端/);
+  assert.match(svg, /mermaid-subgraph/);
+});
+
+test("escapes node labels", () => {
+  const svg = renderMermaid("flowchart TB\n  A[<script>x</script>] --> B[y]");
+  assert.ok(svg);
+  assert.doesNotMatch(svg, /<script>/);
+  assert.match(svg, /&lt;script&gt;/);
+});
+
+test("boundary: empty and header-only sources do not render", () => {
+  assert.equal(renderMermaid(""), null);
+  assert.equal(renderMermaid("flowchart TB"), null);
+  assert.equal(renderMermaid("   \n  \n"), null);
+});
+
+test("boundary: a single node renders without edges", () => {
+  const svg = renderMermaid("flowchart LR\n  A[only]");
+  assert.ok(svg);
+  assert.match(svg, /only/);
+});
+
+test("boundary: a cycle still terminates and renders", () => {
+  const svg = renderMermaid("flowchart TB\n  A --> B\n  B --> A");
+  assert.ok(svg);
+});
+
+test("error: unsupported diagram types degrade", () => {
+  for (const source of [
+    "sequenceDiagram\n  A->>B: hi",
+    "classDiagram\n  A <|-- B",
+    "stateDiagram-v2\n  [*] --> A",
+    "gantt\n  title x",
+    "pie\n  \"a\": 1",
+  ]) {
+    assert.equal(renderMermaid(source), null, source.split("\n")[0]);
+  }
+});
+
+test("error: unsupported constructs inside a supported type degrade the whole graph", () => {
+  for (const source of [
+    "flowchart TB\n  A --> B\n  classDef warn fill:#f00",
+    "flowchart TB\n  A --> B\n  class A warn",
+    "flowchart TB\n  A --> B\n  style A fill:#f00",
+    "flowchart TB\n  A --> B\n  linkStyle 0 stroke:#f00",
+    "flowchart TB\n  A[a<br/>b] --> B",
+    "flowchart TB\n  A --> B\n  click A callback",
+  ]) {
+    assert.equal(renderMermaid(source), null, source);
+  }
+});
+
+test("parser reports the reason for degradation", () => {
+  assert.deepEqual(parseFlowchart("sequenceDiagram\n  A->>B: hi"), { ok: false, reason: "unsupported-type" });
+  assert.deepEqual(parseFlowchart("flowchart TB\n  A --> B\n  classDef x fill:#f00"), {
+    ok: false,
+    reason: "unsupported-construct",
+  });
+});
+
+test("ampersand chains degrade the whole graph", () => {
+  assert.equal(renderMermaid("flowchart TB\n  A[a] --> B[b] & C[c]"), null);
+  // A literal ampersand inside a node label stays supported.
+  assert.ok(renderMermaid("flowchart TB\n  A[a & b] --> C[c]"));
+});
+
+test("BT and RL mirror the layout instead of aliasing TB and LR", () => {
+  const source = "flowchart %s\n  A --> B";
+  assert.notEqual(renderMermaid(source.replace("%s", "TB")), renderMermaid(source.replace("%s", "BT")));
+  assert.notEqual(renderMermaid(source.replace("%s", "LR")), renderMermaid(source.replace("%s", "RL")));
+});
+
+test("a large graph renders without throwing", () => {
+  const lines = ["flowchart TB", "  H[hub] --> N0[n0]"];
+  for (let index = 0; index < 5000; index += 1) lines.push(`  N${index} --> N${index + 1}[n]`);
+  const svg = renderMermaid(lines.join("\n"));
+  assert.ok(svg && svg.startsWith("<svg"));
+});
+
+test("an ampersand inside an edge label still renders", () => {
+  const svg = renderMermaid("flowchart TB\n  A -->|x & y| B");
+  assert.ok(svg);
+  assert.match(svg, /x &amp; y/);
+});

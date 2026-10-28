@@ -1,11 +1,21 @@
 ---
 name: git-release-finish
-version: "2.1.0"
+version: "2.2.0"
 user-invocable: true
+dependencies:
+  - report-output-discipline
 description: "Use when releasing a Git repository version — tagging, merging release branches into main, resolving conflicts, or syncing changes between release branches. Handles ambiguous tag naming (v-prefix vs plain), unknown main branch (master/main/develop), ff-only merge method (forces cherry-pick strategy), protected-branch rules, cross-release hash-sensitive sync, and MR/PR extra-file cleanup. Single or multi-repo. Triggers — 「发版」「打tag」「发布版本」「版本发布」「release流程」「git-release」「multi-repo release」「release同步到另一个release」 / release a version, tag and merge, finish release branch."
 ---
 
 # Git Release Finish
+
+## Prerequisite skill check
+
+On load, verify `report-output-discipline` is available. If missing, abort and print:
+
+`npx skills add FuDesign2008/open-skills -g --skill '*' --yes`
+
+Do not silently fall back.
 
 > **Role**: End-of-iteration release workflow — tag the release branch, create MR/PR into the main branch, resolve conflicts, clean up extra files, merge. Git operations are expressed as native commands; MR/PR operations are expressed as intents and the running agent picks its platform CLI (`glab` / `gh` / `tea` / equivalent) per its environment.
 >
@@ -476,7 +486,9 @@ Confirm the latest commits include the release merge.
 
 ## Phase 10: Output report
 
-Write to `$(git rev-parse --show-toplevel)/release-<VERSION>-report.md`:
+Write to `$(git rev-parse --show-toplevel)/release-<VERSION>-report.md`. Registry row: `发布报告` in `report-output-discipline/reference.md` (`human` + `接入`). After the Markdown report is written, derive `release-<VERSION>-report.html` beside it following `report-output-discipline`, and report both paths.
+
+The report contains:
 
 1. **Tag summary**: repo / tag name / commit SHA / remote verification status
 2. **MR/PR summary**: repo / source → target / id and URL / merge status

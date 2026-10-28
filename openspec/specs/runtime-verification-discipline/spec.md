@@ -2,7 +2,9 @@
 
 ## Purpose
 TBD - created by archiving change add-ai-env-verification. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: 验证须由 AI 在环境中执行而非交还人
 
 任何工作流的验证环节，对「有可观察行为」的改动，SHALL 默认由 AI 在环境中亲自执行验证。AI SHALL NOT 在未尝试执行的情况下，把验证步骤列成清单交还用户。尝试执行（attempt-first）是默认动作，不是可选项。
@@ -156,6 +158,8 @@ TBD - created by archiving change add-ai-env-verification. Update Purpose after 
 - **路径后缀信号**：变更集合中有路径以 `.html`、`.css`、`.scss`、`.less`、`.vue`、`.svelte`、`.tsx` 或 `.jsx` 结尾。
 - **视图标记信号**：跟踪 diff 的新增或删除行匹配下面的 diff 正则，或未跟踪文件的任一行匹配标签正则。两条都大小写敏感。
 
+被版本控制忽略的派生报告 HTML 不进入变更集合，因此不触发路径后缀信号；该排除由 ignore 规则本身提供，不需要额外判定。
+
 diff 正则（对 `git diff -U0` 做 `grep -E`）：
 
 ```
@@ -198,6 +202,11 @@ diff 正则（对 `git diff -U0` 做 `grep -E`）：
 - **WHEN** 工作区有未被 ignore 的未跟踪路径以 `.html` 结尾，且该路径不在 `git diff --name-only` 的输出里
 - **THEN** 路径后缀信号命中，验证阶段包含至少一次打开 UI 的检查并留存截图
 - **AND** 不以「跟踪 diff 未列出该文件」当作未命中
+
+#### Scenario: 被 ignore 的派生报告 HTML 不命中
+
+- **WHEN** 工作区存在派生报告 HTML，该文件被版本控制忽略，且变更集合不含其他视图后缀路径
+- **THEN** 路径后缀信号不命中，本前置不触发
 
 #### Scenario: 无 origin/HEAD 时用本地 main
 
