@@ -192,6 +192,63 @@ img { max-width: 100%; height: auto; }
 figure { margin: 1.25rem 0; }
 figure img { border: 1px solid var(--line); border-radius: 10px; }
 figcaption { margin-top: 0.4rem; font-size: 0.85rem; color: var(--muted); }
+button.lightbox-trigger {
+  display: inline-block;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+button.lightbox-trigger img { display: block; max-width: 100%; height: auto; }
+#queue-lightbox {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  max-width: min(96vw, 1200px);
+  max-height: 92vh;
+}
+#queue-lightbox::backdrop { background: rgba(10, 12, 20, 0.86); }
+#queue-lightbox .lightbox-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+#queue-lightbox .lightbox-panel img {
+  display: block;
+  max-width: min(92vw, 1100px);
+  max-height: 82vh;
+  width: auto;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+#queue-lightbox .lightbox-close {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  box-shadow: var(--card-shadow);
+}
+@media print {
+  #queue-lightbox, button.lightbox-trigger { cursor: default; }
+}
 .evidence-item { border: 1px solid var(--line-soft); border-radius: 10px; padding: 0.6rem 0.8rem; margin: 0.5rem 0; background: var(--paper); }
 .doc-section .evidence-label { margin: 0 0 0.3rem; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif; font-size: 0.95rem; line-height: 1.6; letter-spacing: 0.003em; }
 
@@ -278,6 +335,18 @@ function renderLink(label, rawTarget, title, context) {
   return `<a href="${escapeHtml(href)}"${titleAttribute}>${renderInline(label, context)}</a>`;
 }
 
+function lightboxEnlargeLabel(alt, context = {}) {
+  const chrome = chromeLabels(context);
+  const trimmed = String(alt || "").trim();
+  return trimmed ? `${chrome.lightboxEnlarge}: ${trimmed}` : chrome.lightboxEnlarge;
+}
+
+function renderLightboxImage(alt, src, title, context = {}) {
+  const titleAttribute = title ? ` title="${escapeHtml(title)}"` : "";
+  const label = lightboxEnlargeLabel(alt, context);
+  return `<button type="button" class="lightbox-trigger" data-lightbox aria-label="${escapeHtml(label)}"><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}"${titleAttribute}></button>`;
+}
+
 function renderImage(alt, rawTarget, title, context) {
   const normalized = normalizeTarget(rawTarget);
   if (normalized.kind !== "relative") return escapeHtml(alt);
@@ -287,8 +356,7 @@ function renderImage(alt, rawTarget, title, context) {
     return escapeHtml(alt);
   }
 
-  const titleAttribute = title ? ` title="${escapeHtml(title)}"` : "";
-  return `<img src="${escapeHtml(normalized.value)}" alt="${escapeHtml(alt)}"${titleAttribute}>`;
+  return renderLightboxImage(alt, normalized.value, title, context);
 }
 
 function renderPlainUrl(text, index) {
@@ -714,6 +782,8 @@ function chromeLabels(options = {}) {
         pending: "pending",
         source: "Source",
         generated: "Generated",
+        lightboxClose: "Close",
+        lightboxEnlarge: "Enlarge image",
         kinds: {
           card: "Task card",
           triage: "Triage record",
@@ -738,6 +808,8 @@ function chromeLabels(options = {}) {
         pending: "待补",
         source: "来源",
         generated: "生成",
+        lightboxClose: "关闭",
+        lightboxEnlarge: "放大图片",
         kinds: {
           card: "任务卡",
           triage: "Triage 记录",
@@ -840,12 +912,15 @@ function resolveDocumentLang(options = {}) {
   return lang.startsWith("en") ? "en" : "zh";
 }
 
+const LIGHTBOX_SCRIPT = `(function(){var d=document.getElementById("queue-lightbox");if(!d||typeof d.showModal!=="function")return;var panel=d.querySelector(".lightbox-panel");var c=d.querySelector(".lightbox-close");function open(t){var p=t.querySelector("img")||t;var i=panel.querySelector("img");if(!i){i=document.createElement("img");panel.appendChild(i);}i.src=p.currentSrc||p.src;i.alt=p.alt||"";d.showModal();}document.querySelectorAll("button.lightbox-trigger").forEach(function(el){el.addEventListener("click",function(){open(el);});});if(c)c.addEventListener("click",function(){d.close();});d.addEventListener("click",function(e){if(e.target===d)d.close();});})();`;
+
 function renderShell({ title, body, options = {}, generatedAt, sourcePath }) {
   const chrome = chromeLabels(options);
   const documentLang = resolveDocumentLang(options);
   const sourceLabel = options.sourceLabel
     ? ` (original: <code>${escapeHtml(options.sourceLabel)}</code>)`
     : "";
+  const lightbox = `<dialog id="queue-lightbox" aria-label="${escapeHtml(chrome.lightboxEnlarge)}"><div class="lightbox-panel"><button type="button" class="lightbox-close" aria-label="${escapeHtml(chrome.lightboxClose)}">×</button></div></dialog>`;
   return `<!doctype html>
 <html lang="${escapeHtml(documentLang)}">
 <head>
@@ -860,6 +935,8 @@ ${options.navHtml || ""}
 ${body}
 <footer>${escapeHtml(options.sourceLabelText || chrome.source)}: <code>${escapeHtml(sourcePath)}</code>${sourceLabel} · ${escapeHtml(options.generatedLabelText || chrome.generated)}: <time datetime="${escapeHtml(generatedAt)}">${escapeHtml(generatedAt)}</time></footer>
 </main>
+${lightbox}
+<script>${LIGHTBOX_SCRIPT}</script>
 </body>
 </html>
 `;
@@ -1153,7 +1230,7 @@ export function renderEvidencePage(data = {}, options = {}) {
             const normalized = normalizeTarget(item.image);
             const imageHtml =
               normalized.kind === "relative"
-                ? `<img src="${escapeHtml(normalized.value)}" alt="${escapeHtml(item.alt || item.label || "")}">`
+                ? renderLightboxImage(item.alt || item.label || "", normalized.value, null, options)
                 : "";
             return `<figure class="${classes}">${imageHtml}<figcaption>${escapeHtml(item.label || "")}</figcaption>${statusHtml}</figure>`;
           }
