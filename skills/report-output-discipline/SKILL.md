@@ -2,7 +2,7 @@
 name: report-output-discipline
 version: "1.0.0"
 user-invocable: false
-description: "Report artifact output-format contract: decide the format by who consumes the artifact, not by which skill produces it — human-read reports get a derived HTML beside their Markdown source, machine-consumed artifacts stay Markdown/JSON, dual-read artifacts keep Markdown as the single source. Holds the one product registry the whole library routes through and the one shared renderer hosts call instead of hand-writing HTML. Triggers — 「报告格式」「产物格式」「报告输出契约」「给人看的报告」「报告写 HTML」「HTML 报告」「机器看的写 Markdown」 / report output format, report artifact format, report HTML, derived HTML view. Do NOT use as a general Markdown-to-HTML converter, for concept explanations (explain-clearly owns those pages), or for queue acceptance views (goal-driven-queue owns those)."
+description: "Report artifact output-format contract: decide the format by who consumes the artifact, not by which skill produces it — human-read reports get a derived HTML beside their Markdown source, machine-consumed artifacts stay Markdown/JSON, dual-read artifacts keep their own format (Markdown or JSON) as the single source. Holds the one product registry the whole library routes through and the one shared renderer hosts call instead of hand-writing HTML. Triggers — 「报告格式」「产物格式」「报告输出契约」「给人看的报告」「报告写 HTML」「HTML 报告」「机器看的写 Markdown」 / report output format, report artifact format, report HTML, derived HTML view. Do NOT use as a general Markdown-to-HTML converter, for concept explanations (explain-clearly owns those pages), or for queue acceptance views (goal-driven-queue owns those)."
 ---
 
 # Report Output Discipline

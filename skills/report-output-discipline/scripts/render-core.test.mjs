@@ -391,3 +391,25 @@ test("a closed non-link bracket does not merge a later link", () => {
   assert.match(html, /<a href="guide\.md">the guide<\/a>/);
   assert.doesNotMatch(html, /<a[^>]*>see\] some prose/);
 });
+
+test("a planted symlink at the output path is refused and leaves no temp file", () => {
+  const dir = tmp();
+  const outside = tmp();
+  const source = path.join(dir, "doc.md");
+  fs.writeFileSync(source, "# t\n", "utf8");
+  const target = path.join(outside, "secret.html");
+  fs.writeFileSync(target, "keep", "utf8");
+  const outPath = path.join(dir, "out.html");
+  fs.symlinkSync(target, outPath);
+  assert.throws(() => writeRenderedFile(source, { root: dir, outPath, generatedAt: AT }), /refusing to write outside/);
+  assert.equal(fs.readFileSync(target, "utf8"), "keep");
+  assert.deepEqual(fs.readdirSync(dir).filter((name) => name.endsWith(".tmp")), []);
+});
+
+test("a successful render leaves no temp file behind", () => {
+  const dir = tmp();
+  const source = path.join(dir, "doc.md");
+  fs.writeFileSync(source, "# t\n", "utf8");
+  writeRenderedFile(source, { root: dir, generatedAt: AT });
+  assert.deepEqual(fs.readdirSync(dir).filter((name) => name.endsWith(".tmp")), []);
+});

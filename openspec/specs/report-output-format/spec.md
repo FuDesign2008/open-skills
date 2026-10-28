@@ -1,7 +1,7 @@
 # report-output-format Specification
 
 ## Purpose
-Decide an artifact's output format by who consumes it: human-read reports derive an HTML page from a Markdown source, machine-consumed artifacts stay Markdown/JSON, and dual-read artifacts keep Markdown as the single source. Owns the product registry and the shared renderer contract.
+Decide an artifact's output format by who consumes it: human-read reports derive an HTML page from a Markdown source, machine-consumed artifacts stay Markdown/JSON, and dual-read artifacts keep their own format (Markdown or JSON) as the single source. Owns the product registry and the shared renderer contract.
 
 ## Requirements
 
@@ -91,14 +91,14 @@ Decide an artifact's output format by who consumes it: human-read reports derive
 - **WHEN** 工作流写入被下一阶段解析的状态或 ledger 文件
 - **THEN** 该文件只有 Markdown 或 JSON 形式
 
-### Requirement: dual 产物 SHALL 保持 Markdown 真源
+### Requirement: dual 产物 SHALL 保持其真源格式
 
 类别为 `dual` 的产物 MUST 维持其真源格式（Markdown 或 JSON）为唯一真源，MUST NOT 为派生 HTML 改写真源格式。其格式契约 MUST NOT 要求 HTML 作为必需产物，MUST NOT 在工作流阶段中插入强制派生步骤。按需派生 MAY 手动执行，但不构成阶段义务。
 
 #### Scenario: 仅由下游阶段读取的产物保持真源
 
 - **WHEN** 某产物的唯一具名消费者是下游工作流阶段
-- **THEN** 该产物保持 Markdown，不因本契约新增 HTML 义务
+- **THEN** 该产物保持其真源格式（Markdown 或 JSON），不因本契约新增 HTML 义务
 
 ### Requirement: machine 契约产物 SHALL 保持 Markdown
 

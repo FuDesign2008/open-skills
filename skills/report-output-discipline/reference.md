@@ -33,11 +33,11 @@ Single source of truth for artifact format decisions. Column order is fixed and 
 | Jira 本地缓存 | jira-read | dual | Downstream Jira stages read `$JIRA_CACHE_DIR` (<producer-skill-dir>/SKILL.md:5) | md | | `$JIRA_CACHE_DIR/{JIRA-ID}.md` | Not applicable | 未接入 |
 | 解包清单 | unbox-anything | dual | The downstream agent reads the extraction chain (<producer-skill-dir>/SKILL.md:106) | md | | `<outname>-unboxed/README.md` | Not applicable | 未接入 |
 | 部署入口配置 | go-deploy | dual | Later sessions read it (<producer-skill-dir>/SKILL.md:20) | md | | `docs/deploy.md` | Not applicable | 未接入 |
+| 长跑评审输入 | goal-driven-workflow | human | | json | | `.goal-driven/runs/<local-YYYYMMDD-HHmm>/review.json` | | 未接入 |
+| 长跑证据输入 | goal-driven-workflow | human | | json | | `.goal-driven/runs/<local-YYYYMMDD-HHmm>/evidence.json` | | 未接入 |
 | 诊断报告 | essence-diagnosis | human | | md | html | No fixed path | | sink 待定 |
 | 竞品调研报告族 | competitive-research | human | | md | html | No fixed path | | sink 待定 |
 | 演化复盘 ledger | evolution-review | human | | md | html | No fixed path | | sink 待定 |
-
-Renderer JSON inputs are not registered: a read that only feeds rendering does not make an artifact `machine`, and it is not human-read, so it falls outside the registry’s scope.
 
 ## Coverage whitelist
 
