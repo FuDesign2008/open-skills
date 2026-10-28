@@ -6,7 +6,7 @@ The queue SHALL keep every human-facing record's Markdown file as the canonical 
 
 The HTML views SHALL be generated at the Stage 1 approval handoff (task card and triage record) and at Stage 3 package assembly (all covered records), and SHALL be regenerated immediately before any open so a stale view is never opened. `verification.html` SHALL be the acceptance entry page and SHALL link to `progress.html`, the triage HTML view, each card's HTML view, each executed card's packaged engine report's HTML view, and, for each done card, that card's review page and evidence page. A target that does not exist SHALL be annotated as unavailable for any batch, including a current batch with failed, skipped, or zero done cards; the entry page SHALL NOT invent a file. Each executed card's packaged engine report SHALL use a deterministic filename (`reports/<card-slug>.md`) and its view `reports/<card-slug>.html`, with the original path named in the footer.
 
-The renderer's general behavior (escaping, link normalization and rewriting, inline-CSS self-containment, footer source path and generation time, determinism, and not modifying the `.md` source) SHALL follow the single authoritative contract in the `report-output-format` capability. This requirement does not restate those rules and SHALL NOT hold a second copy. Queue-specific behavior (the covered record set, view paths and filenames, generation timing, entry-page links, and the auto-open gate) SHALL remain owned here.
+The renderer's general behavior (escaping, link normalization and rewriting, inline-CSS self-containment, footer source path and generation time, determinism, and not modifying the `.md` source) SHALL follow the single authoritative contract in the `report-output-format` capability. That contract permits exactly one renderer-owned inline `<script>` for the single-image lightbox and no external script. This requirement does not restate those rules and SHALL NOT hold a second copy. Queue-specific behavior (the covered record set, view paths and filenames, generation timing, entry-page links, and the auto-open gate) SHALL remain owned here.
 
 When Node is unavailable, the dispatcher SHALL print the `.md` paths instead of writing HTML by hand. It SHALL NOT hand-write human-facing HTML as a fallback.
 
@@ -85,7 +85,7 @@ The first progress-document entry SHALL record `Trigger: interactive | scheduled
 #### Scenario: The renderer escapes content and stays self-contained
 
 - **WHEN** the source contains `<script>`, `&`, quotes, or heading placeholders such as `<batch-id>`
-- **THEN** the renderer's general-behavior contract in `report-output-format` applies: content is escaped and the page carries inline CSS only
+- **THEN** the renderer's general-behavior contract in `report-output-format` applies: content is escaped, the page carries inline CSS and at most one renderer-owned inline lightbox script, and no external stylesheet, script, font, image, or `@import`
 
 #### Scenario: Unsafe link schemes and attributes are blocked
 

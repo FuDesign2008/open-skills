@@ -1,7 +1,7 @@
 # report-output-format Specification
 
 ## Purpose
-TBD - created by archiving change report-output-format-contract. Update Purpose after archive.
+Decide an artifact's output format by who consumes it: human-read reports derive an HTML page from a Markdown source, machine-consumed artifacts stay Markdown/JSON, and dual-read artifacts keep Markdown as the single source. Owns the product registry and the shared renderer contract.
 
 ## Requirements
 

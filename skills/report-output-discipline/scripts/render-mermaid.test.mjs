@@ -90,3 +90,22 @@ test("parser reports the reason for degradation", () => {
     reason: "unsupported-construct",
   });
 });
+
+test("ampersand chains degrade the whole graph", () => {
+  assert.equal(renderMermaid("flowchart TB\n  A[a] --> B[b] & C[c]"), null);
+  // A literal ampersand inside a node label stays supported.
+  assert.ok(renderMermaid("flowchart TB\n  A[a & b] --> C[c]"));
+});
+
+test("BT and RL mirror the layout instead of aliasing TB and LR", () => {
+  const source = "flowchart %s\n  A --> B";
+  assert.notEqual(renderMermaid(source.replace("%s", "TB")), renderMermaid(source.replace("%s", "BT")));
+  assert.notEqual(renderMermaid(source.replace("%s", "LR")), renderMermaid(source.replace("%s", "RL")));
+});
+
+test("a large graph renders without throwing", () => {
+  const lines = ["flowchart TB", "  H[hub] --> N0[n0]"];
+  for (let index = 0; index < 5000; index += 1) lines.push(`  N${index} --> N${index + 1}[n]`);
+  const svg = renderMermaid(lines.join("\n"));
+  assert.ok(svg && svg.startsWith("<svg"));
+});

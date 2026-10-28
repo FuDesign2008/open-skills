@@ -32,7 +32,7 @@ Skill 产出的落盘产物没有格式边界。全库 67 个可分发 skill 中
 ## Impact
 
 - **新增 skill**：`skills/report-output-discipline/`（`SKILL.md`、`reference.md` 注册表、`scripts/render-core.mjs` 及其测试）
-- **渲染器拆分**：`skills/goal-driven-queue/scripts/render-html.mjs` 改为 import `render-core.mjs`，队列专属函数留原位；`render-html.test.mjs` 拆分，通用 27 项迁至 core 测试、队列 10 项保留
+- **渲染器拆分**：`skills/goal-driven-queue/scripts/render-html.mjs` 改为 import `render-core.mjs`，队列专属函数留原位；`render-html.test.mjs` 拆分，通用 20 项迁至 core 测试、队列 17 项保留
 - **渲染器等价验证**：仓库内无现成夹具，须先从现有 37 个测试提取输入并落盘为夹具；拆分前后用该夹具做**字节级输出 diff**，一致方切换
 - **宿主 skill**：`tech-review-doc`、`test-guide-from-code`、`git-release-finish` 增加注册表条目引用、`report-output-discipline` 强依赖声明与渲染调用
 - **既有队列宿主**：`goal-driven-queue`（adapter import core）须声明依赖并在缺模块时降级打印路径；`goal-driven-workflow`（`SKILL.md:181`）依赖的是队列 adapter 的 `renderReviewPage` / `renderEvidencePage`（这两个函数留在队列侧），须改为按**加载 `goal-driven-queue` skill 的目录**解析，而非指向 core

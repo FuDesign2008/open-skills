@@ -28,7 +28,7 @@
 - [x] 5.2 同一测试断言消费证据规则：`machine`/`dual` 非空、非例外 `human` 为空、例外条目以「既有契约」开头，验证测试通过
 - [x] 5.3 同一测试断言 Mermaid：四份模板图产出 `<svg>`、不支持类型产出降级标记、输出无 `<script>` 与外部资源，验证测试通过
 - [x] 5.4 拆分 `skills/goal-driven-queue/scripts/render-html.test.mjs`：通用 20 项迁至 `render-core.test.mjs`，队列 17 项保留，验证两套测试合计仍为 37 项且全绿
-- [x] 5.5 更新 `scripts/human-facing-html-contract.test.mjs:53,125` 与 `scripts/review-html-flow-contract.test.mjs` 中的旧路径锚点，验证 `node --test` 全绿
+- [x] 5.5 更新 `scripts/human-facing-html-contract.test.mjs` 的旧路径锚点；`scripts/review-html-flow-contract.test.mjs` 经核对不含路径锚点，无需改动，验证 `node --test` 全绿
 
 ## 6. 三个宿主接入
 

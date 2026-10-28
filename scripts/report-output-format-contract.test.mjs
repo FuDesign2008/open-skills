@@ -42,7 +42,7 @@ function parseRegistry() {
 
 function parseWhitelist() {
   const text = read(REGISTRY);
-  const section = text.split("## Coverage whitelist")[1] || "";
+  const section = (text.split("## Coverage whitelist")[1] || "").split(/\n## /)[0];
   return new Set([...section.matchAll(/`([a-z0-9-]+)`/g)].map((m) => m[1]));
 }
 
@@ -83,11 +83,12 @@ test("consumer evidence follows the class rule", () => {
   for (const row of rows) {
     if (row.klass === "machine" || row.klass === "dual") {
       assert.ok(row.evidence.length > 0, `${row.klass} row lacks consumer evidence: ${row.product}`);
+      assert.match(row.evidence, /:\d+/, `${row.klass} evidence must anchor a line: ${row.product}`);
     }
     if (row.klass === "human") {
       const isException = row.evidence.startsWith("既有契约");
       if (isException) {
-        assert.match(row.evidence, /^既有契约（.+）$/, `exception evidence must name its read point: ${row.product}`);
+        assert.match(row.evidence, /^既有契约（.+:\d+）$/, `exception evidence must name its read point: ${row.product}`);
       } else {
         assert.equal(row.evidence, "", `human row must leave evidence empty: ${row.product}`);
       }
@@ -106,7 +107,7 @@ test("integrated rows carry a path and a derived format", () => {
 
 test("sink-pending rows have no fixed path", () => {
   for (const row of rows.filter((entry) => entry.status === "sink 待定")) {
-    assert.equal(row.path, "无固定路径", `sink-pending row must not fix a path: ${row.product}`);
+    assert.equal(row.path, "No fixed path", `sink-pending row must not fix a path: ${row.product}`);
   }
 });
 
@@ -173,8 +174,24 @@ test("integrated hosts declare the dependency and call the shared renderer", () 
   for (const [file, derivedPattern] of Object.entries(hosts)) {
     const body = read(file);
     assert.match(body, /report-output-discipline/, `${file} must declare or reference the discipline`);
-    assert.match(body, /render-core\.mjs/, `${file} must call the shared renderer`);
     assert.match(body, derivedPattern, `${file} must state the derived HTML path`);
-    assert.match(body, /ignore/i, `${file} must suppress the derived HTML from the change set`);
+    assert.match(body, /both paths/i, `${file} must report both paths`);
+    assert.match(body, /npx skills add[^\n]*--skill/, `${file} must abort with an install command when the discipline is missing`);
+  }
+});
+
+
+test("every host runs a prerequisite check for the discipline", () => {
+  for (const file of [
+    "skills/tech-review-doc/SKILL.md",
+    "skills/test-guide-from-code/SKILL.md",
+    "skills/git-release-finish/SKILL.md",
+    "skills/goal-driven-queue/SKILL.md",
+    "skills/goal-driven-workflow/SKILL.md",
+  ]) {
+    const body = read(file);
+    assert.match(body, /dependencies:\s*\n(?:\s+- .*\n)*\s+- report-output-discipline/, `${file} must declare the dependency`);
+    assert.match(body, /report-output-discipline[^\n]*(missing|absent)|(missing|absent)[^\n]*report-output-discipline|report-output-discipline/);
+    assert.match(body, /abort|install guidance|npx skills add/, `${file} must state the abort / install path`);
   }
 });

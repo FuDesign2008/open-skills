@@ -4,7 +4,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { renderMermaid } from "./render-mermaid.mjs";
 
 const ESCAPES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
@@ -315,7 +315,15 @@ export function normalizeTarget(raw) {
 export function isUnderRoot(absolutePath, root) {
   const resolvedRoot = path.resolve(root);
   const resolved = path.resolve(absolutePath);
-  return resolved === resolvedRoot || resolved.startsWith(resolvedRoot + path.sep);
+  const lexical = resolved === resolvedRoot || resolved.startsWith(resolvedRoot + path.sep);
+  if (!lexical) return false;
+  try {
+    const realRoot = fs.realpathSync(resolvedRoot);
+    const realParent = fs.realpathSync(path.dirname(resolved));
+    return realParent === realRoot || realParent.startsWith(realRoot + path.sep);
+  } catch {
+    return true;
+  }
 }
 
 function splitTarget(target) {
@@ -394,7 +402,7 @@ function renderCodeSpan(content, context) {
   const escaped = `<code>${escapeHtml(content)}</code>`;
   if (!context.fileLink) return escaped;
   const href = context.fileLink(content);
-  if (!href) return escaped;
+  if (!href || /^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith("//")) return escaped;
   return `<a class="file-link" href="${escapeHtml(href)}" title="打开文件">${escaped}<span class="file-link-icon" aria-hidden="true">↗</span></a>`;
 }
 
@@ -472,7 +480,9 @@ export function renderInline(text, context) {
 }
 
 function isTableSeparator(line) {
-  return line.includes("|") && /^\s*\|?[\s:|-]+\|?\s*$/.test(line) && line.includes("-");
+  const trimmed = String(line).trim();
+  if (!trimmed || !trimmed.includes("|") || !trimmed.includes("-")) return false;
+  return /^[\s|:-]+$/.test(trimmed);
 }
 
 function splitRow(line) {
@@ -672,7 +682,14 @@ export function renderBlocks(lines, context) {
       paragraph.push(lines[index]);
       index += 1;
     }
-    if (paragraph.length) blocks.push(`<p>${renderInline(paragraph.join(" "), context)}</p>`);
+    if (paragraph.length) {
+      blocks.push(`<p>${renderInline(paragraph.join(" "), context)}</p>`);
+    } else {
+      // A line that is a block start but matched no block (e.g. an info string
+      // the fence regex rejects) must still consume a line, or the loop stalls.
+      blocks.push(`<p>${renderInline(lines[index], context)}</p>`);
+      index += 1;
+    }
   }
 
   return blocks.join("\n");
@@ -743,6 +760,7 @@ export function renderMarkdown(markdown, options = {}) {
     linkExists: options.linkExists,
     fileLink: options.fileLink,
     lang: options.lang,
+    labels: options.labels,
   };
 
   const lines = String(markdown).replace(/\r\n?/g, "\n").split("\n");
@@ -784,7 +802,13 @@ export function baseLabels(options = {}) {
 
 export function writeRenderedFile(sourcePath, options = {}) {
   const absoluteSource = path.resolve(sourcePath);
-  const outPath = path.resolve(options.outPath || absoluteSource.replace(/\.md$/i, ".html"));
+  const defaultOut = /\.md$/i.test(absoluteSource)
+    ? absoluteSource.replace(/\.md$/i, ".html")
+    : `${absoluteSource}.html`;
+  const outPath = path.resolve(options.outPath || defaultOut);
+  if (outPath === absoluteSource) {
+    throw new Error(`refusing to overwrite the source file: ${outPath}`);
+  }
   const root = path.resolve(options.root || path.dirname(absoluteSource));
 
   if (!isUnderRoot(outPath, root)) {
@@ -871,7 +895,16 @@ export async function main(argv) {
   }
 }
 
-const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+function isEntrypoint() {
+  if (!process.argv[1]) return false;
+  try {
+    return fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+const isMain = isEntrypoint();
 if (isMain) {
   main(process.argv.slice(2)).catch((error) => {
     process.stderr.write(`${error.message}\n`);

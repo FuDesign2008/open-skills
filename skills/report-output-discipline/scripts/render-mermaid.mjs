@@ -108,6 +108,8 @@ export function parseFlowchart(source) {
     if (/^direction\s+/i.test(line)) continue;
 
     for (const statement of splitStatements(line)) {
+      const withoutShapes = statement.replace(/\[[^\]]*\]|\([^)]*\)|\{[^}]*\}/g, "");
+      if (withoutShapes.includes("&")) return { ok: false, reason: "unsupported-construct" };
       const edge = EDGE_RE.exec(statement);
       if (edge) {
         const from = parseNode(edge[1] + (edge[2] || ""));
@@ -201,12 +203,13 @@ function placeNodes(parsed, rank) {
   for (const r of ranks) {
     const ids = byRank.get(r);
     const sizes = ids.map((id) => ({ id, ...nodeBox(nodes.get(id)) }));
-    const main = Math.max(...sizes.map((s) => (horizontal ? s.height : s.width)));
+    const main = sizes.reduce((max, s) => Math.max(max, horizontal ? s.height : s.width), 0);
     const cross = sizes.reduce((sum, s) => sum + (horizontal ? s.width : s.height), 0) + (sizes.length - 1) * 34;
     rankSizes.set(r, { sizes, main, cross });
   }
 
-  const maxCross = Math.max(...[...rankSizes.values()].map((s) => s.cross));
+  let maxCross = 0;
+  for (const info of rankSizes.values()) maxCross = Math.max(maxCross, info.cross);
   const positions = new Map();
   let mainCursor = 40;
   for (const r of ranks) {
@@ -220,7 +223,17 @@ function placeNodes(parsed, rank) {
     }
     mainCursor += info.main + 70;
   }
-  return { positions, width: 40 * 2 + (horizontal ? mainCursor - 70 : maxCross), height: 40 * 2 + (horizontal ? maxCross : mainCursor - 70), horizontal };
+  const totalMain = mainCursor - 70;
+  const width = 80 + (horizontal ? totalMain : maxCross);
+  const height = 80 + (horizontal ? maxCross : totalMain);
+  // BT and RL are the same layout mirrored on the main axis.
+  if (parsed.direction === "BT") {
+    for (const box of positions.values()) box.y = height - box.y - box.height;
+  }
+  if (parsed.direction === "RL") {
+    for (const box of positions.values()) box.x = width - box.x - box.width;
+  }
+  return { positions, width, height, horizontal };
 }
 
 function groupBoxes(parsed, positions) {
@@ -228,10 +241,20 @@ function groupBoxes(parsed, positions) {
   for (const group of parsed.groups) {
     const members = group.members.map((id) => positions.get(id)).filter(Boolean);
     if (!members.length) continue;
-    const minX = Math.min(...members.map((m) => m.x)) - 16;
-    const minY = Math.min(...members.map((m) => m.y)) - 30;
-    const maxX = Math.max(...members.map((m) => m.x + m.width)) + 16;
-    const maxY = Math.max(...members.map((m) => m.y + m.height)) + 14;
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const member of members) {
+      minX = Math.min(minX, member.x);
+      minY = Math.min(minY, member.y);
+      maxX = Math.max(maxX, member.x + member.width);
+      maxY = Math.max(maxY, member.y + member.height);
+    }
+    minX -= 16;
+    minY -= 30;
+    maxX += 16;
+    maxY += 14;
     boxes.push({ id: group.id, title: group.title, x: minX, y: minY, width: maxX - minX, height: maxY - minY });
   }
   return boxes;
@@ -280,10 +303,21 @@ function edgeSvg(edge, positions) {
   const mx = (start.x + end.x) / 2;
   const my = (start.y + end.y) / 2;
   const marker = edge.kind === "---" ? "" : "";
-  const arrow =
-    edge.kind === "---"
-      ? ""
-      : `<polygon points="${end.x},${end.y} ${end.x - 7},${end.y - 4} ${end.x - 7},${end.y + 4}" fill="var(--muted, #777)"/>`;
+  let arrow = "";
+  if (edge.kind !== "---") {
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const length = Math.hypot(dx, dy) || 1;
+    const ux = dx / length;
+    const uy = dy / length;
+    const px = -uy;
+    const py = ux;
+    const b1x = end.x - 7 * ux + 4 * px;
+    const b1y = end.y - 7 * uy + 4 * py;
+    const b2x = end.x - 7 * ux - 4 * px;
+    const b2y = end.y - 7 * uy - 4 * py;
+    arrow = `<polygon points="${end.x},${end.y} ${b1x},${b1y} ${b2x},${b2y}" fill="var(--muted, #777)"/>`;
+  }
   const label = edge.label
     ? `<rect x="${mx - textWidth(edge.label) / 2 - 4}" y="${my - 10}" width="${textWidth(edge.label) + 8}" height="18" rx="4" fill="var(--paper, #fbf9f4)" stroke="none"/><text x="${mx}" y="${my + 4}" text-anchor="middle" font-size="11" fill="var(--muted, #777)">${escapeXml(edge.label)}</text>`
     : "";

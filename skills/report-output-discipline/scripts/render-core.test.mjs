@@ -6,6 +6,7 @@ import path from "node:path";
 import {
   normalizeTarget,
   renderMarkdown,
+  isUnderRoot,
   renderNav,
   writeRenderedFile,
 } from "../../report-output-discipline/scripts/render-core.mjs";
@@ -289,4 +290,62 @@ test("pages without content images still include lightbox shell but need no imag
   fs.writeFileSync(path.join(dir, "img.png"), "x", "utf8");
   const withImg = render("![x](img.png)", { sourcePath: path.join(dir, "doc.md"), root: dir });
   assert.match(withImg, /<button[^>]*class="lightbox-trigger"/);
+});
+
+test("a long separator-like line does not backtrack catastrophically", () => {
+  const started = Date.now();
+  const html = render("# T\n\n|h|\n" + " ".repeat(4000) + "|x\n");
+  assert.match(html, /<p>/);
+  assert.ok(Date.now() - started < 2000, "separator detection must stay linear");
+});
+
+test("a fence line with an unsupported info string still advances", () => {
+  const html = render("```js title\n\nbody");
+  assert.match(html, /<p>/);
+});
+
+test("non-.md sources are never overwritten by the derived file", () => {
+  const dir = tmp();
+  const source = path.join(dir, "report.markdown");
+  fs.writeFileSync(source, "# keep me\n", "utf8");
+  const out = writeRenderedFile(source, { root: dir, generatedAt: AT });
+  assert.equal(out, `${source}.html`);
+  assert.equal(fs.readFileSync(source, "utf8"), "# keep me\n");
+  assert.ok(fs.existsSync(`${source}.html`));
+});
+
+test("file links never carry a scheme", () => {
+  const dir = tmp();
+  fs.writeFileSync(path.join(dir, "javascript:alert(1)"), "x", "utf8");
+  const html = render("`javascript:alert(1)`", {
+    sourcePath: path.join(dir, "doc.md"),
+    root: dir,
+    fileRoot: dir,
+  });
+  assert.doesNotMatch(html, /href="javascript:/);
+});
+
+test("a symlinked directory cannot escape the root", () => {
+  const dir = tmp();
+  const outside = tmp();
+  fs.symlinkSync(outside, path.join(dir, "link"), "dir");
+  assert.equal(isUnderRoot(path.join(dir, "link", "escaped.html"), dir), false);
+});
+
+test("custom lightbox labels reach Markdown images", () => {
+  const dir = tmp();
+  fs.writeFileSync(path.join(dir, "img.png"), "x", "utf8");
+  const html = render("![photo](img.png)", {
+    sourcePath: path.join(dir, "doc.md"),
+    root: dir,
+    labels: { lightboxEnlarge: "BIG" },
+  });
+  assert.match(html, /aria-label="BIG: photo"/);
+});
+
+test("many unmatched brackets stay linear", () => {
+  const started = Date.now();
+  const html = render("[".repeat(20000));
+  assert.ok(html.length > 0);
+  assert.ok(Date.now() - started < 2000, "inline scanning must stay bounded");
 });

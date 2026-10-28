@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { spawnSync } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
 import {
@@ -479,4 +480,31 @@ test("evidence figure images are lightbox-activatable", () => {
   assert.match(html, /data-lightbox/);
   assert.match(html, /<img src="a\.png"/);
   assert.match(html, /id="queue-lightbox"/);
+});
+
+test("evidence images outside the root are not referenced", () => {
+  const html = renderEvidencePage(
+    { groups: [{ heading: "UI", items: [{ label: "x", image: "../../../../etc/hosts" }] }] },
+    { root: "/tmp", generatedAt: AT },
+  );
+  assert.doesNotMatch(html, /<img /);
+});
+
+test("degrade branch prints only source paths, not option values", () => {
+  const dir = tmp();
+  const scripts = path.join(dir, "scripts");
+  fs.mkdirSync(scripts, { recursive: true });
+  fs.copyFileSync(
+    new URL("./render-html.mjs", import.meta.url),
+    path.join(scripts, "render-html.mjs"),
+  );
+  const source = path.join(dir, "doc.md");
+  fs.writeFileSync(source, "# t\n", "utf8");
+  const result = spawnSync(
+    process.execPath,
+    [path.join(scripts, "render-html.mjs"), source, "--root", dir, "--at", "2026-01-01T00:00:00.000Z"],
+    { encoding: "utf8" },
+  );
+  const lines = result.stdout.trim().split("\n").filter(Boolean);
+  assert.deepEqual(lines, [source]);
 });

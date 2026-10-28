@@ -426,11 +426,14 @@ export function renderReviewPage(data = {}, options = {}) {
   const generatedAt = options.generatedAt || new Date().toISOString();
   const chrome = chromeLabels(options);
   const title = data.title || chrome.reviewTitle;
+  const reviewRoot = path.resolve(options.root || process.cwd());
   const context = {
-    sourcePath: options.sourcePath || "review.md",
-    root: options.root || process.cwd(),
+    sourcePath: options.sourcePath || path.join(reviewRoot, "review.md"),
+    root: reviewRoot,
     linkExists: options.linkExists,
     fileLink: options.fileLink,
+    lang: options.lang,
+    labels: options.labels,
   };
   const cards = [
     [chrome.problem, data.problem, "callout-problem"],
@@ -455,10 +458,13 @@ export function renderEvidencePage(data = {}, options = {}) {
   const generatedAt = options.generatedAt || new Date().toISOString();
   const chrome = chromeLabels(options);
   const title = data.title || chrome.evidenceTitle;
+  const evidenceRoot = path.resolve(options.root || process.cwd());
   const context = {
-    sourcePath: options.sourcePath || "evidence.html",
-    root: options.root || process.cwd(),
+    sourcePath: options.sourcePath || path.join(evidenceRoot, "evidence.html"),
+    root: evidenceRoot,
     fileLink: options.fileLink,
+    lang: options.lang,
+    labels: options.labels,
   };
   const groups = data.groups || [];
   const emptyMessage =
@@ -480,10 +486,14 @@ export function renderEvidencePage(data = {}, options = {}) {
           const classes = pending ? "evidence-item pending" : "evidence-item";
           if (item.image) {
             const normalized = normalizeTarget(item.image);
-            const imageHtml =
-              normalized.kind === "relative"
-                ? renderLightboxImage(item.alt || item.label || "", normalized.value, null, options)
-                : "";
+            let imageHtml = "";
+            if (normalized.kind === "relative") {
+              const imageBase = path.dirname(path.resolve(context.sourcePath));
+              const imageAbsolute = path.resolve(imageBase, normalized.value);
+              if (isUnderRoot(imageAbsolute, context.root)) {
+                imageHtml = renderLightboxImage(item.alt || item.label || "", normalized.value, null, context);
+              }
+            }
             return `<figure class="${classes}">${imageHtml}<figcaption>${escapeHtml(item.label || "")}</figcaption>${statusHtml}</figure>`;
           }
           const command = item.command ? `<p><code>${escapeHtml(item.command)}</code></p>` : "";
@@ -617,11 +627,30 @@ export async function main(argv) {
   }
 }
 
-const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+function isEntrypoint() {
+  if (!process.argv[1]) return false;
+  try {
+    return fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+const isMain = isEntrypoint();
 if (isMain) {
   main(process.argv.slice(2)).catch((error) => {
     if (/shared renderer unavailable/.test(error.message)) {
-      const sources = process.argv.slice(2).filter((argument) => !argument.startsWith("--"));
+      const valueFlags = new Set([
+        "--root", "--at", "--file-root", "--source-label", "--open",
+        "--auto-open", "--progress", "--kind", "--nav", "--nav-root", "--unavailable",
+      ]);
+      const argv = process.argv.slice(2);
+      const sources = [];
+      for (let index = 0; index < argv.length; index += 1) {
+        const argument = argv[index];
+        if (valueFlags.has(argument)) { index += 1; continue; }
+        if (!argument.startsWith("--")) sources.push(argument);
+      }
       for (const source of sources) process.stdout.write(`${source}\n`);
       process.stderr.write("shared renderer unavailable; printed Markdown paths instead of writing HTML\n");
       return;

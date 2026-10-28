@@ -1,6 +1,6 @@
 ---
 name: git-release-finish
-version: "2.1.0"
+version: "2.2.0"
 user-invocable: true
 dependencies:
   - report-output-discipline
@@ -8,6 +8,14 @@ description: "Use when releasing a Git repository version — tagging, merging r
 ---
 
 # Git Release Finish
+
+## Prerequisite skill check
+
+On load, verify `report-output-discipline` is available. If missing, abort and print:
+
+`npx skills add FuDesign2008/open-skills -g --skill '*' --yes`
+
+Do not silently fall back.
 
 > **Role**: End-of-iteration release workflow — tag the release branch, create MR/PR into the main branch, resolve conflicts, clean up extra files, merge. Git operations are expressed as native commands; MR/PR operations are expressed as intents and the running agent picks its platform CLI (`glab` / `gh` / `tea` / equivalent) per its environment.
 >
@@ -478,15 +486,7 @@ Confirm the latest commits include the release merge.
 
 ## Phase 10: Output report
 
-Write to `$(git rev-parse --show-toplevel)/release-<VERSION>-report.md`. Registry row: `发布报告` in `report-output-discipline/reference.md` (`human` + `接入`).
-
-Then derive the HTML page beside it:
-
-```bash
-node <skill-dir>/scripts/render-core.mjs <markdown-path> --root $(git rev-parse --show-toplevel)
-```
-
-`<skill-dir>` is where the `report-output-discipline` skill is installed; ask the user when unknown. The derived page is `release-<VERSION>-report.html`. Ensure it is ignored in the target repository (append one rule, never overwrite). When Node or the renderer is unavailable, print the Markdown path and the reason — do not hand-write HTML. Report both paths.
+Write to `$(git rev-parse --show-toplevel)/release-<VERSION>-report.md`. Registry row: `发布报告` in `report-output-discipline/reference.md` (`human` + `接入`). After the Markdown report is written, derive `release-<VERSION>-report.html` beside it following `report-output-discipline`, and report both paths.
 
 The report contains:
 

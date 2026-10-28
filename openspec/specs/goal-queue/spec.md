@@ -860,7 +860,7 @@ Every generated human-facing HTML view SHALL carry a navigation block linking to
 
 ### Requirement: Human-facing HTML views SHALL be designed reading documents
 
-Human-facing HTML views SHALL be designed reading documents, not a line-by-line Markdown translation. Each view SHALL provide a document header with metadata chips for short values and labeled full-width rows for long values, a section table of contents, section cards, and status pills. Document titles SHALL render inline Markdown. A verification view SHALL provide KPI tiles and a verdict card. A progress view SHALL provide a timeline for events and KPI tiles. A task-card view SHALL provide condition cards and field cards. The entry page SHALL provide a status KPI strip and a grid of link cards. The Markdown file SHALL remain canonical, and the HTML SHALL stay self-contained with no script or external asset.
+Human-facing HTML views SHALL be designed reading documents, not a line-by-line Markdown translation. Each view SHALL provide a document header with metadata chips for short values and labeled full-width rows for long values, a section table of contents, section cards, and status pills. Document titles SHALL render inline Markdown. A verification view SHALL provide KPI tiles and a verdict card. A progress view SHALL provide a timeline for events and KPI tiles. A task-card view SHALL provide condition cards and field cards. The entry page SHALL provide a status KPI strip and a grid of link cards. The Markdown file SHALL remain canonical, and the HTML SHALL stay self-contained with at most one renderer-owned inline lightbox script and no external asset.
 
 #### Scenario: A verification view is designed for scanning
 

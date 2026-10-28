@@ -124,7 +124,7 @@ test("live specs forbid hand-written HTML fallback and wire standalone nav", () 
   assert.match(workflow, /Pass the same shared navigation block into both pages/);
   assert.match(workflow, /cross-link review ↔ evidence/);
   assert.match(workflow, /<queue-skill-dir>\/scripts\/render-html\.mjs/);
-  assert.match(workflow, /if that module is missing, stop and print/);
+  assert.match(workflow, /if that module is missing, print the `\.md` \/ JSON paths and continue without HTML/);
 });
 
 test("review and evidence paths and templates stay synchronized", () => {
