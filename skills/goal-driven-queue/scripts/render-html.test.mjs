@@ -38,8 +38,8 @@ test("escapes HTML special characters and heading placeholders", () => {
   assert.match(html, /&amp;/);
   assert.match(html, /&quot;q&quot;/);
   assert.match(html, /&#39;s&#39;/);
-  assert.doesNotMatch(html, /<script>/);
   assert.match(html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+  assert.doesNotMatch(html, /<script>alert\(1\)<\/script>/);
 });
 
 test("renders tables and honors escaped pipes", () => {
@@ -120,7 +120,7 @@ test("renders local images and degrades external or missing images to alt text",
   const dir = tmp();
   fs.writeFileSync(path.join(dir, "img.png"), "not-a-real-png", "utf8");
   const local = render("![alt](img.png)", { sourcePath: path.join(dir, "doc.md"), root: dir });
-  assert.match(local, /<img src="img\.png" alt="alt">/);
+  assert.match(local, /<img src="img\.png" alt="alt"/);
 
   const external = render("![alt](https://example.com/x.png)");
   assert.doesNotMatch(external, /<img /);
@@ -142,10 +142,68 @@ test("output is self-contained and UTF-8 with non-ASCII round-trip", () => {
   const html = render("# 标题\n\n正文");
   assert.match(html, /<meta charset="utf-8">/);
   assert.match(html, /标题/);
-  assert.doesNotMatch(html, /<script/i);
+  assert.doesNotMatch(html, /<script\s+src=/i);
   assert.doesNotMatch(html, /<link[^>]+stylesheet/i);
   assert.doesNotMatch(html, /@import/i);
   assert.doesNotMatch(html, /src="https?:/i);
+  assert.match(html, /<dialog[^>]*id="queue-lightbox"/);
+  assert.match(html, /<script>/);
+});
+
+test("Markdown local images are lightbox-activatable", () => {
+  const dir = tmp();
+  fs.writeFileSync(path.join(dir, "img.png"), "not-a-real-png", "utf8");
+  const html = render("![alt text](img.png)", { sourcePath: path.join(dir, "doc.md"), root: dir });
+  assert.match(html, /data-lightbox/);
+  assert.match(html, /<img src="img\.png" alt="alt text"/);
+  assert.match(html, /lightbox-trigger/);
+  assert.match(html, /showModal/);
+});
+
+test("English Markdown lightbox chrome follows lang", () => {
+  const dir = tmp();
+  fs.writeFileSync(path.join(dir, "img.png"), "x", "utf8");
+  const html = render("![photo](img.png)", {
+    sourcePath: path.join(dir, "doc.md"),
+    root: dir,
+    lang: "en",
+  });
+  assert.match(html, /aria-label="Enlarge image: photo"/);
+  assert.match(html, /aria-label="Enlarged image"/);
+  assert.match(html, /aria-label="Close"/);
+  assert.doesNotMatch(html, /放大图片/);
+});
+
+test("lightbox dialog is full-viewport so backdrop clicks hit the dialog", () => {
+  const html = render("# T\n\nbody");
+  assert.match(html, /#queue-lightbox\s*\{[^}]*width:\s*100%/);
+  assert.match(html, /#queue-lightbox\s*\{[^}]*height:\s*100%/);
+  assert.match(html, /setAttribute\("aria-label"/);
+  assert.match(html, /data-default-label="/);
+});
+
+test("evidence figure images are lightbox-activatable", () => {
+  const html = renderEvidencePage(
+    {
+      title: "证据",
+      groups: [{ heading: "UI", items: [{ label: "截图", image: "a.png", alt: "shot" }] }],
+    },
+    { sourcePath: "/tmp/queue/evidence.html", root: "/tmp/queue", generatedAt: AT },
+  );
+  assert.match(html, /data-lightbox/);
+  assert.match(html, /<img src="a\.png"/);
+  assert.match(html, /id="queue-lightbox"/);
+});
+
+test("pages without content images still include lightbox shell but need no image affordance", () => {
+  const html = render("# T\n\nbody only");
+  assert.match(html, /id="queue-lightbox"/);
+  assert.doesNotMatch(html, /<button[^>]*class="lightbox-trigger"/);
+  assert.doesNotMatch(html, /<img /);
+  const dir = tmp();
+  fs.writeFileSync(path.join(dir, "img.png"), "x", "utf8");
+  const withImg = render("![x](img.png)", { sourcePath: path.join(dir, "doc.md"), root: dir });
+  assert.match(withImg, /<button[^>]*class="lightbox-trigger"/);
 });
 
 test("is deterministic for the same source and generation time", () => {

@@ -654,7 +654,7 @@ The queue SHALL keep every human-facing record's Markdown file as the canonical 
 
 The HTML views SHALL be generated at the Stage 1 approval handoff (task card and triage record) and at Stage 3 package assembly (all covered records), and SHALL be regenerated immediately before any open so a stale view is never opened. `verification.html` SHALL be the acceptance entry page and SHALL link to `progress.html`, the triage HTML view, each card's HTML view, each executed card's packaged engine report's HTML view, and, for each done card, that card's review page and evidence page. A target that does not exist SHALL be annotated as unavailable for any batch, including a current batch with failed, skipped, or zero done cards; the entry page SHALL NOT invent a file. Each executed card's packaged engine report SHALL use a deterministic filename (`reports/<card-slug>.md`) and its view `reports/<card-slug>.html`, with the original path named in the footer.
 
-The renderer SHALL use Node built-ins only and SHALL NOT add a runtime dependency. It SHALL escape `&`, `<`, `>`, `"`, and `'`, and SHALL NOT pass raw HTML from card or report content. It SHALL use inline CSS with no external stylesheet, script, font, image, or `@import`; content anchors to `http`/`https` are allowed. It SHALL normalize each link target by trimming whitespace, removing control characters, and lowercasing the scheme, and SHALL allow only relative paths (not starting with `/` or `//`), fragments, `http`, `https`, and `mailto`; it SHALL reject `javascript:`, `data:`, `vbscript:`, `file:`, root-relative paths, protocol-relative URLs, and backslash-prefixed paths, and SHALL escape attribute values. It SHALL split table cells on unescaped `|`, honor `\|` inside a cell, and protect code spans from link rewriting. It SHALL rewrite a relative `.md` link to an existing `.html` view except inside code fences, SHALL record the source path and generation time in the page footer, SHALL be deterministic for the same source and generation time, and SHALL NOT modify the `.md` source.
+The renderer SHALL use Node built-ins only and SHALL NOT add a runtime dependency. It SHALL escape `&`, `<`, `>`, `"`, and `'`, and SHALL NOT pass raw HTML from card or report content. It SHALL emit inline CSS and MAY emit one renderer-owned inline `<script>` solely for the single-image lightbox; it SHALL NOT load any external stylesheet, script, font, image, or `@import`. Content anchors to `http`/`https` are allowed. User or Markdown content that looks like HTML, including `<script>`, SHALL remain escaped text and SHALL NOT execute. It SHALL normalize each link target by trimming whitespace, removing control characters, and lowercasing the scheme, and SHALL allow only relative paths (not starting with `/` or `//`), fragments, `http`, `https`, and `mailto`; it SHALL reject `javascript:`, `data:`, `vbscript:`, `file:`, root-relative paths, protocol-relative URLs, and backslash-prefixed paths, and SHALL escape attribute values. It SHALL split table cells on unescaped `|`, honor `\|` inside a cell, and protect code spans from link rewriting. It SHALL rewrite a relative `.md` link to an existing `.html` view except inside code fences, SHALL record the source path and generation time in the page footer, SHALL be deterministic for the same source and generation time, and SHALL NOT modify the `.md` source.
 
 When Node is unavailable, the dispatcher SHALL print the `.md` paths instead of writing HTML by hand. It SHALL NOT hand-write human-facing HTML as a fallback.
 
@@ -733,7 +733,7 @@ The first progress-document entry SHALL record `Trigger: interactive | scheduled
 #### Scenario: The renderer escapes content and stays self-contained
 
 - **WHEN** the source contains `<script>`, `&`, quotes, or heading placeholders such as `<batch-id>`
-- **THEN** the output escapes them, contains inline CSS only, and contains no external stylesheet, script, font, image, or `@import`
+- **THEN** the output escapes them as text, may include renderer-owned inline CSS and an optional renderer-owned inline lightbox script, and contains no external stylesheet, script, font, image, or `@import`
 
 #### Scenario: Unsafe link schemes and attributes are blocked
 
@@ -1041,3 +1041,32 @@ A table with seven or more columns SHALL render as labeled record cards instead 
 
 - **WHEN** a page with a table is printed
 - **THEN** the table is not clipped by a scroll container and column widths shrink to the page width
+
+### Requirement: Generated HTML images SHALL support a single-image lightbox
+
+When the renderer emits an `<img>` for a local relative image in a human-facing HTML view, the page SHALL open that image in a single-image lightbox on activation and SHALL close it via backdrop click, Escape, or an explicit close control. Lightbox assets SHALL be renderer-owned and inline only.
+
+#### Scenario: Clicking a Markdown image opens the lightbox
+
+- **WHEN** a human-facing HTML view contains a renderer-emitted Markdown image and the human activates that image
+- **THEN** a lightbox shows that image over a darkened backdrop
+
+#### Scenario: Clicking an evidence figure image opens the lightbox
+
+- **WHEN** an evidence HTML page contains a renderer-emitted figure image and the human activates that image
+- **THEN** a lightbox shows that image over a darkened backdrop
+
+#### Scenario: Backdrop, Escape, and close control dismiss the lightbox
+
+- **WHEN** the lightbox is open
+- **THEN** clicking the backdrop, pressing Escape, or activating the close control closes it
+
+#### Scenario: A page with no images needs no lightbox interaction
+
+- **WHEN** a human-facing HTML view contains no renderer-emitted images
+- **THEN** the page remains usable without opening a lightbox
+
+#### Scenario: Lightbox assets stay inline and self-contained
+
+- **WHEN** a page that includes the lightbox is generated
+- **THEN** lightbox behavior comes from renderer-owned inline CSS and inline script only, with no external stylesheet, script, font, image, or `@import` for that behavior
