@@ -319,6 +319,10 @@ export function isUnderRoot(absolutePath, root) {
   if (!lexical) return false;
   try {
     const realRoot = fs.realpathSync(resolvedRoot);
+    const realTarget = fs.existsSync(resolved) ? fs.realpathSync(resolved) : null;
+    if (realTarget) {
+      return realTarget === realRoot || realTarget.startsWith(realRoot + path.sep);
+    }
     const realParent = fs.realpathSync(path.dirname(resolved));
     return realParent === realRoot || realParent.startsWith(realRoot + path.sep);
   } catch {
@@ -401,9 +405,37 @@ function renderPlainUrl(text, index) {
 function renderCodeSpan(content, context) {
   const escaped = `<code>${escapeHtml(content)}</code>`;
   if (!context.fileLink) return escaped;
-  const href = context.fileLink(content);
+  const rawHref = context.fileLink(content);
+  const href = rawHref ? String(rawHref).replace(/[\u0000-\u001f\u007f ]/g, "") : rawHref;
   if (!href || /^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith("//")) return escaped;
   return `<a class="file-link" href="${escapeHtml(href)}" title="打开文件">${escaped}<span class="file-link-icon" aria-hidden="true">↗</span></a>`;
+}
+
+function readLinkSpan(text, start) {
+  // Bounded scan: a link is only recognized when its label and target sit
+  // within MAX_LINK_SPAN characters, so adversarial input stays linear.
+  const MAX_LINK_SPAN = 500;
+  const limit = Math.min(text.length, start + MAX_LINK_SPAN);
+  let labelEnd = -1;
+  for (let cursor = start + 1; cursor < limit; cursor += 1) {
+    if (text[cursor] === "]" && text[cursor + 1] === "(") {
+      labelEnd = cursor;
+      break;
+    }
+  }
+  if (labelEnd === -1) return null;
+  let close = -1;
+  for (let cursor = labelEnd + 2; cursor < limit; cursor += 1) {
+    if (text[cursor] === ")") {
+      close = cursor;
+      break;
+    }
+  }
+  if (close === -1) return null;
+  const inside = text.slice(labelEnd + 2, close);
+  const titled = /^([^\s]+)(?:\s+"([^"]*)")?$/.exec(inside);
+  if (!titled) return null;
+  return { labelEnd, target: titled[1], title: titled[2], end: close + 1 };
 }
 
 export function renderInline(text, context) {
@@ -422,20 +454,15 @@ export function renderInline(text, context) {
       }
     }
 
-    if (character === "!" && text[index + 1] === "[") {
-      const match = /^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/.exec(text.slice(index));
-      if (match) {
-        output += renderImage(match[1], match[2], match[3], context);
-        index += match[0].length;
-        continue;
-      }
-    }
-
-    if (character === "[") {
-      const match = /^\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/.exec(text.slice(index));
-      if (match) {
-        output += renderLink(match[1], match[2], match[3], context);
-        index += match[0].length;
+    if ((character === "!" && text[index + 1] === "[") || character === "[") {
+      const isImage = character === "!";
+      const labelStart = index + (isImage ? 1 : 0);
+      const span = readLinkSpan(text, labelStart);
+      if (span) {
+        const label = text.slice(labelStart + 1, span.labelEnd);
+        if (isImage) output += renderImage(label, span.target, span.title, context);
+        else output += renderLink(label, span.target, span.title, context);
+        index = span.end;
         continue;
       }
     }
@@ -608,7 +635,7 @@ export function renderBlocks(lines, context) {
       continue;
     }
 
-    const fence = /^\s*(```+|~~~+)\s*([\w-]*)\s*$/.exec(line);
+    const fence = /^\s*(```+|~~~+)\s*([^\s`]*)(?:\s+.*)?$/.exec(line);
     if (fence) {
       const marker = fence[1][0];
       const language = fence[2];
@@ -808,6 +835,13 @@ export function writeRenderedFile(sourcePath, options = {}) {
   const outPath = path.resolve(options.outPath || defaultOut);
   if (outPath === absoluteSource) {
     throw new Error(`refusing to overwrite the source file: ${outPath}`);
+  }
+  try {
+    if (fs.existsSync(outPath) && fs.statSync(outPath).ino === fs.statSync(absoluteSource).ino) {
+      throw new Error(`refusing to overwrite the source file: ${outPath}`);
+    }
+  } catch (error) {
+    if (/refusing to overwrite/.test(error.message)) throw error;
   }
   const root = path.resolve(options.root || path.dirname(absoluteSource));
 

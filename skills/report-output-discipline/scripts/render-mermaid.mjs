@@ -108,7 +108,7 @@ export function parseFlowchart(source) {
     if (/^direction\s+/i.test(line)) continue;
 
     for (const statement of splitStatements(line)) {
-      const withoutShapes = statement.replace(/\[[^\]]*\]|\([^)]*\)|\{[^}]*\}/g, "");
+      const withoutShapes = statement.replace(/\[[^\]]*\]|\([^)]*\)|\{[^}]*\}|\|[^|]*\|/g, "");
       if (withoutShapes.includes("&")) return { ok: false, reason: "unsupported-construct" };
       const edge = EDGE_RE.exec(statement);
       if (edge) {

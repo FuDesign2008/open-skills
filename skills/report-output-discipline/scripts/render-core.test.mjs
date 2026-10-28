@@ -299,9 +299,15 @@ test("a long separator-like line does not backtrack catastrophically", () => {
   assert.ok(Date.now() - started < 2000, "separator detection must stay linear");
 });
 
-test("a fence line with an unsupported info string still advances", () => {
-  const html = render("```js title\n\nbody");
-  assert.match(html, /<p>/);
+test("an info-string fence closes correctly and keeps following content", () => {
+  const html = render("```js title\ncode-line\n```\n\nAFTER-BODY");
+  assert.match(html, /AFTER-BODY/);
+  assert.doesNotMatch(html, /<pre><code>[\s\S]*AFTER-BODY[\s\S]*<\/code><\/pre>/);
+});
+
+test("an unterminated fence still terminates the render", () => {
+  const html = render("```js title\nbody");
+  assert.match(html, /<pre>/);
 });
 
 test("non-.md sources are never overwritten by the derived file", () => {
@@ -345,7 +351,26 @@ test("custom lightbox labels reach Markdown images", () => {
 
 test("many unmatched brackets stay linear", () => {
   const started = Date.now();
-  const html = render("[".repeat(20000));
+  const html = render("[".repeat(160000));
   assert.ok(html.length > 0);
   assert.ok(Date.now() - started < 2000, "inline scanning must stay bounded");
+});
+
+test("a file symlink pointing outside the root is not treated as inside", () => {
+  const dir = tmp();
+  const outside = tmp();
+  const secret = path.join(outside, "secret.png");
+  fs.writeFileSync(secret, "x", "utf8");
+  fs.symlinkSync(secret, path.join(dir, "shot.png"));
+  assert.equal(isUnderRoot(path.join(dir, "shot.png"), dir), false);
+});
+
+test("an outPath aliasing the source through case is refused", () => {
+  const dir = tmp();
+  const source = path.join(dir, "doc.md");
+  fs.writeFileSync(source, "# keep\n", "utf8");
+  const alias = path.join(dir, "DOC.md");
+  if (!fs.existsSync(alias)) return; // case-sensitive filesystem
+  assert.throws(() => writeRenderedFile(source, { root: dir, outPath: alias, generatedAt: AT }), /refusing to overwrite/);
+  assert.equal(fs.readFileSync(source, "utf8"), "# keep\n");
 });

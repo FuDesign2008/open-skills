@@ -147,7 +147,7 @@ Decide an artifact's output format by who consumes it: human-read reports derive
 
 渲染器 MUST 相对于**加载本纪律 skill 的目录**解析（`<skill-dir>/scripts/render-core.mjs`），调用形态为 `node <path> <source.md> [--root <dir>] [--at <iso>]`，与现有渲染器 CLI 一致。当宿主无法确定该目录时，MUST 向用户询问已安装 skill 的路径；MUST NOT 猜测。
 
-需要 `renderReviewPage` / `renderEvidencePage` 的宿主（独立长跑运行）MUST 按**加载 `goal-driven-queue` skill 的目录**解析其 adapter（`<queue-skill-dir>/scripts/render-html.mjs`），而不是 core——这两个函数留在队列 adapter 内。该解析同样 MUST NOT 依赖仓库检出相对路径。
+需要 `renderReviewPage` / `renderEvidencePage` 的宿主（独立长跑运行）MUST 按**加载 `goal-driven-queue` skill 的目录**解析其 adapter（`<queue-skill-dir>/scripts/render-html.mjs`），而不是 core——这两个函数留在队列 adapter 内。该解析同样 MUST NOT 依赖仓库检出相对路径。该 adapter 缺失时，宿主 MUST 打印 JSON 输入路径并继续，MUST NOT 手写页面。
 
 `<skill-dir>` 不可得且用户无法提供、或运行环境缺少 Node 时，宿主 MUST 打印 Markdown 真源路径并说明原因，MUST NOT 手写 HTML 兜底。
 
@@ -275,7 +275,7 @@ ignore 规则无法写入时（只读仓库、权限不足、用户拒绝修改�
 
 共享纪律 skill MUST 维护一份产物注册表。每条 MUST 包含：产物名称、产生 skill、类别、真源格式、派生格式、落盘路径、抑制方式、接入状态。
 
-「消费证据」列按类别取值：`machine` MUST 填非 agent 读取点的 grep 模式与命中位置；`dual` MUST 填下游阶段 skill 名与正文行号；`human` MUST 留空，例外条目除外（按上条写「既有契约（读取点见 `<路径:行号>`）」）。
+「消费证据」列按类别取值：`machine` MUST 填非 agent 读取点的 `路径:行号` 及其读取的字段或协议；`dual` MUST 填 agent 消费点的 `路径:行号`；`human` MUST 留空，例外条目除外（按上条写「既有契约（读取点见 `<路径:行号>`）」）。
 
 接入状态 MUST 取下列之一：
 

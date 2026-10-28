@@ -291,6 +291,7 @@ export function renderDocument(markdown, options = {}) {
     linkExists: options.linkExists,
     fileLink: options.fileLink,
     lang: options.lang,
+    labels: options.labels,
   };
   const doc = parseDocument(markdown);
   const kind = options.kind || "document";

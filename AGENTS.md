@@ -107,7 +107,7 @@ open-skills/
 | runtime-evidence-debug | 调试方法论 | 无 |
 | hybrid-debug | 调试方法论 | 无 |
 | browser-debug-toolkit | 调试方法论 | 无 |
-| report-output-discipline | 工作流纪律 | 无（被 tech-review-doc、test-guide-from-code、git-release-finish、goal-driven-queue、goal-driven-workflow 经 frontmatter 引用） |
+| report-output-discipline | 工作流纪律 | 无（报告类宿主经 frontmatter `dependencies` 引用） |
 | workflow-mode-lifecycle | 工作流纪律 | 无 |
 | clarifying-question-discipline | 工作流纪律 | 无 |
 | completion-evidence-discipline | 工作流纪律 | 无 |

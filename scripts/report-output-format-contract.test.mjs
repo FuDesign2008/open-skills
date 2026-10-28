@@ -191,7 +191,6 @@ test("every host runs a prerequisite check for the discipline", () => {
   ]) {
     const body = read(file);
     assert.match(body, /dependencies:\s*\n(?:\s+- .*\n)*\s+- report-output-discipline/, `${file} must declare the dependency`);
-    assert.match(body, /report-output-discipline[^\n]*(missing|absent)|(missing|absent)[^\n]*report-output-discipline|report-output-discipline/);
     assert.match(body, /abort|install guidance|npx skills add/, `${file} must state the abort / install path`);
   }
 });

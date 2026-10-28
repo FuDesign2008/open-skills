@@ -25,9 +25,9 @@
 ## 5. 契约测试
 
 - [x] 5.1 新建 `scripts/report-output-format-contract.test.mjs`：断言注册表正向锚点（条目 skill 存在于 `skills/*/SKILL.md`）与反向锚点（全集减白名单后每个 skill 至少一条），验证测试通过
-- [x] 5.2 同一测试断言消费证据规则：`machine`/`dual` 非空、非例外 `human` 为空、例外条目以「既有契约」开头，验证测试通过
+- [x] 5.2 同一测试断言消费证据规则：`machine`/`dual` 必须带 `path:line` 锚点、非例外 `human` 为空、例外条目以「既有契约（…:line）」开头，验证测试通过
 - [x] 5.3 同一测试断言 Mermaid：四份模板图产出 `<svg>`、不支持类型产出降级标记、输出无 `<script>` 与外部资源，验证测试通过
-- [x] 5.4 拆分 `skills/goal-driven-queue/scripts/render-html.test.mjs`：通用 20 项迁至 `render-core.test.mjs`，队列 17 项保留，验证两套测试合计仍为 37 项且全绿
+- [x] 5.4 拆分 `skills/goal-driven-queue/scripts/render-html.test.mjs`：通用 20 项迁至 `render-core.test.mjs`，队列 17 项保留，验证两套测试合计仍为 42 项且全绿
 - [x] 5.5 更新 `scripts/human-facing-html-contract.test.mjs` 的旧路径锚点；`scripts/review-html-flow-contract.test.mjs` 经核对不含路径锚点，无需改动，验证 `node --test` 全绿
 
 ## 6. 三个宿主接入

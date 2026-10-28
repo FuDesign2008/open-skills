@@ -16,8 +16,8 @@ Every registered artifact gets exactly one class. Evaluate in this order and sto
 | Order | Class | Evidence the registry must hold |
 |---|---|---|
 | 0 | Existing HTML-contract entry | The registry row's evidence starts with `既有契约` and names its read point |
-| 1 | `machine` | A non-agent consumer reads **fields or protocol** — give the grep pattern and hit location |
-| 2 | `dual` | A named agent consumption point — a downstream workflow stage, or the host loading it at session start |
+| 1 | `machine` | A non-agent consumer reads **fields or protocol** — give the read point as `path:line` plus the field or protocol |
+| 2 | `dual` | A named agent consumption point — a downstream workflow stage, or the host loading it at session start — recorded as `path:line` |
 | 3 | `human` | Nothing above matched; this is the only default |
 
 A read that only feeds rendering (reading the whole file to display it) does not make an artifact `machine`. The default is `human` because guessing `machine` silently removes the HTML obligation, and nothing downstream would catch that mistake.
