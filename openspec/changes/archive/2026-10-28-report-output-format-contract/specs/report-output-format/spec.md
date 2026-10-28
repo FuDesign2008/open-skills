@@ -4,7 +4,7 @@
 
 每个落盘产物 MUST 在产物注册表中登记一个消费者类别。类别 MUST 取自 `machine`、`dual`、`human`，且 MUST 按下列顺序求值，第一条匹配即终止：
 
-1. **`machine`** — 存在一个**非 agent** 的具名程序消费者，它按**字段或协议**读取本产物（解析其中的结构化数据以驱动后续逻辑），且注册表给出该读取点的 `路径:行号` 与其读取的字段或协议。仅把本产物当作渲染输入（读全文以生成展示）的读取点 MUST NOT 计入本条。
+1. **`machine`** — 存在一个**非 agent** 的具名程序消费者，它按**字段或协议**读取本产物（解析其中的结构化数据以驱动后续逻辑），且注册表给出该读取点的 `路径:行号` 与其读取的字段或协议；消费者是仓库外的 CLI 时，给出该 CLI 命令与仓库内的调用点 `路径:行号`。仅把本产物当作渲染输入（读全文以生成展示）的读取点 MUST NOT 计入本条。
 2. **`dual`** — 不存在上述非 agent 程序消费者，但存在一个**具名 agent 消费点**：下游工作流阶段读取本产物以继续流程，或宿主在会话启动时按约定加载本产物（如 `AGENTS.md` / `CLAUDE.md` / `CONTEXT.md`）。注册表给出该消费点的具名出处（skill 名 + 正文行号，或约定文件名 + 文档行）。
 3. **`human`** — 以上均不匹配，此为本规则**唯一默认值**。
 
@@ -142,7 +142,7 @@
 
 渲染器 MUST 相对于**加载本纪律 skill 的目录**解析（`<skill-dir>/scripts/render-core.mjs`），调用形态为 `node <path> <source.md> [--root <dir>] [--at <iso>]`，与现有渲染器 CLI 一致。当宿主无法确定该目录时，MUST 向用户询问已安装 skill 的路径；MUST NOT 猜测。
 
-需要 `renderReviewPage` / `renderEvidencePage` 的宿主（独立长跑运行）MUST 按**加载 `goal-driven-queue` skill 的目录**解析其 adapter（`<queue-skill-dir>/scripts/render-html.mjs`），而不是 core——这两个函数留在队列 adapter 内。该解析同样 MUST NOT 依赖仓库检出相对路径。
+需要 `renderReviewPage` / `renderEvidencePage` 的宿主（独立长跑运行）MUST 按**加载 `goal-driven-queue` skill 的目录**解析其 adapter（`<queue-skill-dir>/scripts/render-html.mjs`），而不是 core——这两个函数留在队列 adapter 内。该解析同样 MUST NOT 依赖仓库检出相对路径。该 adapter 缺失时，宿主 MUST 打印 JSON 输入路径并继续，MUST NOT 手写页面。
 
 `<skill-dir>` 不可得且用户无法提供、或运行环境缺少 Node 时，宿主 MUST 打印 Markdown 真源路径并说明原因，MUST NOT 手写 HTML 兜底。
 

@@ -413,3 +413,16 @@ test("a successful render leaves no temp file behind", () => {
   writeRenderedFile(source, { root: dir, generatedAt: AT });
   assert.deepEqual(fs.readdirSync(dir).filter((name) => name.endsWith(".tmp")), []);
 });
+
+test("a planted temp-file symlink cannot redirect the write", () => {
+  const dir = tmp();
+  const outside = tmp();
+  const source = path.join(dir, "doc.md");
+  fs.writeFileSync(source, "# t\n", "utf8");
+  const victim = path.join(outside, "victim.txt");
+  fs.writeFileSync(victim, "keep", "utf8");
+  const planted = path.join(dir, "planted.tmp");
+  fs.symlinkSync(victim, planted);
+  assert.throws(() => writeRenderedFile(source, { root: dir, tempPath: () => planted, generatedAt: AT }));
+  assert.equal(fs.readFileSync(victim, "utf8"), "keep");
+});

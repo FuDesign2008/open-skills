@@ -903,7 +903,8 @@ export function writeRenderedFile(sourcePath, options = {}) {
     fileLink,
   });
 
-  const temporary = `${outPath}.${process.pid}.${randomUUID().slice(0, 8)}.tmp`;
+  const defaultTempPath = (target) => `${target}.${process.pid}.${randomUUID().slice(0, 8)}.tmp`;
+  const temporary = (options.tempPath || defaultTempPath)(outPath);
   try {
     fs.writeFileSync(temporary, html, { encoding: "utf8", flag: "wx" });
     fs.renameSync(temporary, outPath);
