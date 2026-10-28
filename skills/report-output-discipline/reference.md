@@ -24,13 +24,13 @@ Single source of truth for artifact format decisions. Column order is fixed and 
 | OpenSpec 四件套 | opsx-solve-workflow / opsx-jira-fix-workflow | machine | `openspec validate` parses proposal/specs/tasks fields (<opsx-solve-workflow-skill-dir>/SKILL.md:143 and <opsx-jira-fix-workflow-skill-dir>/SKILL.md:345) | md | | `openspec/changes/<name>/` | Not applicable | 未接入 |
 | figma living artifact | figma-pixel-implement / figma-pixel-verify | machine | `<figma-pixel-verify-skill-dir>/scripts/check-figma-verify-report.mjs:194` reads the Channel and Screenshot fields | md | | `docs/figma/<safe-frame-name>.md` | Not applicable | 未接入 |
 | Jira 修复状态 | jira-fix-workflow | dual | The agent resumes from `current_phase` (<jira-fix-workflow-skill-dir>/SKILL.md:119) | json | | `.jira-fix/<JIRA-ID>/state.json` | Not applicable | 未接入 |
-| Android WebView 调试状态 | android-webview-debug | dual | The agent restores from the recorded locations (<android-webview-debug-skill-dir>/SKILL.md:17) | json | | `.android-webview-debug-state.json` | Not applicable | 未接入 |
+| Android WebView 调试状态 | android-webview-debug | dual | The agent restores from the recorded locations (<android-webview-debug-skill-dir>/SKILL.md:13) | json | | `.android-webview-debug-state.json` | Not applicable | 未接入 |
 | Jira 修复阶段记录 | jira-fix-workflow | dual | The resume path reads the checkpoint files (<jira-fix-workflow-skill-dir>/SKILL.md:54) | md | | `.jira-fix/<JIRA-ID>/0*.md` | Not applicable | 未接入 |
-| 上下文 ledger | context-budget-discipline | dual | The host's next phase reads `{ledger-path}` (<context-budget-discipline-skill-dir>/reference.md:16) | md | | `{ledger-path}` supplied by the host | Not applicable | 未接入 |
+| 上下文 ledger | context-budget-discipline | dual | The host's next phase reads `{ledger-path}` (<context-budget-discipline-skill-dir>/SKILL.md:17) | md | | `{ledger-path}` supplied by the host | Not applicable | 未接入 |
 | 设计文档 | brainstorm-workflow | dual | Handed to the Make a Plan stage (<brainstorm-workflow-skill-dir>/SKILL.md:58) | md | | `docs/design/YYYY-MM-DD-<topic>-design.md` | Not applicable | 未接入 |
 | 性能基准与场景 | perf-optimize-workflow | dual | The next campaign reads it as campaign memory (<perf-optimize-workflow-skill-dir>/SKILL.md:117) | md | | `BENCHMARK.md` / `SCENARIOS.md` | Not applicable | 未接入 |
 | 项目约定与术语 | learn-and-improve / domain-language-discipline | dual | The host loads it at session start (<learn-and-improve-skill-dir>/SKILL.md:62) | md | | repository root | Not applicable | 未接入 |
-| Jira 本地缓存 | jira-read | dual | Downstream Jira stages read `$JIRA_CACHE_DIR` (<jira-read-skill-dir>/SKILL.md:5) | md | | `$JIRA_CACHE_DIR/{JIRA-ID}.md` | Not applicable | 未接入 |
+| Jira 本地缓存 | jira-read | dual | Downstream Jira stages read `$JIRA_CACHE_DIR` (<jira-read-skill-dir>/SKILL.md:10) | md | | `$JIRA_CACHE_DIR/{JIRA-ID}.md` | Not applicable | 未接入 |
 | 解包清单 | unbox-anything | dual | The downstream agent reads the extraction chain (<unbox-anything-skill-dir>/SKILL.md:106) | md | | `<outname>-unboxed/README.md` | Not applicable | 未接入 |
 | 部署入口配置 | go-deploy | dual | Later sessions read it (<go-deploy-skill-dir>/SKILL.md:20) | md | | `docs/deploy.md` | Not applicable | 未接入 |
 | 长跑评审输入 | goal-driven-workflow | human | | json | | `.goal-driven/runs/<local-YYYYMMDD-HHmm>/review.json` | | 未接入 |

@@ -4,7 +4,7 @@ Skill 产出的落盘产物没有格式边界。全库 67 个可分发 skill 中
 
 同时，渲染器内的路径按仓库检出相对路径书写（`skills/goal-driven-queue/scripts/render-html.mjs`）。全局安装后实际位于 `~/.agents/skills/`，在用户自己的仓库中该路径一律解析失败——即使有人想引用也跑不起来。
 
-需要一条按「消费者」而非「skill」决定格式的契约：给人看的落盘报告写 HTML，给机器看的写 Markdown/JSON，人机双读的保持 Markdown 真源。对话中的阶段结论不在此列。
+需要一条按「消费者」而非「skill」决定格式的契约：给人看的落盘报告写 HTML，给机器看的写 Markdown/JSON，人机双读的保持各自真源格式（Markdown 或 JSON）。对话中的阶段结论不在此列。
 
 ## What Changes
 
@@ -15,7 +15,7 @@ Skill 产出的落盘产物没有格式边界。全库 67 个可分发 skill 中
 - 建立**全库产物注册表**（`reference.md`）：逐条登记产物名、产生 skill、消费者类别、真源/派生格式、落盘路径、接入状态（`接入` / `sink 待定` / `未接入`）。覆盖范围为**所有有落盘产物的 skill**（全库 67 个可分发 skill 的子集）；无落盘产物的纯纪律 skill 不登记空行。
 - 第一批迁移三个**已有固定落盘路径**的交付级报告生产者：`tech-review-doc`、`test-guide-from-code`、`git-release-finish`。宿主正文只声明注册表条目名并引用纪律 skill。
 - 派生 HTML 一律纳入 gitignore，避免进入变更集合被误判为 UI 行为变更。
-- 既有契约产物按可核验证据分类，均维持 Markdown 真源、不建立派生流水线：OpenSpec 四件套与 figma living artifact 被 CLI / 门禁脚本按字段解析，登记为 `machine`；`.jira-fix/*.md`、上下文 ledger 由下游工作流阶段读取，登记为 `dual`。
+- 既有契约产物按可核验证据分类，均维持各自真源格式、不建立派生流水线：OpenSpec 四件套与 figma living artifact 被 CLI / 门禁脚本按字段解析，登记为 `machine`；`.jira-fix/*.md`、上下文 ledger 由下游工作流阶段读取，登记为 `dual`。
 
 ## Capabilities
 
