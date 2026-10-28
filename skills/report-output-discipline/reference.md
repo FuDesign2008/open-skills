@@ -28,8 +28,8 @@ Single source of truth for artifact format decisions. Column order is fixed and 
 | Jira 修复阶段记录 | jira-fix-workflow | dual | The resume path reads the checkpoint files (<jira-fix-workflow-skill-dir>/SKILL.md:54) | md | | `.jira-fix/<JIRA-ID>/0*.md` | Not applicable | 未接入 |
 | 上下文 ledger | context-budget-discipline | dual | The host's next phase reads `{ledger-path}` (<context-budget-discipline-skill-dir>/SKILL.md:36) | md | | `{ledger-path}` supplied by the host | Not applicable | 未接入 |
 | 设计文档 | brainstorm-workflow | dual | Handed to the Make a Plan stage (<brainstorm-workflow-skill-dir>/SKILL.md:58) | md | | `docs/design/YYYY-MM-DD-<topic>-design.md` | Not applicable | 未接入 |
-| 性能基准与场景 | perf-optimize-workflow | dual | The next campaign reads it as campaign memory (<perf-optimize-workflow-skill-dir>/SKILL.md:117) | md | | `BENCHMARK.md` / `SCENARIOS.md` | Not applicable | 未接入 |
-| 项目约定与术语 | learn-and-improve / domain-language-discipline | dual | The host loads it at session start (<learn-and-improve-skill-dir>/SKILL.md:62) | md | | repository root | Not applicable | 未接入 |
+| 性能基准与场景 | perf-optimize-workflow | dual | The next campaign feeds on its invalidation rows and negative results (<perf-optimize-workflow-skill-dir>/SKILL.md:320) | md | | `BENCHMARK.md` / `SCENARIOS.md` | Not applicable | 未接入 |
+| 项目约定与术语 | learn-and-improve / domain-language-discipline | dual | The host loads it at session start (<learn-and-improve-skill-dir>/SKILL.md:62) and when domain language is in play (<domain-language-discipline-skill-dir>/SKILL.md:26) | md | | repository root | Not applicable | 未接入 |
 | Jira 本地缓存 | jira-read | dual | Downstream Jira stages read `$JIRA_CACHE_DIR` (<jira-read-skill-dir>/SKILL.md:10) | md | | `$JIRA_CACHE_DIR/{JIRA-ID}.md` | Not applicable | 未接入 |
 | 解包清单 | unbox-anything | dual | The downstream agent reads the extraction chain (<unbox-anything-skill-dir>/SKILL.md:114) | md | | `<outname>-unboxed/README.md` | Not applicable | 未接入 |
 | 部署入口配置 | go-deploy | dual | Later sessions read it (<go-deploy-skill-dir>/SKILL.md:20) | md | | `docs/deploy.md` | Not applicable | 未接入 |
