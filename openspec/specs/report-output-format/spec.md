@@ -50,7 +50,7 @@ Decide an artifact's output format by who consumes it: human-read reports derive
 
 例外清单中的条目 MUST 登记为 `未接入`，本条对其不适用。
 
-本轮接入项：技术评审文档、人工测试指南、发布报告。
+本轮接入项：技术评审文档、人工测试指南、发布报告、诊断报告、竞品调研报告族、演化复盘台账。
 
 #### Scenario: 技术评审文档同时落盘两种格式
 
@@ -66,6 +66,21 @@ Decide an artifact's output format by who consumes it: human-read reports derive
 
 - **WHEN** `git-release-finish` 写入 `release-<VERSION>-report.md` 且共享渲染器可用
 - **THEN** 同目录存在同名 `.html` 派生文件
+
+#### Scenario: 诊断报告生成派生页
+
+- **WHEN** `essence-diagnosis` 写入 `docs/reports/diagnosis/<YYYY-MM-DD>-<topic>.md` 且共享渲染器可用
+- **THEN** 同目录存在同名 `.html` 派生文件
+
+#### Scenario: 调研报告族记录的分层各派生一页
+
+- **WHEN** `competitive-research` 在 `docs/reports/research/<YYYY-MM-DD>-<topic>/main.md` 的 `Layers:` 行记录了若干分层，且共享渲染器可用
+- **THEN** 每个被记录的分层文件都存在，且各有一个同名 `.html` 派生文件
+
+#### Scenario: 复盘台账更新后重新派生
+
+- **WHEN** `evolution-review` 更新 `docs/reports/evolution/ledger.md` 且共享渲染器可用
+- **THEN** 同目录的 `ledger.html` 被重新生成
 
 #### Scenario: 渲染器不可用时只落盘真源
 
@@ -334,3 +349,19 @@ ignore 规则无法写入时（只读仓库、权限不足、用户拒绝修改�
 - **WHEN** 队列 adapter 所在环境缺少共享渲染器模块
 - **THEN** 队列打印已生成的 Markdown 路径并说明原因
 - **AND** 不以模块 import 抛错的方式中断整个流程
+
+### Requirement: 本变更新增的接入项 SHALL 落在 docs/reports 下
+
+本变更新增的三个接入项 MUST 落在其所在仓库的 `docs/reports/` 稳定子目录：诊断报告用 `diagnosis/`，调研报告族用 `research/`，演化复盘台账用 `evolution/`。既有接入项（技术评审文档、人工测试指南、发布报告）的落盘路径不受本条约束。
+
+这些产物的 Markdown 真源 MUST NOT 被版本控制忽略；派生 HTML 的抑制方式沿用基线「宿主 SHALL 抑制派生 HTML 进入变更集合」的要求，本条不另立规则。真源更新后 MUST 重新派生 HTML。
+
+#### Scenario: 三份真源可入库
+
+- **WHEN** 三个新增接入项写入各自的 `docs/reports/` 子目录
+- **THEN** `git check-ignore` 对每份 Markdown 真源返回未被忽略
+
+#### Scenario: 真源更新后重新派生
+
+- **WHEN** 任一新增接入项的真源被修改并再次写入
+- **THEN** 同名 HTML 被重新生成并反映修改后的内容

@@ -1,8 +1,10 @@
 ---
 name: essence-diagnosis
-version: "1.0.0"
+version: "1.1.0"
 user-invocable: true
 description: Use when a complex problem seems unsolvable and needs digging to the essence — diagnosis only, not fixing. Symptoms include massive logs with no root cause surfaced, complex crashes, architectural essence analysis, requirement authenticity verification, systemic chronic issues, information overload, disconnect between symptoms and essence, multiple intertwined factors, or premature-convergence tendencies — even when the user never explicitly says "diagnose". Also triggers on 本质诊断, 根因诊断, 深度诊断, 诊断问题本质, 梳理问题逻辑, 证据链分析, 逻辑链分析, essence-diagnosis.
+dependencies:
+  - report-output-discipline
 ---
 
 # Essence Diagnosis
@@ -10,6 +12,14 @@ description: Use when a complex problem seems unsolvable and needs digging to th
 > **Role**: Performs essence analysis and diagnosis of complex problems only. Produces a complete evidence chain + logic chain + hypothesis list. **Does NOT solve the problem** (no solutions, no execution, no fixes). Must orchestrate `multi-agent-debate` for adversarial verification.
 >
 > **Output templates and formats** are in [reference.md](reference.md).
+
+## Prerequisite skill check
+
+On load, verify `report-output-discipline` is available. If missing, abort and print:
+
+`npx skills add FuDesign2008/open-skills -g --skill '*' --yes`
+
+Do not silently fall back.
 
 ## Why this skill exists
 
@@ -110,6 +120,10 @@ In phase A, check each hypothesis against every item:
 ## Output format
 
 The complete SOAP diagnosis report + evidence-chain table + logic-chain diagram + debate handoff package — templates are in [reference.md](reference.md).
+
+**Sink**: write the report to `docs/reports/diagnosis/<YYYY-MM-DD>-<topic>.md`, where `<topic>` is a lowercase kebab-case slug. When that file already exists, append `-2`, `-3`, and so on — never overwrite. Registry row: `诊断报告`.
+
+After writing, derive `<same-base-name>.html` beside the Markdown source following `report-output-discipline`, and report both paths. When the renderer is unavailable, write only the Markdown source and state why.
 
 The final deliverable of this skill is a **diagnosis report**, not a fix plan. The report must end with the note "This report covers diagnosis only and has not entered the resolution phase."
 

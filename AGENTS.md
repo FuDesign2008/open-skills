@@ -100,7 +100,7 @@ open-skills/
 | explain-clearly | 工具 | 无（与全局第三方 `teach` 靠 description 边界区分：概念问答归 explain-clearly，上机教学归 teach） |
 | article-writer | 内容创作 | 无 |
 | xquik-social-data | 数据采集 | 无 |
-| essence-diagnosis | 工作流 | multi-agent-debate |
+| essence-diagnosis | 工作流 | multi-agent-debate、report-output-discipline |
 | multi-agent-debate | 工具 | 无 |
 | solution-review | 审查 | 无 |
 | code-design-review | 审查 | 无 |
@@ -124,7 +124,8 @@ open-skills/
 | git-worktree-discipline | 工作流纪律 | 无 |
 | merge-discipline | 合并纪律 | pr-code-review |
 | pr-code-review | 审查 | 无 |
-| competitive-research | 调研方法论 | effective-web-research |
+| evolution-review | 工作流 | report-output-discipline |
+| competitive-research | 调研方法论 | effective-web-research、report-output-discipline |
 | known-issue-research | 调研方法论 | effective-web-research |
 | analysis-core | 分析方法论 | known-issue-research、runtime-evidence-debug、browser-debug-toolkit、hybrid-debug、upstream-dependency-debug |
 | staged-review-flow | 工作流编排 | solution-review、code-design-review、completion-evidence-discipline |

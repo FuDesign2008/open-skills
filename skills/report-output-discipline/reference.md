@@ -35,9 +35,9 @@ Single source of truth for artifact format decisions. Column order is fixed and 
 | 部署入口配置 | go-deploy | dual | Later sessions read it (<go-deploy-skill-dir>/SKILL.md:20) | md | | `docs/deploy.md` | Not applicable | 未接入 |
 | 长跑评审输入 | goal-driven-workflow | human | | json | | `.goal-driven/runs/<local-YYYYMMDD-HHmm>/review.json` | Not applicable | 未接入 |
 | 长跑证据输入 | goal-driven-workflow | human | | json | | `.goal-driven/runs/<local-YYYYMMDD-HHmm>/evidence.json` | Not applicable | 未接入 |
-| 诊断报告 | essence-diagnosis | human | | md | html | No fixed path | Not applicable | sink 待定 |
-| 竞品调研报告族 | competitive-research | human | | md | html | No fixed path | Not applicable | sink 待定 |
-| 演化复盘 ledger | evolution-review | human | | md | html | No fixed path | Not applicable | sink 待定 |
+| 诊断报告 | essence-diagnosis | human | | md | html | `docs/reports/diagnosis/<YYYY-MM-DD>-<topic>.md` | Host appends `docs/reports/**/*.html` | 接入 |
+| 竞品调研报告族 | competitive-research | human | | md | html | `docs/reports/research/<YYYY-MM-DD>-<topic>/` | Host appends `docs/reports/**/*.html` | 接入 |
+| 演化复盘台账 | evolution-review | human | | md | html | `docs/reports/evolution/ledger.md` | Host un-ignores `!docs/reports/evolution/`, then appends `docs/reports/**/*.html` | 接入 |
 
 ## Coverage whitelist
 

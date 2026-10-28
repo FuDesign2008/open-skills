@@ -1,17 +1,18 @@
 ---
 name: competitive-research
-version: "2.0.1"
+version: "2.1.0"
 user-invocable: true
 description: "Layered competitive research on shipped features. When the question is something the user can see or do, record that behavior before the implementation, name the evidence source, and check interaction boundaries before adopting the behavior. Use this whenever the user asks how a shipped product behaves, including during a bug fix. Full requests get a decision-ready report family; problem-solving hosts use the lean path. Triggers — 「技术调研」「竞品调研」「竞品分析」「产品调研」「全面调研」「调研报告」「竞品实测」 / competitive research, product research, competitor research, technology research report. Do NOT use for known-defect or industry-limit routing (known-issue-research), a single web lookup with no behavior or design decision (effective-web-research), or turning an existing design into a review doc (tech-review-doc)."
 dependencies:
   - effective-web-research
+  - report-output-discipline
 ---
 
 # Competitive Research
 
 > Evidence-driven competitive research. A full request ends in a decision-ready report family. A problem-solving host gets the lean layer-selected answer. Product behavior comes before implementation.
 
-> **Prerequisite check**: this skill declares `effective-web-research` in frontmatter `dependencies`. On load, verify it is available; if missing, abort and print the install command (`npx skills add FuDesign2008/open-skills -g`). No silent fallback — every external search in this workflow runs under that skill's discipline.
+> **Prerequisite check**: this skill declares `effective-web-research` in frontmatter `dependencies`. On load, verify it is available; if missing, abort and print the install command (`npx skills add FuDesign2008/open-skills -g`). It also declares `report-output-discipline`; when the full path writes the report family and that skill is missing, abort and print `npx skills add FuDesign2008/open-skills -g --skill '*' --yes`. No silent fallback — every external search in this workflow runs under that skill's discipline, and every written report under the output discipline.
 
 ## Core principle
 
@@ -168,6 +169,8 @@ Problem-solving hosts load this path for one user-visible question. It keeps lay
 The lean path keeps the evidence standards and drops the report family, design mapping, and reflux loop.
 
 ## Report family
+
+**Sink**: the full path writes the family to `docs/reports/research/<YYYY-MM-DD>-<topic>/`, where `<topic>` is a lowercase kebab-case slug. When that directory already exists from an earlier run on the same day and topic, append `-2`, `-3`. `main.md` is required and MUST record the produced layers on exactly one `Layers:` line outside code fences — `Layers: summary,evidence,memo`, or `Layers: none` when no optional layer is produced. Layer name to file: `summary` → `summary.md`, `evidence` → `evidence.md`, `memo` → `memo.md`, `area:<name>` → `areas/<name>.md` (`<name>` lowercase letters, digits, hyphens only), `agenda` → `agenda.md`. Each written file derives a same-name HTML following `report-output-discipline`, and both paths are reported. When the renderer is unavailable, write Markdown only and state why. Registry row: `竞品调研报告族`.
 
 Layered by reader, one depth per layer (templates and a worked example in [reference.md](reference.md)):
 

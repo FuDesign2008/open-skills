@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { spawnSync } from "node:child_process";
 import path from "node:path";
 
 const root = new URL("..", import.meta.url);
@@ -170,6 +171,9 @@ test("integrated hosts declare the dependency and call the shared renderer", () 
     "skills/tech-review-doc/SKILL.md": /tech-review-\*-\*\.html|tech-review-\{topic\}-\{YYYY-MM-DD\}\.html/,
     "skills/test-guide-from-code/SKILL.md": /manual_test_guide<|_manual_test_guide_<YYYY-MM-DD>\.html|同名 \.html/,
     "skills/git-release-finish/SKILL.md": /release-<VERSION>-report\.html/,
+    "skills/essence-diagnosis/SKILL.md": /docs\/reports\/diagnosis\//,
+    "skills/competitive-research/SKILL.md": /docs\/reports\/research\//,
+    "skills/evolution-review/SKILL.md": /docs\/reports\/evolution\/ledger\.md/,
   };
   for (const [file, derivedPattern] of Object.entries(hosts)) {
     const body = read(file);
@@ -192,5 +196,36 @@ test("every host runs a prerequisite check for the discipline", () => {
     const body = read(file);
     assert.match(body, /dependencies:\s*\n(?:\s+- .*\n)*\s+- report-output-discipline/, `${file} must declare the dependency`);
     assert.match(body, /abort|install guidance|npx skills add/, `${file} must state the abort / install path`);
+  }
+});
+
+
+test("batch-2 sinks are integrated with verifiable paths", () => {
+  const essentials = read("skills/essence-diagnosis/SKILL.md");
+  assert.match(essentials, /docs\/reports\/diagnosis\/<YYYY-MM-DD>-<topic>\.md/);
+  assert.match(essentials, /append `-2`/);
+
+  const research = read("skills/competitive-research/SKILL.md");
+  assert.match(research, /docs\/reports\/research\/<YYYY-MM-DD>-<topic>\//);
+  assert.match(research, /`Layers: none`/);
+  assert.match(research, /`area:<name>` → `areas\/<name>\.md`/);
+
+  const evolution = read("skills/evolution-review/SKILL.md");
+  assert.match(evolution, /docs\/reports\/evolution\/ledger\.md/);
+  assert.match(evolution, /update that same file/);
+});
+
+test("derived HTML is ignored while report sources stay trackable", () => {
+  const cases = [
+    ["docs/reports/evolution/ledger.md", 1],
+    ["docs/reports/evolution/ledger.html", 0],
+    ["docs/reports/diagnosis/2026-01-01-x.md", 1],
+    ["docs/reports/diagnosis/2026-01-01-x.html", 0],
+    ["docs/reports/research/2026-01-01-x/main.md", 1],
+    ["docs/reports/research/2026-01-01-x/main.html", 0],
+  ];
+  for (const [file, expected] of cases) {
+    const result = spawnSync("git", ["check-ignore", "-q", file], { cwd: root });
+    assert.equal(result.status, expected, `${file} ignore status`);
   }
 });

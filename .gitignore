@@ -184,3 +184,8 @@ __pycache__/
 # Only HTML is ignored: queue task cards and other Markdown records stay git-trackable.
 .goal-driven/**/*.html
 .explain-clearly/*.html
+
+# Report outputs: Markdown sources are committed; derived HTML is not.
+# The negation must sit after the existing **/evolution/ rule and before the HTML rule.
+!docs/reports/evolution/
+docs/reports/**/*.html
