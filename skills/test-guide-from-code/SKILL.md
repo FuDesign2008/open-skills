@@ -3,6 +3,8 @@ name: test-guide-from-code
 version: "1.1.0"
 user-invocable: true
 description: Generate a manual test guide for human testers from code changes (diff, commit, MR/PR). Triggers when user says 「生成测试指南」「测试指南」「人工测试指南」「测试指引」「test guide」「根据代码生成测试」「从 MR 生成测试指南」「从 PR 生成测试指南」 (generate test guide / manual test guide / test guide from code / from MR / from PR), or provides a diff/MR/PR link and asks for a test guide.
+dependencies:
+  - report-output-discipline
 ---
 
 # Manual Test Guide Generation
@@ -67,6 +69,14 @@ Generate the test guide using the template format in [reference.md](reference.md
 **User override**: User can specify a custom path or filename at trigger time; save as specified.
 
 **Conversation output**: **Do not repeat full content** — only output a brief summary: save path, test item statistics (by P0/P1/P2 distribution), 3–5 core change points, regression scope. Full test items are always written to file only (strategy: see [reference.md](reference.md) "Conversation Output Strategy").
+
+**Derive the HTML page** after the Markdown file is written. Registry row: `人工测试指南` in `report-output-discipline/reference.md` (`human` + `接入`).
+
+```bash
+node <skill-dir>/scripts/render-core.mjs <markdown-path> --root <its-directory>
+```
+
+`<skill-dir>` is where the `report-output-discipline` skill is installed; ask the user when unknown. The derived page is `<feature>_manual_test_guide_<YYYY-MM-DD>.html` beside the Markdown source. Ensure that `.html` is ignored in the target repository (append one rule, never overwrite). When Node or the renderer is unavailable, print the Markdown path and the reason — do not hand-write HTML. Report both paths in the chat.
 
 ## Red Flags
 

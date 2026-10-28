@@ -5,6 +5,7 @@ user-invocable: true
 description: "Turn a technical design doc into a product/QA-readable technical review markdown (business language + Mermaid). Hard-gates §1 background/goals until the user explicitly approves before writing the file. Triggers — 「技术评审文档」「生成评审文档」「design to review」「tech review doc」「写技术评审」. Do NOT use for marketing articles (article-writer), code PDCA (solve-workflow), or AI de-slop rewriting (humanizer)."
 dependencies:
   - clarifying-question-discipline
+  - report-output-discipline
 ---
 
 # Technical Design → Technical Review Document
@@ -38,6 +39,16 @@ If the design exceeds ~1500 lines, skim structure and headings first, then deep-
 Write the file **next to the input document**, named `tech-review-{topic}-{YYYY-MM-DD}.md`.
 
 Derive `{topic}` from the design title keywords; use the current date for `YYYY-MM-DD`.
+
+Registry row: `技术评审文档` in `report-output-discipline/reference.md` (`human` + `接入`).
+
+**Derive the HTML page** after the Markdown file is written:
+
+```bash
+node <skill-dir>/scripts/render-core.mjs <markdown-path> --root <its-directory>
+```
+
+`<skill-dir>` is where the `report-output-discipline` skill is installed; ask the user when unknown. The derived page is `tech-review-{topic}-{YYYY-MM-DD}.html` beside the Markdown source. Ensure that `.html` is ignored in the target repository (append one rule, never overwrite). When Node or the renderer is unavailable, print the Markdown path and the reason — do not hand-write HTML. Report both paths in the chat.
 
 ---
 

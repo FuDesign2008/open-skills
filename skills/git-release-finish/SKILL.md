@@ -2,6 +2,8 @@
 name: git-release-finish
 version: "2.1.0"
 user-invocable: true
+dependencies:
+  - report-output-discipline
 description: "Use when releasing a Git repository version — tagging, merging release branches into main, resolving conflicts, or syncing changes between release branches. Handles ambiguous tag naming (v-prefix vs plain), unknown main branch (master/main/develop), ff-only merge method (forces cherry-pick strategy), protected-branch rules, cross-release hash-sensitive sync, and MR/PR extra-file cleanup. Single or multi-repo. Triggers — 「发版」「打tag」「发布版本」「版本发布」「release流程」「git-release」「multi-repo release」「release同步到另一个release」 / release a version, tag and merge, finish release branch."
 ---
 
@@ -476,7 +478,17 @@ Confirm the latest commits include the release merge.
 
 ## Phase 10: Output report
 
-Write to `$(git rev-parse --show-toplevel)/release-<VERSION>-report.md`:
+Write to `$(git rev-parse --show-toplevel)/release-<VERSION>-report.md`. Registry row: `发布报告` in `report-output-discipline/reference.md` (`human` + `接入`).
+
+Then derive the HTML page beside it:
+
+```bash
+node <skill-dir>/scripts/render-core.mjs <markdown-path> --root $(git rev-parse --show-toplevel)
+```
+
+`<skill-dir>` is where the `report-output-discipline` skill is installed; ask the user when unknown. The derived page is `release-<VERSION>-report.html`. Ensure it is ignored in the target repository (append one rule, never overwrite). When Node or the renderer is unavailable, print the Markdown path and the reason — do not hand-write HTML. Report both paths.
+
+The report contains:
 
 1. **Tag summary**: repo / tag name / commit SHA / remote verification status
 2. **MR/PR summary**: repo / source → target / id and URL / merge status

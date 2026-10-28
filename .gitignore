@@ -179,3 +179,8 @@ skills/_eval-en-batch1-tools/_viewer-stage/
 
 __pycache__/
 **/__pycache__/
+
+# Generated report HTML views (derived from Markdown sources; never committed).
+# Only HTML is ignored: queue task cards and other Markdown records stay git-trackable.
+.goal-driven/**/*.html
+.explain-clearly/*.html

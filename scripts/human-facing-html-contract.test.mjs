@@ -51,12 +51,13 @@ test("goal-driven-queue defines human-facing HTML views", () => {
 
 test("renderer localizes footers and sanitizes evidence image targets", () => {
   const renderer = read("skills/goal-driven-queue/scripts/render-html.mjs");
+  const core = read("skills/report-output-discipline/scripts/render-core.mjs");
   assert.match(renderer, /source: "来源"/);
   assert.match(renderer, /generated: "生成"/);
-  assert.match(renderer, /resolveDocumentLang/);
-  assert.match(renderer, /options\.lang \|\| "zh"/);
+  assert.match(core, /resolveDocumentLang/);
+  assert.match(core, /options\.lang \|\| "zh"/);
   assert.match(renderer, /normalizeTarget\(item\.image\)/);
-  assert.match(renderer, /normalized\.kind === "relative"/);
+  assert.match(core, /normalized\.kind === "relative"/);
 });
 
 test("goal-driven-queue defines queue-wide auto-MR", () => {
@@ -122,7 +123,7 @@ test("live specs forbid hand-written HTML fallback and wire standalone nav", () 
 
   assert.match(workflow, /Pass the same shared navigation block into both pages/);
   assert.match(workflow, /cross-link review ↔ evidence/);
-  assert.match(workflow, /skills\/goal-driven-queue\/scripts\/render-html\.mjs/);
+  assert.match(workflow, /<queue-skill-dir>\/scripts\/render-html\.mjs/);
   assert.match(workflow, /if that module is missing, stop and print/);
 });
 
