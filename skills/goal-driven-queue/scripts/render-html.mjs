@@ -206,20 +206,29 @@ button.lightbox-trigger {
 }
 button.lightbox-trigger img { display: block; max-width: 100%; height: auto; }
 #queue-lightbox {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
   padding: 0;
   border: 0;
   background: transparent;
-  max-width: min(96vw, 1200px);
-  max-height: 92vh;
 }
 #queue-lightbox::backdrop { background: rgba(10, 12, 20, 0.86); }
 #queue-lightbox .lightbox-panel {
-  position: relative;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.75rem;
   padding: 1rem;
+  max-width: min(96vw, 1200px);
+  max-height: 92vh;
 }
 #queue-lightbox .lightbox-panel img {
   display: block;
@@ -784,6 +793,7 @@ function chromeLabels(options = {}) {
         generated: "Generated",
         lightboxClose: "Close",
         lightboxEnlarge: "Enlarge image",
+        lightboxViewer: "Enlarged image",
         kinds: {
           card: "Task card",
           triage: "Triage record",
@@ -810,6 +820,7 @@ function chromeLabels(options = {}) {
         generated: "生成",
         lightboxClose: "关闭",
         lightboxEnlarge: "放大图片",
+        lightboxViewer: "放大后的图片",
         kinds: {
           card: "任务卡",
           triage: "Triage 记录",
@@ -912,7 +923,7 @@ function resolveDocumentLang(options = {}) {
   return lang.startsWith("en") ? "en" : "zh";
 }
 
-const LIGHTBOX_SCRIPT = `(function(){var d=document.getElementById("queue-lightbox");if(!d||typeof d.showModal!=="function")return;var panel=d.querySelector(".lightbox-panel");var c=d.querySelector(".lightbox-close");function open(t){var p=t.querySelector("img")||t;var i=panel.querySelector("img");if(!i){i=document.createElement("img");panel.appendChild(i);}i.src=p.currentSrc||p.src;i.alt=p.alt||"";d.showModal();}document.querySelectorAll("button.lightbox-trigger").forEach(function(el){el.addEventListener("click",function(){open(el);});});if(c)c.addEventListener("click",function(){d.close();});d.addEventListener("click",function(e){if(e.target===d)d.close();});})();`;
+const LIGHTBOX_SCRIPT = `(function(){var d=document.getElementById("queue-lightbox");if(!d||typeof d.showModal!=="function")return;var panel=d.querySelector(".lightbox-panel");var c=d.querySelector(".lightbox-close");function open(t){var p=t.querySelector("img")||t;var i=panel.querySelector("img");if(!i){i=document.createElement("img");panel.appendChild(i);}var alt=p.alt||"";i.src=p.currentSrc||p.src;i.alt=alt;d.setAttribute("aria-label",alt||d.getAttribute("data-default-label")||"");d.showModal();}document.querySelectorAll("button.lightbox-trigger").forEach(function(el){el.addEventListener("click",function(){open(el);});});if(c)c.addEventListener("click",function(){d.close();});d.addEventListener("click",function(e){if(e.target===d)d.close();});})();`;
 
 function renderShell({ title, body, options = {}, generatedAt, sourcePath }) {
   const chrome = chromeLabels(options);
@@ -920,7 +931,7 @@ function renderShell({ title, body, options = {}, generatedAt, sourcePath }) {
   const sourceLabel = options.sourceLabel
     ? ` (original: <code>${escapeHtml(options.sourceLabel)}</code>)`
     : "";
-  const lightbox = `<dialog id="queue-lightbox" aria-label="${escapeHtml(chrome.lightboxEnlarge)}"><div class="lightbox-panel"><button type="button" class="lightbox-close" aria-label="${escapeHtml(chrome.lightboxClose)}">×</button></div></dialog>`;
+  const lightbox = `<dialog id="queue-lightbox" aria-label="${escapeHtml(chrome.lightboxViewer)}" data-default-label="${escapeHtml(chrome.lightboxViewer)}"><div class="lightbox-panel"><button type="button" class="lightbox-close" aria-label="${escapeHtml(chrome.lightboxClose)}">×</button></div></dialog>`;
   return `<!doctype html>
 <html lang="${escapeHtml(documentLang)}">
 <head>
@@ -950,6 +961,8 @@ export function renderDocument(markdown, options = {}) {
     root: options.root || path.dirname(sourcePath),
     linkExists: options.linkExists,
     fileLink: options.fileLink,
+    lang: options.lang,
+    labels: options.labels,
   };
   const doc = parseDocument(markdown);
   const kind = options.kind || "document";
@@ -995,6 +1008,8 @@ export function renderMarkdown(markdown, options = {}) {
     root: options.root || path.dirname(sourcePath),
     linkExists: options.linkExists,
     fileLink: options.fileLink,
+    lang: options.lang,
+    labels: options.labels,
   };
 
   const lines = String(markdown).replace(/\r\n?/g, "\n").split("\n");
@@ -1179,6 +1194,8 @@ export function renderReviewPage(data = {}, options = {}) {
     root: options.root || process.cwd(),
     linkExists: options.linkExists,
     fileLink: options.fileLink,
+    lang: options.lang,
+    labels: options.labels,
   };
   const cards = [
     [chrome.problem, data.problem, "callout-problem"],
@@ -1207,6 +1224,8 @@ export function renderEvidencePage(data = {}, options = {}) {
     sourcePath: options.sourcePath || "evidence.html",
     root: options.root || process.cwd(),
     fileLink: options.fileLink,
+    lang: options.lang,
+    labels: options.labels,
   };
   const groups = data.groups || [];
   const emptyMessage =

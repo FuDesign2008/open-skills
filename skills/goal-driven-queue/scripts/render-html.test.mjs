@@ -160,6 +160,28 @@ test("Markdown local images are lightbox-activatable", () => {
   assert.match(html, /showModal/);
 });
 
+test("English Markdown lightbox chrome follows lang", () => {
+  const dir = tmp();
+  fs.writeFileSync(path.join(dir, "img.png"), "x", "utf8");
+  const html = render("![photo](img.png)", {
+    sourcePath: path.join(dir, "doc.md"),
+    root: dir,
+    lang: "en",
+  });
+  assert.match(html, /aria-label="Enlarge image: photo"/);
+  assert.match(html, /aria-label="Enlarged image"/);
+  assert.match(html, /aria-label="Close"/);
+  assert.doesNotMatch(html, /放大图片/);
+});
+
+test("lightbox dialog is full-viewport so backdrop clicks hit the dialog", () => {
+  const html = render("# T\n\nbody");
+  assert.match(html, /#queue-lightbox\s*\{[^}]*width:\s*100%/);
+  assert.match(html, /#queue-lightbox\s*\{[^}]*height:\s*100%/);
+  assert.match(html, /setAttribute\("aria-label"/);
+  assert.match(html, /data-default-label="/);
+});
+
 test("evidence figure images are lightbox-activatable", () => {
   const html = renderEvidencePage(
     {
@@ -176,8 +198,12 @@ test("evidence figure images are lightbox-activatable", () => {
 test("pages without content images still include lightbox shell but need no image affordance", () => {
   const html = render("# T\n\nbody only");
   assert.match(html, /id="queue-lightbox"/);
-  assert.doesNotMatch(html, /button class="lightbox-trigger"/);
+  assert.doesNotMatch(html, /<button[^>]*class="lightbox-trigger"/);
   assert.doesNotMatch(html, /<img /);
+  const dir = tmp();
+  fs.writeFileSync(path.join(dir, "img.png"), "x", "utf8");
+  const withImg = render("![x](img.png)", { sourcePath: path.join(dir, "doc.md"), root: dir });
+  assert.match(withImg, /<button[^>]*class="lightbox-trigger"/);
 });
 
 test("is deterministic for the same source and generation time", () => {
