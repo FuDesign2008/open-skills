@@ -47,13 +47,13 @@
 
 组合方式是**队列 adapter import core**，依赖方向为队列 → 纪律，通用侧零队列语义。
 
-**本轮只做抽取与等价验证，不整理 adapter。** 队列专属函数留在原位，仅把通用函数改为从 core 引入。理由是缩小本轮风险面：队列有 2 份 spec、2 个 repo 级契约测试、37 个单元测试，一次动完的回归面过大。
+**本轮只做抽取与等价验证，不整理 adapter。** 队列专属函数留在原位，仅把通用函数改为从 core 引入。理由是缩小本轮风险面：队列有 2 份 spec、2 个 repo 级契约测试、42 个单元测试，一次动完的回归面过大。
 
 **被否决的替代**：整文件搬迁——共享 skill 会携带约 430 行死代码与队列词汇（任务卡、triage、验收入口），读它的用户可能只想渲染一份技术评审；且下一轮维护者会再次提出分层问题。
 
 ### D3：拆分等价性用字节级 diff 证明
 
-仓库内**没有现成夹具目录**（`skills/goal-driven-queue/evals/evals.json` 的 `files` 字段全为空）。等价性验证须先构造夹具：从现有 37 个测试中提取输入（卡片、triage、progress、verification、review、evidence 各一），落盘为固定 `.md` / `.json`。
+仓库内**没有现成夹具目录**（`skills/goal-driven-queue/evals/evals.json` 的 `files` 字段全为空）。等价性验证须先构造夹具：从现有 42 个测试中提取输入（卡片、triage、progress、verification、review、evidence 各一），落盘为固定 `.md` / `.json`。
 
 流程：固定 `--at <iso>`（CLI 已支持，实测输出稳定可哈希）→ 旧渲染器生成基线 → 抽取后走新路径 → 逐字节比对，全部一致才切换引用。
 

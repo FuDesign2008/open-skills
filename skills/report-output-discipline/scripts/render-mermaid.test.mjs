@@ -109,3 +109,9 @@ test("a large graph renders without throwing", () => {
   const svg = renderMermaid(lines.join("\n"));
   assert.ok(svg && svg.startsWith("<svg"));
 });
+
+test("an ampersand inside an edge label still renders", () => {
+  const svg = renderMermaid("flowchart TB\n  A -->|x & y| B");
+  assert.ok(svg);
+  assert.match(svg, /x &amp; y/);
+});

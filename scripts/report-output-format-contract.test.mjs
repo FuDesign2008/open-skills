@@ -83,12 +83,12 @@ test("consumer evidence follows the class rule", () => {
   for (const row of rows) {
     if (row.klass === "machine" || row.klass === "dual") {
       assert.ok(row.evidence.length > 0, `${row.klass} row lacks consumer evidence: ${row.product}`);
-      assert.match(row.evidence, /:\d+/, `${row.klass} evidence must anchor a line: ${row.product}`);
+      assert.match(row.evidence, /[^\s（）]+:\d+/, `${row.klass} evidence must anchor a path:line: ${row.product}`);
     }
     if (row.klass === "human") {
       const isException = row.evidence.startsWith("既有契约");
       if (isException) {
-        assert.match(row.evidence, /^既有契约（.+:\d+）$/, `exception evidence must name its read point: ${row.product}`);
+        assert.match(row.evidence, /^既有契约（[^）]*[^\s（）]+:\d+）$/, `exception evidence must name its read point: ${row.product}`);
       } else {
         assert.equal(row.evidence, "", `human row must leave evidence empty: ${row.product}`);
       }

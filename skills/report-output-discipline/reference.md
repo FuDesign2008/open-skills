@@ -15,27 +15,29 @@ Single source of truth for artifact format decisions. Column order is fixed and 
 | 发布报告 | git-release-finish | human | | md | html | `release-<VERSION>-report.md` at the repository root | Host appends an `.html` ignore line | 接入 |
 | 队列任务卡 | goal-driven-queue | human | 既有契约（read point <queue-skill-dir>/scripts/render-html.mjs:285） | md | html | `.goal-driven/queues/<queue-id>/<slug>.md` | Host appends `.goal-driven/**/*.html` | 未接入 |
 | 队列 triage 记录 | goal-driven-queue | human | 既有契约（read point <queue-skill-dir>/scripts/render-html.mjs:285） | md | html | `.goal-driven/queues/<queue-id>/triage-<timestamp>.md` | Host appends `.goal-driven/**/*.html` | 未接入 |
-| 队列进度文档 | goal-driven-queue | human | 既有契约（read point <queue-skill-dir>/scripts/render-html.mjs:528） | md | html | `.goal-driven/queues/<queue-id>/runs/<batch-id>/progress.md` | Host appends `.goal-driven/**/*.html` | 未接入 |
+| 队列进度文档 | goal-driven-queue | human | 既有契约（read point <queue-skill-dir>/scripts/render-html.mjs:529） | md | html | `.goal-driven/queues/<queue-id>/runs/<batch-id>/progress.md` | Host appends `.goal-driven/**/*.html` | 未接入 |
 | 队列核对文档 | goal-driven-queue | human | 既有契约（read point <queue-skill-dir>/scripts/render-html.mjs:285） | md | html | `.goal-driven/queues/<queue-id>/runs/<batch-id>/verification.md` | Host appends `.goal-driven/**/*.html` | 未接入 |
 | 验收包内引擎完成报告 | goal-driven-queue | human | 既有契约（read point <queue-skill-dir>/scripts/render-html.mjs:285） | md | html | `.goal-driven/queues/<queue-id>/runs/<batch-id>/reports/<card-slug>.md` | Host appends `.goal-driven/**/*.html` | 未接入 |
-| 队列评审页与证据页 | goal-driven-queue | human | 既有契约（read point <queue-skill-dir>/scripts/render-html.mjs:425） | json | html | `.goal-driven/queues/<queue-id>/runs/<batch-id>/review/<card>.html` | Host appends `.goal-driven/**/*.html` | 未接入 |
-| 长跑评审页与证据页 | goal-driven-workflow | human | 既有契约（read point <queue-skill-dir>/scripts/render-html.mjs:457） | json | html | `.goal-driven/runs/<local-YYYYMMDD-HHmm>/review.html` | Host appends `.goal-driven/**/*.html` | 未接入 |
-| 概念解释页 | explain-clearly | human | 既有契约（read point skills/explain-clearly/SKILL.md:59） | html | | `.explain-clearly/<name>.html` | Not applicable — the owning capability forbids editing the workspace gitignore | 未接入 |
-| OpenSpec 四件套 | opsx-solve-workflow / opsx-jira-fix-workflow | machine | `openspec validate` parses proposal/specs/tasks fields (skills/opsx-solve-workflow/SKILL.md:143) | md | | `openspec/changes/<name>/` | Not applicable | 未接入 |
-| figma living artifact | figma-pixel-implement / figma-pixel-verify | machine | `<figma-skill-dir>/scripts/check-figma-verify-report.mjs:194` reads the Channel and Screenshot fields | md | | `docs/figma/<safe-frame-name>.md` | Not applicable | 未接入 |
-| Jira 修复状态 | jira-fix-workflow | dual | The agent resumes from `current_phase` (skills/jira-fix-workflow/SKILL.md:119) | json | | `.jira-fix/<JIRA-ID>/state.json` | Not applicable | 未接入 |
-| Android WebView 调试状态 | android-webview-debug | dual | The agent restores from the recorded locations (skills/android-webview-debug/SKILL.md:17) | json | | `.android-webview-debug-state.json` | Not applicable | 未接入 |
-| Jira 修复阶段记录 | jira-fix-workflow | dual | The resume path reads the checkpoint files (skills/jira-fix-workflow/SKILL.md:54) | md | | `.jira-fix/<JIRA-ID>/0*.md` | Not applicable | 未接入 |
-| 上下文 ledger | context-budget-discipline | dual | The host's next phase reads `{ledger-path}` (skills/context-budget-discipline/reference.md:16) | md | | `{ledger-path}` supplied by the host | Not applicable | 未接入 |
-| 设计文档 | brainstorm-workflow | dual | Handed to the Make a Plan stage (skills/brainstorm-workflow/SKILL.md:58) | md | | `docs/design/YYYY-MM-DD-<topic>-design.md` | Not applicable | 未接入 |
-| 性能基准与场景 | perf-optimize-workflow | dual | The next campaign reads it as campaign memory (skills/perf-optimize-workflow/SKILL.md:117) | md | | `BENCHMARK.md` / `SCENARIOS.md` | Not applicable | 未接入 |
-| 项目约定与术语 | learn-and-improve / domain-language-discipline | dual | The host loads it at session start (skills/learn-and-improve/SKILL.md:62) | md | | repository root | Not applicable | 未接入 |
-| Jira 本地缓存 | jira-read | dual | Downstream Jira stages read `$JIRA_CACHE_DIR` (skills/jira-read/SKILL.md:5) | md | | `$JIRA_CACHE_DIR/{JIRA-ID}.md` | Not applicable | 未接入 |
-| 解包清单 | unbox-anything | dual | The downstream agent reads the extraction chain (skills/unbox-anything/SKILL.md:106) | md | | `<outname>-unboxed/README.md` | Not applicable | 未接入 |
-| 部署入口配置 | go-deploy | dual | Later sessions read it (skills/go-deploy/SKILL.md:20) | md | | `docs/deploy.md` | Not applicable | 未接入 |
+| 队列评审页与证据页 | goal-driven-queue | human | 既有契约（read point <queue-skill-dir>/scripts/render-html.mjs:426） | json | html | `.goal-driven/queues/<queue-id>/runs/<batch-id>/review/<card>.html` | Host appends `.goal-driven/**/*.html` | 未接入 |
+| 长跑评审页与证据页 | goal-driven-workflow | human | 既有契约（read point <queue-skill-dir>/scripts/render-html.mjs:458） | json | html | `.goal-driven/runs/<local-YYYYMMDD-HHmm>/review.html` | Host appends `.goal-driven/**/*.html` | 未接入 |
+| 概念解释页 | explain-clearly | human | 既有契约（read point <producer-skill-dir>/SKILL.md:59） | html | | `.explain-clearly/<name>.html` | Not applicable — the owning capability forbids editing the workspace gitignore | 未接入 |
+| OpenSpec 四件套 | opsx-solve-workflow / opsx-jira-fix-workflow | machine | `openspec validate` parses proposal/specs/tasks fields (<producer-skill-dir>/SKILL.md:143) | md | | `openspec/changes/<name>/` | Not applicable | 未接入 |
+| figma living artifact | figma-pixel-implement / figma-pixel-verify | machine | `<figma-pixel-verify-skill-dir>/scripts/check-figma-verify-report.mjs:194` reads the Channel and Screenshot fields | md | | `docs/figma/<safe-frame-name>.md` | Not applicable | 未接入 |
+| Jira 修复状态 | jira-fix-workflow | dual | The agent resumes from `current_phase` (<producer-skill-dir>/SKILL.md:119) | json | | `.jira-fix/<JIRA-ID>/state.json` | Not applicable | 未接入 |
+| Android WebView 调试状态 | android-webview-debug | dual | The agent restores from the recorded locations (<producer-skill-dir>/SKILL.md:17) | json | | `.android-webview-debug-state.json` | Not applicable | 未接入 |
+| Jira 修复阶段记录 | jira-fix-workflow | dual | The resume path reads the checkpoint files (<producer-skill-dir>/SKILL.md:54) | md | | `.jira-fix/<JIRA-ID>/0*.md` | Not applicable | 未接入 |
+| 上下文 ledger | context-budget-discipline | dual | The host's next phase reads `{ledger-path}` (<producer-skill-dir>/reference.md:16) | md | | `{ledger-path}` supplied by the host | Not applicable | 未接入 |
+| 设计文档 | brainstorm-workflow | dual | Handed to the Make a Plan stage (<producer-skill-dir>/SKILL.md:58) | md | | `docs/design/YYYY-MM-DD-<topic>-design.md` | Not applicable | 未接入 |
+| 性能基准与场景 | perf-optimize-workflow | dual | The next campaign reads it as campaign memory (<producer-skill-dir>/SKILL.md:117) | md | | `BENCHMARK.md` / `SCENARIOS.md` | Not applicable | 未接入 |
+| 项目约定与术语 | learn-and-improve / domain-language-discipline | dual | The host loads it at session start (<producer-skill-dir>/SKILL.md:62) | md | | repository root | Not applicable | 未接入 |
+| Jira 本地缓存 | jira-read | dual | Downstream Jira stages read `$JIRA_CACHE_DIR` (<producer-skill-dir>/SKILL.md:5) | md | | `$JIRA_CACHE_DIR/{JIRA-ID}.md` | Not applicable | 未接入 |
+| 解包清单 | unbox-anything | dual | The downstream agent reads the extraction chain (<producer-skill-dir>/SKILL.md:106) | md | | `<outname>-unboxed/README.md` | Not applicable | 未接入 |
+| 部署入口配置 | go-deploy | dual | Later sessions read it (<producer-skill-dir>/SKILL.md:20) | md | | `docs/deploy.md` | Not applicable | 未接入 |
 | 诊断报告 | essence-diagnosis | human | | md | html | No fixed path | | sink 待定 |
 | 竞品调研报告族 | competitive-research | human | | md | html | No fixed path | | sink 待定 |
 | 演化复盘 ledger | evolution-review | human | | md | html | No fixed path | | sink 待定 |
+
+Renderer JSON inputs are not registered: a read that only feeds rendering does not make an artifact `machine`, and it is not human-read, so it falls outside the registry’s scope.
 
 ## Coverage whitelist
 

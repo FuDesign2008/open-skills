@@ -374,3 +374,20 @@ test("an outPath aliasing the source through case is refused", () => {
   assert.throws(() => writeRenderedFile(source, { root: dir, outPath: alias, generatedAt: AT }), /refusing to overwrite/);
   assert.equal(fs.readFileSync(source, "utf8"), "# keep\n");
 });
+
+test("file links keep spaces in file names", () => {
+  const dir = tmp();
+  fs.writeFileSync(path.join(dir, "my report.md"), "x", "utf8");
+  const source = path.join(dir, "doc.md");
+  fs.writeFileSync(source, "`my report.md`", "utf8");
+  writeRenderedFile(source, { root: dir, fileRoot: dir, generatedAt: AT });
+  const html = fs.readFileSync(path.join(dir, "doc.html"), "utf8");
+  assert.match(html, /href="my report\.md"/);
+});
+
+test("a closed non-link bracket does not merge a later link", () => {
+  const html = render("[see] some prose [the guide](guide.md)");
+  assert.match(html, /\[see\]/);
+  assert.match(html, /<a href="guide\.md">the guide<\/a>/);
+  assert.doesNotMatch(html, /<a[^>]*>see\] some prose/);
+});

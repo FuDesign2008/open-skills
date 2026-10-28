@@ -2,6 +2,7 @@
 // Generic Markdown-to-HTML rendering. Owned by the report-output-format contract.
 // Queue-specific templates and pages live in goal-driven-queue/scripts/render-html.mjs.
 import fs from "node:fs";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -406,8 +407,10 @@ function renderCodeSpan(content, context) {
   const escaped = `<code>${escapeHtml(content)}</code>`;
   if (!context.fileLink) return escaped;
   const rawHref = context.fileLink(content);
-  const href = rawHref ? String(rawHref).replace(/[\u0000-\u001f\u007f ]/g, "") : rawHref;
-  if (!href || /^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith("//")) return escaped;
+  if (!rawHref) return escaped;
+  const normalizedHref = normalizeTarget(String(rawHref).trim());
+  if (normalizedHref.kind !== "relative") return escaped;
+  const href = normalizedHref.value;
   return `<a class="file-link" href="${escapeHtml(href)}" title="打开文件">${escaped}<span class="file-link-icon" aria-hidden="true">↗</span></a>`;
 }
 
@@ -418,8 +421,8 @@ function readLinkSpan(text, start) {
   const limit = Math.min(text.length, start + MAX_LINK_SPAN);
   let labelEnd = -1;
   for (let cursor = start + 1; cursor < limit; cursor += 1) {
-    if (text[cursor] === "]" && text[cursor + 1] === "(") {
-      labelEnd = cursor;
+    if (text[cursor] === "]") {
+      if (text[cursor + 1] === "(") labelEnd = cursor;
       break;
     }
   }
@@ -900,9 +903,18 @@ export function writeRenderedFile(sourcePath, options = {}) {
     fileLink,
   });
 
-  const temporary = `${outPath}.tmp`;
-  fs.writeFileSync(temporary, html, "utf8");
-  fs.renameSync(temporary, outPath);
+  const temporary = `${outPath}.${process.pid}.${randomUUID()}.tmp`;
+  try {
+    fs.writeFileSync(temporary, html, { encoding: "utf8", flag: "wx" });
+    fs.renameSync(temporary, outPath);
+  } catch (error) {
+    try {
+      fs.unlinkSync(temporary);
+    } catch {
+      // The temp file may not exist; nothing to clean up.
+    }
+    throw error;
+  }
   return outPath;
 }
 

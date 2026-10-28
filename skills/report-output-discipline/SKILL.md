@@ -26,7 +26,7 @@ A read that only feeds rendering (reading the whole file to display it) does not
 
 - `human` + `接入` + not an exception → write the Markdown source **and** a derived HTML beside it. Markdown is the only editing entry; a hand-edited HTML is not an accepted change.
 - `machine` → Markdown or JSON only. No HTML sibling.
-- `dual` → Markdown stays the source. No forced derivation step in a workflow stage; on-demand derivation is allowed but never required.
+- `dual` → the source stays in its own format (Markdown or JSON). No forced derivation step in a workflow stage; on-demand derivation is allowed but never required.
 - Conversation-level conclusions — stage results, verification verdicts, review outcomes — stay in the conversation and get no file.
 
 ## 3. Render through the shared renderer

@@ -43,7 +43,7 @@ Frontmatter `dependencies`; prerequisite check must pass or the flow aborts:
 
 **Related (informational)**: `solve-workflow` (full PDCA); handbook §8 of `docs/7x24-agent-reliability-handbook.md`.
 
-**Adapter (runtime, not a frontmatter dependency)**: the standalone review/evidence pages resolve `<queue-skill-dir>/scripts/render-html.mjs` from the loaded `goal-driven-queue` skill. Declaring that skill in frontmatter would create a cycle (the queue already depends on this workflow). When the adapter is absent, print the JSON paths and continue without those pages.
+**Adapter (runtime, not a frontmatter dependency)**: the standalone review/evidence pages resolve `<queue-skill-dir>/scripts/render-html.mjs` from the loaded `goal-driven-queue` skill. Declaring that skill in frontmatter would create a cycle (the queue already depends on this workflow). The adapters absence handling is stated once in Stage 5.
 
 ## Prerequisite Skill Check
 
