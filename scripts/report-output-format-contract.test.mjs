@@ -235,3 +235,28 @@ test("derived HTML is ignored while report sources stay trackable", () => {
     assert.equal(result.status, expected, `${file} ignore status`);
   }
 });
+
+test("every registry evidence anchor resolves to a real, non-empty line", () => {
+  const aliases = new Map();
+  for (const name of skillNames()) aliases.set(`<${name}-skill-dir>`, `skills/${name}`);
+  let checked = 0;
+  for (const row of rows) {
+    const needsAnchor = row.klass !== "human" || row.evidence.length > 0;
+    if (!needsAnchor) continue;
+    let evidence = row.evidence;
+    for (const [placeholder, dir] of aliases) evidence = evidence.replaceAll(placeholder, dir);
+    const anchors = [...evidence.matchAll(/([A-Za-z0-9_./-]+):(\d+)/g)];
+    assert.ok(anchors.length >= 1, `row has no resolvable anchor: ${row.product}`);
+    for (const match of anchors) {
+      const file = match[1];
+      const line = Number(match[2]);
+      checked += 1;
+      assert.ok(exists(file), `registry anchor points at a missing file: ${file} (${row.product})`);
+      // A trailing newline must not count as an extra line.
+      const lines = read(file).replace(/\n$/, "").split("\n");
+      assert.ok(line >= 1 && line <= lines.length, `registry anchor line ${line} is outside ${file} (1..${lines.length})`);
+      assert.notEqual(lines[line - 1].trim(), "", `registry anchor points at a blank line: ${file}:${line} (${row.product})`);
+    }
+  }
+  assert.ok(checked >= 1, "expected at least one anchor");
+});
