@@ -1,6 +1,6 @@
 ---
 name: jira-wiki-markup
-version: "1.1.1"
+version: "1.2.0"
 user-invocable: false
 description: "Compose Jira wiki-rendered fields (especially comments) in Jira Wiki markup. Use whenever writing jira_add_comment body, a wiki description, or a repair report that will be posted to Jira. Triggers — 「Jira 语法」「Jira Wiki」「写 Jira 评论」「Jira 评论格式」「wiki markup」「jira comment markup」. Do NOT use for reading issues, status transitions, GitHub/PR Markdown, or Jira Cloud ADF. Referenced by Jira comment writers via frontmatter dependencies."
 ---
@@ -38,7 +38,11 @@ Links: put a space after a URL when the next character is not part of the URL. I
 
 ## Markup fidelity across write channels
 
-Composing correct markup is necessary but not sufficient: a relaying layer may escape or rewrite it. After writing any Wiki-rendered field, read the stored value back and confirm the key markers survive verbatim; if they do not, fall back to a direct REST write via `jira-status-writeback`'s `scripts/update-comment-wiki.mjs` (credential chain identical to `jira-read`).
+Composing correct markup is necessary but not sufficient: a relaying layer may escape or rewrite it while still returning success. After writing any Wiki-rendered field — comment body, description, or another wiki field — read the stored value back and confirm the key markers survive verbatim: `h3.`/`h4.` line starts, `*bold*`, `{{mono}}`, `[label|url]`. When the stored value cannot be read back at all, treat the write as unverified and report it.
+
+On escaped or rewritten markers (`\*bold\*`, `h3.` turned into `###`), retry through an available direct-REST channel for the same field. A channel is available only when its writing script and its credential resolver both exist; a skill directory alone is not enough, because the script cannot run without the resolver. If a Jira writeback skill that ships a direct-write script is installed (for example `jira-status-writeback`), the comment-body fallback is `scripts/update-comment-wiki.mjs`, which resolves credentials through the `jira-read` chain. That script covers comment bodies only: descriptions and other fields need an equivalent REST endpoint. With no available channel, report the fidelity failure and the missing fallback instead of claiming success.
+
+The post-merge repair-comment flow restates this discipline as a requirement in `jira-status-writeback`; this section covers every other wiki-field write.
 
 ## Repair comment
 
