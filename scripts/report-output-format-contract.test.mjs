@@ -235,3 +235,22 @@ test("derived HTML is ignored while report sources stay trackable", () => {
     assert.equal(result.status, expected, `${file} ignore status`);
   }
 });
+
+test("every registry evidence anchor resolves to a real line", () => {
+  const aliases = new Map();
+  for (const name of skillNames()) aliases.set(`<${name}-skill-dir>`, `skills/${name}`);
+  let checked = 0;
+  for (const row of rows) {
+    let evidence = row.evidence;
+    for (const [placeholder, dir] of aliases) evidence = evidence.replaceAll(placeholder, dir);
+    for (const match of evidence.matchAll(/([A-Za-z0-9_./-]+):(\d+)/g)) {
+      const file = match[1];
+      const line = Number(match[2]);
+      checked += 1;
+      assert.ok(exists(file), `registry anchor points at a missing file: ${file} (${row.product})`);
+      const total = read(file).split("\n").length;
+      assert.ok(line >= 1 && line <= total, `registry anchor line ${line} is outside ${file} (1..${total})`);
+    }
+  }
+  assert.ok(checked >= 20, `expected the registry to carry anchors, checked ${checked}`);
+});

@@ -8,6 +8,11 @@ The `jira-status-writeback` skill SHALL define the sole SOP for writing Jira sta
 
 For step 2 the skill MUST treat the write channel as unverified until proven faithful: the agent posts through its available tooling, reads back the stored `body` from the tool response (or a follow-up read), and compares it against the composed text for the key Wiki markers (`h3.`/`h4.` line starts, `*bold*`, `{{mono}}`, `[label|url]`). If every marker survives verbatim, the write is complete. If any marker is escaped or rewritten (for example `\*bold\*` or a heading turned into `###`), the agent MUST fall back to a direct REST write via `scripts/update-comment-wiki.mjs` (credential chain identical to `jira-read`), then re-verify fidelity the same way.
 
+#### Scenario: Comment uses jira_add_comment body
+
+- **WHEN** writeback runs after a successful merge
+- **THEN** the agent transitions the issue and separately calls `jira_add_comment` with `body` set to the repair comment
+
 #### Scenario: Comment uses body parameter on a faithful channel
 
 - **WHEN** writeback runs after a successful merge and the read-back `body` matches the composed Wiki markup verbatim
