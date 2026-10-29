@@ -1,7 +1,9 @@
 ---
 name: evolution-review
-version: "1.0.1"
+version: "1.1.0"
 user-invocable: true
+dependencies:
+  - report-output-discipline
 description: "Data-driven selection review for any portfolio of works/products/experiments: judge items by outcome data, fix winners into reusable standards (gene fixation), kill losers without sentiment (extinction), budget exploration with a mutation quota, and use a rolling 3-month window so single months never dictate direction. Distilled from a real 4.5-month AI-music business (307 releases, ¥95 total revenue) where it ran as an evolution mechanism. Use when 做月度/季度作品复盘、决定加码或砍掉哪些作品/实验/技能、清理积压库存、防止先验或沉没成本锁死方向、把「自我感觉」换成「数据说话」. Triggers — 「月度复盘」「数据复盘」「自然选择复盘」「进化复盘」「加码还是止损」「砍库存」「淘汰评审」「该砍哪个」 / evolution review, natural selection review, monthly data review, kill criteria, mutation quota. Do NOT use for 个人绩效自评 or 单任务复盘（learn-and-improve owns single-task retrospectives）."
 ---
 
@@ -36,6 +38,14 @@ description: "Data-driven selection review for any portfolio of works/products/e
 5. **Priors are hypotheses, not conclusions**: every "I always believed" is a hypothesis in front of data; boundary testing beats prior veto
 6. **Mutation quota is both ceiling and floor**: >20% = direction drift; <15% = stagnation; unspent quota expires (hoarding quota = avoiding experiments)
 
+## Prerequisite skill check
+
+On load, verify `report-output-discipline` is available. If missing, abort and print:
+
+`npx skills add FuDesign2008/open-skills -g --skill '*' --yes`
+
+Do not silently fall back.
+
 ## Ledger template
 
 | Item | Revenue metric | Reach metric | Verdict | Action | Recipe fixed |
@@ -45,6 +55,8 @@ description: "Data-driven selection review for any portfolio of works/products/e
 
 - Verdicts are three-valued: **Fixed** (won two consecutive periods → default recipe) / **Observing** (single-period signal, wait for the rolling window) / **Extinct** (no validation within the rolling window)
 - Keep a rolling 3-month ledger as the next period's comparison baseline
+
+**Sink**: write the ledger to `docs/reports/evolution/ledger.md` and update that same file on every review — do not create a new file. When the target repository ignores `evolution/` directories, add `!docs/reports/evolution/` before the derived-HTML rule so the ledger stays trackable. After each update, re-derive `ledger.html` following `report-output-discipline` and report both paths. When the renderer is unavailable, write Markdown only and state why. Registry row: `演化复盘台账` in `report-output-discipline/reference.md` (`human` + `接入`).
 
 ## Provenance (optional reading)
 

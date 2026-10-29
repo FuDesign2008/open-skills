@@ -18,6 +18,13 @@ All examples use generic placeholders (`Competitor A`, `my-project`, `my-desktop
 
 ### 1.1 Architecture/decision main doc skeleton
 
+The first line of `main.md` records the produced layers, outside code fences:
+
+```
+Layers: summary,evidence,memo
+```
+
+
 ```markdown
 # <Feature> support — architecture and decision record
 ## Context and scope          (objective background, one screen max)
