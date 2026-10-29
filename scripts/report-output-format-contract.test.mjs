@@ -205,6 +205,7 @@ test("every host runs a prerequisite check for the discipline", () => {
 
 test("batch-2 sinks are integrated with verifiable paths", () => {
   const essentials = read("skills/essence-diagnosis/SKILL.md");
+  assert.match(essentials, /dependencies:[\s\S]*?- multi-agent-debate[\s\S]*?- report-output-discipline/);
   assert.match(essentials, /docs\/reports\/diagnosis\/<YYYY-MM-DD>-<topic>\.md/);
   assert.match(essentials, /append `-2`/);
 

@@ -28,7 +28,7 @@
 
 ## Impact
 
-- **宿主 skill**：`essence-diagnosis`、`competitive-research`、`evolution-review` 增加落盘路径、派生步骤、抑制说明（演化台账另需负向规则）、依赖声明与前置检查
+- **宿主 skill**：`essence-diagnosis`、`competitive-research`、`evolution-review` 增加落盘路径、派生步骤、抑制由共享纪律承担（演化台账另需负向规则）、依赖声明与前置检查
 - **注册表**：`skills/report-output-discipline/reference.md` 三行改为 `接入`
 - **版本控制**：`.gitignore` 增加 `docs/reports/**/*.html`
 - **测试**：`scripts/report-output-format-contract.test.mjs` 增加三条接入项与落盘根断言

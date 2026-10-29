@@ -11,7 +11,7 @@ Diagnose a complex problem to its essence: evidence chain, logic chain, adversar
 
 #### Scenario: 诊断完成后落盘
 
-- **WHEN** 诊断流程产出 SOAP 报告、证据链与逻辑链
+- **WHEN** 诊断流程产出 SOAP 报告、证据链与逻辑链，且共享渲染器可用
 - **THEN** 报告写入 `docs/reports/diagnosis/<YYYY-MM-DD>-<topic>.md`
 - **AND** 同目录存在同名 `.html`
 - **AND** 对话中报告两条路径

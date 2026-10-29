@@ -16,13 +16,13 @@
 
 #### Scenario: 主文档与分层记录
 
-- **WHEN** 完整调研流程结束
+- **WHEN** 完整调研流程结束，且共享渲染器可用
 - **THEN** `docs/reports/research/<YYYY-MM-DD>-<topic>/main.md` 存在且含 `Layers:` 行
 - **AND** 同目录存在 `main.html`
 
 #### Scenario: 记录的分层各有文件与派生页
 
-- **WHEN** `main.md` 的 `Layers:` 行记录 `summary,evidence,memo`
+- **WHEN** `main.md` 的 `Layers:` 行记录 `summary,evidence,memo`，且共享渲染器可用
 - **THEN** `summary.md`、`evidence.md`、`memo.md` 均存在
 - **AND** 三者各有一个同名 `.html`
 
@@ -46,7 +46,7 @@
 
 ### Requirement: The report family SHALL be layered with distinct layers carrying distinct depth
 
-On the full report path, the skill MUST guide a layered report family: an architecture or decision main document, detail documents per area, an evidence compendium, a summary layer, a one-page decision memo, and a review agenda that separates decisions needing approval, confirmations, and must-test items. Document-pipeline mechanics live in reference material. The lean path MUST NOT require this family.
+On the full report path, the skill MUST guide a layered report family: an architecture or decision main document, detail documents per area, an evidence compendium, a summary layer, a one-page decision memo, and a review agenda that separates decisions needing approval, confirmations, and must-test items. On a given run, the produced subset MUST be recorded on the `Layers:` line of `main.md`, and layers not recorded are out of scope for that run. Document-pipeline mechanics live in reference material. The lean path MUST NOT require this family.
 
 #### Scenario: Review agenda drives the review meeting
 
