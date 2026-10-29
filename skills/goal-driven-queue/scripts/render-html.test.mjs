@@ -5,8 +5,6 @@ import { spawnSync } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
 import {
-  normalizeTarget,
-  renderMarkdown,
   renderDocument,
   renderReviewPage,
   renderEvidencePage,
@@ -15,22 +13,30 @@ import {
   readTrigger,
   maybeAutoOpen,
   openInBrowser,
-  renderNav,
 } from "./render-html.mjs";
+import * as adapter from "./render-html.mjs";
 
 const AT = "2026-10-26T00:00:00.000Z";
 
+test("adapter keeps the public surface hosts load by path", () => {
+  for (const name of [
+    "renderNav",
+    "renderDocument",
+    "renderFile",
+    "renderEntryPage",
+    "renderReviewPage",
+    "renderEvidencePage",
+    "readTrigger",
+    "openInBrowser",
+    "maybeAutoOpen",
+    "main",
+  ]) {
+    assert.equal(typeof adapter[name], "function", `${name} must be exported by the adapter`);
+  }
+});
+
 function tmp() {
   return fs.mkdtempSync(path.join(os.tmpdir(), "queue-html-"));
-}
-
-function render(md, options = {}) {
-  return renderMarkdown(md, {
-    sourcePath: options.sourcePath || "/tmp/queue/doc.md",
-    generatedAt: AT,
-    root: options.root || "/tmp/queue",
-    ...options,
-  });
 }
 
 
@@ -494,10 +500,10 @@ test("degrade branch prints only source paths, not option values", () => {
   const dir = tmp();
   const scripts = path.join(dir, "scripts");
   fs.mkdirSync(scripts, { recursive: true });
-  fs.copyFileSync(
-    new URL("./render-html.mjs", import.meta.url),
-    path.join(scripts, "render-html.mjs"),
-  );
+  for (const entry of fs.readdirSync(new URL(".", import.meta.url))) {
+    if (!entry.endsWith(".mjs") || entry.endsWith(".test.mjs")) continue;
+    fs.copyFileSync(new URL(`./${entry}`, import.meta.url), path.join(scripts, entry));
+  }
   const source = path.join(dir, "doc.md");
   fs.writeFileSync(source, "# t\n", "utf8");
   const result = spawnSync(

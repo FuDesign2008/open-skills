@@ -1,6 +1,6 @@
 ---
 name: goal-driven-queue
-version: "0.18.0"
+version: "0.18.1"
 user-invocable: true
 description: "Queue orchestrator over child engines (goal-driven / solve / opsx-solve / jira-fix / opsx-jira-fix). Triggers:「goal 批量」「跑队列」「任务队列」「无人值守队列」「把需求加入队列」「空闲时段跑任务」「批量 triage」「确定度评估」「解法复用」「并发跑队列」/ goal-driven-queue, goal batch, run queue, unattended task queue, batch triage, certainty assessment, approach reuse, concurrent queue. Backlog auto-isolated per conversation under .goal-driven/queues/. Enqueue adds batch triage (equivalence merge, root-cause clustering, suggested kill), a derived certainty band as ordering key and routing feed, and approach reuse. Consumption is slot-based, concurrency settled at enqueue and reused when absent; a slot takes only a card whose module set does not overlap an in-flight card, and acceptance pre-runs merge conflicts. Jira lists enqueue here (also via jira-fix-queue / opsx-jira-fix-queue). Do NOT use for a single ad-hoc long run (goal-driven-workflow), a single Jira issue, or setting up cron/schedulers."
 dependencies:

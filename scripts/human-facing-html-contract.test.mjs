@@ -50,13 +50,14 @@ test("goal-driven-queue defines human-facing HTML views", () => {
 });
 
 test("renderer localizes footers and sanitizes evidence image targets", () => {
-  const renderer = read("skills/goal-driven-queue/scripts/render-html.mjs");
+  const labels = read("skills/goal-driven-queue/scripts/queue-labels.mjs");
+  const pages = read("skills/goal-driven-queue/scripts/queue-pages.mjs");
   const core = read("skills/report-output-discipline/scripts/render-core.mjs");
-  assert.match(renderer, /source: "来源"/);
-  assert.match(renderer, /generated: "生成"/);
+  assert.match(labels, /source: "来源"/);
+  assert.match(labels, /generated: "生成"/);
   assert.match(core, /resolveDocumentLang/);
   assert.match(core, /options\.lang \|\| "zh"/);
-  assert.match(renderer, /normalizeTarget\(item\.image\)/);
+  assert.match(pages, /normalizeTarget\(item\.image\)/);
   assert.match(core, /normalized\.kind === "relative"/);
 });
 
