@@ -2,7 +2,7 @@
 
 ### Requirement: 诊断报告 SHALL 落盘到 docs/reports/diagnosis
 
-`essence-diagnosis` MUST 把完整诊断报告写入 `docs/reports/diagnosis/<YYYY-MM-DD>-<topic>.md`，其中 `<topic>` 为小写 kebab-case 主题 slug；同名文件已存在时 MUST 追加 `-2`、`-3` 等序号，MUST NOT 覆盖。它 MUST 按 `report-output-discipline` 派生同名 HTML、回报两条路径。报告 MUST 以 Markdown 为唯一编辑入口。
+`essence-diagnosis` MUST 把完整诊断报告写入 `docs/reports/diagnosis/<YYYY-MM-DD>-<topic>.md`，其中 `<topic>` 为小写 kebab-case 主题 slug；同名文件已存在时 MUST 追加 `-2`、`-3` 等序号，MUST NOT 覆盖；同一次运行内的重写 MUST 写回本次已创建的文件。它 MUST 按 `report-output-discipline` 派生同名 HTML、回报两条路径。报告 MUST 以 Markdown 为唯一编辑入口。
 
 #### Scenario: 诊断完成后落盘
 

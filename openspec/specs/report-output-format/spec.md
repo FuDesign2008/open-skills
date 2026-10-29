@@ -350,9 +350,9 @@ ignore 规则无法写入时（只读仓库、权限不足、用户拒绝修改�
 - **THEN** 队列打印已生成的 Markdown 路径并说明原因
 - **AND** 不以模块 import 抛错的方式中断整个流程
 
-### Requirement: 本变更新增的接入项 SHALL 落在 docs/reports 下
+### Requirement: 新增接入项 SHALL 落在 docs/reports 下
 
-本变更新增的三个接入项 MUST 落在其所在仓库的 `docs/reports/` 稳定子目录：诊断报告用 `diagnosis/`，调研报告族用 `research/`，演化复盘台账用 `evolution/`。既有接入项（技术评审文档、人工测试指南、发布报告）的落盘路径不受本条约束。
+新增的三个接入项（诊断报告、竞品调研报告族、演化复盘台账）MUST 落在其所在仓库的 `docs/reports/` 稳定子目录：诊断报告用 `diagnosis/`，调研报告族用 `research/`，演化复盘台账用 `evolution/`。既有接入项（技术评审文档、人工测试指南、发布报告）的落盘路径不受本条约束。
 
 这些产物的 Markdown 真源 MUST NOT 被版本控制忽略；派生 HTML 的抑制方式沿用基线「宿主 SHALL 抑制派生 HTML 进入变更集合」的要求，本条不另立规则。真源更新后 MUST 重新派生 HTML。
 

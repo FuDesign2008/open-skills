@@ -56,7 +56,7 @@ Do not silently fall back.
 - Verdicts are three-valued: **Fixed** (won two consecutive periods → default recipe) / **Observing** (single-period signal, wait for the rolling window) / **Extinct** (no validation within the rolling window)
 - Keep a rolling 3-month ledger as the next period's comparison baseline
 
-**Sink**: write the ledger to `docs/reports/evolution/ledger.md` and update that same file on every review — do not create a new file. The target repository un-ignores it with `!docs/reports/evolution/`, placed after the existing `**/evolution/` rule and before `docs/reports/**/*.html`. After each update, re-derive `ledger.html` following `report-output-discipline` and report both paths. When the renderer is unavailable, write Markdown only and state why. Registry row: `演化复盘台账`.
+**Sink**: write the ledger to `docs/reports/evolution/ledger.md` and update that same file on every review — do not create a new file. When the target repository ignores `evolution/` directories, un-ignore this path before applying the derived-HTML rule (this repository carries that negation). After each update, re-derive `ledger.html` following `report-output-discipline` and report both paths. When the renderer is unavailable, write Markdown only and state why. Registry row: `演化复盘台账` in `report-output-discipline/reference.md` (`human` + `接入`).
 
 ## Provenance (optional reading)
 

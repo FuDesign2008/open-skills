@@ -12,7 +12,7 @@ dependencies:
 
 > Evidence-driven competitive research. A full request ends in a decision-ready report family. A problem-solving host gets the lean layer-selected answer. Product behavior comes before implementation.
 
-> **Prerequisite check**: this skill declares `effective-web-research` in frontmatter `dependencies`. On load, verify it is available; if missing, abort and print the install command (`npx skills add FuDesign2008/open-skills -g`). It also declares `report-output-discipline`; when the full path writes the report family and that skill is missing, abort and print `npx skills add FuDesign2008/open-skills -g --skill '*' --yes`. No silent fallback — every external search in this workflow runs under that skill's discipline, and every written report under the output discipline.
+> **Prerequisite check**: this skill declares `effective-web-research` and `report-output-discipline` in frontmatter `dependencies`. On load, verify both are available; if either is missing, abort and print `npx skills add FuDesign2008/open-skills -g --skill '*' --yes`. No silent fallback — every external search runs under the research discipline, and every written report under the output discipline.
 
 ## Core principle
 
@@ -170,7 +170,7 @@ The lean path keeps the evidence standards and drops the report family, design m
 
 ## Report family
 
-**Sink**: the full path writes the family to `docs/reports/research/<YYYY-MM-DD>-<topic>/`, where `<topic>` is a lowercase kebab-case slug. When that directory already exists from an earlier run on the same day and topic, append `-2`, `-3`. `main.md` is required and MUST record the produced layers on exactly one `Layers:` line outside code fences — `Layers: summary,evidence,memo`, or `Layers: none` when no optional layer is produced. Layer name to file: `summary` → `summary.md`, `evidence` → `evidence.md`, `memo` → `memo.md`, `area:<name>` → `areas/<name>.md` (`<name>` lowercase letters, digits, hyphens only), `agenda` → `agenda.md`. Each written file derives a same-name HTML following `report-output-discipline`, and both paths are reported. When the renderer is unavailable, write Markdown only and state why. Registry row: `竞品调研报告族`.
+**Sink**: the full path writes the family to `docs/reports/research/<YYYY-MM-DD>-<topic>/`, where `<topic>` is a lowercase kebab-case slug. When that directory already exists from an earlier run on the same day and topic, append `-2`, `-3`. `main.md` is required and MUST record the produced layers on exactly one `Layers:` line outside code fences — `Layers: summary,evidence,memo`, or `Layers: none` when no optional layer is produced. Layer name to file: `summary` → `summary.md`, `evidence` → `evidence.md`, `memo` → `memo.md`, `area:<name>` → `areas/<name>.md` (`<name>` lowercase letters, digits, hyphens only), `agenda` → `agenda.md`. Each written file derives a same-name HTML following `report-output-discipline`, and both paths are reported. When the renderer is unavailable, write Markdown only and state why. Registry row: `竞品调研报告族` in `report-output-discipline/reference.md` (`human` + `接入`).
 
 Layered by reader, one depth per layer (templates and a worked example in [reference.md](reference.md)):
 

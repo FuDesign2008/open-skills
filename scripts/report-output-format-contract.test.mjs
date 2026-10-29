@@ -192,6 +192,9 @@ test("every host runs a prerequisite check for the discipline", () => {
     "skills/git-release-finish/SKILL.md",
     "skills/goal-driven-queue/SKILL.md",
     "skills/goal-driven-workflow/SKILL.md",
+    "skills/essence-diagnosis/SKILL.md",
+    "skills/competitive-research/SKILL.md",
+    "skills/evolution-review/SKILL.md",
   ]) {
     const body = read(file);
     assert.match(body, /dependencies:\s*\n(?:\s+- .*\n)*\s+- report-output-discipline/, `${file} must declare the dependency`);
@@ -207,8 +210,10 @@ test("batch-2 sinks are integrated with verifiable paths", () => {
 
   const research = read("skills/competitive-research/SKILL.md");
   assert.match(research, /docs\/reports\/research\/<YYYY-MM-DD>-<topic>\//);
+  assert.match(research, /exactly one `Layers:` line outside code fences/);
   assert.match(research, /`Layers: none`/);
   assert.match(research, /`area:<name>` → `areas\/<name>\.md`/);
+  assert.match(read("skills/competitive-research/reference.md"), /^Layers: summary,evidence,memo$/m);
 
   const evolution = read("skills/evolution-review/SKILL.md");
   assert.match(evolution, /docs\/reports\/evolution\/ledger\.md/);

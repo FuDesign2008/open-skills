@@ -4,6 +4,7 @@ version: "1.1.0"
 user-invocable: true
 description: Use when a complex problem seems unsolvable and needs digging to the essence — diagnosis only, not fixing. Symptoms include massive logs with no root cause surfaced, complex crashes, architectural essence analysis, requirement authenticity verification, systemic chronic issues, information overload, disconnect between symptoms and essence, multiple intertwined factors, or premature-convergence tendencies — even when the user never explicitly says "diagnose". Also triggers on 本质诊断, 根因诊断, 深度诊断, 诊断问题本质, 梳理问题逻辑, 证据链分析, 逻辑链分析, essence-diagnosis.
 dependencies:
+  - multi-agent-debate
   - report-output-discipline
 ---
 
@@ -15,7 +16,7 @@ dependencies:
 
 ## Prerequisite skill check
 
-On load, verify `report-output-discipline` is available. If missing, abort and print:
+On load, verify `multi-agent-debate` and `report-output-discipline` are available. If either is missing, abort and print:
 
 `npx skills add FuDesign2008/open-skills -g --skill '*' --yes`
 
@@ -121,7 +122,7 @@ In phase A, check each hypothesis against every item:
 
 The complete SOAP diagnosis report + evidence-chain table + logic-chain diagram + debate handoff package — templates are in [reference.md](reference.md).
 
-**Sink**: write the report to `docs/reports/diagnosis/<YYYY-MM-DD>-<topic>.md`, where `<topic>` is a lowercase kebab-case slug. When that file already exists, append `-2`, `-3`, and so on — never overwrite. Registry row: `诊断报告`.
+**Sink**: write the report to `docs/reports/diagnosis/<YYYY-MM-DD>-<topic>.md`, where `<topic>` is a lowercase kebab-case slug. When that file already exists from an earlier run, append `-2`, `-3`, and so on — never overwrite. A rewrite within the same run writes back to the same file. Registry row: `诊断报告` in `report-output-discipline/reference.md` (`human` + `接入`).
 
 After writing, derive `<same-base-name>.html` beside the Markdown source following `report-output-discipline`, and report both paths. When the renderer is unavailable, write only the Markdown source and state why.
 
