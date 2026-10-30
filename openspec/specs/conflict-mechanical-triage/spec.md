@@ -1,7 +1,7 @@
 # conflict-mechanical-triage Specification
 
 ## Purpose
-冲突块裁决的机械判据（子集差分 / 符号存在性 / 并集标题键去重）与 diff3 解析前置探测。
+冲突块裁决的机械判据（子集差分 / 符号存在性 / 并集标题键去重）与 diff3 解析前置探测，为合并冲突的机械裁决提供可复核的证据口径，避免「取 ours」沦为默认偷懒。
 
 ## Requirements
 

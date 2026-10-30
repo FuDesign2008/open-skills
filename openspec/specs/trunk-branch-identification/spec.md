@@ -1,7 +1,7 @@
 # trunk-branch-identification Specification
 
 ## Purpose
-主干开发分支识别的证据分层（四层）与「候选分支是活跃平行分支」的证伪要求。
+主干开发分支识别的证据分层（四层）与「候选分支是活跃平行分支」的证伪要求，供发版、分支保护与 PR 合入流程在判断默认分支时引用同一套证据口径。
 
 ## Requirements
 

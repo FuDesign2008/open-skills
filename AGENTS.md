@@ -279,6 +279,9 @@ Skill 内容...
 # package.json
 node -e "JSON.parse(require('fs').readFileSync('package.json'))"
 
+# OpenSpec 规范校验（等同 openspec-verify workflow；strict 把 Purpose 过短等警告也视为失败）
+openspec validate --strict --all
+
 # SKILL.md frontmatter
 grep -r "^---$" skills/*/SKILL.md
 
