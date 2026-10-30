@@ -1,0 +1,21 @@
+name: OpenSpec — Spec validation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  openspec:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      # Pinned to the CLI version used locally; bump deliberately so spec
+      # validation behavior cannot drift under CI.
+      - name: Validate specs and changes (strict)
+        run: npx --yes @fission-ai/openspec@1.10.0 validate --strict --all
