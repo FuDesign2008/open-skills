@@ -1,6 +1,6 @@
 ---
 name: jira-status-lifecycle
-version: "1.0.0"
+version: "1.0.1"
 user-invocable: false
 description: "Developer-owned Jira bug status decisions. Before analysis, claim 「解决中」 when the bug is assigned to the session user and still 「待处理」. After the fix merges, decide 「已修复」. Triggers — 「Jira 状态生命周期」「分析前改解决中」「待处理改解决中」「合并后已修复」「Jira 生命周期」 / jira status lifecycle, claim before analysis, mark fixed after merge. Do NOT use to set 验证通过 or 关闭, to read an issue, or to post the repair comment. Load before analyzing a Jira bug and before the post-merge status decision."
 ---
@@ -9,7 +9,7 @@ description: "Developer-owned Jira bug status decisions. Before analysis, claim 
 
 > Shared decision for developer-owned Jira bug status. Hosts load it after the issue is read and before analysis. `jira-status-writeback` loads it before the post-merge transition and still owns the repair comment. This skill does not post that comment and does not depend on `jira-status-writeback`.
 
-The executable matrix is [scripts/decide.mjs](scripts/decide.mjs) (`decidePreAnalysis`, `decidePostMerge`, `applyTransitionResult`). Classify the status, call the function, then act on the returned outcome. A transition API result goes back through `applyTransitionResult`.
+The executable matrix is [scripts/decide.mjs](scripts/decide.mjs) (`decidePreAnalysis`, `decidePostMerge`, `applyTransitionResult`). Classify the status, call the function, then act on the returned outcome. After a transition call, pass boolean `true` to `applyTransitionResult` only when that call succeeded. Pass `false` for every other result. Do not pass the raw API result. `transition-fixed` keeps `lifecycleComplete` false until that call returns `true`.
 
 ## Status classes
 
@@ -49,7 +49,7 @@ Resolve the authenticated user of the Jira session that read the issue. Pass tha
 | `incomplete-identity` | Do not transition and do not treat the issue as someone else's. Post the repair comment. Leave the lifecycle incomplete. Keep the merge |
 | `incomplete-not-assignee` | Do not transition and do not post the repair comment. Tell the operator. Leave the lifecycle incomplete. Keep the merge |
 | `status-satisfied` | The status is already `fixed`. Skip the transition. Post the repair comment. The status obligation is met |
-| `transition-fixed` | Transition to `fixed` with no comment on the transition call, then `applyTransitionResult` |
+| `transition-fixed` | Transition to `fixed` with no comment on the transition call, then `applyTransitionResult`. The lifecycle stays incomplete until that call returns boolean `true` |
 | `incomplete-transition` | Post the repair comment when `comment` is true. Leave the lifecycle incomplete. Keep the merge |
 
 A failed transition call on `transition-fixed` becomes `incomplete-transition`. The repair comment still posts. The merge stays. The host reports the lifecycle incomplete and does not describe the bug as 已修复.

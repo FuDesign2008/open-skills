@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.27.0"
+version: "1.27.1"
 user-invocable: true
 description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / opsx jira fix, OpenSpec Jira fix workflow, ai-proxy mode, switch to ai-proxy."
 dependencies:
@@ -107,7 +107,7 @@ Not a replacement for plain `jira-fix-workflow`:
 
 ## Unattended proxy exits
 
-When this-run contract or task card records **`Stage-exit policy: ai-proxy`** (auto carrier; queue child is sufficient but not required), each manual stop point becomes a proxy checkpoint per `ai-proxy-discipline`. Thin freeze (verbal trigger ≠ occupancy) lives there. Merge, irreversible, protected-branch, and Jira writeback stay human-only (park + ticket). Any other policy value or none → today's non-proxy behavior.
+When this-run contract or task card records **`Stage-exit policy: ai-proxy`** (auto carrier; queue child is sufficient but not required), each manual stop point becomes a proxy checkpoint per `ai-proxy-discipline`. Thin freeze (verbal trigger ≠ occupancy) lives there. Merge, irreversible, protected-branch, and QA-owned Jira statuses (验证通过 / 关闭) stay human-only (park + ticket). Developer-owned transitions in `jira-status-lifecycle` still run. Any other policy value or none → today's non-proxy behavior.
 
 **Stop-point forecast**: if this run **starts** with a frozen contract (queue child with problem + frozen decisions, or independent thin freeze already written), open with a forecast table before analysis — every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket. If overlay is requested **mid-run**, after thin freeze output a forecast of **remaining** exits, then continue the current stage (do not restart from analysis).
 
@@ -172,7 +172,7 @@ Before the first artifact write (`design.md` Jira context), load `git-worktree-d
 
 Read the latest Jira data and write it into OpenSpec artifacts as early as possible — never leave it only in chat context.
 
-- Jira ID, title, priority, status
+- Jira ID, title, priority, status, assignee
 - Description, repro steps, expected result, actual result
 - Attachments, comments, historical context
 - Data source (live / cache / user-provided)

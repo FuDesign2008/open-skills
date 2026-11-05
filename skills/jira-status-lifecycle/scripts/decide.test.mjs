@@ -28,6 +28,7 @@ test("pre-analysis claims only a todo assigned to the actor", () => {
     notify: false,
   });
   assert.equal(applyTransitionResult(claim, false).outcome, "stop-transition-failed");
+  assert.equal(applyTransitionResult(claim, { ok: true }).outcome, "stop-transition-failed");
 });
 
 test("pre-analysis leaves in-progress and other statuses unchanged", () => {
@@ -102,9 +103,17 @@ test("post-merge requests the fixed transition and records an API failure as inc
   });
   assert.equal(decision.outcome, "transition-fixed");
   assert.equal(decision.transition, true);
-  assert.equal(decision.lifecycleComplete, true);
+  assert.equal(decision.lifecycleComplete, false);
+  const applied = applyTransitionResult(decision, true);
+  assert.equal(applied.outcome, "status-satisfied");
+  assert.equal(applied.transition, false);
+  assert.equal(applied.comment, true);
+  assert.equal(applied.lifecycleComplete, true);
   const failed = applyTransitionResult(decision, false);
   assert.equal(failed.outcome, "incomplete-transition");
   assert.equal(failed.comment, true);
   assert.equal(failed.lifecycleComplete, false);
+  const payload = applyTransitionResult(decision, { error: "transition rejected" });
+  assert.equal(payload.outcome, "incomplete-transition");
+  assert.equal(payload.lifecycleComplete, false);
 });

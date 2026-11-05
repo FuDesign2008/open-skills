@@ -41,12 +41,17 @@ Developer-owned Jira bug status decisions shared by fix hosts and post-merge wri
 
 ### Requirement: Post-merge fixed transition SHALL follow the lifecycle decision
 
-After the fix PR/MR is on the target branch, `jira-status-writeback` MUST follow `decidePostMerge`. A required transition that fails leaves the lifecycle incomplete, keeps the merge, and still posts the repair comment. An issue assigned to someone else MUST NOT be transitioned and MUST NOT receive the repair comment. 验证通过 and 关闭 MUST NOT be selected.
+After the fix PR/MR is on the target branch, `jira-status-writeback` MUST discover whether a transition to「已修复」exists and then follow `decidePostMerge`. `transition-fixed` leaves the lifecycle incomplete until `applyTransitionResult` receives boolean `true`. Any other result is a failed transition. A required transition that fails leaves the lifecycle incomplete, keeps the merge, and still posts the repair comment. An issue assigned to someone else MUST NOT be transitioned and MUST NOT receive the repair comment. 验证通过 and 关闭 MUST NOT be selected.
 
 #### Scenario: Successful fixed transition
 
 - **WHEN** the issue is assigned to the session user and a transition to「已修复」exists
 - **THEN** writeback applies that transition without a comment parameter and then posts the repair comment
+
+#### Scenario: Non-true transition result stays incomplete
+
+- **WHEN** writeback passes any result other than boolean `true` into `applyTransitionResult` for `transition-fixed`
+- **THEN** the outcome is `incomplete-transition`, the repair comment still posts, and the lifecycle stays incomplete
 
 #### Scenario: Assignee mismatch after merge
 

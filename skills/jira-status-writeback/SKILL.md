@@ -1,6 +1,6 @@
 ---
 name: jira-status-writeback
-version: "1.4.0"
+version: "1.4.1"
 user-invocable: false
 description: "Post-merge Jira writeback SOP: transition only to「已修复」, then an independent Wiki-markup comment posted in the body field with read-back markup-fidelity verification and a direct-REST fallback. Triggers — 「Jira 状态回写」「回写已修复」「合并后写 Jira」「jira writeback」「jira status writeback」. Do NOT use for reading issues, creating issues, or pre-merge comments. Loaded by Jira fix hosts after merge via frontmatter dependencies."
 dependencies:
@@ -22,8 +22,9 @@ Only after the PR/MR has **successfully merged** into the target branch. Never a
 ## SOP
 
 1. **Transition (no comment on the transition call)**  
-   - Load `jira-status-lifecycle` and run `decidePostMerge` with the session user, assignee, status class, and whether a transition to the `fixed` status exists.  
-   - When the decision's `transition` is true, call `jira_get_transitions` (or equivalent), select the developer-owned status equivalent to「已修复」, and call `jira_transition_issue` **without** a `comment` parameter. Then pass the API result through `applyTransitionResult`.  
+   - Call `jira_get_transitions` (or equivalent) first and record whether a transition to the `fixed` status exists.  
+   - Load `jira-status-lifecycle` and run `decidePostMerge` with the session user, assignee, status class, and that boolean.  
+   - When the decision's `transition` is true, select the developer-owned status equivalent to「已修复」and call `jira_transition_issue` **without** a `comment` parameter. Pass boolean `true` to `applyTransitionResult` only when that call succeeded. Pass `false` for every other result. Do not pass the raw API result.  
    - Do **not** transition to close / verified / QA-owned statuses.  
    - When the decision's `notify` is true, tell the operator the status was left unchanged because the issue is not assigned to the session user.  
    - When the outcome is `incomplete-identity`, `incomplete-not-assignee`, or `incomplete-transition`, keep the merge and leave the lifecycle incomplete. Do not describe the bug as「已修复」.
@@ -37,7 +38,7 @@ Only after the PR/MR has **successfully merged** into the target branch. Never a
    - On any fidelity failure, rewrite the comment with the bundled REST fallback `scripts/update-comment-wiki.mjs` (comment bodies only; credential chain identical to `jira-read`; pass no comment id to create, pass the comment id to update; it re-verifies fidelity on its own), then report from its PASS output.
 
 3. **Failure handling**  
-   - A failed or missing「已修复」transition leaves the lifecycle incomplete and still posts the repair comment. The merge stays.  
+   - When the outcome is `incomplete-transition`, the lifecycle stays incomplete and the repair comment still posts. The merge stays. An already-`fixed` status is `status-satisfied`: skip the transition, post the comment, and keep the status obligation met.  
    - A comment API failure after a successful transition warns and records for the host report. The merge stays, and the status obligation already met stays met.  
    - A missing prerequisite at load aborts writeback. The merge stays, and the host leaves the lifecycle incomplete.
 

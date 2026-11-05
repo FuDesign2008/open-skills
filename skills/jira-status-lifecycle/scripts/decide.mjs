@@ -56,19 +56,16 @@ export function decidePostMerge({ actor, assignee, statusClass, transitionAvaila
     transition: true,
     comment: true,
     notify: false,
-    lifecycleComplete: true,
+    lifecycleComplete: false,
   };
 }
 
 export function applyTransitionResult(decision, succeeded) {
   if (!decision.transition) return decision;
-  if (succeeded && decision.outcome === "need-claim") {
-    return { outcome: "continue-claimed", transition: false, notify: false };
-  }
-  if (!succeeded && decision.outcome === "need-claim") {
-    return { outcome: "stop-transition-failed", transition: false, notify: false };
-  }
-  if (!succeeded && decision.outcome === "transition-fixed") {
+  if (succeeded !== true) {
+    if (decision.outcome === "need-claim") {
+      return { outcome: "stop-transition-failed", transition: false, notify: false };
+    }
     return {
       outcome: "incomplete-transition",
       transition: false,
@@ -77,7 +74,10 @@ export function applyTransitionResult(decision, succeeded) {
       lifecycleComplete: false,
     };
   }
-  if (succeeded && decision.outcome === "transition-fixed") {
+  if (decision.outcome === "need-claim") {
+    return { outcome: "continue-claimed", transition: false, notify: false };
+  }
+  if (decision.outcome === "transition-fixed") {
     return { ...decision, transition: false, outcome: "status-satisfied", lifecycleComplete: true };
   }
   return decision;

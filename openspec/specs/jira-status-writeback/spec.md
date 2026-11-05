@@ -13,12 +13,17 @@ For step 2 the skill MUST treat the write channel as unverified until proven fai
 
 #### Scenario: Comment uses jira_add_comment body
 
-- **WHEN** writeback runs after a successful merge
-- **THEN** the agent transitions the issue and separately calls `jira_add_comment` with `body` set to the repair comment
+- **WHEN** the lifecycle decision sets `comment` true
+- **THEN** the agent calls `jira_add_comment` with `body` set to the repair comment and does not place that comment on `jira_transition_issue`
+
+#### Scenario: Comment without a status transition
+
+- **WHEN** the lifecycle decision sets `comment` true and `transition` false
+- **THEN** the agent posts the repair comment and does not call `jira_transition_issue`
 
 #### Scenario: Comment uses body parameter on a faithful channel
 
-- **WHEN** writeback runs after a successful merge and the read-back `body` matches the composed Wiki markup verbatim
+- **WHEN** the repair comment was posted and the read-back `body` matches the composed Wiki markup verbatim
 - **THEN** the writeback is complete with the primary channel
 
 #### Scenario: Escaped markup triggers REST fallback
@@ -28,21 +33,26 @@ For step 2 the skill MUST treat the write channel as unverified until proven fai
 
 #### Scenario: Transition comment parameter is not used for the repair note
 
-- **WHEN** writeback runs
+- **WHEN** the lifecycle decision sets `transition` true
 - **THEN** `jira_transition_issue` is invoked without relying on its `comment` parameter to persist the repair record
 
 ### Requirement: Transition target SHALL be developer-owned 「已修复」 only
 
-The skill SHALL transition only to the developer-owned status equivalent to「已修复」(or the project's configured same-meaning status), and only when `jira-status-lifecycle` returns `transition: true`. Closing, verification-pass, or QA-owned statuses MUST NOT be applied by this skill. If no matching transition exists, the outcome is `incomplete-transition`: skip the transition, leave the lifecycle incomplete, keep the merge, and still attempt the comment.
+The skill SHALL call `jira_get_transitions` (or equivalent) before `decidePostMerge` and pass that result as whether a transition to the `fixed` status exists. It SHALL transition only to the developer-owned status equivalent to「已修复」(or the project's configured same-meaning status), and only when `jira-status-lifecycle` returns `transition: true`. Closing, verification-pass, or QA-owned statuses MUST NOT be applied by this skill. `applyTransitionResult` receives boolean `true` only when that transition call succeeded; every other result, including an object payload, is a failed transition. If the status is already the `fixed` class, the outcome is `status-satisfied`: skip the transition, post the repair comment, and treat the status obligation as met. If no matching transition exists and the status is not already `fixed`, the outcome is `incomplete-transition`: skip the transition, leave the lifecycle incomplete, keep the merge, and still attempt the comment.
 
 #### Scenario: Matching 已修复 transition
 
-- **WHEN** `jira_get_transitions` lists a transition to「已修复」
+- **WHEN** `jira_get_transitions` lists a transition to「已修复」and `decidePostMerge` returns `transition: true`
 - **THEN** the skill applies that transition and does not close the issue
+
+#### Scenario: Already fixed
+
+- **WHEN** the issue status already means「已修复」
+- **THEN** the skill skips the transition, posts the repair comment, and treats the status obligation as met
 
 #### Scenario: No matching transition
 
-- **WHEN** no「已修复」-equivalent transition is available
+- **WHEN** the issue is not already「已修复」and no「已修复」-equivalent transition is available
 - **THEN** the skill skips the transition, leaves the lifecycle incomplete, keeps the merge, and still attempts the repair comment
 
 ### Requirement: Comment fields SHALL be host-parameterized

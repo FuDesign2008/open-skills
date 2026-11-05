@@ -55,6 +55,27 @@ test("jira hosts and writeback depend on the lifecycle skill", () => {
   }
 });
 
+test("writeback discovers fixed transitions before deciding", () => {
+  const body = read("skills/jira-status-writeback/SKILL.md");
+  const discover = body.indexOf("jira_get_transitions");
+  const decide = body.indexOf("decidePostMerge");
+  assert.ok(discover !== -1 && decide !== -1 && discover < decide);
+  assert.equal(body.includes("Do not pass the raw API result"), true);
+});
+
+test("opsx reads assignee before the before-analysis decision", () => {
+  const body = read("skills/opsx-jira-fix-workflow/SKILL.md");
+  const listed = body.indexOf("Jira ID, title, priority, status, assignee");
+  const decision = body.indexOf("before-analysis decision");
+  assert.ok(listed !== -1 && decision !== -1 && listed < decision);
+});
+
+test("ai-proxy host pointers do not park developer-owned status transitions", () => {
+  for (const rel of ["skills/jira-fix-workflow/SKILL.md", "skills/opsx-jira-fix-workflow/SKILL.md"]) {
+    assert.equal(read(rel).includes("Jira writeback stay human-only"), false, rel);
+  }
+});
+
 test("skill prose names every decision outcome", () => {
   const body = read(lifecycle);
   for (const outcome of outcomes) {
