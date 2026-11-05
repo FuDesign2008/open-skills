@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.26.0"
+version: "1.27.0"
 user-invocable: true
 description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / opsx jira fix, OpenSpec Jira fix workflow, ai-proxy mode, switch to ai-proxy."
 dependencies:
@@ -19,6 +19,7 @@ dependencies:
   - merge-discipline
   - staged-review-flow
   - opsx-workspace-gate
+  - jira-status-lifecycle
   - jira-status-writeback
   - jira-wiki-markup
   - ai-proxy-discipline
@@ -112,7 +113,7 @@ When this-run contract or task card records **`Stage-exit policy: ai-proxy`** (a
 
 ## Queue-child mode (goal-driven-queue dispatch)
 
-When dispatched by `goal-driven-queue` (explicit `queue-child` context flag in the invocation — never guessed from ambient signals), this flow adapts: the card's goal condition carries the Jira issue link; its frozen-decisions block supplies stage 0–1; `Stage-exit policy` rides along (occupancy per `ai-proxy-discipline` when policy is ai-proxy — queue child is sufficient but not required); open with a stop-point forecast (every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket). The terminal is **archive + PR-open**: archive the OpenSpec change (native to this model, never deferred), then stop at PR open — merge + Jira writeback are deferred to the human (merge authority and external-tracker writebacks are never proxied); the queue's acceptance package carries them as pending follow-ups. Independent use (no flag): overlay/occupancy still follow `Stage-exit policy`; the **archive+PR-open** queue terminal does **not** apply; closeout stays this skill's native archive-then-stage path (overlay is not naked auto through merge/writeback). When the card supply includes queue relationship-pass notes, write them as `## Related Issues` in this change's `design.md`. When this run is a queue child, the completion report includes the problem, the cause, and the completed fix, and an evidence list. Each evidence item is an opened-UI check citing a png, jpg, jpeg, or webp path, or a non-UI check citing the command and a short output summary. A missing or empty image is pending and states the capture still required. Do not invent an image. Before an opened-UI image supports the check, inspect it per `completion-evidence-discipline`. This run does not write the HTML page and does not write the evidence HTML.
+When dispatched by `goal-driven-queue` (explicit `queue-child` context flag in the invocation — never guessed from ambient signals), this flow adapts: the card's goal condition carries the Jira issue link; its frozen-decisions block supplies stage 0–1; `Stage-exit policy` rides along (occupancy per `ai-proxy-discipline` when policy is ai-proxy — queue child is sufficient but not required); open with a stop-point forecast (every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket). The terminal is **archive + PR-open**: archive the OpenSpec change (native to this model, never deferred), then stop at PR open — merge + Jira writeback are deferred to the human (merge authority stays with the human; the before-analysis claim in `jira-status-lifecycle` still runs); the queue's acceptance package carries them as pending follow-ups. Independent use (no flag): overlay/occupancy still follow `Stage-exit policy`; the **archive+PR-open** queue terminal does **not** apply; closeout stays this skill's native archive-then-stage path (overlay is not naked auto through merge/writeback). When the card supply includes queue relationship-pass notes, write them as `## Related Issues` in this change's `design.md`. When this run is a queue child, the completion report includes the problem, the cause, and the completed fix, and an evidence list. Each evidence item is an opened-UI check citing a png, jpg, jpeg, or webp path, or a non-UI check citing the command and a short output summary. A missing or empty image is pending and states the capture still required. Do not invent an image. Before an opened-UI image supports the check, inspect it per `completion-evidence-discipline`. This run does not write the HTML page and does not write the evidence HTML.
 
 ## Stage 0: Prerequisite check
 
@@ -184,7 +185,9 @@ Once stage 1 completes, an OpenSpec change must be determined or created:
 
 Tool limits: Jira API / jira-read allowed; Edit/Write of business code forbidden; Bash commands that change the implementation forbidden.
 
-Auto-advance to stage 2 on completion.
+Load `jira-status-lifecycle` and run its before-analysis decision once assignee and status are known. `stop-identity-unresolved` and `stop-transition-failed` report and stop; do not enter stage 2. Every `continue-*` outcome may enter stage 2. On `continue-not-assignee`, include the operator notice in the stage output. Do not restate the decision table here.
+
+Auto-advance to stage 2 on a continue outcome.
 
 > ⚠️ Active questioning: follow `clarifying-question-discipline` (one question per round, multi-round until clear; clarify first, don't rush to answer). When domain vocabulary is in play, also follow `domain-language-discipline`.
 >
@@ -266,7 +269,7 @@ If the path is still foggy, follow `decision-fog-discipline` before the solution
 
 In manual mode, output the solution table and pause for the user's pick; auto mode picks the best solution automatically.
 
-Load `staged-review-flow` and execute its full review contract. This workflow's mapping: `{next-stage}` = Stage 5 "Make the plan"; `{artifact-sink}` = `openspec/changes/<change-name>/design.md`; `{extra-dimensions}` = spec coverage (requirements/scenarios) and Jira status boundary (transition only to "fixed"); `{batch-overcap-behavior}` = `N/A`.
+Load `staged-review-flow` and execute its full review contract. This workflow's mapping: `{next-stage}` = Stage 5 "Make the plan"; `{artifact-sink}` = `openspec/changes/<change-name>/design.md`; `{extra-dimensions}` = spec coverage (requirements/scenarios) and Jira status boundary (`jira-status-lifecycle`: claim before analysis,「已修复」only after merge); `{batch-overcap-behavior}` = `N/A`.
 
 > 🚩 **Red Flags (stage 4)**:
 > - Review covers only the root cause, without checking spec coverage or side effects
@@ -404,7 +407,7 @@ Once archiving, delivery, and the diff check are complete, load `feature-branch-
 
 ### 8.4 Jira writeback (after the merge completes)
 
-Once the PR/MR has merged and the code is on the main branch, write back the Jira status to reflect that the fix has landed. Load the strong dependency `jira-status-writeback` and follow its SOP for the status transition and fix comment (`jira-wiki-markup` composes the Wiki `body`). This workflow supplies the following field map:
+Once the PR/MR has merged and the code is on the main branch, write back the Jira status to reflect that the fix has landed. Load the strong dependency `jira-status-writeback` and follow its SOP for the lifecycle decision, the status transition, and the fix comment (`jira-wiki-markup` composes the Wiki `body`). An incomplete「已修复」transition leaves the merge in place and leaves the lifecycle incomplete. This workflow supplies the following field map:
 
 | `jira-status-writeback` field | Value |
 |------|------|

@@ -1,9 +1,10 @@
 ---
 name: jira-status-writeback
-version: "1.3.0"
+version: "1.4.0"
 user-invocable: false
 description: "Post-merge Jira writeback SOP: transition only to「已修复」, then an independent Wiki-markup comment posted in the body field with read-back markup-fidelity verification and a direct-REST fallback. Triggers — 「Jira 状态回写」「回写已修复」「合并后写 Jira」「jira writeback」「jira status writeback」. Do NOT use for reading issues, creating issues, or pre-merge comments. Loaded by Jira fix hosts after merge via frontmatter dependencies."
 dependencies:
+  - jira-status-lifecycle
   - jira-wiki-markup
   - jira-read
 ---
@@ -12,7 +13,7 @@ dependencies:
 
 > Internal shared skill. Single source of truth for **post-merge** Jira status update + repair comment. Hosts declare it in `dependencies`, abort if missing, and pass a field map; they MUST NOT restate the two-step API or status boundary inline. The SOP does not resolve PAT files; session or MCP auth follows the `jira-read` credential contract. The bundled REST fallback resolves credentials through that same contract and expects both skills under one skills root.
 >
-> **Prerequisite check**: `jira-wiki-markup` and `jira-read` must both be available; if either is missing, abort and print the standard install hint (`npx skills add FuDesign2008/open-skills -g --skill '*' --yes`).
+> **Prerequisite check**: `jira-status-lifecycle`, `jira-wiki-markup`, and `jira-read` must all be available; if any is missing, abort and print the standard install hint (`npx skills add FuDesign2008/open-skills -g --skill '*' --yes`).
 
 ## When to run
 
@@ -21,12 +22,14 @@ Only after the PR/MR has **successfully merged** into the target branch. Never a
 ## SOP
 
 1. **Transition (no comment on the transition call)**  
-   - Call `jira_get_transitions` (or equivalent) and select the developer-owned status equivalent to「已修复」.  
-   - Call `jira_transition_issue` **without** a `comment` parameter.  
+   - Load `jira-status-lifecycle` and run `decidePostMerge` with the session user, assignee, status class, and whether a transition to the `fixed` status exists.  
+   - When the decision's `transition` is true, call `jira_get_transitions` (or equivalent), select the developer-owned status equivalent to「已修复」, and call `jira_transition_issue` **without** a `comment` parameter. Then pass the API result through `applyTransitionResult`.  
    - Do **not** transition to close / verified / QA-owned statuses.  
-   - If no matching transition: skip transition, emit a warning, continue to comment if possible.
+   - When the decision's `notify` is true, tell the operator the status was left unchanged because the issue is not assigned to the session user.  
+   - When the outcome is `incomplete-identity`, `incomplete-not-assignee`, or `incomplete-transition`, keep the merge and leave the lifecycle incomplete. Do not describe the bug as「已修复」.
 
 2. **Comment (independent call, verify markup fidelity)**
+   - Post this step when the lifecycle decision's `comment` is true, including after `incomplete-identity` and `incomplete-transition`. Skip it for `incomplete-not-assignee`.
    - Load `jira-wiki-markup` and compose `body` from the host field map using that skill's canonical repair-comment skeleton (Wiki markup).
    - If any line of that repair `body` starts with `h1.` or `h2.`, rewrite those titles as numbered `# *name*` items so the comment stays at `h3.`/`h4.` plus lists.
    - Post via your available comment tooling with the text in the `body` field. Never rely on `jira_transition_issue`'s `comment` parameter for the repair record (it may be silently dropped).
@@ -34,8 +37,9 @@ Only after the PR/MR has **successfully merged** into the target branch. Never a
    - On any fidelity failure, rewrite the comment with the bundled REST fallback `scripts/update-comment-wiki.mjs` (comment bodies only; credential chain identical to `jira-read`; pass no comment id to create, pass the comment id to update; it re-verifies fidelity on its own), then report from its PASS output.
 
 3. **Failure handling**  
-   - Transition or comment API failure → warn and record for the host report; **do not** block or revert an already-completed merge.  
-   - A missing prerequisite at load is a writeback failure too: warn for the host report and continue the completion bookkeeping; the merge stays as it is.
+   - A failed or missing「已修复」transition leaves the lifecycle incomplete and still posts the repair comment. The merge stays.  
+   - A comment API failure after a successful transition warns and records for the host report. The merge stays, and the status obligation already met stays met.  
+   - A missing prerequisite at load aborts writeback. The merge stays, and the host leaves the lifecycle incomplete.
 
 ## Host field map
 

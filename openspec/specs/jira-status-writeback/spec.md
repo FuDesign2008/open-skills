@@ -7,7 +7,7 @@ Single source of truth for post-merge Jira status writeback used by jira-fix hos
 
 ### Requirement: Post-merge Jira writeback SHALL use two independent API calls
 
-The `jira-status-writeback` skill SHALL define the sole SOP for writing Jira status after a successful PR/MR merge into the target branch. The skill MUST require two independent calls: (1) resolve transitions and call `jira_transition_issue` **without** a `comment` parameter; (2) post the repair comment with Wiki markup in the `body` field. Passing the repair comment only via `jira_transition_issue`'s `comment` parameter is forbidden.
+The `jira-status-writeback` skill SHALL define the post-merge execution SOP for Jira status. The status decision comes from `jira-status-lifecycle` (`decidePostMerge` / `applyTransitionResult`). When that decision sets `transition` true, the skill MUST call `jira_transition_issue` **without** a `comment` parameter. The repair comment is a second, independent call with Wiki markup in the `body` field, and it runs only when the decision sets `comment` true. Passing the repair comment only via `jira_transition_issue`'s `comment` parameter is forbidden.
 
 For step 2 the skill MUST treat the write channel as unverified until proven faithful: the agent posts through its available tooling, reads back the stored `body` from the tool response (or a follow-up read), and compares it against the composed text for the key Wiki markers (`h3.`/`h4.` line starts, `*bold*`, `{{mono}}`, `[label|url]`). If every marker survives verbatim, the write is complete. If any marker is escaped or rewritten (for example `\*bold\*` or a heading turned into `###`), the agent MUST fall back to a direct REST write via `scripts/update-comment-wiki.mjs` (credential chain identical to `jira-read`), then re-verify fidelity the same way.
 
@@ -33,7 +33,7 @@ For step 2 the skill MUST treat the write channel as unverified until proven fai
 
 ### Requirement: Transition target SHALL be developer-owned 「已修复」 only
 
-The skill SHALL transition only to the developer-owned status equivalent to「已修复」(or the project's configured same-meaning status). Closing, verification-pass, or QA-owned statuses MUST NOT be applied by this skill; if no matching transition exists, the skill MUST skip the transition, emit a warning, and still attempt the comment when possible.
+The skill SHALL transition only to the developer-owned status equivalent to「已修复」(or the project's configured same-meaning status), and only when `jira-status-lifecycle` returns `transition: true`. Closing, verification-pass, or QA-owned statuses MUST NOT be applied by this skill. If no matching transition exists, the outcome is `incomplete-transition`: skip the transition, leave the lifecycle incomplete, keep the merge, and still attempt the comment.
 
 #### Scenario: Matching 已修复 transition
 
@@ -43,7 +43,7 @@ The skill SHALL transition only to the developer-owned status equivalent to「�
 #### Scenario: No matching transition
 
 - **WHEN** no「已修复」-equivalent transition is available
-- **THEN** the skill skips transition with a warning and does not block the host workflow solely for that miss
+- **THEN** the skill skips the transition, leaves the lifecycle incomplete, keeps the merge, and still attempts the repair comment
 
 ### Requirement: Comment fields SHALL be host-parameterized
 
@@ -59,14 +59,19 @@ The skill SHALL define a required comment field set using placeholders supplied 
 - **WHEN** `jira-fix-workflow` invokes writeback without an OpenSpec change
 - **THEN** the comment still includes the non-OpenSpec required fields the host mapped
 
-### Requirement: Writeback failure SHALL warn without blocking merge completion
+### Requirement: Status-transition failure SHALL leave the merge and keep the lifecycle incomplete
 
-If transition or comment API calls fail, the skill MUST record a warning for the host report and MUST NOT treat writeback failure as a reason to revert the already-completed merge.
+If the「已修复」transition fails, or the session user cannot be resolved, the skill MUST NOT revert the already-completed merge and MUST NOT report the lifecycle as complete. The repair comment still runs when the lifecycle decision sets `comment` true. A comment API failure after a successful transition MUST be recorded as a warning; the merge stays, and the already-met status obligation stays met.
 
-#### Scenario: Comment API fails after merge
+#### Scenario: Comment API fails after a successful transition
 
-- **WHEN** merge succeeded but `jira_add_comment` fails
-- **THEN** the skill reports a warning and the host continues completion bookkeeping
+- **WHEN** merge succeeded, the issue transitioned to「已修复」, and `jira_add_comment` fails
+- **THEN** the skill reports a warning, the merge stays, and the status obligation stays met
+
+#### Scenario: Transition fails after merge
+
+- **WHEN** merge succeeded and the「已修复」transition fails
+- **THEN** the skill leaves the lifecycle incomplete, keeps the merge, and still attempts the repair comment
 
 ### Requirement: Jira fix hosts SHALL declare and load jira-status-writeback
 
@@ -80,7 +85,7 @@ If transition or comment API calls fail, the skill MUST record a warning for the
 #### Scenario: Host body is thin on writeback
 
 - **WHEN** an agent reads the post-merge writeback section of either host
-- **THEN** the authoritative two-step API and「已修复」-only rule are obtained by loading `jira-status-writeback`, not by a full inline copy in the host
+- **THEN** the post-merge execution SOP is obtained by loading `jira-status-writeback` (which loads `jira-status-lifecycle` for the decision), not by a full inline copy in the host
 
 ### Requirement: Writeback comment body SHALL use jira-wiki-markup
 
@@ -124,7 +129,7 @@ The skill MUST ship a fidelity-checking REST fallback script (`scripts/update-co
 
 The bundled fidelity fallback (`scripts/update-comment-wiki.mjs`) imports `resolveJiraToken` from `jira-read`, so an installation without `jira-read` cannot run the fallback the spec promises. In addition to the `jira-wiki-markup` dependency covered by the existing dependency requirement, `jira-status-writeback` MUST list `jira-read` in frontmatter `dependencies` and abort its own load when it is missing.
 
-When that check fails at writeback load, the missing dependency is a writeback failure: the agent MUST record it for the host report as a warning and MUST NOT revert or block an already-completed merge (same handling as an API failure).
+When that check fails at writeback load, the agent MUST abort writeback, MUST NOT revert an already-completed merge, and MUST leave the lifecycle incomplete.
 
 The skill prose MUST distinguish the two authentication paths: the SOP itself uses the agent's session or MCP tooling (behavior unchanged), while the bundled script resolves credentials through the `jira-read` chain (`JIRA_PERSONAL_TOKEN` / `JIRA_PAT` / `~/.config/jira-certs/jira-pat.txt`). The "this skill does not resolve PAT files" statement MUST be scoped to the SOP rather than the whole skill, so it does not contradict the shipped script.
 
@@ -143,7 +148,7 @@ The bundled script keeps its static import and assumes both skills are installed
 #### Scenario: Missing dependency after merge does not revert the merge
 
 - **WHEN** the dependency check fails after a PR/MR has already merged
-- **THEN** the agent records a writeback warning for the host report and the host continues completion bookkeeping
+- **THEN** the agent aborts writeback, the merge stays, and the lifecycle stays incomplete
 
 #### Scenario: Documentation separates SOP auth from script auth
 
