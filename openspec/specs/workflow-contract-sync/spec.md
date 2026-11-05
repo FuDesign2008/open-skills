@@ -131,7 +131,7 @@ solve 家族工作流（solve-workflow / opsx-solve-workflow / jira-fix-workflow
 
 ### Requirement: Jira 状态回写 SHALL 在 PR/MR 合并完成后执行
 
-`solve` 家族 Jira 工作流（`jira-fix-workflow` / `opsx-jira-fix-workflow`）的 Jira 状态回写 MUST 在 PR/MR 合并完成后执行，而非 PR/MR 创建时。PR 创建后可能被拒绝、需要修改或 Code Review 不通过；提前回写「已修复」会误导 QA。回写的操作内容与状态边界 MUST 委托强依赖 skill `jira-status-writeback`（两步独立 API、仅「已修复」、`jira_add_comment` 的 `body` 参数）；宿主 MUST NOT 在正文中保留完整两步 API 复述，仅保留加载指针与宿主字段映射。
+`solve` 家族 Jira 工作流（`jira-fix-workflow` / `opsx-jira-fix-workflow`）的「已修复」回写 MUST 在 PR/MR 合并完成后执行，而非 PR/MR 创建时。PR 创建后可能被拒绝、需要修改或 Code Review 不通过；提前回写「已修复」会误导 QA。分析前的「解决中」认领 MUST 在读完工单之后、第一段分析之前执行，并委托 `jira-status-lifecycle`。合并后的执行 MUST 委托 `jira-status-writeback`（生命周期决定、两步独立 API、仅「已修复」、`jira_add_comment` 的 `body` 参数）；宿主 MUST NOT 在正文中保留完整决定表或两步 API 复述，仅保留加载指针与宿主字段映射。
 
 #### Scenario: PR 创建时不同写 Jira
 
@@ -141,7 +141,7 @@ solve 家族工作流（solve-workflow / opsx-solve-workflow / jira-fix-workflow
 #### Scenario: PR/MR 合并完成后回写 Jira
 
 - **WHEN** PR/MR 已成功合并到目标分支
-- **THEN** 工作流加载 `jira-status-writeback` 并按其 SOP 流转到「已修复」且独立调用 `jira_add_comment` 写修复评论
+- **THEN** 工作流加载 `jira-status-writeback`，由其按 `jira-status-lifecycle` 的决定流转到「已修复」（当决定要求流转时）且在决定要求写评论时独立调用 `jira_add_comment`
 
 #### Scenario: Host does not restate the two-step API
 
@@ -150,7 +150,7 @@ solve 家族工作流（solve-workflow / opsx-solve-workflow / jira-fix-workflow
 
 ### Requirement: Jira comment bodies SHALL be Wiki markup via jira-wiki-markup
 
-`solve` 家族 Jira 工作流（`jira-fix-workflow` / `opsx-jira-fix-workflow`）以及它们委托的 `jira-status-writeback`，在调用 `jira_add_comment` 时 MUST 将 `body` 写成 Jira Wiki markup，且 MUST 通过加载强依赖 skill `jira-wiki-markup` 获得语法，而不是使用 GitHub Markdown 模板。本要求不改变「合并完成后才回写」与两步 API / 仅「已修复」的既有契约。
+`solve` 家族 Jira 工作流（`jira-fix-workflow` / `opsx-jira-fix-workflow`）以及它们委托的 `jira-status-writeback`，在调用 `jira_add_comment` 时 MUST 将 `body` 写成 Jira Wiki markup，且 MUST 通过加载强依赖 skill `jira-wiki-markup` 获得语法，而不是使用 GitHub Markdown 模板。本要求不改变「合并完成后才回写已修复」与两步 API / 仅「已修复」的既有契约。分析前认领「解决中」由 `jira-status-lifecycle` 另行规定。
 
 #### Scenario: Writeback body is not Markdown
 

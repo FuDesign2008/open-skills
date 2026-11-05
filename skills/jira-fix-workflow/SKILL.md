@@ -1,6 +1,6 @@
 ---
 name: jira-fix-workflow
-version: "3.39.0"
+version: "3.40.1"
 user-invocable: true
 description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end; ai-proxy overlay (thin freeze then occupy) is available independently. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / fix this bug, jira-fix, auto fix, force fix, resume fix, ai-proxy mode, switch to ai-proxy. Do NOT use for batch fixes across multiple issues — use jira-fix-queue instead (it enqueues into goal-driven-queue; confirm, then run the queue)."
 dependencies:
@@ -18,6 +18,7 @@ dependencies:
   - test-suite-ensure
   - merge-discipline
   - staged-review-flow
+  - jira-status-lifecycle
   - jira-status-writeback
   - jira-wiki-markup
   - jira-read
@@ -59,7 +60,7 @@ dependencies:
 
 ## Unattended proxy exits
 
-When this-run contract or task card records **`Stage-exit policy: ai-proxy`** (auto carrier; queue child is sufficient but not required), each manual stop point becomes a proxy checkpoint per `ai-proxy-discipline`. Thin freeze (verbal trigger ≠ occupancy) lives there. Merge, irreversible, protected-branch, and Jira writeback stay human-only (park + ticket). Any other policy value or none → today's non-proxy behavior.
+When this-run contract or task card records **`Stage-exit policy: ai-proxy`** (auto carrier; queue child is sufficient but not required), each manual stop point becomes a proxy checkpoint per `ai-proxy-discipline`. Thin freeze (verbal trigger ≠ occupancy) lives there. Merge, irreversible, protected-branch, and QA-owned Jira statuses (验证通过 / 关闭) stay human-only (park + ticket). Developer-owned transitions in `jira-status-lifecycle` still run. Any other policy value or none → today's non-proxy behavior.
 
 **Stop-point forecast**: if this run **starts** with a frozen contract (queue child with problem + frozen decisions, or independent thin freeze already written), open with a forecast table before analysis — every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket. If overlay is requested **mid-run**, after thin freeze output a forecast of **remaining** exits, then continue the current stage (do not restart from analysis).
 
@@ -75,7 +76,7 @@ Core rules live in `workflow-mode-lifecycle`. "Full flow complete" means stages 
 
 ## Queue-child mode (goal-driven-queue dispatch)
 
-When dispatched by `goal-driven-queue` (explicit `queue-child` context flag in the invocation — never guessed from ambient signals), this flow adapts: the card's goal condition carries the Jira issue link; its frozen-decisions block supplies stage 0–1; `Stage-exit policy` rides along (occupancy is the Unattended pointer above, not unique to this flag); open with a stop-point forecast (every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket). The terminal is **PR-open**: stop after stage 9 with a record-only closeout — stage 10 (merge + Jira writeback) is deferred to the human (merge authority and external-tracker writebacks are never proxied); the queue's acceptance package carries them as pending follow-ups. Independent use (no flag): overlay/occupancy still follow `Stage-exit policy` and the Unattended pointer; the **PR-open** terminal does **not** apply; closeout stays this skill's stage 9–10 (overlay is not naked auto through merge/writeback). When this run is a queue child, the completion report includes the problem, the cause, and the completed fix, and an evidence list. Each evidence item is an opened-UI check citing a png, jpg, jpeg, or webp path, or a non-UI check citing the command and a short output summary. A missing or empty image is pending and states the capture still required. Do not invent an image. Before an opened-UI image supports the check, inspect it per `completion-evidence-discipline`. This run does not write the HTML page and does not write the evidence HTML.
+When dispatched by `goal-driven-queue` (explicit `queue-child` context flag in the invocation — never guessed from ambient signals), this flow adapts: the card's goal condition carries the Jira issue link; its frozen-decisions block supplies stage 0–1; `Stage-exit policy` rides along (occupancy is the Unattended pointer above, not unique to this flag); open with a stop-point forecast (every manual exit × covered-by-frozen-decisions vs will-form-a-new-ticket). The terminal is **PR-open**: stop after stage 9 with a record-only closeout — stage 10 (merge + Jira writeback) is deferred to the human (merge authority stays with the human; the before-analysis claim in `jira-status-lifecycle` still runs); the queue's acceptance package carries them as pending follow-ups. Independent use (no flag): overlay/occupancy still follow `Stage-exit policy` and the Unattended pointer; the **PR-open** terminal does **not** apply; closeout stays this skill's stage 9–10 (overlay is not naked auto through merge/writeback). When this run is a queue child, the completion report includes the problem, the cause, and the completed fix, and an evidence list. Each evidence item is an opened-UI check citing a png, jpg, jpeg, or webp path, or a non-UI check citing the command and a short output summary. A missing or empty image is pending and states the capture still required. Do not invent an image. Before an opened-UI image supports the check, inspect it per `completion-evidence-discipline`. This run does not write the HTML page and does not write the evidence HTML.
 
 ## ⚡ Quick Reference (read before executing)
 
@@ -101,7 +102,7 @@ Auto/manual per-stage differences: [reference.md](reference.md) § Mode Differen
 
 - **Investigate before speaking**: no verdict without code evidence
 - **Active questioning**: follow `clarifying-question-discipline` (one question per turn; multi-round until clear; clarify first, do not rush to answer). When domain vocabulary is in play, also follow `domain-language-discipline`.
-- **Jira status boundary**: engineering only transitions the issue to "已修复" (Fixed); closing / marking verified belongs to QA
+- **Jira status boundary**: developer-owned status decisions load `jira-status-lifecycle` (claim「解决中」before analysis;「已修复」only after merge). Closing / marking verified belongs to QA
 
 ## Path Selection
 
@@ -138,7 +139,11 @@ Output: [reference.md](reference.md) § Stage 0. On success, proceed directly to
 
 ## Stage 1: Read Jira Info
 
-Call `jira-read {JIRA-ID} --live` after the `jira-read` credential chain (degrade to cache → degrade further to manual/abort). Save `01-jira-info.md`. Extract: ID, title, priority, status, description, repro steps, expected/actual result, attachments, comments. Output: reference.md § Stage 1. Tools: ✅ mcp / jira-read; ❌ Edit/Write/Bash. Proceed directly to stage 2.
+Call `jira-read {JIRA-ID} --live` after the `jira-read` credential chain (degrade to cache → degrade further to manual/abort). Save `01-jira-info.md`. Extract: ID, title, priority, status, assignee, description, repro steps, expected/actual result, attachments, comments. Output: reference.md § Stage 1. Tools: ✅ mcp / jira-read; ❌ Edit/Write/Bash.
+
+Load `jira-status-lifecycle` and run its before-analysis decision on that issue. `stop-identity-unresolved` and `stop-transition-failed` report and stop; do not enter stage 2. Every `continue-*` outcome enters stage 2. On `continue-not-assignee`, include the operator notice in the stage output. Do not restate the decision table here.
+
+Proceed directly to stage 2 only after a continue outcome.
 
 > **Performance-domain issue** (slow / jank / resource growth): run the analysis, optimization, and verification work under `perf-optimize-workflow`'s evidence-gated paradigm (benchmark baseline → evidence gate → one-target iteration → A/B verdict) and fold its conclusions back into this workflow's stages; the Jira orchestration (branch, MR, writeback) stays here. Note: its campaigns create per-project artifacts in the repo (benchmark log + harness, and seeded `code-insight`/`code-optimizer` skills) — commit them alongside the fix; the optimize-verify loop additionally requires an environment loop runner (analysis stages always run). Informational reference, not a dependency.
 
@@ -261,7 +266,7 @@ Once merge is selected:
 
 1. `feature-branch-closeout` loads `merge-discipline` (Part A→B→C→R→D; checklist in that skill's reference.md)
 2. Merge (`gh pr merge --merge` / `glab mr merge`) → delete the remote fix branch → sync the default branch → delete the local branch
-3. Load `jira-status-writeback` (field map: branch, commit, PR URL, root cause, solution, files, report, verification scenarios); a writeback failure does not block completion. Direct Jira comments load `jira-wiki-markup` before `jira_add_comment`.
+3. Load `jira-status-writeback` (field map: branch, commit, PR URL, root cause, solution, files, report, verification scenarios). An incomplete「已修复」transition leaves the merge in place and leaves the lifecycle incomplete. Direct Jira comments load `jira-wiki-markup` before `jira_add_comment`.
 
 Write `08-merge.md`; state `current_phase: "completed"`.
 
