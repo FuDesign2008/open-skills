@@ -69,6 +69,30 @@ test("post-merge skips the status write and the repair comment when the assignee
   assert.equal(decision.lifecycleComplete, false);
 });
 
+test("post-merge does not treat someone else's fixed issue as satisfied", () => {
+  const decision = decidePostMerge({
+    actor: "alice",
+    assignee: "bob",
+    statusClass: "fixed",
+    transitionAvailable: false,
+  });
+  assert.equal(decision.outcome, "incomplete-not-assignee");
+  assert.equal(decision.comment, false);
+  assert.equal(decision.lifecycleComplete, false);
+});
+
+test("post-merge does not treat a fixed issue as satisfied when the session user is unresolved", () => {
+  const decision = decidePostMerge({
+    actor: "",
+    assignee: "alice",
+    statusClass: "fixed",
+    transitionAvailable: false,
+  });
+  assert.equal(decision.outcome, "incomplete-identity");
+  assert.equal(decision.comment, true);
+  assert.equal(decision.lifecycleComplete, false);
+});
+
 test("post-merge treats an existing fixed status as satisfied without another transition", () => {
   const decision = decidePostMerge({
     actor: "alice",

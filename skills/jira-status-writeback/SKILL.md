@@ -1,6 +1,6 @@
 ---
 name: jira-status-writeback
-version: "1.4.1"
+version: "1.4.2"
 user-invocable: false
 description: "Post-merge Jira writeback SOP: transition only to「已修复」, then an independent Wiki-markup comment posted in the body field with read-back markup-fidelity verification and a direct-REST fallback. Triggers — 「Jira 状态回写」「回写已修复」「合并后写 Jira」「jira writeback」「jira status writeback」. Do NOT use for reading issues, creating issues, or pre-merge comments. Loaded by Jira fix hosts after merge via frontmatter dependencies."
 dependencies:
@@ -38,7 +38,7 @@ Only after the PR/MR has **successfully merged** into the target branch. Never a
    - On any fidelity failure, rewrite the comment with the bundled REST fallback `scripts/update-comment-wiki.mjs` (comment bodies only; credential chain identical to `jira-read`; pass no comment id to create, pass the comment id to update; it re-verifies fidelity on its own), then report from its PASS output.
 
 3. **Failure handling**  
-   - When the outcome is `incomplete-transition`, the lifecycle stays incomplete and the repair comment still posts. The merge stays. An already-`fixed` status is `status-satisfied`: skip the transition, post the comment, and keep the status obligation met.  
+   - When the outcome is `incomplete-transition`, the lifecycle stays incomplete and the repair comment still posts. The merge stays. `status-satisfied` applies only when `decidePostMerge` returns it for an issue already `fixed` and assigned to the session user. `incomplete-not-assignee` stays incomplete and does not post the repair comment, including when the status is already `fixed`.  
    - A comment API failure after a successful transition warns and records for the host report. The merge stays, and the status obligation already met stays met.  
    - A missing prerequisite at load aborts writeback. The merge stays, and the host leaves the lifecycle incomplete.
 

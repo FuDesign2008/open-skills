@@ -38,7 +38,7 @@ For step 2 the skill MUST treat the write channel as unverified until proven fai
 
 ### Requirement: Transition target SHALL be developer-owned 「已修复」 only
 
-The skill SHALL call `jira_get_transitions` (or equivalent) before `decidePostMerge` and pass that result as whether a transition to the `fixed` status exists. It SHALL transition only to the developer-owned status equivalent to「已修复」(or the project's configured same-meaning status), and only when `jira-status-lifecycle` returns `transition: true`. Closing, verification-pass, or QA-owned statuses MUST NOT be applied by this skill. `applyTransitionResult` receives boolean `true` only when that transition call succeeded; every other result, including an object payload, is a failed transition. If the status is already the `fixed` class, the outcome is `status-satisfied`: skip the transition, post the repair comment, and treat the status obligation as met. If no matching transition exists and the status is not already `fixed`, the outcome is `incomplete-transition`: skip the transition, leave the lifecycle incomplete, keep the merge, and still attempt the comment.
+The skill SHALL call `jira_get_transitions` (or equivalent) before `decidePostMerge` and pass that result as whether a transition to the `fixed` status exists. It SHALL transition only to the developer-owned status equivalent to「已修复」(or the project's configured same-meaning status), and only when `jira-status-lifecycle` returns `transition: true`. Closing, verification-pass, or QA-owned statuses MUST NOT be applied by this skill. `applyTransitionResult` receives boolean `true` only when that transition call succeeded; every other result, including an object payload, is a failed transition. Identity and assignee gates run before the status class. An unresolved session user stays `incomplete-identity` even when the status is already `fixed`. An issue that is not assigned to the session user stays `incomplete-not-assignee` even when the status is already `fixed`: do not transition, do not post the repair comment, notify the operator, and leave the lifecycle incomplete. Only an issue assigned to the session user whose status is already the `fixed` class is `status-satisfied`: skip the transition, post the repair comment, and treat the status obligation as met. Only an issue assigned to the session user whose status is not already `fixed`, and for which no matching transition exists, is `incomplete-transition`: skip the transition, leave the lifecycle incomplete, keep the merge, and still attempt the comment.
 
 #### Scenario: Matching 已修复 transition
 
@@ -47,12 +47,17 @@ The skill SHALL call `jira_get_transitions` (or equivalent) before `decidePostMe
 
 #### Scenario: Already fixed
 
-- **WHEN** the issue status already means「已修复」
+- **WHEN** the issue is assigned to the session user and its status already means「已修复」
 - **THEN** the skill skips the transition, posts the repair comment, and treats the status obligation as met
+
+#### Scenario: Already fixed but not assigned
+
+- **WHEN** the merged issue is not assigned to the session user and its status already means「已修复」
+- **THEN** the outcome stays `incomplete-not-assignee`: no transition, no repair comment, the operator is notified, and the lifecycle stays incomplete
 
 #### Scenario: No matching transition
 
-- **WHEN** the issue is not already「已修复」and no「已修复」-equivalent transition is available
+- **WHEN** the issue is assigned to the session user, its status is not already「已修复」, and no「已修复」-equivalent transition is available
 - **THEN** the skill skips the transition, leaves the lifecycle incomplete, keeps the merge, and still attempts the repair comment
 
 ### Requirement: Comment fields SHALL be host-parameterized

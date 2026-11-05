@@ -76,6 +76,22 @@ test("ai-proxy host pointers do not park developer-owned status transitions", ()
   }
 });
 
+test("writeback fixed outcomes stay behind the assignee gate", () => {
+  const spec = read("openspec/specs/jira-status-writeback/spec.md");
+  const block = (heading, end) => {
+    const start = spec.indexOf(heading);
+    assert.ok(start !== -1, heading);
+    return spec.slice(start, spec.indexOf(end, start + heading.length));
+  };
+  const already = block("#### Scenario: Already fixed", "#### Scenario:");
+  const missing = block("#### Scenario: No matching transition", "### Requirement:");
+  assert.match(already, /assigned to the session user/);
+  assert.match(missing, /assigned to the session user/);
+  assert.match(spec, /incomplete-not-assignee/);
+  const skill = read("skills/jira-status-writeback/SKILL.md");
+  assert.equal(skill.includes("An already-`fixed` status is `status-satisfied`"), false);
+});
+
 test("skill prose names every decision outcome", () => {
   const body = read(lifecycle);
   for (const outcome of outcomes) {
