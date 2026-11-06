@@ -242,9 +242,9 @@ Do not change production code during this stage; `tester` may add test files. **
 2. **8b — Code review (escalated tier, conditional).** Run when any escalation condition in the contract holds. Same agent, same flow, `escalated` tier, identical input. Both cards are independent; when they conflict, FAIL wins. A passing escalated card discharges the standard card's `low` but never its `FAIL`.
 3. **8c — Integration test.** Dispatch `tester`. It checks unit-test coverage, designs and runs integration scenarios, and performs real-device verification.
 
-Aggregate: any `FAIL` routes per the verdict table below; any `Confidence: low` is not accepted and, if 8b has not run, triggers it; any format error, missing field, or empty `Evidence` blocks the stage. The stage passes only when every card is `PASS` with `Confidence: high`.
+Aggregate: any `FAIL` routes per the verdict table below; any `Confidence: low` triggers 8b when it has not run; any format error, missing field, or empty `Evidence` blocks the stage. The stage passes when every card is `PASS` with an empty `Unresolved`. `Confidence` is recorded, never used as a gate.
 
-Checks that stay with the organizer, not delegated: Figma verification, verification-report honesty, `runtime-verification-discipline` classification, and the debug-verify loop above. For a role allowed to write test files, inspect the resulting diff and reject that result if it touches production paths.
+Checks that stay with the organizer, not delegated: Figma verification, verification-report honesty, `runtime-verification-discipline` classification, and the debug-verify loop above. For a role allowed to write test files, inspect the resulting diff and reject that result if it changes production code.
 
 | Verdict | Next |
 |------|------|

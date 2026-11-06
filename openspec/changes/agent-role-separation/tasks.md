@@ -7,9 +7,9 @@
 ## 2. Acceptance rules
 
 - [x] 2.1 fail-closed：缺字段、空 Evidence、`PASS` 携带非空 `Unresolved` 均阻断
-- [x] 2.2 双轴：审查角色输出 Standards 与 Spec 两个判定，不合并排名
-- [x] 2.3 升级闭合：escalated 通过可解除 low，永不解除 FAIL
-- [x] 2.4 档位可核验：任务单传入、结果单回填、阶段报告记录实际 alias
+- [x] 2.2 审查角色 findings 标注 `[Standards]` / `[Spec]` 轴，不合并排名
+- [x] 2.3 `Confidence` 仅记录，不作门禁
+- [x] 2.4 升级：同一 agent、同一流程、escalated 档；两卡独立，任一 FAIL 即失败
 
 ## 3. Host integration
 
@@ -28,4 +28,4 @@
 - [x] 5.2 `npm run lint:skill-description` 通过
 - [x] 5.3 `npm run lint:deid` 通过
 - [x] 5.4 真实 agent 派发验收：结果单格式、缺陷发现、只读约束、两档模型、tester 职责
-- [ ] 5.5 `openspec validate --strict --all` 通过
+- [x] 5.5 `openspec validate --strict --all` 通过

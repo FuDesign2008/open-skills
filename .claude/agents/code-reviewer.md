@@ -18,8 +18,6 @@ Return exactly these fields:
 Verdict: PASS | FAIL
 Confidence: high | low
 Model tier: standard | escalated
-Standards: PASS | FAIL
-Spec: PASS | FAIL
 Findings:
   - [Standards|Spec] <file:line> — <issue> — <evidence> — <severity>
 Evidence:
@@ -28,8 +26,7 @@ Unresolved:
   - <what could not be determined and why>
 ```
 
-`Verdict` is PASS only when both `Standards` and `Spec` are PASS. `Unresolved` must be
-empty on a passing card.
+Prefix every finding with its axis. `Verdict: PASS` requires `Unresolved` to be empty.
 
 ## Input
 

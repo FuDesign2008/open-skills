@@ -7,8 +7,8 @@
 - 新增本仓工程级角色契约 `.claude/agents/`：`_contract.md`、`models.json`、`developer` / `code-reviewer` / `tester` 三个角色定义。
 - 定义组织者与角色的唯一接口：任务单（目标、artifact、约束、验收标准、模型档位）↔ 结果单（Verdict、Confidence、Model tier、Findings、Evidence、Unresolved；审查角色另加 Standards / Spec 双轴）。
 - 验收改为 fail-closed：缺字段、空 Evidence、`PASS` 携带非空 `Unresolved` 一律阻断。
-- 升级规则闭合：`PASS + low` 触发 escalated 档；escalated 卡通过可解除 low，但永不解除 `FAIL`。
-- 模型档位由 `models.json` 配置，agent 定义写 `model: inherit`，组织者在派发时传入档位并记录实际 alias。
+- `Confidence` 仅作记录与升级触发，不作放行门禁；放行只看 `Verdict` 与 `Unresolved`。
+- 模型档位由 `models.json` 配置，agent 定义写 `model: inherit`；组织者记录请求档位与宿主实际解析的模型，不做相等断言。
 - `jira-fix-workflow` Stage 8 在工程提供角色契约时拆为 8a / 8b / 8c，否则行为不变。
 
 ## Capabilities

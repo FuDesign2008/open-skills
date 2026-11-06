@@ -2,14 +2,5 @@
   "tiers": {
     "standard": "sonnet",
     "escalated": "opus"
-  },
-  "testPaths": [
-    "tests/",
-    "test/",
-    "__tests__/",
-    "spec/",
-    "e2e/",
-    "*.test.*",
-    "*.spec.*"
-  ]
+  }
 }
