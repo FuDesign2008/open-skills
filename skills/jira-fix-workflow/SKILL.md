@@ -1,6 +1,6 @@
 ---
 name: jira-fix-workflow
-version: "3.40.1"
+version: "3.41.0"
 user-invocable: true
 description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end; ai-proxy overlay (thin freeze then occupy) is available independently. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / fix this bug, jira-fix, auto fix, force fix, resume fix, ai-proxy mode, switch to ai-proxy. Do NOT use for batch fixes across multiple issues — use jira-fix-queue instead (it enqueues into goal-driven-queue; confirm, then run the queue)."
 dependencies:
@@ -238,13 +238,13 @@ Do not change production code during this stage; `tester` may add test files. **
 
 **Role dispatch (when available).** When the project provides a role contract (default `.claude/agents/_contract.md`, configurable), load it and dispatch the roles below. Otherwise run this stage with the organizer's own checks as before. The organizer reads every field of each result card and applies the contract's acceptance rules; it does not inspect how a role works internally.
 
-1. **8a — Code review (standard tier).** Dispatch `code-reviewer` with a task card: goal, diff range (`base...HEAD`), requirement source, acceptance criteria, model tier. Resolve the `standard` tier from the project's role configuration (default `.claude/agents/models.json`); a missing or unreadable file aborts this stage.
-2. **8b — Code review (escalated tier, conditional).** Run when any escalation condition in the contract holds. Same agent, same flow, `escalated` tier, identical input. Both cards are independent; when they conflict, FAIL wins. A passing escalated card discharges the standard card's `low` but never its `FAIL`.
+1. **8a — Code review (standard tier).** Dispatch `code-reviewer` with a task card: goal, the working-tree change against the base (tracked modifications, staged changes, and untracked files — not `base...HEAD`, which is empty before Stage 9 commits), requirement source, acceptance criteria, model tier. Resolve the `standard` tier from the project's role configuration (default `.claude/agents/models.json`); a missing or unreadable file aborts this stage.
+2. **8b — Code review (escalated tier, conditional).** Run when any escalation condition in the contract holds. Same agent, same flow, `escalated` tier, identical input. Both cards are independent; when they conflict, FAIL wins.
 3. **8c — Integration test.** Dispatch `tester`. It checks unit-test coverage, designs and runs integration scenarios, and performs real-device verification.
 
-Aggregate: any `FAIL` routes per the verdict table below; any `Confidence: low` triggers 8b when it has not run; any format error, missing field, or empty `Evidence` blocks the stage. The stage passes when every card is `PASS` with an empty `Unresolved`. `Confidence` is recorded, never used as a gate.
+Aggregate per the contract's acceptance rules: any `FAIL` routes per the verdict table below; the stage passes when every card is `PASS` with an empty `Unresolved`.
 
-Checks that stay with the organizer, not delegated: Figma verification, verification-report honesty, `runtime-verification-discipline` classification, and the debug-verify loop above. For a role allowed to write test files, inspect the resulting diff and reject that result if it changes production code.
+Checks that stay with the organizer, not delegated: Figma verification, verification-report honesty, `runtime-verification-discipline` classification, and the debug-verify loop above. Before dispatching `tester`, record the changed-file set; after it returns, compare — any addition or modification outside test files invalidates that result.
 
 | Verdict | Next |
 |------|------|

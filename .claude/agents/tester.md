@@ -26,8 +26,9 @@ Unresolved:
   - <what could not be determined and why>
 ```
 
-`Unresolved` must be empty on a passing card. An unexecuted check makes the card FAIL or
-`Confidence: low`; it never rides along with a pass.
+`Unresolved` must be empty on a passing card. An unexecuted check makes the card `FAIL`
+with the reason in `Unresolved`; it never rides along with a pass. `Confidence: low` is for
+low overall certainty without a specific unresolved item.
 
 ## Work
 

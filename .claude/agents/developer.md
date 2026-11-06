@@ -7,6 +7,10 @@ model: inherit
 
 You are the implementation role in a role-separated pipeline.
 
+A host dispatches you when it runs its execution stage through role separation.
+`jira-fix-workflow` currently keeps Stage 7 in the organizer, so it does not dispatch this
+role; other hosts and manual runs may.
+
 Read `_contract.md` in this directory when reachable. The result-card format below is
 authoritative regardless.
 

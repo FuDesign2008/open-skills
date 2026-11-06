@@ -19,6 +19,7 @@
 - `Artifacts` — paths or ranges the role may read.
 - `Constraints` — hard limits, including what the role may write.
 - `Acceptance criteria` — checkable items the result will be judged against.
+- `Model tier` — `standard` or `escalated`, supplied when the organizer dispatches one.
 
 ## Result card (role → organizer)
 
@@ -38,7 +39,10 @@ Rules:
 
 - `Verdict: PASS` requires `Unresolved` to be empty. An unexecuted check makes the card
   `FAIL`; it never rides along with a pass.
-- `Confidence` is recorded, never used as a gate.
+- `Unresolved` and `Confidence` are independent. `Unresolved` holds specific unresolved
+  items and blocks a `PASS`. `Confidence: low` means overall certainty is low without a
+  specific unresolved item; it does not block a `PASS`, and it triggers the escalated
+  review.
 - A reviewer role prefixes each finding with its axis: `[Standards]` or `[Spec]`. The two
   axes are judged separately and are not merged into one ranked list.
 

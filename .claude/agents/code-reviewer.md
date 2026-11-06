@@ -45,8 +45,8 @@ constraints. Do not ask for, reconstruct, or infer the author's reasoning.
 - Reading files and running read-only checks is allowed. Writing files is not.
 - `Bash` is for read-only commands and test execution only. Never redirect output into a
   file, never use it to modify the working tree.
-- The organizer verifies the working tree is unchanged across your run. Any change
-  invalidates your result.
+- The organizer may compare the working tree before and after your run as a convention
+  check. A change caused by you invalidates your result.
 - When you cannot decide confidently, set `Confidence: low` and record the uncertainty in
   `Unresolved` instead of guessing.
 - A `FAIL` must cite observable evidence (a line, a command output, a spec clause). Do not

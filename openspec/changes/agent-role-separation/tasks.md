@@ -1,7 +1,7 @@
 ## 1. Role contract
 
-- [x] 1.1 新增 `.claude/agents/_contract.md`：三层职责、任务单/结果单、验收规则、档位、升级、测试路径
-- [x] 1.2 新增 `.claude/agents/models.json`：tiers 与 testPaths 可配置
+- [x] 1.1 新增 `.claude/agents/_contract.md`：三层职责、任务单/结果单、验收规则、档位、升级、写入边界
+- [x] 1.2 新增 `.claude/agents/models.json`：tiers 可配置
 - [x] 1.3 新增 `developer.md` / `code-reviewer.md` / `tester.md`
 
 ## 2. Acceptance rules
@@ -28,4 +28,4 @@
 - [x] 5.2 `npm run lint:skill-description` 通过
 - [x] 5.3 `npm run lint:deid` 通过
 - [x] 5.4 真实 agent 派发验收：结果单格式、缺陷发现、只读约束、两档模型、tester 职责
-- [x] 5.5 `openspec validate --strict --all` 通过
+- [x] 5.5 `openspec validate agent-role-separation --strict` 通过（全量校验另有 1 项存量失败 `report-output-format`，本 change 未触碰）

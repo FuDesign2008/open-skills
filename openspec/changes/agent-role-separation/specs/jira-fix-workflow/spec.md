@@ -8,6 +8,12 @@
 
 Stage 8 MUST additionally dispatch roles when the project provides a role contract: `code-reviewer` at the `standard` tier, `code-reviewer` at the `escalated` tier when an escalation condition holds, and `tester`. The organizer MUST read every result-card field and apply the fail-closed acceptance rules. During role dispatch the stage MUST NOT change production code; `tester` MAY add test files. When the project provides no role contract, Stage 8 MUST run the checks above without dispatching roles.
 
+#### Scenario: 可达环境中的修复验证
+
+- **WHEN** Stage 8 验证一个其行为可在 AI 能驱动的环境中检验的修复
+- **THEN** Stage 8 由 AI 在该环境中按 `runtime-verification-discipline` 执行验证
+- **AND** 不把验证步骤列为「请用户自行运行」
+
 #### Scenario: Missing runtime-verification-discipline aborts startup
 
 - **WHEN** `jira-fix-workflow` starts and `runtime-verification-discipline` is unavailable
