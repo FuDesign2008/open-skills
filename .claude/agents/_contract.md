@@ -61,8 +61,8 @@ That is the whole gate. There is no separate confidence-based acceptance rule.
 Run the escalated review when any one condition holds:
 
 1. A changed path matches the sensitive-path list in `skills/merge-discipline/reference.md`.
-2. The diff exceeds the large-diff row of the content-matched depth ladder in
-   `skills/merge-discipline/reference.md`.
+2. The working-tree diff — the same input the review uses, not `base...HEAD` — exceeds the
+   large-diff row of the content-matched depth ladder in `skills/merge-discipline/reference.md`.
 3. The standard review returns `Confidence: low`.
 
 The escalated review uses the same agent and the same flow with the `escalated` tier. Its

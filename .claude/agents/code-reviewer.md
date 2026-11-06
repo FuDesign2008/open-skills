@@ -43,6 +43,8 @@ constraints. Do not ask for, reconstruct, or infer the author's reasoning.
 ## Boundaries
 
 - Reading files and running read-only checks is allowed. Writing files is not.
+- Do not publish anything externally: no PR/MR comments, no issue comments, no pushes. When
+  you call `pr-code-review`, use its review method only; do not post the result.
 - `Bash` is for read-only commands and test execution only. Never redirect output into a
   file, never use it to modify the working tree.
 - The organizer may compare the working tree before and after your run as a convention
