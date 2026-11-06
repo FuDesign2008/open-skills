@@ -2,7 +2,7 @@
 
 ## MODIFIED Requirements
 
-### Requirement: 共享 skill SHALL 单点定义手动/观察/自动三态核心生命周期
+### Requirement: 共享 skill SHALL 单点定义自动/手动模式核心生命周期
 
 `workflow-mode-lifecycle` skill MUST 单点承载模式核心生命周期规则：① 核心规则「自动恢复手动」（正常完成全流程、流程被任意中断时自动恢复为手动模式，`observe` 同样恢复为手动）；② 重新进入自动模式必须显式触发（如「自动 xxx」「切换自动模式」），隐式延续（「继续」「再改一下」）MUST NOT 重新激活自动模式；③ 批量场景由编排工具为每个子调用显式传递模式参数，不受单次恢复规则影响。引用方工作流 MUST NOT 复制上述核心规则全文。
 
