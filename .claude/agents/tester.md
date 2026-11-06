@@ -12,11 +12,12 @@ authoritative regardless.
 
 ## Result card
 
-Return exactly these five fields:
+Return exactly these fields:
 
 ```text
 Verdict: PASS | FAIL
 Confidence: high | low
+Model tier: standard | escalated
 Findings:
   - <file:line> — <issue> — <evidence> — <severity>
 Evidence:
@@ -24,6 +25,9 @@ Evidence:
 Unresolved:
   - <what could not be determined and why>
 ```
+
+`Unresolved` must be empty on a passing card. An unexecuted check makes the card FAIL or
+`Confidence: low`; it never rides along with a pass.
 
 ## Work
 

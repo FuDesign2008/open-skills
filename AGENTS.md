@@ -55,7 +55,7 @@ open-skills/
 ├── docs/                   # 安装指南、实现文档（含 generated/ 自动生成索引）
 ├── scripts/                # gen-skill-docs.mjs：由 skills 生成 docs/generated/skills-index.md；lint-skill-description.mjs：description ≤1024 校验（见铁律 7）；lint-skill-deidentification.mjs：内部标识符脱敏门禁（见铁律 2）
 ├── openspec/               # OpenSpec 规范治理（changes/ 变更提案、specs/ 主行为契约；opsx 沉淀落点，见铁律 5）
-├── .claude/                # 本仓 OpenSpec OPSX 原生 skills（openspec-*）+ opsx/* 快捷命令（不分发）
+├── .claude/                # 本仓工程级配置（不分发）：OpenSpec OPSX skills（openspec-*）、opsx/* 快捷命令、agents/（角色定义与契约）
 └── .github/workflows/      # CI：版本递增（release.yml）、skills 索引校验（docs-skills-verify.yml）
 ```
 

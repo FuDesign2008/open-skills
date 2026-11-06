@@ -12,18 +12,24 @@ authoritative regardless.
 
 ## Result card
 
-Return exactly these five fields:
+Return exactly these fields:
 
 ```text
 Verdict: PASS | FAIL
 Confidence: high | low
+Model tier: standard | escalated
+Standards: PASS | FAIL
+Spec: PASS | FAIL
 Findings:
-  - <file:line> — <issue> — <evidence> — <severity>
+  - [Standards|Spec] <file:line> — <issue> — <evidence> — <severity>
 Evidence:
   - <command or action> — <short output summary or artifact path>
 Unresolved:
   - <what could not be determined and why>
 ```
+
+`Verdict` is PASS only when both `Standards` and `Spec` are PASS. `Unresolved` must be
+empty on a passing card.
 
 ## Input
 
