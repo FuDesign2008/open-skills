@@ -1,6 +1,6 @@
 ---
 name: staged-review-flow
-version: "1.3.0"
+version: "1.4.0"
 user-invocable: false
 description: "Shared review-stage flow for PDCA hosts: full decision review, code-design review for code-affecting solutions, Standards∥Spec dual-axis verdicts (no cross-axis merge rank), binary pass/fail, bounded auto optimization, design summary, and verification-report honesty composed with completion-evidence-discipline. Used by PDCA workflows. Triggers — 「阶段审查流程」「方案审查编排」「审查闭环」「验证报告诚实」「双轴审查」 / staged review flow, dual-axis review, verification honesty. Do NOT use as a standalone task workflow."
 dependencies:
@@ -34,7 +34,7 @@ Never hardcode a host workflow's stage numbers, OpenSpec paths, Jira state trans
 4. Keep **two axes** separate in the report (labels MAY vary; meaning MUST NOT):
    - **Standards** — design / quality / smell / security fitness (`solution-review` strategic+core quality aspects and `code-design-review` when applicable).
    - **Spec** — fit to the chosen solution, ticket, or OpenSpec delta / stated requirements.
-   Axes MAY run in parallel (e.g. separate subagents). **MUST NOT** merge both into one undifferentiated ranked list; a pass on one axis MUST NOT hide a fail on the other.
+   Axes MAY run in parallel; when they do, `parallel-delegation-discipline` owns the admission test and the bounded returns, and the final cross-axis verdict stays serial. **MUST NOT** merge both into one undifferentiated ranked list; a pass on one axis MUST NOT hide a fail on the other.
 5. Aggregate blocking criteria into a binary overall result:
    - **Pass:** no blocking issues remain on **either** axis (and `{extra-dimensions}`).
    - **Fail:** at least one blocking issue remains on any axis.

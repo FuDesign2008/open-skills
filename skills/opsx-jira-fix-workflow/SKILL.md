@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.27.1"
+version: "1.28.0"
 user-invocable: true
 description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / opsx jira fix, OpenSpec Jira fix workflow, ai-proxy mode, switch to ai-proxy."
 dependencies:
@@ -36,6 +36,7 @@ dependencies:
   - figma-pixel-verify
   - runtime-verification-discipline
   - context-budget-discipline
+  - parallel-delegation-discipline
 ---
 
 # OPSX Jira Bug-Fix Workflow
@@ -216,6 +217,8 @@ Load the strong dependency `analysis-core` and execute its §§1-3. This workflo
 
 The stage output MUST close with the analysis gate output block (`analysis-core` §5 — red loop / debug entry / scenario supplements / temporary changes); a missing block blocks entry to Stage 3. When the expected outcome is a result the user can see or operate, that same load runs `competitive-research` per `analysis-core`. Do not restate its method.
 
+When this stage yields an independent read-only unit set, load `parallel-delegation-discipline` and apply its admission test; state the unit count, split basis, and each unit's write set (empty when the unit is read-only) in this stage's output. Units return findings only; the change's OpenSpec artifacts are written afterwards by this workflow's single-owner steps.
+
 ### This workflow's orchestration (kept)
 
 On top of the `analysis-core` skeleton, this stage also completes:
@@ -270,6 +273,8 @@ If the path is still foggy, follow `decision-fog-discipline` before the solution
 In manual mode, output the solution table and pause for the user's pick; auto mode picks the best solution automatically.
 
 Load `staged-review-flow` and execute its full review contract. This workflow's mapping: `{next-stage}` = Stage 5 "Make the plan"; `{artifact-sink}` = `openspec/changes/<change-name>/design.md`; `{extra-dimensions}` = spec coverage (requirements/scenarios) and Jira status boundary (`jira-status-lifecycle`: claim before analysis,「已修复」only after merge); `{batch-overcap-behavior}` = `N/A`.
+
+When the review axes or their sub-perspectives are delegated as separate units, load `parallel-delegation-discipline` for the admission test and bounded returns; keep the final cross-axis verdict and the `design.md` write serial.
 
 > 🚩 **Red Flags (stage 4)**:
 > - Review covers only the root cause, without checking spec coverage or side effects
@@ -340,6 +345,8 @@ Load and call `test-suite-ensure`, declaring `mode=mandatory`, scoped to this fi
 ## Stage 7: Check verification
 
 **Context budget**: verify against the ledger + artifacts when a reset occurred (per `context-budget-discipline`); never replay prior-session history.
+
+**Parallel delegation**: when the verification checks are independent (OpenSpec validation, tests, lint, type check, build, Jira cross-check), load `parallel-delegation-discipline` for the admission test and the collection duty; each check's result still needs fresh evidence, and OpenSpec artifact writes stay serial.
 
 Must cover:
 
