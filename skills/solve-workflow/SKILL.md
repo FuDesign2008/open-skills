@@ -1,6 +1,6 @@
 ---
 name: solve-workflow
-version: "1.32.0"
+version: "1.33.0"
 user-invocable: true
 description: "Eight-stage PDCA workflow for systematically solving bugs, refactors, and feature-development tasks: clarify → analyze → explore solutions → review → plan → execute → verify → retrospect. Manual mode (default) pauses for user confirmation at each stage exit; auto mode runs end-to-end; ai-proxy overlay (thin freeze then occupy) is available independently. Triggers — 「明确问题」「分析问题」「探索方案」「审查方案」「制定计划」「执行计划」「检查验证」「复盘改进」(alias「回顾总结」)；「继续分析」「深入分析」「修改方案」「完善方案」「优化方案」「更新计划」「修订计划」「修改计划」；「自动模式」「自动分析」「自动解决」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / clarify problem, analyze problem, explore solutions, review solution, make plan, execute plan, verify, retrospective, auto mode, ai-proxy mode, switch to ai-proxy."
 dependencies:
@@ -31,6 +31,7 @@ dependencies:
   - runtime-verification-discipline
   - ai-proxy-discipline
   - context-budget-discipline
+  - parallel-delegation-discipline
 ---
 
 # Eight-Stage Problem-Solving Workflow
@@ -201,6 +202,8 @@ Load the strong dependency `analysis-core` and run its §§1–3. This workflow'
 
 Output format per `analysis-core` and `known-issue-research/reference.md`; the output MUST close with the analysis gate output block (`analysis-core` §5) — missing block blocks stage 3. If any temporary change was made, its list + rollback verification rides in the block's temporary-changes line. When the expected outcome is a result the user can see or operate, that same load runs `competitive-research` per `analysis-core`. Do not restate its method.
 
+When this stage yields an independent read-only unit set, load `parallel-delegation-discipline` and apply its admission test; state the unit count, split basis, and each unit's write set (empty when the unit is read-only) in this stage's output.
+
 ---
 
 ## Stage 3: Explore Solutions
@@ -249,6 +252,8 @@ Output the solution comparison table and wait for the user to choose before ente
 ## Stage 4: Review the Solution
 
 Load `staged-review-flow` and run its full review contract. This workflow's mapping: `{next-stage}` = stage 5 "Make a Plan"; `{artifact-sink}` = the stage 4 review report (format in [reference.md](reference.md)); `{extra-dimensions}` = none; `{batch-overcap-behavior}` = `N/A`. Tool restrictions: Edit/Write forbidden; Read allowed to inspect code details.
+
+When the review axes or their sub-perspectives are delegated as separate units, load `parallel-delegation-discipline` for the admission test and bounded returns; keep the final cross-axis verdict serial.
 
 ---
 
@@ -311,6 +316,8 @@ For behavior-changing work, follow `test-first-discipline` (failing test observe
 > Principle: output only the verification results — improvement suggestions belong to stage 8.
 
 **Context budget**: if the run crossed the compaction threshold or restarted from a ledger, verify against the ledger + artifacts — never by replaying prior-session history (per `context-budget-discipline`).
+
+**Parallel delegation**: when the verification checks are independent (for example tests, lint, type check, build), load `parallel-delegation-discipline` for the admission test and the collection duty; each check's result still needs fresh evidence.
 
 1. **Goal achievement** — whether stage 1's expected outcome was met
 2. **Comparison with the plan** — compare against stage 5's plan

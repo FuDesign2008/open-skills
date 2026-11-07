@@ -1,6 +1,6 @@
 ---
 name: jira-fix-workflow
-version: "3.41.0"
+version: "3.42.0"
 user-invocable: true
 description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end; ai-proxy overlay (thin freeze then occupy) is available independently. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / fix this bug, jira-fix, auto fix, force fix, resume fix, ai-proxy mode, switch to ai-proxy. Do NOT use for batch fixes across multiple issues — use jira-fix-queue instead (it enqueues into goal-driven-queue; confirm, then run the queue)."
 dependencies:
@@ -36,6 +36,7 @@ dependencies:
   - runtime-verification-discipline
   - ai-proxy-discipline
   - context-budget-discipline
+  - parallel-delegation-discipline
 ---
 
 # Jira Bug-Fix Workflow
@@ -163,6 +164,8 @@ Load `analysis-core` §§1-3; the stage output MUST close with the analysis gate
 
 **Workflow-specific differences**: ① the industry-wide-issue evaluation is a **gate**; ② 🚫 no viable fix → report + **stop, do not enter stage 5** + write a Jira comment (load `jira-wiki-markup`; template in reference.md); ③ existence check ❌ → stop + Jira comment (load `jira-wiki-markup`) + wait for the user; ④ artifact `02-analysis.md` (includes a difficulty pre-assessment).
 
+When this stage yields an independent read-only unit set, load `parallel-delegation-discipline` and apply its admission test; state the unit count, split basis, and each unit's write set (empty when the unit is read-only) in this stage's output. The stage still closes with one analysis gate block, and the Jira status claim and comment stay serial single-owner actions.
+
 👤 continue directly into stage 4, append the grading to the end of the output, then ⏸️ pause for confirmation before →5. 🤖 → stage 4.
 
 ---
@@ -198,6 +201,8 @@ If the path is still foggy, follow `decision-fog-discipline` before the solution
 Output: list → expanded detail → **one** comparison table (see reference.md § Stage 5 Solution Comparison) → `03-options.md`. 👤 stop after the comparison table.
 
 **Review**: load `staged-review-flow`. Mapping: `{next-stage}` = stage 6; `{artifact-sink}` = `03-options.md`; `{extra-dimensions}` = none; `{batch-overcap-behavior}` = mark "review failed (cap)" and move to the next issue. ✅ Read; ❌ Edit/Write/Bash.
+
+When the review axes or their sub-perspectives are delegated as separate units, load `parallel-delegation-discipline` for the admission test and bounded returns; keep the final cross-axis verdict and the `03-options.md` write serial.
 
 ---
 
@@ -235,6 +240,8 @@ After execution: 🤖 normal→8, 🟠 pause for review; 👤 normal wait for co
 ## Stage 8: Check & Verify
 
 Do not change production code during this stage; `tester` may add test files. **Context budget**: verify against the ledger + artifacts when a reset occurred (per `context-budget-discipline`); never replay prior-session history. Compare against the Jira repro/expected result, stage 6's plan, tests, side effects, and root cause; use `analysis-core` §4 for the debug-verify loop. Verification execution follows `runtime-verification-discipline` (the AI executes verification itself in an environment, and hands a step to the user only at a classified true hard boundary, with the reason stated). When the goal, card, issue, or plan contains `figma.com` or `node-id=`, or this run implemented from Figma, load `figma-pixel-verify` and follow it; a missing measured report (the living artifact’s Verify section, or the Spec source sibling) blocks this verification stage from passing. A spec-gap FAIL does not pass verification—re-enter `figma-pixel-implement` to complete the table. Also load it when alignment checking is required without a same-run implement. This stage passes only when that report’s overall status is PASS (accepted residuals included) and its channel is a laid-out measurement (`storybook`, `isolated-harness`, `preview`, `full-app`, or `layout-probe`). Any other result fails this stage and returns to the implement stage for another fix/re-measure loop. This stage also runs `scripts/check-figma-verify-report.mjs` from the `figma-pixel-verify` skill on that report; a non-zero exit fails the stage. Verification-report honesty per `staged-review-flow` and `completion-evidence-discipline`. Template: reference.md § Stage 8.
+
+**Parallel delegation.** When this stage yields independent units, load `parallel-delegation-discipline` for the admission test and the collection duty; state the parallel plan in this stage's output. The `8a → 8b` dependency edge stays serial: `8b` is admitted only when its escalation condition holds and after `8a`. Only independent units of `8a` and `8c` may join a parallel set. The Jira status transition and the fix comment stay serial single-owner actions.
 
 **Role dispatch (when available).** When the project provides a role contract (default `.claude/agents/_contract.md`, configurable), load it and dispatch the roles below. Otherwise run this stage with the organizer's own checks as before. The organizer reads every field of each result card and applies the contract's acceptance rules; it does not inspect how a role works internally.
 
