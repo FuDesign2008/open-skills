@@ -34,7 +34,7 @@
 |------|------------------|----------|
 | **编排入口** | `true` | `solve-workflow`、`opsx-solve-workflow`、`jira-fix-workflow`、`perf-optimize-workflow`、`write-workflow`、`brainstorm-workflow` |
 | **共享纪律 / 方法论** | 默认 `false`，经 frontmatter `dependencies` 加载 | `*-discipline`、`analysis-core`、`staged-review-flow`、`design-approval-gate`、`feature-branch-closeout`、`report-output-discipline` |
-| **可独立触发的横切动作** | 显式 `true`（例外） | `merge-discipline`、`delivery-discipline`、`test-suite-ensure`、`solution-review`、`learn-and-improve`、`pr-code-review` |
+| **可独立触发的横切动作** | 显式 `true`（例外） | `merge-discipline`、`delivery-discipline`、`test-suite-ensure`、`solution-review`、`learn-and-improve`、`pr-code-review`、`jira-wiki-markup` |
 
 新增 skill 时按上表选型；`user-invocable: false` 的 skill 必须被其他 skill 引用，否则视为死 skill。本仓库不分发斜杠命令文件；用户靠 skill 名与触发词唤起。贡献者本仓 OpenSpec 入口在 `.claude/commands/opsx/`。
 
