@@ -1,7 +1,7 @@
 ---
 name: jira-wiki-markup
-version: "1.2.0"
-user-invocable: false
+version: "1.3.0"
+user-invocable: true
 description: "Compose Jira wiki-rendered fields (especially comments) in Jira Wiki markup. Use whenever writing jira_add_comment body, a wiki description, or a repair report that will be posted to Jira. Triggers — 「Jira 语法」「Jira Wiki」「写 Jira 评论」「Jira 评论格式」「wiki markup」「jira comment markup」. Do NOT use for reading issues, status transitions, GitHub/PR Markdown, or Jira Cloud ADF. Referenced by Jira comment writers via frontmatter dependencies."
 ---
 
