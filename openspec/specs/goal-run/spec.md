@@ -3,7 +3,9 @@
 ## Purpose
 
 Goal-driven long-run execution capability owned by the user-invocable `goal-driven-workflow` skill: five-stage orchestration — ① requirement alignment & output contract → ② layered acceptance criteria + `/goal` condition design (official four parts, mandatory budget clause) → ③ sub-agent division & context management (context-rot mitigation) → ④ long-run launch (`/goal` / `claude -p` non-interactive / manual-loop fallback, with CLAUDE.md + hooks + auto-mode companion) → ⑤ completion report & human acceptance. Built on top of Claude Code's native `/goal` harness (v2.1.139+), with a generic fallback for environments without `/goal`.
+
 ## Requirements
+
 ### Requirement: 长跑前置需求对齐
 
 The system SHALL perform a **deep intake interview** and output-contract alignment before starting a goal long-run, following `intake-interview-discipline` §A: fog-bounded depth (destination → decision tickets resolved one-per-turn per `clarifying-question-discipline` → approach comparison with human pick → freeze into the output contract → bounded pre-launch self-review). The host MUST NOT restate the composed disciplines' rules in the stage body; it MUST keep only thin touchpoints (pointer, per-turn quantity, Red Flags). When the queue-child predicate holds (this turn's dispatch message already supplied a frozen task card as stage 1 input), that artifact's frozen decisions answer this stage; if that card has no frozen decisions, the interview runs in self-answer mode with every answer flagged as an assumption. Standalone invocations MUST NOT complete Design-checked via self-answer: absent a human-seat confirmation of stages 1–3 and Stage 4 launch approval, Design-checked is incomplete and Launch MUST be refused.
@@ -394,3 +396,26 @@ The completion report MUST record that file's path.
 
 - **WHEN** a standalone opened-UI check cites a file that is missing or empty
 - **THEN** the evidence page marks that item pending, states the capture still required, and does not contain an invented image
+
+### Requirement: Standalone human-view of review or evidence HTML SHALL follow system-browser-open-discipline
+
+When a standalone run has written `review.html` / `evidence.html` and the agent opens either path for a present human to view (interactive handback or an explicit view request), the open MUST follow `system-browser-open-discipline`. Printing paths only on a scheduled or unattended handback remains allowed. Queue-child runs that do not write HTML are out of scope for this open rule.
+
+#### Scenario: Standalone interactive handback opens review or evidence in the system browser
+
+- **WHEN** a standalone stage-5 handback is interactive and the agent opens the review or evidence HTML for the human
+- **THEN** the open follows `system-browser-open-discipline`
+
+#### Scenario: Explicit view request on standalone pages
+
+- **WHEN** the human asks to open the standalone review or evidence HTML
+- **THEN** the agent opens that path following `system-browser-open-discipline`
+
+### Requirement: goal-driven-workflow SHALL strong-depend on system-browser-open-discipline
+
+`goal-driven-workflow` MUST declare `system-browser-open-discipline` in frontmatter `dependencies`, verify it at the prerequisite skill check (abort with install guidance when missing), and thin-reference it at human-view open steps for generated HTML. The host MUST NOT paste the discipline's Iron Law into the workflow body.
+
+#### Scenario: Missing dependency aborts workflow startup
+
+- **WHEN** `system-browser-open-discipline` is absent from available skills at workflow startup
+- **THEN** the workflow aborts with install guidance and does not silently omit browser-open discipline

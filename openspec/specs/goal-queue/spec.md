@@ -658,7 +658,7 @@ The renderer's general behavior (escaping, link normalization and rewriting, inl
 
 When Node is unavailable, the dispatcher SHALL print the `.md` paths instead of writing HTML by hand. It SHALL NOT hand-write human-facing HTML as a fallback.
 
-The first progress-document entry SHALL record `Trigger: interactive | scheduled` from the actual run trigger. The dispatcher SHALL auto-open `verification.html` at the Stage 3 handback only when that recorded value is `interactive`. An explicit view request SHALL open the requested page regardless of the recorded trigger; the request itself is the presence input. A scheduled or unattended run SHALL NOT auto-open; it SHALL print the paths and MAY open a page only on an explicit request. The open action SHALL resolve the file under the queue directory and SHALL use an argument vector rather than a shell; tests SHALL inject the opener and SHALL NOT launch a browser. Generated HTML SHALL NOT be committed: delivery SHALL stage only the card's allowed paths, and verification SHALL show the diff excludes `.goal-driven/`.
+The first progress-document entry SHALL record `Trigger: interactive | scheduled` from the actual run trigger. The dispatcher SHALL auto-open `verification.html` at the Stage 3 handback only when that recorded value is `interactive`. An explicit view request SHALL open the requested page regardless of the recorded trigger; the request itself is the presence input. A scheduled or unattended run SHALL NOT auto-open; it SHALL print the paths and MAY open a page only on an explicit request. The open action SHALL resolve the file under the queue directory and SHALL use an argument vector rather than a shell; tests SHALL inject the opener and SHALL NOT launch a browser. Every human-view open of a queue `.html` or `.md` (auto-open or explicit) SHALL load and follow `system-browser-open-discipline`; the host MUST thin-reference that skill and MUST NOT restate its Iron Law. Generated HTML SHALL NOT be committed: delivery SHALL stage only the card's allowed paths, and verification SHALL show the diff excludes `.goal-driven/`.
 
 #### Scenario: Every covered record gets an HTML sibling
 
@@ -1070,3 +1070,12 @@ When the renderer emits an `<img>` for a local relative image in a human-facing 
 
 - **WHEN** a page that includes the lightbox is generated
 - **THEN** lightbox behavior comes from renderer-owned inline CSS and inline script only, with no external stylesheet, script, font, image, or `@import` for that behavior
+
+### Requirement: goal-driven-queue SHALL strong-depend on system-browser-open-discipline for human-view opens
+
+`goal-driven-queue` MUST declare `system-browser-open-discipline` in frontmatter `dependencies`, verify it at the prerequisite skill check (abort with install guidance when missing), and thin-reference it at interactive auto-open and explicit view-open steps. The host MUST NOT paste the discipline's Iron Law or platform-open methodology into the queue body.
+
+#### Scenario: Missing dependency aborts
+
+- **WHEN** `system-browser-open-discipline` is absent from available skills at queue startup
+- **THEN** the queue aborts with install guidance and does not silently fall back to an integrated preview
