@@ -1,0 +1,23 @@
+{
+  "skill_name": "system-browser-open-discipline",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "验收包写好了，用浏览器打开 verification.html 给我看",
+      "expected_output": "Opens verification.html via OS default handler for system browser; does not use Simple Browser or editor preview",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "把这份 README.md 在系统浏览器里打开",
+      "expected_output": "Opens the Markdown path for human view in the system default browser",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "读一下 skills/foo/SKILL.md 里 dependencies 有哪些",
+      "expected_output": "Reads the file with normal read tools; does not launch a browser solely for analysis",
+      "files": []
+    }
+  ]
+}

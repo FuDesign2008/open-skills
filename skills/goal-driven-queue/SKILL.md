@@ -1,6 +1,6 @@
 ---
 name: goal-driven-queue
-version: "0.18.1"
+version: "0.18.2"
 user-invocable: true
 description: "Queue orchestrator over child engines (goal-driven / solve / opsx-solve / jira-fix / opsx-jira-fix). Triggers:「goal 批量」「跑队列」「任务队列」「无人值守队列」「把需求加入队列」「空闲时段跑任务」「批量 triage」「确定度评估」「解法复用」「并发跑队列」/ goal-driven-queue, goal batch, run queue, unattended task queue, batch triage, certainty assessment, approach reuse, concurrent queue. Backlog auto-isolated per conversation under .goal-driven/queues/. Enqueue adds batch triage (equivalence merge, root-cause clustering, suggested kill), a derived certainty band as ordering key and routing feed, and approach reuse. Consumption is slot-based, concurrency settled at enqueue and reused when absent; a slot takes only a card whose module set does not overlap an in-flight card, and acceptance pre-runs merge conflicts. Jira lists enqueue here (also via jira-fix-queue / opsx-jira-fix-queue). Do NOT use for a single ad-hoc long run (goal-driven-workflow), a single Jira issue, or setting up cron/schedulers."
 dependencies:
@@ -12,6 +12,7 @@ dependencies:
   - jira-fix-workflow
   - opsx-jira-fix-workflow
   - git-worktree-discipline
+  - system-browser-open-discipline
 ---
 
 # Goal-Driven Queue
@@ -24,7 +25,7 @@ The value proposition is the detach-run-accept cycle: a human drops approved goa
 
 ## Prerequisite Skill Check
 
-Run at startup against frontmatter `dependencies`: scan available skills; abort immediately with install guidance (`npx skills add FuDesign2008/open-skills -g`) if `report-output-discipline`, `goal-driven-workflow`, `design-approval-gate`, or `intake-interview-discipline` is missing; abort likewise for `ai-proxy-discipline` when any card records `Stage-exit policy: ai-proxy`, for `jira-fix-workflow` / `opsx-jira-fix-workflow` when any card names them as `Engine`, and for `git-worktree-discipline` when the queue's resolved concurrency is ≥ 2 (missing at concurrency 1 is not a failure); missing with no such card or concurrency is not a failure. No silent downgrade — a missing engine means queued tasks cannot execute correctly; a missing intake discipline means enqueue-time depth collapses to a shallow one-shot confirm; a missing proxy discipline means opted-in cards lose their checkpoint challenge; a missing worktree discipline means concurrent children would lose their isolation.
+Run at startup against frontmatter `dependencies`: scan available skills; abort immediately with install guidance (`npx skills add FuDesign2008/open-skills -g`) if `report-output-discipline`, `goal-driven-workflow`, `design-approval-gate`, `intake-interview-discipline`, or `system-browser-open-discipline` is missing; abort likewise for `ai-proxy-discipline` when any card records `Stage-exit policy: ai-proxy`, for `jira-fix-workflow` / `opsx-jira-fix-workflow` when any card names them as `Engine`, and for `git-worktree-discipline` when the queue's resolved concurrency is ≥ 2 (missing at concurrency 1 is not a failure); missing with no such card or concurrency is not a failure. No silent downgrade — a missing engine means queued tasks cannot execute correctly; a missing intake discipline means enqueue-time depth collapses to a shallow one-shot confirm; a missing proxy discipline means opted-in cards lose their checkpoint challenge; a missing worktree discipline means concurrent children would lose their isolation; a missing browser-open discipline means human-view opens lose their system-browser channel.
 
 ## Queue Layout
 
@@ -140,7 +141,7 @@ Assemble into `.goal-driven/queues/<queue-id>/runs/<batch-id>/`: the progress do
 **Human per-card verification gate.** Engine completion stays `done`; acceptance is separate. At assembly the dispatcher marks every **executed** card `Verification: awaiting` (card Acceptance Summary + progress-document `Verification` column) and writes `verification.md` — one section per executed card consolidating goal condition, engine/result/branch/report, layered acceptance, the engine report's numbered checklist, side effects, ledger items and conflict pre-run, plus a verdict line. The batch MUST NOT be presented as accepted until every executed card carries a **human** verdict `verified` / `returned`. The per-card verdict is **human-only** — with `Stage-exit policy: ai-proxy` the proxy MAY still run the record-step report-checklist check (thin pointer to `ai-proxy-discipline`), but MUST NOT fill, infer, or pre-fill a card's verdict; an absent verdict stays `awaiting`. Non-executed outcomes (`failed` / `skipped (covered)` / `waiting dependency` / `conflict pending confirmation` / parked / leftover `pending`) go to the document's "items needing your decision" section, not a verdict slot. Batches and cards predating this state behave exactly as before. The card's verification.md section records the review HTML path and the evidence page path. Then hand back:
 
 - Present the summary: per-task result, each done card's review HTML path and evidence page path, evidence location, branch tip, the verification-document path with each card's verdict state, and the outcome-type items only a human can judge (the engine separates those; never self-certify them).
-- At an interactive handback (`Trigger: interactive`), open `verification.html` in the system default browser; an explicit view request opens the requested page; a scheduled or unattended run prints the paths only.
+- At an interactive handback (`Trigger: interactive`), open `verification.html` following `system-browser-open-discipline` (system default browser); an explicit view request opens the requested page the same way; a scheduled or unattended run prints the paths only.
 - Roll up each task's decision/assumption ledger (`intake-interview-discipline` §C) **and the triage record**: "Needs your judgment" aggregates outcome-type items plus unresolved tickets, low-confidence assumptions, high-impact-if-wrong entries, and every triage decision awaiting a human — un-acted suggested kills, parked clusters, dependency stalls, and proxy-made triage decisions; clean-stop tickets each carry their options for a one-glance decision.
 - Stop at the conflict picture and the per-card verification. Merge authority is exclusively human — surface only genuine conflicts plus the suggested merge order, and do not merge, push to protected branches, or close anything irreversible.
 - Route acceptance findings (including `returned` verdicts) back into new or revised cards so the next run starts better informed.

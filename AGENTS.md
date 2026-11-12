@@ -13,6 +13,7 @@
 9. **改契约必须反查「提及它的需求」** — 修改一条 OpenSpec 需求（MODIFIED / RENAMED）时，清单不能只列「行为需要变的需求」，必须**加上所有提及被改项的其他需求**并一并同步。描述性引用——如清单式枚举、`branch isolation` 这类措辞、`consumption order` 这类术语、场景里的逐项列举——**不会被编号 grep 捕获**，只能人工遍历。自查：`grep` 被改项的关键措辞与旧需求名，命中处逐一判定是否需同步；`openspec validate` 通过**不代表**一致（它只查格式，不查语义引用）。判定口径：需求名、术语、枚举三项与人改项相关的，视同需同步。
 10. **门禁与默认解锁的输入必须可核验** — 设计任何门禁、放行条件，或「满足即自动放行」的默认值时，其判定输入必须是**可独立核验的事实**（文件/符号存在性、分支拓扑、路径集、字段值），不得是 AI 的自由判断（`preference`）。若门禁吃的是判断，则门禁本身不被任何下游实证覆盖——这是最隐蔽的护栏泄漏：看起来有门，实则无门。自查：写下门禁条件后逐条问「这个输入能否被一条命令或一次 grep 证实？」任一为否，即须把该判断拆成可核验信号（如把「难度档」拆成可逆性/既有证据/影响半径/依赖形态四项），或把门禁降级为「须人确认」。
 11. **任何开发推进都在 Git worktree 中进行** — 本仓库会有多个 AI 进程同时推进开发。凡会写入仓库的推进（文档或代码），先开独立 Git worktree，在其中创建 feature 分支再写；主检出只做只读查阅，避免并行进程改同一工作区、互相覆盖或产生冲突。创建 worktree 失败时停下来报告原因，不退回主检出继续写。本仓声明 `worktree-gate: always`，由 `git-worktree-discipline` 在首个非平凡持久化写入之前创建或复用隔离工作区。
+12. **给人查看的 `.md` / `.html` 走系统浏览器** — 为人打开或预览 Markdown / HTML 时，经系统默认应用落到系统默认浏览器（不是 IDE Simple Browser 或编辑器内预览）；Agent 自读与编辑仍用 Read / 编辑器。权威纪律：`system-browser-open-discipline`（可独立触发；`goal-driven-queue` / `goal-driven-workflow` 强依赖）。
 
 ### 合并偏好（merge-discipline Part C / Part R）
 
@@ -34,7 +35,7 @@
 |------|------------------|----------|
 | **编排入口** | `true` | `solve-workflow`、`opsx-solve-workflow`、`jira-fix-workflow`、`perf-optimize-workflow`、`write-workflow`、`brainstorm-workflow` |
 | **共享纪律 / 方法论** | 默认 `false`，经 frontmatter `dependencies` 加载 | `*-discipline`、`analysis-core`、`staged-review-flow`、`design-approval-gate`、`feature-branch-closeout`、`report-output-discipline` |
-| **可独立触发的横切动作** | 显式 `true`（例外） | `merge-discipline`、`delivery-discipline`、`test-suite-ensure`、`solution-review`、`learn-and-improve`、`pr-code-review`、`jira-wiki-markup` |
+| **可独立触发的横切动作** | 显式 `true`（例外） | `merge-discipline`、`delivery-discipline`、`test-suite-ensure`、`solution-review`、`learn-and-improve`、`pr-code-review`、`jira-wiki-markup`、`system-browser-open-discipline` |
 
 新增 skill 时按上表选型；`user-invocable: false` 的 skill 必须被其他 skill 引用，否则视为死 skill。本仓库不分发斜杠命令文件；用户靠 skill 名与触发词唤起。贡献者本仓 OpenSpec 入口在 `.claude/commands/opsx/`。
 
@@ -80,8 +81,8 @@ open-skills/
 | perf-optimize-workflow | 工作流 | clarifying-question-discipline、known-issue-research（证据纪律为文内节；迭代循环为运行时环境强依赖） |
 | write-workflow | 工作流 | clarifying-question-discipline、tech-review-doc、workflow-mode-lifecycle、humanizer（外置）、humanizer-zh（外置） |
 | brainstorm-workflow | 工作流 | brainstorming（外置）、solve-workflow |
-| goal-driven-workflow | 工作流 | report-output-discipline、clarifying-question-discipline、completion-evidence-discipline、design-approval-gate、intake-interview-discipline、ai-proxy-discipline |
-| goal-driven-queue | 工作流 | report-output-discipline、goal-driven-workflow、design-approval-gate、intake-interview-discipline、ai-proxy-discipline、jira-fix-workflow、opsx-jira-fix-workflow |
+| goal-driven-workflow | 工作流 | report-output-discipline、clarifying-question-discipline、completion-evidence-discipline、design-approval-gate、intake-interview-discipline、ai-proxy-discipline、system-browser-open-discipline |
+| goal-driven-queue | 工作流 | report-output-discipline、goal-driven-workflow、design-approval-gate、intake-interview-discipline、ai-proxy-discipline、jira-fix-workflow、opsx-jira-fix-workflow、system-browser-open-discipline |
 | jira-fix-queue | Jira 编排壳 | goal-driven-queue（解析多票 Jira，列表入队；不跑修复） |
 | opsx-jira-fix-queue | Jira 编排壳 | goal-driven-queue（解析多票 Jira，Engine 冻结为 opsx-jira-fix-workflow） |
 | tech-review-doc | 内容创作 | clarifying-question-discipline、report-output-discipline |
@@ -109,6 +110,7 @@ open-skills/
 | hybrid-debug | 调试方法论 | 无 |
 | browser-debug-toolkit | 调试方法论 | 无 |
 | report-output-discipline | 工作流纪律 | 无（报告类宿主经 frontmatter `dependencies` 引用） |
+| system-browser-open-discipline | 工作流纪律 | 无（给人查看 `.md`/`.html` 时走系统浏览器；goal-driven 双宿主强依赖，亦可独立触发） |
 | workflow-mode-lifecycle | 工作流纪律 | 无 |
 | clarifying-question-discipline | 工作流纪律 | 无 |
 | completion-evidence-discipline | 工作流纪律 | 无 |

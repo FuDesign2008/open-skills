@@ -1,6 +1,6 @@
 ---
 name: goal-driven-workflow
-version: "0.10.0"
+version: "0.10.1"
 user-invocable: true
 description: "Goal-Driven long-run workflow: run an agent autonomously for hours toward a verifiable goal. Five stages — ① deep intake interview & output contract (approach frozen before launch) ② layer acceptance criteria + design the /goal condition (measurable end state, stated check, constraints, turn/time cap) ③ sub-agent division & context management (context-rot mitigation) ④ launch the long run (/goal, claude -p non-interactive, or manual-loop fallback) ⑤ completion report & human acceptance. Built on top of Claude Code's native /goal harness, with a generic fallback for environments without /goal. Triggers — 「goal 长跑」「goal run」「goal-driven」「目标驱动长跑」「一个 goal 下去跑」「长跑目标」「无人值守跑任务」「goal-run」 / goal run, goal-driven, long-run goal, autonomous run, run until done."
 dependencies:
@@ -13,6 +13,7 @@ dependencies:
   - context-budget-discipline
   - figma-pixel-implement
   - figma-pixel-verify
+  - system-browser-open-discipline
 ---
 
 # Goal-Driven Long-Run Workflow
@@ -38,6 +39,7 @@ Frontmatter `dependencies`; prerequisite check must pass or the flow aborts:
 - `design-approval-gate` — standalone Stage 4 launch-approval pause that enters Armed (see long-run divergence below)
 - `intake-interview-discipline` — stage 1 deep intake (fog-bounded interview → approach comparison → freeze → pre-launch self-review); stage 4 in-run self-answer rules; stage 5 ledger surfacing
 - `ai-proxy-discipline` — proxy checkpoints (`Stage-exit policy: ai-proxy`): absent-mode intake Q&A, bounded contract approval (Arm, not Launch), stage 5 report check; abort only when a card carries that policy and the skill is missing
+- `system-browser-open-discipline` — human-view opens of standalone review/evidence HTML (and explicit `.md`/`.html` view requests) use the system default browser
 - `context-budget-discipline` — stage 3 context-plan quantification (compaction threshold / phase→reset-boundary map / ledger path) and stage-4 threshold checks at budget milestones
 - `figma-pixel-implement` / `figma-pixel-verify` — required installed; load both when the goal text contains `figma.com` or `node-id=`, or the user asks for pixel restore
 
@@ -188,6 +190,7 @@ The explanation (说明), the evidence record (证据留痕), and the acceptance
 3. **Human acceptance**:
    - Machine-verifiable items: reported by agent + spot-check.
    - Outcome-level items: **judged by the human** — harness evaluators verify output, never outcome.
+   - On a standalone interactive handback (or an explicit view request), open `review.html` / `evidence.html` following `system-browser-open-discipline`; a scheduled or unattended handback prints the paths only.
 4. **Feedback loop**: acceptance findings feed the next run's Template 1.
 
 **Red Flags**: claiming "done" without evidence; agent auto-marking outcome items as passed.
