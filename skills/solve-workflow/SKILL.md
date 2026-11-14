@@ -51,7 +51,7 @@ dependencies:
 - `hybrid-debug` / `runtime-evidence-debug` / `browser-debug-toolkit` (debug skills delegated to via `analysis-core`; stage 2 + stage 7)
 - `analysis-core` (single source of truth for stage 2's methodology: temporary-change gate / instrumentation debug with runtime-evidence-debug as default entry / analysis step skeleton / analysis gate output block / debug-verify loop)
 - `learn-and-improve` (stage 8 retrospective and knowledge sediment)
-- `workflow-mode-lifecycle` (manual/auto mode lifecycle), `clarifying-question-discipline` (hard clarifying-question discipline and investigation-first), `known-issue-research` (stage 2 research routing / known-issue quick search / industry-wide evaluation), `competitive-research` (user-visible competitor behavior during analysis; method stays in that skill)
+- `workflow-mode-lifecycle` (control-flow mode lifecycle), `clarifying-question-discipline` (hard clarifying-question discipline and investigation-first), `known-issue-research` (stage 2 research routing / known-issue quick search / industry-wide evaluation), `competitive-research` (user-visible competitor behavior during analysis; method stays in that skill)
 - `test-suite-ensure` (stage 6 test completion: generate and run tests when test infrastructure exists; scaffold with user confirmation when it doesn't)
 - `test-first-discipline` (stage 6: failing-test-first for behavior changes; distinct from test-suite-ensure)
 - `design-approval-gate` (before stage 6: no production impl without approval; named auto/hotfix escapes)
