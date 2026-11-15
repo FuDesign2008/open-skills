@@ -41,7 +41,7 @@
       "id": 4,
       "name": "dns-restore-after-disconnect",
       "prompt": "VPN 已经关掉了，但国内的音乐平台后台一直打不开、提示连接超时。帮我看下网络是不是还有问题。",
-      "expected_output": "应运行 astrill.sh status，看到 DNS 行显示 1.1.1.2 且国内域名解析命中 overseas 时判定 DNS DRIFT；即使当前已断开，也要执行 off 触发恢复（提前返回路径同样清理）：有基线恢复基线，无基线恢复 DHCP，失败回退 223.5.5.5；恢复后以 music.163.com 不再解析到 overseas 作为验证证据，验证失败必须明确警告而不是报告成功。",
+      "expected_output": "应运行 astrill.sh status，看到 DNS 行显示 1.1.1.2 且配置的国内域名（ASTR_CONTROL_DOMESTIC_DOMAIN）解析命中 overseas 时判定 DNS DRIFT；即使当前已断开，也要执行 off 触发恢复（提前返回路径同样清理）：当前已干净则不重写，疑似漂移时有基线恢复基线、无基线恢复 DHCP，仍漂移则回退 223.5.5.5；恢复后以该国内域名不再解析到 overseas 作为验证证据，验证失败必须明确警告而不是报告成功；未配置国内域名时跳过探针，只报告当前 DNS 值且不因未配置而失败。",
       "files": [],
       "assertions": [
         {"text": "用 status 的 DNS 行与国内解析探测识别 DNS DRIFT，而不是只确认 VPN 隧道已关"},

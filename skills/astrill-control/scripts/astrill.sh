@@ -8,9 +8,11 @@
 # DNS hygiene (field-tested 2026-11-14): Astrill does NOT restore the system DNS when it
 # disconnects; it leaves the resolver on Cloudflare 1.1.1.2. Domestic platforms then resolve
 # to their overseas entry points and time out over a direct connection. So `on` snapshots the
-# pre-VPN DNS into ${ASTR_CONTROL_STATE_DIR:-~/.cache/astrill-control}/dns-baseline, and
-# `off` restores it on EVERY disconnected path (including the early returns) and verifies the
-# result instead of reporting success blindly.
+# pre-VPN DNS into ${ASTR_CONTROL_STATE_DIR:-~/.cache/astrill-control}/dns-baseline (only when
+# the current DNS can be verified clean), and `off` restores it on EVERY disconnected path
+# (including the early returns) and verifies the result instead of reporting success blindly.
+# The domestic probe needs ASTR_CONTROL_DOMESTIC_DOMAIN; without it the probe is skipped and
+# only the configured resolver values are reported (no DRIFT verdict, no failure).
 
 set -u
 APP="Astrill"
@@ -18,9 +20,11 @@ MENU_PROBE='tell application "System Events" to tell process "Astrill" to get na
 
 STATE_DIR="${ASTR_CONTROL_STATE_DIR:-$HOME/.cache/astrill-control}"
 DNS_BASELINE="${STATE_DIR}/dns-baseline"
-DOMESTIC_DOMAIN="${ASTR_CONTROL_DOMESTIC_DOMAIN:-music.163.com}"
+DOMESTIC_DOMAIN="${ASTR_CONTROL_DOMESTIC_DOMAIN:-}"
 DNS_FALLBACK="${ASTR_CONTROL_DNS_FALLBACK:-223.5.5.5}"
 DRY_RUN="${ASTR_CONTROL_DRY_RUN:-0}"
+
+probe_configured() { [[ -n "$DOMESTIC_DOMAIN" ]]; }
 
 ip_probe() { curl -s --max-time 6 ipinfo.io/ip 2>/dev/null || echo "ip-query-failed"; }
 tunnel_up() { pgrep -x asovpnc >/dev/null 2>&1; }
@@ -82,26 +86,47 @@ configured_dns() {  # explicit resolvers, one per line; empty = DHCP/automatic
 join_words() { tr '\n' ' ' | sed -E 's/[[:space:]]+$//'; }
 last_line() { awk 'NF { line = $0 } END { if (line != "") print line }'; }
 
-domestic_probe() { dig +short +time=2 +tries=1 "$DOMESTIC_DOMAIN" 2>/dev/null; }
+domestic_probe() {
+  probe_configured || return 0
+  dig +short +time=2 +tries=1 "$DOMESTIC_DOMAIN" 2>/dev/null
+}
 is_drifted() { grep -qi 'overseas'; }   # stdin = dig output
+
+# One-word probe verdict: skipped (no domain configured) | failed | drift | ok
+probe_state() {
+  if ! probe_configured; then echo "skipped"; return; fi
+  local probe
+  probe=$(domestic_probe)
+  if [[ -z "$probe" ]]; then echo "failed"; return; fi
+  if printf '%s\n' "$probe" | is_drifted; then echo "drift"; else echo "ok"; fi
+}
 
 baseline_service() { sed -n 's/^service=//p' "$DNS_BASELINE" 2>/dev/null | head -1; }
 baseline_dns()     { sed -n 's/^dns=//p'     "$DNS_BASELINE" 2>/dev/null | head -1; }
 
 save_dns_baseline() {
-  local svc dns_list probe
+  local svc dns_list state
   svc=$(active_service) || { echo "⚠ DNS baseline: could not identify the active network service"; return 1; }
   dns_list=$(configured_dns | join_words)
-  probe=$(domestic_probe)
 
-  # Keep the oldest known-good record unless the current DNS is verifiably clean.
-  # Overwriting while drifted would save Cloudflare 1.1.1.2 as the "baseline".
-  if [[ -f "$DNS_BASELINE" ]]; then
-    if [[ -z "$probe" ]] || printf '%s\n' "$probe" | is_drifted; then
-      echo "DNS baseline: keeping the existing record (current DNS unverified or drifted)"
+  # Only snapshot a resolver list that we could verify is clean. A first-run snapshot
+  # taken while the machine is already drifting would record Cloudflare 1.1.1.2 as the
+  # "baseline", so a later `off` would see target==current and no-op on a broken setup.
+  state=$(probe_state)
+  case "$state" in
+    drift)
+      echo "⚠ DNS baseline: current DNS already resolves overseas — refusing to snapshot it (baseline not saved); 'off' will restore DHCP"
       return 0
-    fi
-  fi
+      ;;
+    skipped)
+      echo "DNS baseline: not saved (probe skipped: ASTR_CONTROL_DOMESTIC_DOMAIN is not configured); 'off' will restore DHCP"
+      return 0
+      ;;
+    failed)
+      echo "DNS baseline: not saved (current DNS could not be verified); 'off' will restore DHCP"
+      return 0
+      ;;
+  esac
 
   mkdir -p "$STATE_DIR" 2>/dev/null || { echo "⚠ DNS baseline: cannot create ${STATE_DIR}"; return 1; }
   {
@@ -131,7 +156,7 @@ apply_dns() {  # $1 = service, $2 = space-separated resolvers ("" = DHCP)
 }
 
 restore_dns() {
-  local svc cur target source bsvc bdns
+  local svc cur target source state bsvc bdns
   svc=$(active_service)
   if [[ -z "$svc" ]]; then
     echo "⚠ DNS: no default route / active network service — cannot restore"
@@ -151,30 +176,68 @@ restore_dns() {
     target=""; source="DHCP default (no baseline recorded)"
   fi
 
-  if [[ "$cur" == "$target" ]]; then
-    echo "✅ DNS: already clean on ${svc} (${cur:-DHCP}) — no change"
+  state=$(probe_state)
+
+  # Leave an already-clean configuration alone. DHCP (no explicit resolvers) is clean;
+  # a custom resolver list is clean when the domestic probe confirms it is not drifting.
+  # In particular, never write a recorded baseline back over a config the user fixed.
+  if [[ -z "$cur" ]]; then
+    echo "✅ DNS: already clean on ${svc} (DHCP) — no change"
+    return 0
+  fi
+  if [[ "$state" == "ok" ]]; then
+    echo "✅ DNS: ${svc} already resolves domestically (${cur}) — no change"
     return 0
   fi
 
+  # Explicit resolvers that are not confirmed clean = suspected drift.
   echo "restoring DNS on ${svc}: ${cur:-DHCP} → ${target:-DHCP} [${source}]"
+  if [[ "$DRY_RUN" == "1" ]]; then
+    apply_dns "$svc" "$target"
+    return 0
+  fi
   if apply_dns "$svc" "$target"; then
     echo "✅ DNS: set ${svc} → ${target:-DHCP}"
-    return 0
+    [[ "$(probe_state)" != "drift" ]] && return 0
+  else
+    echo "⚠ DNS: write to ${target:-DHCP} failed"
   fi
 
-  echo "⚠ DNS: restore to ${target:-DHCP} failed, falling back to ${DNS_FALLBACK}"
+  # The recorded value did not clear the drift (or could not be written): DHCP next,
+  # then the domestic public resolver.
+  if [[ -n "$target" ]]; then
+    echo "⚠ DNS: still drifting after ${target:-DHCP} — trying DHCP"
+    if apply_dns "$svc" ""; then
+      echo "✅ DNS: set ${svc} → DHCP"
+      [[ "$(probe_state)" != "drift" ]] && return 0
+    else
+      echo "⚠ DNS: DHCP write failed"
+    fi
+  fi
+
+  echo "⚠ DNS: trying the domestic fallback ${DNS_FALLBACK}"
   if apply_dns "$svc" "$DNS_FALLBACK"; then
     echo "✅ DNS: set ${svc} → ${DNS_FALLBACK} (fallback)"
-    return 0
+    [[ "$(probe_state)" != "drift" ]] && return 0
+  else
+    echo "❌ DNS: could not write DNS on ${svc}"
+    echo "   manual fix: sudo networksetup -setdnsservers \"${svc}\" ${DNS_FALLBACK}"
+    return 1
   fi
 
-  echo "❌ DNS: could not write DNS on ${svc}"
-  echo "   manual fix: sudo networksetup -setdnsservers \"${svc}\" ${DNS_FALLBACK}"
   return 1
 }
 
 verify_dns() {
   local probe attempt
+  if [[ "$DRY_RUN" == "1" ]]; then
+    echo "DNS verify: skipped (dry-run — nothing was written)"
+    return 0
+  fi
+  if ! probe_configured; then
+    echo "DNS verify: skipped (ASTR_CONTROL_DOMESTIC_DOMAIN not configured)"
+    return 0
+  fi
   for attempt in 1 2 3; do
     probe=$(domestic_probe)
     [[ -n "$probe" ]] && break
@@ -196,6 +259,10 @@ dns_status_line() {
   local svc cur probe target verdict
   svc=$(active_service) || svc="(no active service)"
   cur=$(configured_dns | join_words)
+  if ! probe_configured; then
+    printf '%s → %s | probe: skipped (domain not configured)' "$svc" "${cur:-DHCP}"
+    return 0
+  fi
   probe=$(domestic_probe)
   target=$(printf '%s\n' "$probe" | last_line)
   [[ -n "$target" ]] || target="-"
@@ -214,7 +281,13 @@ finalize_off() {
   restore_dns || ok=0
   verify_dns || ok=0
   if [[ "$ok" == "1" ]]; then
-    echo "✅ direct-connection DNS ready"
+    if [[ "$DRY_RUN" == "1" ]]; then
+      echo "✅ DNS dry-run complete (nothing written)"
+    elif probe_configured; then
+      echo "✅ direct-connection DNS ready"
+    else
+      echo "✅ DNS cleanup applied (verification skipped: domestic domain not configured)"
+    fi
   else
     echo "⚠ DNS cleanup incomplete — run 'astrill.sh status' before relying on a direct connection"
     exit 1
@@ -277,6 +350,14 @@ cmd_off() {
     fi
     echo "⚠ GUI unreachable but tunnel is down — continuing with DNS cleanup"
   elif [[ "$st" == "TOGGLE_ON" ]]; then
+    if tunnel_up; then
+      # The GUI flips to Toggle ON ~10 s before asovpnc exits. Rewriting DNS while the
+      # tunnel is still up would let the tunnel resolve the verification probe.
+      echo "⚠ GUI says disconnected but the tunnel process is still up (teardown takes ~10 s)"
+      echo "   DNS left untouched on purpose — restoring it while the tunnel is up would leak resolution"
+      echo "   This is a protection, not a DNS failure. Re-run off once the tunnel is down."
+      exit 1
+    fi
     echo "already disconnected"
   elif ! tunnel_up; then
     echo "already disconnected (tunnel process gone)"

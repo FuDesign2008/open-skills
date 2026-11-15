@@ -9,7 +9,9 @@
 #
 # Covered branches: already-disconnected (GUI Toggle ON), tunnel-process-gone,
 # full disconnect, no baseline → DHCP, DHCP failure → fallback, already-clean no-op,
-# drift verification failure, status drift flag, `on` baseline capture, dry-run.
+# drift verification failure, status drift flag, `on` baseline capture, dry-run,
+# drifting-first-run baseline refusal, bad-baseline-over-clean no-op, drifting
+# baseline recovery, Toggle-ON-while-tunnel-up protection, unconfigured probe skip.
 
 set -u
 
@@ -93,7 +95,14 @@ STUB
 
 cat > "$BIN/dig" <<STUB
 #!/bin/bash
-cat "$SANDBOX/dig" 2>/dev/null
+# A forced answer simulates an unfixable drift; otherwise the answer follows the
+# resolver list the script wrote, so a successful restore flips the probe to clean.
+if [[ -f "$SANDBOX/dig_force" ]]; then cat "$SANDBOX/dig_force"; exit 0; fi
+dns=\$(tr '\n' ' ' < "$SANDBOX/dns" 2>/dev/null)
+case "\$dns" in
+  *"1.1.1.2"*) printf 'overseas-cdn.probe.example.com.\n203.0.113.10\n' ;;
+  *)           printf 'domestic-origin.probe.example.com.\n192.0.2.20\n' ;;
+esac
 exit 0
 STUB
 
@@ -126,16 +135,23 @@ expect_contains() {  # file pattern description
 expect_output() {  # output pattern description
   if printf '%s\n' "$1" | grep -q -- "$2"; then ok "$3"; else bad "$3 (missing [$2] in output)"; fi
 }
+expect_not_output() {  # output pattern description
+  if printf '%s\n' "$1" | grep -q -- "$2"; then bad "$3 (unexpected [$2] in output)"; else ok "$3"; fi
+}
+expect_absent() {  # path description
+  if [[ ! -e "$1" ]]; then ok "$2"; else bad "$2 (unexpected file $1)"; fi
+}
+
+PROBE_DOMAIN="probe.example.com"
 
 reset() {
   rm -rf "$STATE"; mkdir -p "$STATE"
   rm -f "$SANDBOX/dns" "$SANDBOX/setdns.log" "$SANDBOX/clicks.log" \
-        "$SANDBOX/empty_fail" "$SANDBOX/sudo.log"
+        "$SANDBOX/empty_fail" "$SANDBOX/sudo.log" "$SANDBOX/dig_force"
   echo up       > "$SANDBOX/app"
   echo up       > "$SANDBOX/tunnel"
   echo TOGGLE_OFF > "$SANDBOX/menu"
   echo en1      > "$SANDBOX/iface"
-  printf 'music.163.com.163jiasu.com.\n106.38.195.163\n' > "$SANDBOX/dig"
 }
 
 write_baseline() {  # $1 service, $2 dns list
@@ -144,12 +160,18 @@ write_baseline() {  # $1 service, $2 dns list
 }
 
 run() {  # $1 = subcommand; extra env via caller
-  PATH="$BIN:$PATH" ASTR_CONTROL_STATE_DIR="$STATE" bash "$TARGET" "$1" 2>&1
+  PATH="$BIN:$PATH" ASTR_CONTROL_STATE_DIR="$STATE" ASTR_CONTROL_DOMESTIC_DOMAIN="$PROBE_DOMAIN" \
+    bash "$TARGET" "$1" 2>&1
 }
 
 run_off() {
   PATH="$BIN:$PATH" ASTR_CONTROL_STATE_DIR="$STATE" ASTR_CONTROL_DRY_RUN="${DRY_RUN:-0}" \
-    bash "$TARGET" off 2>&1
+    ASTR_CONTROL_DOMESTIC_DOMAIN="$PROBE_DOMAIN" bash "$TARGET" off 2>&1
+}
+
+run_no_probe() {  # $1 = subcommand; probe intentionally unconfigured
+  PATH="$BIN:$PATH" ASTR_CONTROL_STATE_DIR="$STATE" ASTR_CONTROL_DOMESTIC_DOMAIN="" \
+    bash "$TARGET" "$1" 2>&1
 }
 
 read_dns() { tr '\n' ' ' < "$SANDBOX/dns" 2>/dev/null | sed -E 's/[[:space:]]+$//'; }
@@ -226,7 +248,7 @@ echo TOGGLE_ON > "$SANDBOX/menu"
 echo down      > "$SANDBOX/tunnel"
 echo "1.1.1.2" > "$SANDBOX/dns"
 write_baseline "Wi-Fi" "223.5.5.5"
-printf 'overseasv4.cdn.example.net.\n103.135.240.77\n' > "$SANDBOX/dig"
+printf 'overseasv4.cdn.example.net.\n203.0.113.77\n' > "$SANDBOX/dig_force"
 out=$(run_off); rc=$?
 expect_eq "$rc" "1" "exit 1 on drift"
 expect_output "$out" "DNS DRIFT" "warned about the overseas entry"
@@ -236,7 +258,6 @@ expect_output "$out" "DNS cleanup incomplete" "reported incomplete cleanup"
 printf '\n[8] status reports DNS drift\n'
 reset
 echo "1.1.1.2" > "$SANDBOX/dns"
-printf 'overseasv4.cdn.example.net.\n103.135.240.77\n' > "$SANDBOX/dig"
 out=$(run status)
 expect_output "$out" "DNS:" "DNS line present"
 expect_output "$out" "⚠ DNS DRIFT" "drift flagged"
@@ -264,6 +285,70 @@ out=$(DRY_RUN=1 run_off); rc=$?
 expect_eq "$rc" "0" "exit 0"
 expect_eq "$(cat "$SANDBOX/setdns.log" 2>/dev/null | wc -l | tr -d ' ')" "0" "no setdnsservers call in dry-run"
 expect_output "$out" "\[dry-run\]" "printed the intended command"
+
+# ── 11. a drifting first run must not snapshot itself as the baseline ─────────
+printf '\n[11] on does not snapshot a drifting resolver as the baseline\n'
+reset
+echo TOGGLE_ON > "$SANDBOX/menu"
+echo down      > "$SANDBOX/tunnel"
+echo "1.1.1.2" > "$SANDBOX/dns"
+out=$(run on); rc=$?
+expect_eq "$rc" "0" "exit 0"
+expect_absent "$STATE/dns-baseline" "no baseline written while the DNS is drifting"
+expect_output "$out" "not saved" "explains that the baseline was refused"
+
+# ── 12. a bad baseline never overwrites a configuration the user fixed ───────
+printf '\n[12] bad baseline does not overwrite an already-clean config\n'
+reset
+echo TOGGLE_ON > "$SANDBOX/menu"
+echo down      > "$SANDBOX/tunnel"
+printf '223.5.5.5\n' > "$SANDBOX/dns"
+write_baseline "Wi-Fi" "1.1.1.2"
+out=$(run_off); rc=$?
+expect_eq "$rc" "0" "exit 0"
+expect_eq "$(cat "$SANDBOX/setdns.log" 2>/dev/null | wc -l | tr -d ' ')" "0" "no write when the current DNS already resolves domestically"
+expect_eq "$(read_dns)" "223.5.5.5" "clean resolver list preserved"
+expect_output "$out" "already resolves domestically" "reported the no-op"
+
+# ── 13. a baseline whose own value is drifting is replaced, not rewritten ────
+printf '\n[13] drifting baseline value is replaced instead of rewritten\n'
+reset
+echo TOGGLE_ON > "$SANDBOX/menu"
+echo down      > "$SANDBOX/tunnel"
+echo "1.1.1.2" > "$SANDBOX/dns"
+write_baseline "Wi-Fi" "1.1.1.2"
+out=$(run_off); rc=$?
+expect_eq "$rc" "0" "exit 0"
+expect_contains "$SANDBOX/setdns.log" "Wi-Fi Empty" "DHCP used when the recorded value itself is drifting"
+expect_eq "$(read_dns)" "" "resolver list cleared"
+
+# ── 14. tunnel still alive on a Toggle ON GUI: DNS is left untouched ─────────
+printf '\n[14] Toggle ON but tunnel still up leaves DNS untouched\n'
+reset
+echo TOGGLE_ON > "$SANDBOX/menu"
+echo up        > "$SANDBOX/tunnel"
+echo "1.1.1.2" > "$SANDBOX/dns"
+write_baseline "Wi-Fi" "223.5.5.5"
+out=$(run_off); rc=$?
+expect_eq "$rc" "1" "non-zero while the tunnel may still be up"
+expect_eq "$(cat "$SANDBOX/setdns.log" 2>/dev/null | wc -l | tr -d ' ')" "0" "no DNS write while the tunnel is up"
+expect_output "$out" "still up" "explains that the tunnel is still up"
+expect_output "$out" "protection" "states that skipping DNS is protection, not failure"
+
+# ── 15. unconfigured probe: skip the probe, still restore, do not fail ───────
+printf '\n[15] unconfigured domestic probe is skipped, not failed\n'
+reset
+echo TOGGLE_ON > "$SANDBOX/menu"
+echo down      > "$SANDBOX/tunnel"
+echo "1.1.1.2" > "$SANDBOX/dns"
+out=$(run_no_probe off); rc=$?
+expect_eq "$rc" "0" "exit 0 without a configured probe"
+expect_contains "$SANDBOX/setdns.log" "Wi-Fi Empty" "DHCP restore still runs"
+expect_output "$out" "domain not configured" "verification reports the probe as skipped"
+expect_not_output "$out" "DNS DRIFT" "no DRIFT verdict when the probe is unconfigured"
+out=$(run_no_probe status)
+expect_output "$out" "probe: skipped (domain not configured)" "status marks the probe as skipped"
+expect_not_output "$out" "DNS DRIFT" "status does not flag drift without a probe"
 
 # ── summary ──────────────────────────────────────────────────────────────────
 printf '\n─────────────────────────────\n'

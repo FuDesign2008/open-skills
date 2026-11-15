@@ -16,7 +16,7 @@ Run the bundled script from this skill's base directory (the directory containin
 ```bash
 bash <skill-dir>/scripts/astrill.sh status   # inspect: app / tunnel / GUI menu / DNS / exit IP
 bash <skill-dir>/scripts/astrill.sh on       # connect (snapshots DNS; idempotent: no-op when already connected)
-bash <skill-dir>/scripts/astrill.sh off      # disconnect + restore DNS (idempotent: no-op when already disconnected; app stays alive)
+bash <skill-dir>/scripts/astrill.sh off      # disconnect + restore DNS (idempotent: DNS is not rewritten when it is already clean; app stays alive)
 ```
 
 Resolve `<skill-dir>` from the skill base directory announced at load time; when unavailable, ask the user for the installed skill path.
@@ -28,22 +28,23 @@ Resolve `<skill-dir>` from the skill base directory announced at load time; when
 | App process | `pgrep -x astrill` | prerequisite for GUI control; kept alive after `off` so `on` reconnects faster |
 | VPN tunnel | `pgrep -x asovpnc` | primary judge under OpenVPN mode; teardown takes ~10 s (script polls through it) |
 | GUI menu | System Events reads items of the `Menu` menu | `Toggle OFF` present = connected; `Toggle ON` present = disconnected |
-| System DNS | `networksetup -getdnsservers <service>` + `dig +short music.163.com` | explicit resolvers on the default-route service; a CNAME containing `overseas` = `⚠ DNS DRIFT` |
+| System DNS | `networksetup -getdnsservers <service>` + `dig +short <your-domestic-domain>` | explicit resolvers on the default-route service; a CNAME containing `overseas` = `⚠ DNS DRIFT` |
 | Exit IP | `curl --max-time 6 ipinfo.io/ip` | cross-check: connected → foreign node IP; disconnected → local direct IP |
 
-`on` and `off` are idempotent: each first reads the current state and returns success immediately when the desired state already holds.
+`on` and `off` are idempotent: each reads the current state first. `off` rewrites DNS only when the current resolver is not confirmed clean, so a repeated call over a clean configuration changes nothing.
 
 ## DNS Restore After Disconnect
 
-Astrill rewrites the active network service's DNS while connected and does not put it back on disconnect — the resolver stays on Cloudflare `1.1.1.2`. Domestic platforms then resolve to their overseas entry points and time out over a direct connection (field-tested 2026-11-14: `music.163.com` resolved through an `overseas…` CDN CNAME to `103.135.240.77`; `curl https://music.163.com/` timed out at 20 s while `https://www.baidu.com/` answered in 1.39 s).
+Astrill rewrites the active network service's DNS while connected and does not put it back on disconnect — the resolver stays on Cloudflare `1.1.1.2`. A domestic platform then resolves to its overseas entry point and times out over a direct connection (field-tested 2026-11-14: a domestic hostname resolved through an `overseas…` CDN CNAME to a foreign IP, and its HTTPS request timed out at 20 s while a control domestic request answered in about 1.4 s).
 
-- `on` snapshots the active service name + resolver list to `${ASTR_CONTROL_STATE_DIR:-~/.cache/astrill-control}/dns-baseline` before clicking Toggle ON. An existing baseline is kept unless the current DNS verifiably resolves domestically.
-- `off` restores DNS on **every** disconnected path — tunnel torn down, already disconnected, tunnel process already gone, app not running. Restore order: recorded baseline → DHCP (`networksetup -setdnsservers <service> Empty`) → domestic fallback `223.5.5.5`. The service is discovered from the default route (`route -n get default` → `networksetup -listnetworkserviceorder`), never a hard-coded `Wi-Fi`.
-- Already-clean DNS is a no-op, so repeated `off` calls do not rewrite anything.
-- After restoring, `off` resolves `music.163.com` and fails loudly (`⚠ DNS DRIFT …` + exit 1) when the answer still matches an overseas entry. It never reports success blindly.
+- `on` snapshots the active service name + resolver list to `${ASTR_CONTROL_STATE_DIR:-~/.cache/astrill-control}/dns-baseline` before clicking Toggle ON — but only when the current DNS can be verified clean. A resolver list that already hits an overseas entry (or cannot be verified) is never recorded as a baseline; a first run on an already-drifting machine therefore leaves no bad baseline behind, and `off` restores DHCP instead.
+- `off` restores DNS on **every** disconnected path — tunnel torn down, already disconnected, tunnel process already gone, app not running. It checks the current state first: DHCP, or a resolver list that resolves domestically, is left untouched. Only a suspected drift is rewritten, in order: recorded baseline → DHCP (`networksetup -setdnsservers <service> Empty`) → domestic fallback `223.5.5.5`. The service is discovered from the default route (`route -n get default` → `networksetup -listnetworkserviceorder`), never a hard-coded `Wi-Fi`.
+- A recorded baseline never overwrites a configuration that is already clean. If the baseline value itself still resolves overseas after being applied, `off` falls back to DHCP and then to the domestic resolver instead of reporting success on a known-bad value.
+- After restoring, `off` resolves `<your-domestic-domain>` and fails loudly (`⚠ DNS DRIFT …` + exit 1) when the answer still matches an overseas entry. It never reports success blindly.
 - `status` prints the active service → resolvers, the domestic probe result, and `⚠ DNS DRIFT` when detected.
+- When `ASTR_CONTROL_DOMESTIC_DOMAIN` is not configured, the overseas probe is skipped: `status` and `off` report the configured resolver values, mark probe-dependent judgments `skipped (domain not configured)`, raise no DRIFT verdict, and do not treat the missing probe as a failure.
 
-Environment overrides: `ASTR_CONTROL_STATE_DIR` (baseline location), `ASTR_CONTROL_DOMESTIC_DOMAIN` (default `music.163.com`), `ASTR_CONTROL_DNS_FALLBACK` (default `223.5.5.5`), `ASTR_CONTROL_DRY_RUN=1` (print the `networksetup` write instead of applying it).
+Environment overrides: `ASTR_CONTROL_STATE_DIR` (baseline location), `ASTR_CONTROL_DOMESTIC_DOMAIN` (domestic probe hostname; no default — when unset the probe is skipped as described above), `ASTR_CONTROL_DNS_FALLBACK` (default `223.5.5.5`), `ASTR_CONTROL_DRY_RUN=1` (print the `networksetup` write instead of applying it; verification is skipped too).
 
 ## Verification
 
@@ -62,8 +63,8 @@ The app that hosts the agent (terminal, IDE, or desktop app) must hold the macOS
 - **OpenVPN vs OpenWeb**: probes are most accurate under OpenVPN (full tunnel). In OpenWeb (browser-only proxy) mode the `asovpnc` tunnel probe does not apply — the GUI menu text stays the primary judge, and the exit-IP probe (curl) may not reflect the browser proxy state.
 - **Teardown latency**: after Toggle OFF the tunnel process exits ~10 s later than the UI flips; the script's 30 s polling window covers it.
 - **Toggle, not quit**: `quit app` also disconnects but drops the GUI session; the script uses Toggle so the app keeps running and a later `on` reconnects without relaunching.
-- **DNS write privilege**: `networksetup -setdnsservers` normally succeeds as the logged-in user. The script retries with `sudo -n` (non-interactive, never prompts) and then prints the exact manual `sudo` command if both fail.
-- **DNS restore is refused while the tunnel may still be up**: when the GUI is unreachable but the tunnel process is alive, `off` reports the error and leaves DNS untouched — restoring DNS outside a live tunnel would leak resolution.
+- **DNS write privilege**: `networksetup -setdnsservers` requires admin/root privileges (`man networksetup` documents the restriction; the binary gates on `runningWithAdminPrivileges`). The script tries the unprivileged call first, then `sudo -n` (non-interactive; only succeeds when NOPASSWD is configured). If both fail it prints the exact manual `sudo networksetup -setdnsservers …` command and exits non-zero — it does not silently succeed.
+- **DNS restore is refused while the tunnel may still be up**: when the GUI is unreachable but the tunnel process is alive, or when the GUI already shows Toggle ON but `asovpnc` has not exited yet (teardown takes ~10 s), `off` leaves DNS untouched and exits non-zero — restoring DNS outside a live tunnel would leak resolution. The output states this is a protection measure, not a DNS failure; re-run `off` once the tunnel is down.
 - **Service switch between `on` and `off`**: if the active network service changed, DHCP is restored on the current service instead of transplanting the old service's baseline resolvers.
 - **Menu drift after updates**: macOS or Astrill major updates may rename menus. When `Menu` or `Toggle ON/OFF` disappears, re-probe with `osascript -e 'tell application "System Events" to tell process "Astrill" to get name of every menu of menu bar 1'` and update the script accordingly.
 - **Bash pitfall when editing the script**: after a `$var`, a CJK/full-width character makes bash merge the following UTF-8 bytes into the variable name (`set -u` then reports unbound variable). Always write `${var}`.
