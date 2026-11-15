@@ -11,8 +11,9 @@
 # pre-VPN DNS into ${ASTR_CONTROL_STATE_DIR:-~/.cache/astrill-control}/dns-baseline (only when
 # the current DNS can be verified clean), and `off` restores it on EVERY disconnected path
 # (including the early returns) and verifies the result instead of reporting success blindly.
-# The domestic probe needs ASTR_CONTROL_DOMESTIC_DOMAIN; without it the probe is skipped and
-# only the configured resolver values are reported (no DRIFT verdict, no failure).
+# The domestic probe needs ASTR_CONTROL_DOMESTIC_DOMAIN. Without it — or when the probe gets
+# no answer — `off` cannot judge drift: it restores a trusted baseline if one exists, and
+# otherwise leaves explicit resolvers untouched and exits non-zero (conservative, not an error).
 
 set -u
 APP="Astrill"
@@ -115,15 +116,15 @@ save_dns_baseline() {
   state=$(probe_state)
   case "$state" in
     drift)
-      echo "⚠ DNS baseline: current DNS already resolves overseas — refusing to snapshot it (baseline not saved); 'off' will restore DHCP"
+      echo "⚠ DNS baseline: current DNS already resolves overseas — refusing to snapshot it (baseline not saved); 'off' will fall back to DHCP / the domestic resolver"
       return 0
       ;;
     skipped)
-      echo "DNS baseline: not saved (probe skipped: ASTR_CONTROL_DOMESTIC_DOMAIN is not configured); 'off' will restore DHCP"
+      echo "DNS baseline: not saved (probe skipped: ASTR_CONTROL_DOMESTIC_DOMAIN is not configured); 'off' cannot verify drift and will leave custom resolvers untouched"
       return 0
       ;;
     failed)
-      echo "DNS baseline: not saved (current DNS could not be verified); 'off' will restore DHCP"
+      echo "DNS baseline: not saved (current DNS could not be verified); 'off' cannot verify drift and will leave custom resolvers untouched"
       return 0
       ;;
   esac
@@ -156,7 +157,7 @@ apply_dns() {  # $1 = service, $2 = space-separated resolvers ("" = DHCP)
 }
 
 restore_dns() {
-  local svc cur target source state bsvc bdns
+  local svc cur target source state bsvc bdns have_baseline candidate
   svc=$(active_service)
   if [[ -z "$svc" ]]; then
     echo "⚠ DNS: no default route / active network service — cannot restore"
@@ -164,16 +165,21 @@ restore_dns() {
   fi
   cur=$(configured_dns | join_words)
 
+  # A baseline is trusted only when it was recorded for the active service;
+  # save_dns_baseline only writes it after the probe confirmed the DNS clean.
+  have_baseline=0
+  target=""
+  source="DHCP default (no baseline recorded)"
   if [[ -f "$DNS_BASELINE" ]]; then
     bsvc=$(baseline_service)
     bdns=$(baseline_dns)
     if [[ "$bsvc" == "$svc" ]]; then
-      target="$bdns"; source="baseline from ${bsvc}"
+      have_baseline=1
+      target="$bdns"
+      source="baseline from ${bsvc}"
     else
-      target=""; source="DHCP (baseline was for ${bsvc}, active service is ${svc})"
+      source="DHCP (baseline was for ${bsvc}, active service is ${svc})"
     fi
-  else
-    target=""; source="DHCP default (no baseline recorded)"
   fi
 
   state=$(probe_state)
@@ -190,41 +196,66 @@ restore_dns() {
     return 0
   fi
 
-  # Explicit resolvers that are not confirmed clean = suspected drift.
-  echo "restoring DNS on ${svc}: ${cur:-DHCP} → ${target:-DHCP} [${source}]"
-  if [[ "$DRY_RUN" == "1" ]]; then
-    apply_dns "$svc" "$target"
-    return 0
-  fi
-  if apply_dns "$svc" "$target"; then
-    echo "✅ DNS: set ${svc} → ${target:-DHCP}"
-    [[ "$(probe_state)" != "drift" ]] && return 0
-  else
-    echo "⚠ DNS: write to ${target:-DHCP} failed"
-  fi
-
-  # The recorded value did not clear the drift (or could not be written): DHCP next,
-  # then the domestic public resolver.
-  if [[ -n "$target" ]]; then
-    echo "⚠ DNS: still drifting after ${target:-DHCP} — trying DHCP"
-    if apply_dns "$svc" ""; then
-      echo "✅ DNS: set ${svc} → DHCP"
-      [[ "$(probe_state)" != "drift" ]] && return 0
-    else
-      echo "⚠ DNS: DHCP write failed"
+  # The probe cannot tell whether the explicit resolver list has drifted (no domain
+  # configured, or no answer). Restore a trusted baseline — the one value already
+  # verified clean — and otherwise leave the user's resolvers exactly as they are.
+  # Guessing DHCP here would clobber a resolver list the user may have chosen.
+  if [[ "$state" == "skipped" || "$state" == "failed" ]]; then
+    if [[ "$have_baseline" != "1" ]]; then
+      echo "⚠ DNS: ${svc} has explicit resolvers (${cur}) but the domestic probe is ${state} — drift cannot be judged, so DNS was left untouched."
+      echo "   This is a conservative choice, not an error: writing a guessed resolver could override your own configuration."
+      echo "   Set ASTR_CONTROL_DOMESTIC_DOMAIN to a domestic hostname so astrill.sh can verify the restore automatically."
+      echo "   manual fix: sudo networksetup -setdnsservers \"${svc}\" Empty"
+      return 1
     fi
-  fi
-
-  echo "⚠ DNS: trying the domestic fallback ${DNS_FALLBACK}"
-  if apply_dns "$svc" "$DNS_FALLBACK"; then
-    echo "✅ DNS: set ${svc} → ${DNS_FALLBACK} (fallback)"
-    [[ "$(probe_state)" != "drift" ]] && return 0
-  else
-    echo "❌ DNS: could not write DNS on ${svc}"
-    echo "   manual fix: sudo networksetup -setdnsservers \"${svc}\" ${DNS_FALLBACK}"
+    if [[ "$target" == "$cur" ]]; then
+      echo "✅ DNS: ${svc} already matches the trusted baseline (${cur}) — no change"
+      return 0
+    fi
+    echo "restoring DNS on ${svc}: ${cur} → ${target:-DHCP} [${source}] (probe ${state}: write cannot be verified)"
+    if [[ "$DRY_RUN" == "1" ]]; then
+      apply_dns "$svc" "$target"
+      return 0
+    fi
+    if apply_dns "$svc" "$target"; then
+      echo "✅ DNS: set ${svc} → ${target:-DHCP} (not verified: probe ${state})"
+      return 0
+    fi
+    echo "⚠ DNS: write to ${target:-DHCP} failed"
+    echo "   manual fix: sudo networksetup -setdnsservers \"${svc}\" ${target:-Empty}"
     return 1
   fi
 
+  # Explicit drift: recover through baseline → DHCP → domestic fallback. A write counts
+  # as success only when the probe then confirms it (ok); a failed/silent probe keeps the
+  # chain moving. A candidate equal to the current value is skipped as a redundant write.
+  local -a candidates=("$target")
+  [[ -n "$target" ]] && candidates+=("")
+  candidates+=("$DNS_FALLBACK")
+  for candidate in "${candidates[@]}"; do
+    if [[ "$candidate" == "$cur" ]]; then
+      echo "DNS: ${svc} already holds ${candidate:-DHCP} — skipping the redundant write"
+      continue
+    fi
+    if [[ "$DRY_RUN" == "1" ]]; then
+      apply_dns "$svc" "$candidate"
+      return 0
+    fi
+    echo "restoring DNS on ${svc}: ${cur:-DHCP} → ${candidate:-DHCP} [${source}]"
+    if apply_dns "$svc" "$candidate"; then
+      cur="$candidate"
+      if [[ "$(probe_state)" == "ok" ]]; then
+        echo "✅ DNS: set ${svc} → ${candidate:-DHCP}"
+        return 0
+      fi
+      echo "⚠ DNS: ${candidate:-DHCP} did not clear the drift — trying the next step"
+    else
+      echo "⚠ DNS: write to ${candidate:-DHCP} failed"
+    fi
+  done
+
+  echo "❌ DNS: could not restore a verified DNS on ${svc}"
+  echo "   manual fix: sudo networksetup -setdnsservers \"${svc}\" ${DNS_FALLBACK}"
   return 1
 }
 

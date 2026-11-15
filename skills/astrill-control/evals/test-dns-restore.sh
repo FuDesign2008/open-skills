@@ -11,7 +11,9 @@
 # full disconnect, no baseline → DHCP, DHCP failure → fallback, already-clean no-op,
 # drift verification failure, status drift flag, `on` baseline capture, dry-run,
 # drifting-first-run baseline refusal, bad-baseline-over-clean no-op, drifting
-# baseline recovery, Toggle-ON-while-tunnel-up protection, unconfigured probe skip.
+# baseline recovery, Toggle-ON-while-tunnel-up protection, and the unverifiable-probe
+# policy (skipped/failed): trusted baseline restored, otherwise explicit resolvers are
+# left untouched with a manual command and a non-zero exit.
 
 set -u
 
@@ -23,6 +25,7 @@ trap 'rm -rf "$SANDBOX"' EXIT
 
 BIN="$SANDBOX/bin"
 STATE="$SANDBOX/state"
+PROBE_DOMAIN="probe.example.com"
 mkdir -p "$BIN" "$STATE"
 
 # ── stubs (never reach the real system) ──────────────────────────────────────
@@ -95,9 +98,20 @@ STUB
 
 cat > "$BIN/dig" <<STUB
 #!/bin/bash
-# A forced answer simulates an unfixable drift; otherwise the answer follows the
-# resolver list the script wrote, so a successful restore flips the probe to clean.
+# Record the full argv so tests can prove the probe domain is wired through.
+printf '%s\n' "\$*" >> "$SANDBOX/dig.log"
+# The probe must query the configured domestic hostname; any other name answers
+# nothing (NXDOMAIN-like), so a broken domain wiring turns "drift/ok" into "failed".
+name=""
+for arg in "\$@"; do
+  case "\$arg" in +*) ;; *) name="\$arg" ;; esac
+done
+[[ "\$name" == "$PROBE_DOMAIN" ]] || exit 0
+# dig_fail simulates an unanswered query; dig_force an unfixable drift.
+if [[ -f "$SANDBOX/dig_fail" ]]; then exit 0; fi
 if [[ -f "$SANDBOX/dig_force" ]]; then cat "$SANDBOX/dig_force"; exit 0; fi
+# Otherwise the answer follows the resolver list the script wrote, so a
+# successful restore flips the probe to clean.
 dns=\$(tr '\n' ' ' < "$SANDBOX/dns" 2>/dev/null)
 case "\$dns" in
   *"1.1.1.2"*) printf 'overseas-cdn.probe.example.com.\n203.0.113.10\n' ;;
@@ -142,12 +156,11 @@ expect_absent() {  # path description
   if [[ ! -e "$1" ]]; then ok "$2"; else bad "$2 (unexpected file $1)"; fi
 }
 
-PROBE_DOMAIN="probe.example.com"
-
 reset() {
   rm -rf "$STATE"; mkdir -p "$STATE"
   rm -f "$SANDBOX/dns" "$SANDBOX/setdns.log" "$SANDBOX/clicks.log" \
-        "$SANDBOX/empty_fail" "$SANDBOX/sudo.log" "$SANDBOX/dig_force"
+        "$SANDBOX/empty_fail" "$SANDBOX/sudo.log" "$SANDBOX/dig_force" \
+        "$SANDBOX/dig_fail" "$SANDBOX/dig.log"
   echo up       > "$SANDBOX/app"
   echo up       > "$SANDBOX/tunnel"
   echo TOGGLE_OFF > "$SANDBOX/menu"
@@ -262,6 +275,7 @@ out=$(run status)
 expect_output "$out" "DNS:" "DNS line present"
 expect_output "$out" "⚠ DNS DRIFT" "drift flagged"
 expect_output "$out" "1.1.1.2" "current resolver shown"
+expect_contains "$SANDBOX/dig.log" "$PROBE_DOMAIN" "the probe queries the configured domestic domain"
 
 # ── 9. on captures the baseline before connecting ────────────────────────────
 printf '\n[9] on saves the pre-VPN baseline\n'
@@ -335,20 +349,62 @@ expect_eq "$(cat "$SANDBOX/setdns.log" 2>/dev/null | wc -l | tr -d ' ')" "0" "no
 expect_output "$out" "still up" "explains that the tunnel is still up"
 expect_output "$out" "protection" "states that skipping DNS is protection, not failure"
 
-# ── 15. unconfigured probe: skip the probe, still restore, do not fail ───────
-printf '\n[15] unconfigured domestic probe is skipped, not failed\n'
+# ── 15. unverifiable probe + custom DNS + no baseline: leave DNS untouched ───
+printf '\n[15] unconfigured probe + custom DNS + no baseline → conservative no-write\n'
 reset
 echo TOGGLE_ON > "$SANDBOX/menu"
 echo down      > "$SANDBOX/tunnel"
 echo "1.1.1.2" > "$SANDBOX/dns"
 out=$(run_no_probe off); rc=$?
-expect_eq "$rc" "0" "exit 0 without a configured probe"
-expect_contains "$SANDBOX/setdns.log" "Wi-Fi Empty" "DHCP restore still runs"
-expect_output "$out" "domain not configured" "verification reports the probe as skipped"
-expect_not_output "$out" "DNS DRIFT" "no DRIFT verdict when the probe is unconfigured"
+expect_eq "$rc" "1" "non-zero: DNS was not verified as restored"
+expect_eq "$(cat "$SANDBOX/setdns.log" 2>/dev/null | wc -l | tr -d ' ')" "0" "zero DNS writes when drift cannot be judged"
+expect_eq "$(read_dns)" "1.1.1.2" "the user's custom resolvers are preserved"
+expect_output "$out" "left untouched" "states that DNS was left untouched"
+expect_output "$out" "conservative choice, not an error" "explains this is conservative, not a failure"
+expect_output "$out" "ASTR_CONTROL_DOMESTIC_DOMAIN" "tells the user how to enable verification"
+expect_output "$out" 'setdnsservers "Wi-Fi" Empty' "prints the manual recovery command"
 out=$(run_no_probe status)
 expect_output "$out" "probe: skipped (domain not configured)" "status marks the probe as skipped"
 expect_not_output "$out" "DNS DRIFT" "status does not flag drift without a probe"
+
+# ── 16. unverifiable probe + trusted baseline: restore the baseline ──────────
+printf '\n[16] unconfigured probe + trusted baseline → baseline restored\n'
+reset
+echo TOGGLE_ON > "$SANDBOX/menu"
+echo down      > "$SANDBOX/tunnel"
+echo "1.1.1.2" > "$SANDBOX/dns"
+write_baseline "Wi-Fi" "223.5.5.5 119.29.29.29"
+out=$(run_no_probe off); rc=$?
+expect_eq "$rc" "0" "exit 0 when a trusted baseline can be restored"
+expect_contains "$SANDBOX/setdns.log" "Wi-Fi 223.5.5.5 119.29.29.29" "the trusted baseline is applied"
+expect_eq "$(read_dns)" "223.5.5.5 119.29.29.29" "system DNS now matches the baseline"
+expect_output "$out" "not verified" "flags the write as unverified"
+
+# ── 17. probe gets no answer + custom DNS + no baseline: no write ────────────
+printf '\n[17] probe failed (no answer) + custom DNS → conservative no-write\n'
+reset
+echo TOGGLE_ON > "$SANDBOX/menu"
+echo down      > "$SANDBOX/tunnel"
+echo "1.1.1.2" > "$SANDBOX/dns"
+touch "$SANDBOX/dig_fail"
+out=$(run_off); rc=$?
+expect_eq "$rc" "1" "non-zero: drift could not be judged"
+expect_eq "$(cat "$SANDBOX/setdns.log" 2>/dev/null | wc -l | tr -d ' ')" "0" "zero DNS writes on a failed probe"
+expect_eq "$(read_dns)" "1.1.1.2" "custom resolvers preserved on a failed probe"
+expect_output "$out" "left untouched" "reports that DNS was left untouched"
+
+# ── 18. explicit drift + custom DNS: recover through the normal chain ────────
+printf '\n[18] explicit drift + custom DNS → baseline restored\n'
+reset
+echo TOGGLE_ON > "$SANDBOX/menu"
+echo down      > "$SANDBOX/tunnel"
+echo "1.1.1.2" > "$SANDBOX/dns"
+write_baseline "Wi-Fi" "223.5.5.5"
+out=$(run_off); rc=$?
+expect_eq "$rc" "0" "exit 0 after a verified restore"
+expect_contains "$SANDBOX/setdns.log" "Wi-Fi 223.5.5.5" "baseline applied when drift is confirmed"
+expect_eq "$(read_dns)" "223.5.5.5" "resolver list now matches the baseline"
+expect_output "$out" "DNS verified" "verification ran and passed"
 
 # ── summary ──────────────────────────────────────────────────────────────────
 printf '\n─────────────────────────────\n'
