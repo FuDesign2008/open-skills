@@ -131,6 +131,37 @@ export function hasPromptScriptGlobalFail(output) {
   return PROMPTSCRIPT_FAIL_RE.test(output)
 }
 
+/** Clone/installation failure signals emitted by the skills CLI. */
+const CLONE_FAIL_RE =
+  /Failed to clone repository|SKILLS_GIT_CLONE_TIMEOUT|Installation failed/
+
+/** Strip ANSI CSI escapes; turn CR progress-bar rewrites into line breaks. */
+function normalizeCliOutput(output) {
+  return String(output ?? '')
+    .replace(/\x1b\[[0-9;?]*[ -/]*[@-~]/g, '')
+    .replace(/\r/g, '\n')
+}
+
+/**
+ * True when install output reports a clone/installation failure. The CLI can
+ * print these and still exit 0, so status alone cannot be trusted.
+ * @param {string} output
+ * @returns {boolean}
+ */
+export function hasCloneFailure(output) {
+  return CLONE_FAIL_RE.test(normalizeCliOutput(output))
+}
+
+/**
+ * Names from `names` not installed under `root` (missing dir or no SKILL.md).
+ * @param {string} root
+ * @param {string[]} names
+ * @returns {string[]}
+ */
+export function missingInstalledSkills(root, names) {
+  return names.filter((name) => !existsSync(join(root, name, 'SKILL.md')))
+}
+
 /**
  * @param {string[]} argv
  * @param {NodeJS.ProcessEnv} [env]
@@ -172,7 +203,15 @@ Env:
                        promptscript and eve are always excluded.
 
 Runs: npx skills add <source> -g --yes --skill <skill> --agent <agents...>
-Fails if install output still contains PromptScript global-install errors.
+
+Fails with exit 1 (no manifest refresh, no prune) when:
+  - clone/install failures appear in output (Failed to clone repository,
+    SKILLS_GIT_CLONE_TIMEOUT, Installation failed) — the CLI can still exit 0;
+  - PromptScript global-install errors remain in output;
+  - a full install leaves shipped skills missing on disk (no SKILL.md under the
+    primary global root).
+Prefer --source . to install from this local checkout instead of cloning.
+Raise the clone timeout with SKILLS_CLONE_TIMEOUT_MS=<ms>.
 
 Prune (full install only, i.e. --skill '*'):
   After install, removes global skill directories that a previous full install
@@ -217,6 +256,17 @@ function main(argv = process.argv.slice(2)) {
   const output = `${result.stdout || ''}${result.stderr || ''}`
   if (output) process.stdout.write(output)
 
+  if (hasCloneFailure(output)) {
+    console.error(
+      '\n✗ skills CLI clone/install failure detected in output. Refusing to treat as success.\n' +
+        '  The global install did not complete; this repo was NOT updated.\n' +
+        '  Fix options:\n' +
+        '    1) Install from the local repo instead of cloning: node scripts/install-skills.mjs --source .\n' +
+        '    2) Raise the clone timeout: SKILLS_CLONE_TIMEOUT_MS=900000 node scripts/install-skills.mjs',
+    )
+    process.exit(1)
+  }
+
   if (hasPromptScriptGlobalFail(output)) {
     console.error(
       '\n✗ PromptScript global-install failure still present in output. Refusing to treat as success.\n' +
@@ -233,11 +283,27 @@ function main(argv = process.argv.slice(2)) {
     process.exit(1)
   }
 
-  // Post-install prune (full installs only). Runs only after a successful add:
-  // a failed install must not touch global state.
   const isFullInstall = parsed.skill === '*'
   const repoRoot = resolve(fileURLToPath(import.meta.url), '..', '..')
   const primaryRoot = GLOBAL_SKILL_ROOTS[0]
+
+  // Full installs must actually land every shipped skill on disk. A partial
+  // clone/install can exit 0, so verify before touching manifest/prune state.
+  if (isFullInstall) {
+    const expected = repoSkillNames(repoRoot)
+    const missing = missingInstalledSkills(primaryRoot, expected)
+    if (missing.length > 0) {
+      console.error(
+        `\n✗ install incomplete: ${missing.length}/${expected.length} skill(s) missing under ${primaryRoot}\n` +
+          missing.map((name) => `  - ${name}`).join('\n') +
+          '\n  Manifest not updated. Re-run the install (or use --source .).',
+      )
+      process.exit(1)
+    }
+  }
+
+  // Post-install prune (full installs only). Runs only after a successful add:
+  // a failed install must not touch global state.
   if (isFullInstall && parsed.prune) {
     const newNames = repoSkillNames(repoRoot)
     const oldNames = readManifest(primaryRoot)
