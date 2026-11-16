@@ -1,6 +1,6 @@
 ---
 name: solve-workflow
-version: "1.33.0"
+version: "1.34.0"
 user-invocable: true
 description: "Eight-stage PDCA workflow for systematically solving bugs, refactors, and feature-development tasks: clarify → analyze → explore solutions → review → plan → execute → verify → retrospect. Manual mode (default) pauses for user confirmation at each stage exit; auto mode runs end-to-end; ai-proxy overlay (thin freeze then occupy) is available independently. Triggers — 「明确问题」「分析问题」「探索方案」「审查方案」「制定计划」「执行计划」「检查验证」「复盘改进」(alias「回顾总结」)；「继续分析」「深入分析」「修改方案」「完善方案」「优化方案」「更新计划」「修订计划」「修改计划」；「自动模式」「自动分析」「自动解决」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / clarify problem, analyze problem, explore solutions, review solution, make plan, execute plan, verify, retrospective, auto mode, ai-proxy mode, switch to ai-proxy."
 dependencies:
@@ -239,7 +239,7 @@ Output the solution comparison table and wait for the user to choose before ente
 > ⛔ **[Manual mode — stage 3 exit]** **Stop immediately** after the comparison table and wait for the user to pick a solution number before entering stage 4.
 > 🤖 **[Auto mode]** Auto-select the best solution and proceed directly to stage 4.
 
-**Design-phase role dispatch (when available).** After solution selection and before Stage 4 review: when the project provides a role contract (default `.claude/agents/_contract.md`), evaluate the design-phase architect gate in that contract. If the gate fires, dispatch `architect` at the `escalated` tier with a task card whose `Artifacts` name the design-document path(s). Apply fail-closed acceptance; reject a result whose diff leaves those design paths. If no contract is present or the gate does not fire, continue without dispatching `architect`. Manual/on-demand dispatch of `architect` remains available whenever the contract exists.
+**Role dispatch via leader (when available).** After solution selection and before Stage 4 review: when the project provides a role contract (default `.claude/agents/_contract.md`), dispatch `leader` at the `escalated` tier with `Phase: design` plus goal/artifacts/constraints/acceptance. `leader` applies contract gates (including the design-phase architect gate) and returns one aggregated card. Fail-closed-accept that card. If no contract is present, continue with host-owned checks. Manual/on-demand catalog roles remain available when the contract exists.
 
 ### Red Flags
 
@@ -311,6 +311,8 @@ For behavior-changing work, follow `test-first-discipline` (failing test observe
 ## Stage 7: Verify (Check)
 
 > Principle: output only the verification results — improvement suggestions belong to stage 8.
+
+**Role dispatch via leader (when available).** When the project provides a role contract, dispatch `leader` with `Phase: verify` (working-tree diff + requirement artifacts) and fail-closed-accept the leader card. Host-owned checks below still run (Figma / runtime-verification / debug-verify). If no contract is present, run host-owned checks only.
 
 **Context budget**: if the run crossed the compaction threshold or restarted from a ledger, verify against the ledger + artifacts — never by replaying prior-session history (per `context-budget-discipline`).
 

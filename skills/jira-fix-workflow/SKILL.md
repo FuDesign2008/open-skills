@@ -1,6 +1,6 @@
 ---
 name: jira-fix-workflow
-version: "3.42.0"
+version: "3.43.0"
 user-invocable: true
 description: "End-to-end Jira bug-fix workflow (stages 0-10), driven by a single Jira link, from intake through PR/MR merge and Jira writeback. Manual mode (default) pauses for confirmation between stages; auto/force modes run end-to-end; ai-proxy overlay (thin freeze then occupy) is available independently. Triggers — 「修复这个 bug [URL]」「帮我修复 [URL]」「jira-fix [URL]」「自动修复 [URL]」「强制修复 [URL]」「继续修复」「从上次继续」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / fix this bug, jira-fix, auto fix, force fix, resume fix, ai-proxy mode, switch to ai-proxy. Do NOT use for batch fixes across multiple issues — use jira-fix-queue instead (it enqueues into goal-driven-queue; confirm, then run the queue)."
 dependencies:
@@ -197,7 +197,7 @@ If the path is still foggy, follow `decision-fog-discipline` before the solution
 
 Output: list → expanded detail → **one** comparison table (see reference.md § Stage 5 Solution Comparison) → `03-options.md`. 👤 stop after the comparison table.
 
-**Design-phase role dispatch (when available).** After solution selection and before review: when the project provides a role contract (default `.claude/agents/_contract.md`), evaluate the design-phase architect gate in that contract. If the gate fires, dispatch `architect` at the `escalated` tier with a task card whose `Artifacts` name the design-document path(s). Apply fail-closed acceptance; reject a result whose diff leaves those design paths. If no contract is present or the gate does not fire, continue without dispatching `architect`. Manual/on-demand dispatch remains available whenever the contract exists.
+**Role dispatch via leader (when available).** After solution selection and before review: when the project provides a role contract (default `.claude/agents/_contract.md`), dispatch `leader` at the `escalated` tier with `Phase: design` plus goal/artifacts/constraints/acceptance. Fail-closed-accept the leader card. If no contract is present, continue with host-owned checks. Manual/on-demand catalog roles remain available when the contract exists.
 
 **Review**: load `staged-review-flow`. Mapping: `{next-stage}` = stage 6; `{artifact-sink}` = `03-options.md`; `{extra-dimensions}` = none; `{batch-overcap-behavior}` = mark "review failed (cap)" and move to the next issue. ✅ Read; ❌ Edit/Write/Bash.
 
@@ -238,15 +238,9 @@ After execution: 🤖 normal→8, 🟠 pause for review; 👤 normal wait for co
 
 Do not change production code during this stage; `tester` may add test files. **Context budget**: verify against the ledger + artifacts when a reset occurred (per `context-budget-discipline`); never replay prior-session history. Compare against the Jira repro/expected result, stage 6's plan, tests, side effects, and root cause; use `analysis-core` §4 for the debug-verify loop. Verification execution follows `runtime-verification-discipline` (the AI executes verification itself in an environment, and hands a step to the user only at a classified true hard boundary, with the reason stated). When the goal, card, issue, or plan contains `figma.com` or `node-id=`, or this run implemented from Figma, load `figma-pixel-verify` and follow it; a missing measured report (the living artifact’s Verify section, or the Spec source sibling) blocks this verification stage from passing. A spec-gap FAIL does not pass verification—re-enter `figma-pixel-implement` to complete the table. Also load it when alignment checking is required without a same-run implement. This stage passes only when that report’s overall status is PASS (accepted residuals included) and its channel is a laid-out measurement (`storybook`, `isolated-harness`, `preview`, `full-app`, or `layout-probe`). Any other result fails this stage and returns to the implement stage for another fix/re-measure loop. This stage also runs `scripts/check-figma-verify-report.mjs` from the `figma-pixel-verify` skill on that report; a non-zero exit fails the stage. Verification-report honesty per `staged-review-flow` and `completion-evidence-discipline`. Template: reference.md § Stage 8.
 
-**Role dispatch (when available).** When the project provides a role contract (default `.claude/agents/_contract.md`, configurable), load it and dispatch the roles below. Otherwise run this stage with the organizer's own checks as before. The organizer reads every field of each result card and applies the contract's acceptance rules; it does not inspect how a role works internally.
+**Role dispatch via leader (when available).** When the project provides a role contract (default `.claude/agents/_contract.md`, configurable), dispatch `leader` at the `escalated` tier with `Phase: verify`, goal, the working-tree change against the base (tracked/staged/untracked — not `base...HEAD` before Stage 9 commits), requirement source, and acceptance criteria. Fail-closed-accept the leader card (and nested cards it surfaces). `leader` applies verify-phase defaults (`code-reviewer` standard + conditional escalated, `tester`, conditional `security-reviewer`). If no contract is present, run this stage with the host's own checks as before.
 
-1. **8a — Code review (standard tier).** Dispatch `code-reviewer` with a task card: goal, the working-tree change against the base (tracked modifications, staged changes, and untracked files — not `base...HEAD`, which is empty before Stage 9 commits), requirement source, acceptance criteria, model tier. Resolve the `standard` tier from the project's role configuration (default `.claude/agents/models.json`); a missing or unreadable file aborts this stage.
-2. **8b — Code review (escalated tier, conditional).** Run when any escalation condition in the contract holds. Same agent, same flow, `escalated` tier, identical input. Both cards are independent; when they conflict, FAIL wins.
-3. **8c — Integration test.** Dispatch `tester`. It checks unit-test coverage, designs and runs integration scenarios, and performs real-device verification.
-
-Aggregate per the contract's acceptance rules: any `FAIL` routes per the verdict table below; the stage passes when every card is `PASS` with an empty `Unresolved`.
-
-Checks that stay with the organizer, not delegated: Figma verification, verification-report honesty, `runtime-verification-discipline` classification, and the debug-verify loop above. Before dispatching `tester`, record the changed-file set; after it returns, compare — any addition or modification outside test files invalidates that result.
+Checks that stay with the host, not delegated through roles: Figma verification, verification-report honesty, `runtime-verification-discipline` classification, and the debug-verify loop above.
 
 | Verdict | Next |
 |------|------|

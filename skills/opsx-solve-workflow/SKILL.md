@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.27.0"
+version: "1.28.0"
 user-invocable: true
 description: "Eight-stage PDCA problem-solving workflow that persists analysis, proposal, design review, plan, execution, and verification into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context. Use for feature work, bug fixes, refactors, and complex engineering tasks that need long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick one-off edit with no traceability need — use solve-workflow instead. Triggers：「opsx解决」「OpenSpec解决」「规范化解决」「创建OpenSpec变更」「创建opsx变更」「用OpenSpec分析」「用OpenSpec修复」「opsx自动解决」「OpenSpec自动解决」「opsx-solve」「opsx-solve-workflow」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / opsx solve, OpenSpec solve workflow, create an OpenSpec change, ai-proxy mode, switch to ai-proxy."
 dependencies:
@@ -235,7 +235,7 @@ Delta-spec conventions (enforced by the `openspec-continue-change` skill):
 
 ## Stage 4: Review the solution
 
-**Design-phase role dispatch (when available).** After Stage 3 solution selection and before this review: when the project provides a role contract (default `.claude/agents/_contract.md`), evaluate the design-phase architect gate in that contract. If the gate fires, dispatch `architect` at the `escalated` tier with `Artifacts` pointing at `openspec/changes/<change-name>/design.md`. Apply fail-closed acceptance; reject a result whose diff leaves those design paths. When `architect` already wrote `design.md`, reuse/merge it after review instead of blank-rewriting. If no contract is present or the gate does not fire, continue without dispatching `architect`. Manual/on-demand dispatch remains available whenever the contract exists.
+**Role dispatch via leader (when available).** After Stage 3 solution selection and before this review: when the project provides a role contract (default `.claude/agents/_contract.md`), dispatch `leader` at the `escalated` tier with `Phase: design` and `Artifacts` including `openspec/changes/<change-name>/design.md`. Fail-closed-accept the leader card. When design docs were written by subordinates, reuse/merge them after review instead of blank-rewriting. If no contract is present, continue with host-owned checks. Manual/on-demand catalog roles remain available when the contract exists.
 
 Load `staged-review-flow` and execute its full review contract. This workflow's mapping: `{next-stage}` = Stage 5 "Make the plan"; `{artifact-sink}` = `design.md` created via `openspec-continue-change`; `{extra-dimensions}` = spec compliance (proposal's why, delta specs' behavior, design's risk, tasks' coverage of requirements); `{batch-overcap-behavior}` = `N/A`. After the review passes, create `design.md` via the native skill.
 
@@ -292,6 +292,8 @@ Load and call `test-suite-ensure`, declaring `mode=mandatory`, scoped to this ch
 🔌 **OPSX skills integration**: call the `openspec-apply-change` skill to execute the tasks (read its SKILL.md first, then complete each task per its instructions). `openspec-apply-change` queries change status and execution instructions via the CLI internally; this skill never calls the CLI directly to drive execution.
 
 ## Stage 7: Check & verify
+
+**Role dispatch via leader (when available).** When the project provides a role contract, dispatch `leader` with `Phase: verify` and fail-closed-accept the leader card. Host-owned OpenSpec/engineering/Figma checks below still run. If no contract is present, run host-owned checks only.
 
 **Context budget**: verify against the ledger + artifacts when a reset occurred (per `context-budget-discipline`); never replay prior-session history.
 

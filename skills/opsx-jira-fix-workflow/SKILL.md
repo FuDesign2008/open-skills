@@ -1,6 +1,6 @@
 ---
 name: opsx-jira-fix-workflow
-version: "1.28.0"
+version: "1.29.0"
 user-invocable: true
 description: "OpenSpec-flavored end-to-end Jira bug-fix workflow that persists root cause, behavior change, fix plan, verification, and archive into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context or Jira comments. Use when a Jira issue needs long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick fix needing no traceability — use jira-fix-workflow instead. Triggers：「opsx-jira-fix」「OpenSpec Jira 修复」「规范化修复 Jira」「opsx修复Jira」「Jira OpenSpec 修复」「opsx自动修复Jira」「用OpenSpec修复Jira」「opsx-jira-fix-workflow」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / opsx jira fix, OpenSpec Jira fix workflow, ai-proxy mode, switch to ai-proxy."
 dependencies:
@@ -269,7 +269,7 @@ If the path is still foggy, follow `decision-fog-discipline` before the solution
 
 In manual mode, output the solution table and pause for the user's pick; auto mode picks the best solution automatically.
 
-**Design-phase role dispatch (when available).** After solution selection and before review: when the project provides a role contract (default `.claude/agents/_contract.md`), evaluate the design-phase architect gate in that contract. If the gate fires, dispatch `architect` at the `escalated` tier with `Artifacts` pointing at `openspec/changes/<change-name>/design.md`. Apply fail-closed acceptance; reject a result whose diff leaves those design paths. If no contract is present or the gate does not fire, continue without dispatching `architect`. Manual/on-demand dispatch remains available whenever the contract exists.
+**Role dispatch via leader (when available).** After solution selection and before review: when the project provides a role contract (default `.claude/agents/_contract.md`), dispatch `leader` at the `escalated` tier with `Phase: design` and `Artifacts` including `openspec/changes/<change-name>/design.md`. Fail-closed-accept the leader card. If no contract is present, continue with host-owned checks. Manual/on-demand catalog roles remain available when the contract exists.
 
 Load `staged-review-flow` and execute its full review contract. This workflow's mapping: `{next-stage}` = Stage 5 "Make the plan"; `{artifact-sink}` = `openspec/changes/<change-name>/design.md`; `{extra-dimensions}` = spec coverage (requirements/scenarios) and Jira status boundary (`jira-status-lifecycle`: claim before analysis,「已修复」only after merge); `{batch-overcap-behavior}` = `N/A`.
 
