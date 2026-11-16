@@ -1,6 +1,6 @@
 ---
 name: opsx-solve-workflow
-version: "1.26.0"
+version: "1.27.0"
 user-invocable: true
 description: "Eight-stage PDCA problem-solving workflow that persists analysis, proposal, design review, plan, execution, and verification into OpenSpec artifacts (openspec/changes/<name>/, archived into openspec/specs/) instead of leaving them only in chat context. Use for feature work, bug fixes, refactors, and complex engineering tasks that need long-term behavioral-contract traceability, team review, or auditability. Do NOT use for a quick one-off edit with no traceability need — use solve-workflow instead. Triggers：「opsx解决」「OpenSpec解决」「规范化解决」「创建OpenSpec变更」「创建opsx变更」「用OpenSpec分析」「用OpenSpec修复」「opsx自动解决」「OpenSpec自动解决」「opsx-solve」「opsx-solve-workflow」；「ai-proxy 模式」「AI 代理模式」「切换 ai-proxy」 / opsx solve, OpenSpec solve workflow, create an OpenSpec change, ai-proxy mode, switch to ai-proxy."
 dependencies:
@@ -234,6 +234,8 @@ Delta-spec conventions (enforced by the `openspec-continue-change` skill):
 - A solution carrying non-essential features or over-engineering (violates YAGNI)
 
 ## Stage 4: Review the solution
+
+**Design-phase role dispatch (when available).** After Stage 3 solution selection and before this review: when the project provides a role contract (default `.claude/agents/_contract.md`), evaluate the design-phase architect gate in that contract. If the gate fires, dispatch `architect` at the `escalated` tier with `Artifacts` pointing at `openspec/changes/<change-name>/design.md`. Apply fail-closed acceptance; reject a result whose diff leaves those design paths. When `architect` already wrote `design.md`, reuse/merge it after review instead of blank-rewriting. If no contract is present or the gate does not fire, continue without dispatching `architect`. Manual/on-demand dispatch remains available whenever the contract exists.
 
 Load `staged-review-flow` and execute its full review contract. This workflow's mapping: `{next-stage}` = Stage 5 "Make the plan"; `{artifact-sink}` = `design.md` created via `openspec-continue-change`; `{extra-dimensions}` = spec compliance (proposal's why, delta specs' behavior, design's risk, tasks' coverage of requirements); `{batch-overcap-behavior}` = `N/A`. After the review passes, create `design.md` via the native skill.
 

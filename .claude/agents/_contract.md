@@ -1,7 +1,8 @@
 # Role Contract
 
 > Shared contract for role-based dispatch. Referenced by the agent definitions in this
-> directory and by `skills/jira-fix-workflow/SKILL.md` Stage 8.
+> directory and by PDCA hosts for verification-stage and design-phase role dispatch
+> (for example `jira-fix-workflow` Stage 8 and design-phase `architect` hooks).
 > This file is documentation, not an agent definition (it has no `name` / `description`
 > frontmatter, so the host skips it).
 
@@ -79,6 +80,7 @@ Tier names are stable contract identifiers. Concrete models live in `models.json
 | code-reviewer (basic review) | `standard` |
 | code-reviewer (escalated review) | `escalated` |
 | tester | `standard` |
+| architect | `escalated` |
 
 Resolution: read `models.json`, map the tier to a model alias, and pass that alias on the
 dispatch call. When `models.json` is missing or unreadable, or a tier has no mapping,
@@ -95,6 +97,32 @@ is not the one written in `models.json`).
   `Bash` can still redirect output, this is a stated convention, not a sandbox.
 - `tester` may add or modify test files only, and must never change production code.
 - `developer` may modify production code.
+- `architect` may write design documents only (paths in the task card `Artifacts`; default
+  `openspec/changes/<change-name>/design.md` when an OpenSpec change exists) and must never
+  modify production or test code. The organizer rejects a result whose diff leaves those
+  design paths.
+
+## Design-phase architect gate
+
+Auto-dispatch `architect` after solution selection and before solution review only when a
+role contract is present **and** at least one input holds. Record which input matched, or
+that none matched (skip auto-dispatch). Manual / on-demand dispatch remains available
+whenever the contract exists.
+
+**Explicit mark (any one):**
+
+- Task card field `architecture: true`
+- User utterance containing 「架构设计」 or `architecture design`
+
+**Verifiable signals (any one):**
+
+- Goal or constraints name cross-repo or cross-service work
+- Selected solution proposes a new top-level module directory
+- The change touches two or more independent paths under `openspec/specs/`
+- Goal contains an architecture keyword from this list: `architecture`, `跨层`,
+  `新模块边界`, `cross-layer`, `new module boundary`
+
+Do not use estimated file/line counts or unaudited preference as gate inputs.
 
 ## Unit tests vs integration tests
 
