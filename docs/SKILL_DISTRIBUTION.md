@@ -14,7 +14,7 @@
 
 角色 agent 依赖宿主提供「独立上下文 + 模型档位 + 工具权限」三项能力，且各平台的定义格式不同（Claude Code 与 OpenCode 的 frontmatter 方言不一致）。本仓库把它作为**工程级配置**维护：只服务本仓库内的 `jira-fix-workflow` 运行，不进入 `npx skills add` 的安装面。
 
-消费方需要角色分离时，应在自己的工程内按同一契约落地，而不是从本仓库安装 agent 文件。PDCA 宿主（`jira-fix-workflow` / `opsx-jira-fix-workflow` / `solve-workflow` / `opsx-solve-workflow`）通过**存在性守卫**（工程提供角色契约时才启用角色派发）保证无此配置的工程行为不变：验证阶段派发 `code-reviewer` / `tester`（如 `jira-fix-workflow` Stage 8），设计阶段在门控命中时派发 `architect`。
+消费方需要角色分离时，应在自己的工程内按同一契约落地，而不是从本仓库安装 agent 文件。PDCA 宿主通过**存在性守卫**派发元角色 `leader`（`Phase: design|verify|…`）；由 `leader` 按 `.claude/agents/_contract.md` 门控再派发下属角色。无契约工程行为不变。
 
 ## 为什么 openspec-* 不分发
 

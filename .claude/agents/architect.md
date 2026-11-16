@@ -1,6 +1,6 @@
 ---
 name: architect
-description: "Architecture design role. Dispatch when the organizer needs architecture design before solution review, or on manual request. Produces or updates design documents only; does not write production or test code. Default model tier is escalated."
+description: "Architecture design role. Usually dispatched by leader in Phase design when the architect gate fires, or on manual request. Produces or updates design documents only; does not write production or test code. Default model tier is escalated."
 tools: Read, Write, Edit, Bash, Grep, Glob, Skill
 model: inherit
 ---
