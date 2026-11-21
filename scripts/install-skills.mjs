@@ -23,7 +23,7 @@
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { join, posix, resolve, win32 } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 /** Agents in skills CLI that have globalSkillsDir: undefined (skills@1.5.x). */
@@ -195,6 +195,66 @@ export function parseArgs(argv, env = process.env) {
   return { help: false, source, skill, prune, agents, rest }
 }
 
+/**
+ * Locate npm's npx CLI entry from the running Node installation so the skills
+ * CLI can be launched without a shell or a Windows `.cmd` shim.
+ * Returns { command, args, via } where `args` precede the skills CLI arguments.
+ * @param {{ execPath?: string, platform?: string, fileExists?: (path: string) => boolean }} [options]
+ * @returns {{ command: string, args: string[], via: 'node-npx-cli' | 'npx-fallback' }}
+ */
+export function resolveNpxLaunch({
+  execPath = process.execPath,
+  platform = process.platform,
+  fileExists = existsSync,
+} = {}) {
+  const pathImpl = platform === 'win32' ? win32 : posix
+  const execDir = pathImpl.dirname(execPath)
+  const candidates = [
+    pathImpl.join(execDir, 'node_modules', 'npm', 'bin', 'npx-cli.js'),
+    pathImpl.join(execDir, '..', 'lib', 'node_modules', 'npm', 'bin', 'npx-cli.js'),
+  ]
+  for (const candidate of candidates) {
+    if (fileExists(candidate)) {
+      return { command: execPath, args: [candidate], via: 'node-npx-cli' }
+    }
+  }
+  return { command: 'npx', args: [], via: 'npx-fallback' }
+}
+
+/**
+ * Combine a launcher plan with the skills CLI arguments, keeping every value
+ * as one discrete argv entry (no shell re-tokenization).
+ * @param {{ command: string, args: string[], via: string }} plan
+ * @param {string[]} cliArgs
+ */
+export function npxInvocation(plan, cliArgs) {
+  return { command: plan.command, args: [...plan.args, ...cliArgs], via: plan.via }
+}
+
+/**
+ * Render the launch plan for the progress log.
+ * @param {{ command: string, args: string[] }} invocation
+ */
+export function formatLaunchLine(invocation) {
+  return `→ ${invocation.command} ${invocation.args.join(' ')}`
+}
+
+/**
+ * Diagnostic for the Windows case where npm's CLI entry could not be resolved
+ * and the historical `npx` fallback is about to be spawned as a `.cmd` shim.
+ * @param {{ via: string }} plan
+ * @param {string} [platform]
+ * @returns {string | null}
+ */
+export function npxLaunchFailureHint(plan, platform = process.platform) {
+  if (plan.via !== 'npx-fallback' || platform !== 'win32') return null
+  return (
+    '\n  hint: npx is a Windows .cmd shim that Node cannot start directly, and npm\'s\n' +
+    '  npx-cli.js was not found next to the Node binary. Reinstall Node with npm\n' +
+    '  included, or run the same command from a shell.'
+  )
+}
+
 function printHelp() {
   console.log(`Usage: node scripts/install-skills.mjs [--source <repo-or-path>] [--skill <name|*>] [--no-prune]
 
@@ -202,7 +262,9 @@ Env:
   OPEN_SKILLS_AGENTS   Space/comma-separated agent ids (default: claude-code cursor opencode)
                        promptscript and eve are always excluded.
 
-Runs: npx skills add <source> -g --yes --skill <skill> --agent <agents...>
+Runs: the skills CLI through npm's npx-cli.js using the running Node binary
+      (<node dir>/node_modules/npm/bin/npx-cli.js), so no shell or .cmd shim is
+      launched; falls back to 'npx skills add ...' when that entry is not found.
 
 Fails with exit 1 (no manifest refresh, no prune) when:
   - clone/install failures appear in output (Failed to clone repository,
@@ -233,7 +295,7 @@ function main(argv = process.argv.slice(2)) {
     process.exit(1)
   }
 
-  const args = [
+  const cliArgs = [
     'skills',
     'add',
     parsed.source,
@@ -246,8 +308,9 @@ function main(argv = process.argv.slice(2)) {
     ...parsed.rest,
   ]
 
-  console.log(`→ npx ${args.join(' ')}`)
-  const result = spawnSync('npx', args, {
+  const launch = npxInvocation(resolveNpxLaunch(), cliArgs)
+  console.log(formatLaunchLine(launch))
+  const result = spawnSync(launch.command, launch.args, {
     encoding: 'utf8',
     shell: false,
     env: process.env,
@@ -280,6 +343,8 @@ function main(argv = process.argv.slice(2)) {
   }
   if (result.error) {
     console.error(result.error)
+    const hint = npxLaunchFailureHint(launch)
+    if (hint) console.error(hint)
     process.exit(1)
   }
 

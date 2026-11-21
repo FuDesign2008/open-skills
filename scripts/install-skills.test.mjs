@@ -7,10 +7,14 @@ import {
   DEFAULT_AGENTS,
   NO_GLOBAL_AGENTS,
   filterAgentsForGlobalInstall,
+  formatLaunchLine,
   hasCloneFailure,
   hasPromptScriptGlobalFail,
   missingInstalledSkills,
+  npxInvocation,
+  npxLaunchFailureHint,
   parseArgs,
+  resolveNpxLaunch,
 } from './install-skills.mjs'
 
 test('filterAgentsForGlobalInstall drops promptscript and eve', () => {
@@ -88,4 +92,83 @@ test('parseArgs defaults and env override', () => {
   assert.equal(e.source, '.')
   assert.equal(e.skill, 'git-commit')
   assert.deepEqual(e.agents, ['claude-code', 'cursor'])
+})
+
+test('resolveNpxLaunch prefers bundled npm on win32', () => {
+  const execPath = 'C:\\node\\node.exe'
+  const cli = 'C:\\node\\node_modules\\npm\\bin\\npx-cli.js'
+  const plan = resolveNpxLaunch({
+    execPath,
+    platform: 'win32',
+    fileExists: (p) => p === cli,
+  })
+  assert.equal(plan.via, 'node-npx-cli')
+  assert.equal(plan.command, execPath)
+  assert.deepEqual(plan.args, [cli])
+})
+
+test('resolveNpxLaunch resolves the POSIX ../lib layout', () => {
+  const execPath = '/usr/local/bin/node'
+  const cli = '/usr/local/lib/node_modules/npm/bin/npx-cli.js'
+  const plan = resolveNpxLaunch({
+    execPath,
+    platform: 'linux',
+    fileExists: (p) => p === cli,
+  })
+  assert.equal(plan.via, 'node-npx-cli')
+  assert.equal(plan.command, execPath)
+  assert.deepEqual(plan.args, [cli])
+})
+
+test('resolveNpxLaunch falls back to npx when no entry exists', () => {
+  for (const platform of ['win32', 'linux', 'darwin']) {
+    const plan = resolveNpxLaunch({ execPath: '/x/node', platform, fileExists: () => false })
+    assert.equal(plan.via, 'npx-fallback')
+    assert.equal(plan.command, 'npx')
+    assert.deepEqual(plan.args, [])
+  }
+})
+
+test('npxInvocation keeps a spaced --source value as one argv entry', () => {
+  const cliArgs = ['skills', 'add', 'C:\\my repo\\open-skills', '-g']
+  const fallback = npxInvocation(
+    resolveNpxLaunch({ execPath: '/x/node', platform: 'win32', fileExists: () => false }),
+    cliArgs,
+  )
+  assert.equal(fallback.via, 'npx-fallback')
+  assert.equal(fallback.command, 'npx')
+  assert.deepEqual(fallback.args, cliArgs)
+  assert.equal(fallback.args[2], 'C:\\my repo\\open-skills')
+
+  const cli = 'C:\\node\\node_modules\\npm\\bin\\npx-cli.js'
+  const nodePlan = resolveNpxLaunch({
+    execPath: 'C:\\node\\node.exe',
+    platform: 'win32',
+    fileExists: (p) => p === cli,
+  })
+  assert.deepEqual(npxInvocation(nodePlan, cliArgs).args, [cli, ...cliArgs])
+})
+
+test('npxLaunchFailureHint explains the Windows fallback only', () => {
+  const fallback = { command: 'npx', args: [], via: 'npx-fallback' }
+  const resolved = { command: 'node', args: ['npx-cli.js'], via: 'node-npx-cli' }
+  assert.match(npxLaunchFailureHint(fallback, 'win32'), /npx-cli\.js/)
+  assert.equal(npxLaunchFailureHint(fallback, 'linux'), null)
+  assert.equal(npxLaunchFailureHint(resolved, 'win32'), null)
+})
+
+test('formatLaunchLine reflects the resolved plan instead of a hardcoded npx', () => {
+  const resolved = {
+    command: '/usr/local/bin/node',
+    args: ['/usr/local/lib/node_modules/npm/bin/npx-cli.js', 'skills', 'add', '.'],
+    via: 'node-npx-cli',
+  }
+  assert.equal(
+    formatLaunchLine(resolved),
+    '→ /usr/local/bin/node /usr/local/lib/node_modules/npm/bin/npx-cli.js skills add .',
+  )
+  assert.equal(
+    formatLaunchLine({ command: 'npx', args: ['skills', 'add', '.'], via: 'npx-fallback' }),
+    '→ npx skills add .',
+  )
 })
