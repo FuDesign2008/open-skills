@@ -20,7 +20,7 @@
 
 - [x] 4.1 Run the real Windows end-to-end install `node scripts/install-skills.mjs --source .` and verify exit 0 with all 70 skills installed (manifest updated, no clone/PromptScript failure signals)
 - [x] 4.2 Run the space-containing source case (`--source` pointing at a directory whose path contains spaces) and verify the install completes without argument splitting
-- [x] 4.3 Run `node --test` repo-wide and `openspec validate --strict` on this change; verify the change's tests pass, the repo-wide failures equal the pre-existing baseline (6 platform failures, 47 strict-warning spec failures), and the change validation is green
+- [x] 4.3 Run `node --test` repo-wide and `openspec validate --strict` on this change; verify the change's tests pass, the repo-wide failures equal the pre-existing baseline (6 platform failures; the 47 strict-warning spec failures seen under npx-latest openspec 2.1.1 are absent under the CI-pinned 1.10.0, which passes), and the change validation is green
 
 ## Workflow follow-up
 
