@@ -4,6 +4,10 @@
 
 > Full rules live in this skill's `SKILL.md` (Part A archive gate + Part B rebase + Part C coverage + Part R PR code review + Part D squash decision & tip pinning). This is a pre-merge self-check cheat sheet; referencing workflows must not copy the body — keep a one-line pointer only.
 
+**Merge decision sheet (before Part A):**
+- [ ] Preflight ran read-only (see「Merge decision sheet」below)? All pending preferences asked in **one** batch with Recommended + rationale, or sheet empty and conclusions stated?
+- [ ] Execution consumes sheet answers (no re-ask of answered items)? Mid-flight failures still paused separately?
+
 **OpenSpec archive association gate (Part A, first):**
 - [ ] Association decided? (diff contains active `openspec/changes/<name>/`, or session-bound name still in `openspec list`) → Part A
 - [ ] If associated and still active: merge blocked and same-tip archive required? (no implicit skip straight to merge) → Part A
@@ -12,13 +16,13 @@
 **Rebase pre-check (Part B):**
 - [ ] Target-branch lead detected? → Part B
 - [ ] Conflicts detected? → Part B
-- [ ] When rebase is needed: reported and waiting for user confirm (no auto-rebase)? After rebase + push, this Part ends without waiting on CI? → Part B
+- [ ] When rebase is needed: reported and the sheet's Rebase item confirmed (no auto-rebase)? After rebase + push, this Part ends without waiting on CI? → Part B
 
 **Coverage gate (Part C):**
 
 - [ ] Merge intent confirmed? (branch closeout chose merge / user direct merge command / AI about to invoke merge)
 - [ ] Project `coverage-gate` preference resolved? (`AGENTS.md` → `CLAUDE.md`; unset ≡ `ask`)
-- [ ] If `ask`: asked user “run / skip for this merge”? (must not auto-run)
+- [ ] If `ask`: sheet's Coverage item answered “run / skip for this merge”? (must not auto-run)
 - [ ] If **run**: is test-coverage-analyzer available? → if not, write env-gap trail and wait for user
 - [ ] If **run**: gate script executed? Result? → pass → Part R; below threshold / crash / no report / no tests → pause for user
 - [ ] If **skip** (`never` or user-explicit skip): audit trail written? (not an implicit miss)
@@ -27,7 +31,7 @@
 **PR code review (Part R):**
 
 - [ ] Project `pr-review-gate` preference resolved? (`AGENTS.md` → `CLAUDE.md`; unset ≡ `auto`)
-- [ ] If `ask`: asked full / light / skip? (must not auto-pick)
+- [ ] If `ask`: sheet's Review item answered full / light / skip? (must not auto-pick)
 - [ ] If `non-code-light` (or user chose light): surface classified per「Non-application-code surface」below? Application-code also runs the size/risk ladder?
 - [ ] If `auto` (or unset) **or** `non-code-light` on application-code: scale/risk/sensitive escalation applied per「Content-matched depth ladder」below?
 - [ ] If review **run**: strong dependency `pr-code-review` present? (else abort with per-skill `npx skills add … --skill pr-code-review --yes`)
@@ -39,10 +43,67 @@
 
 **Merge squash decision + tip pinning (Part D):**
 
-- [ ] Squash decision run before the merge command? (commit list + quality recommendation + explicit user choice; no auto-select, direct merge commands included) → Part D step 0
+- [ ] Squash decision resolved before the merge command? (commit list + quality recommendation + explicit user choice from the sheet, or collapse conclusion; no auto-select, direct merge commands included) → Part D step 0
 - [ ] Merge pins the revision? (`gh`: `--match-head-commit` or platform equivalent; bare merge forbidden; merge method = Step 0 choice) → Part D step 1
 - [ ] After a fresh push, was “Pipeline succeeded” checked against that sha? → Part D step 2
 - [ ] Post-merge ancestor check OK? (MISSING → open backfill MR; do not claim closeout) → Part D step 3
+
+---
+
+## Merge decision sheet
+
+Authoritative template and preflight checklist for the sheet described in `SKILL.md`「Merge decision sheet」. The sheet is exempt from `clarifying-question-discipline` one-question-per-turn (merge gates, not a clarify interview).
+
+### Preflight checklist (read-only — each line is a verifiable fact)
+
+| Part | Detect | Command / source | Sheet item if… |
+|---|---|---|---|
+| A | Active association | PR diff paths under `openspec/changes/<name>/` (not `archive/`); `openspec list --json` | associated and still active → **Archive** |
+| B | `BEHIND`, `CONFLICTS` | `git fetch origin <target>`; `git rev-list --count HEAD..origin/<target>`; `git merge-tree` (see Part B) | `BEHIND>0` or `CONFLICTS>0` → **Rebase** |
+| C | `coverage-gate` | `AGENTS.md` then `CLAUDE.md` | `ask` / unset → **Coverage** |
+| R | `pr-review-gate` | `AGENTS.md` then `CLAUDE.md`; for the Recommended depth also surface + escalation (sections below) | `ask` → **Review** |
+| D | Commits, collapse | `gh pr view <id> --json commits` / `glab mr commits <id>`; permitted merge methods | ≥2 commits and no collapse → **Squash** |
+| — | Delete branch | — | any other item present → optional **Delete** |
+
+### Template
+
+Render as one structured batch form (agent's native capability) or, when none is available, as this numbered prose list. Keep only the items whose "Included when" holds.
+
+```
+Merge decision sheet — <source-branch> → <target-branch> (PR/MR <id>)
+Preflight: <one-line facts, e.g. BEHIND=3 CONFLICTS=0; 4 commits; coverage-gate=unset; pr-review-gate=ask>
+
+1. Archive — active change <name> is on this tip
+   A. Archive on the same tip first   B. Skip with explicit 留痕
+   Recommended: A (merge-then-archive leaves specs off the target)
+2. Rebase — target is <N> commits ahead, <M> files may conflict
+   A. Rebase now   B. Proceed without rebase (only if CONFLICTS=0)   C. Abort
+   Recommended: A (avoids a platform mergeable=false or a tip behind the target)
+3. Coverage — coverage-gate is unset
+   A. Run   B. Skip (writes skip 留痕)
+   Recommended: <A|B> (<one-line rationale>)
+4. Review — pr-review-gate is ask
+   A. Full   B. Light   C. Skip (writes skip 留痕)
+   Recommended: <ladder result> (<surface / escalation one-liner>)
+5. Squash — <n> commits: <quality summary>
+   A. No-squash (merge commit)   B. Squash
+   Recommended: <A|B> (<commit-quality rationale>)
+6. Delete source branch after merge (optional)
+   A. Delete local + remote   B. Keep
+   Recommended: <B if the branch will keep receiving development, else A>
+
+Reply with letters per item (e.g. "1A 2A 3B 4B 5A 6B") or "all recommended".
+```
+
+After the reply, state the resolved answers in one line, then execute A→B→C→R→D without re-asking them.
+
+### Empty-sheet statement
+
+When no item is needed, print one line instead of a form, e.g. `Merge decision: no archive association; BEHIND=0; coverage-gate=never; pr-review-gate=auto; single commit → no-squash. Proceeding.`
+
+### Still pauses separately (not sheet items)
+
+Part R fail / 3-round cap; coverage below threshold, crash, no report, no tests; analyzer unavailable after a run decision; rebase conflict that cannot be finished or user abort; ancestor check MISSING; fast-forward blocked in the workspace sync.
 
 ---
 

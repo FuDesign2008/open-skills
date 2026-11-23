@@ -134,6 +134,44 @@
         "暂停并给出三选一",
         "不得自动进入 Part D"
       ]
+    },
+    {
+      "id": 12,
+      "name": "decision-sheet-batch-preferences",
+      "prompt": "我在用 solve-workflow 收尾，分支 feat/add-widget → main，PR #88。情况：main 比我的分支领先 3 个 commit 但不冲突；本 PR 不含 openspec/changes/；AGENTS.md 未声明 coverage-gate，声明了 pr-review-gate: ask；PR 有 4 个各自有独立价值的原子 commit，平台允许 merge/squash 两种方式。我是用户，刚对你说「合并」。请加载 merge-discipline skill，说明你会按什么流程处理（dry-run 说明题）。",
+      "expected_output": "先做只读 preflight（Part A 无关联、Part B BEHIND=3 CONFLICTS=0、Part C unset≡ask、Part R ask、Part D 4 个原子 commit），再用一张 merge decision sheet 一次性询问 rebase / coverage 跑或跳 / review full-light-skip / squash 或 no-squash（可附可选删分支），每项含选项+Recommended+一句理由；用户答复后按 A→B→C→R→D 执行，不再逐 Part 重复询问",
+      "expectations": [
+        "合并意图后先做只读 preflight（不 rebase、不 push、不跑 analyzer、不跑 review、不 merge）",
+        "在一轮中用一张决策单批量询问 rebase、coverage、review 深度、squash 四项",
+        "每项给出选项、Recommended 与一句理由；squash 项推荐 no-squash（原子 commit）",
+        "不把 Part A 无关联列为决策单项（无需询问）",
+        "用户答复后按 A→B→C→R→D 执行并复用答案，不在 Part B/C/R/D 再次询问同一问题",
+        "明确该批量决策单不受 clarifying-question-discipline 一次一问约束"
+      ]
+    },
+    {
+      "id": 13,
+      "name": "decision-sheet-empty-proceeds",
+      "prompt": "分支 fix/typo → main，PR #91 只有 1 个 commit，不含 openspec/changes/，与 main 无落后无冲突；AGENTS.md 声明 coverage-gate: never，未声明 pr-review-gate（unset）。我是用户，刚对你说「合并」。请加载 merge-discipline skill，说明你会按什么流程处理（dry-run 说明题）。",
+      "expected_output": "preflight 后所有偏好均无需询问（Part A 无关联、BEHIND=0、coverage never、review unset≡auto、单 commit collapse 为 no-squash）：空决策单，不弹出提问，一行陈述解析结论后直接执行 A→B→C→R→D",
+      "expectations": [
+        "做只读 preflight 并判断无需任何人工偏好输入",
+        "空决策单不向用户提问，用一行陈述已解析的结论（含单 commit: no-squash 与 coverage never）",
+        "直接执行 A→B→C→R→D，coverage 写 project-preference 留痕，review 按 auto 梯度选择深度",
+        "可选的删除源分支项不单独触发提问，合并后仅作非阻塞提示"
+      ]
+    },
+    {
+      "id": 14,
+      "name": "decision-sheet-midflight-pause-separate",
+      "prompt": "merge decision sheet 已答完（coverage: 跑，review: full，squash: no-squash，rebase: 已完成）。请分别说明两种假设下的处理（dry-run）：(a) Part C 跑完后覆盖率低于阈值；(b) 假设覆盖率达标，Part R 的 pr-code-review 返回 Spec 轴一条 Important（confidence 90）。",
+      "expected_output": "覆盖率低于阈值与 Part R fail 都属于 mid-flight 失败，各自单独暂停，不并入决策单；不重新询问 coverage/review/squash 已答项；Part R fail 走修复→重审（3 轮封顶）；未通过前不得进入 Part D",
+      "expectations": [
+        "覆盖率低于阈值时暂停并呈报告，由用户决定 force/补测试/中止，作为独立暂停而非决策单项",
+        "Part R fail 走修复后在新 tip 重新审查直到干净，轮次封顶 3 后暂停三选一",
+        "不再次询问决策单中已回答的 coverage / review / squash 项",
+        "未获 Part R 干净通过或显式留痕前不进入 Part D 与合并命令"
+      ]
     }
   ]
 }
