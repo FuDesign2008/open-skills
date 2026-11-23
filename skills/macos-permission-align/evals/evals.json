@@ -1,0 +1,23 @@
+{
+  "skill_name": "macos-permission-align",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我刚装了新 IDE，想和现在的终端应用一样的 macOS 权限，特别是辅助功能和屏幕录制，帮我权限对齐",
+      "expected_output": "Clarifies reference and target apps, baselines reference via new entry logs, grants main and helper bundles where pre-grantable, verifies with triple evidence, marks non-pregrantable as pending",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "系统设置里屏幕录制开关已经开了，但应用还是说没权限，用 TCC 帮我查一下",
+      "expected_output": "Uses Unified Logging baseline rather than TCC.db; compares fresh log lines and optional probe; does not claim granted without evidence",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "在 Windows 上怎么给 WSL 开摄像头权限",
+      "expected_output": "Declines scope — skill is macOS Privacy & Security only; suggests appropriate non-macOS guidance",
+      "files": []
+    }
+  ]
+}

@@ -88,6 +88,7 @@ open-skills/
 | tech-review-doc | 内容创作 | clarifying-question-discipline、report-output-discipline |
 | android-webview-debug | 工具 | 无 |
 | astrill-control | 工具 | 无 |
+| macos-permission-align | 工具 | 无 |
 | figma-pixel-implement | 工具 | 无（被 solve / opsx-solve / jira-fix / opsx-jira-fix 强依赖） |
 | figma-pixel-verify | 工具 | 无（被 solve / opsx-solve / jira-fix / opsx-jira-fix 强依赖） |
 | git-commit | Git | 无 |
