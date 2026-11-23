@@ -1,15 +1,15 @@
 ---
 name: merge-discipline
-version: "1.9.0"
+version: "1.10.0"
 user-invocable: true
-description: "Hard gate before merging into a protected branch: run Parts A→B→C→R→D (OpenSpec archive association, rebase/conflict pre-check, coverage preference, pr-code-review with content-matched depth via pr-review-gate (unset ≡ auto), squash decision from commit quality + tip-pin merge). Do NOT merge while an associated OpenSpec change is still active; do NOT skip on a direct \"merge MR\" command; do NOT auto-select squash when two viable strategies exist — ask with a commit-quality recommendation; a single-commit or single-permitted-strategy MR concludes without prompting; after merging, sync the local workspace onto the resolved target branch. Triggers — 「合并 tip」「merge tip」「合并纪律」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」「合并前 code-review」 / merge discipline, archive-before-merge, rebase pre-check, coverage gate, pr code review before merge."
+description: "Hard gate before merging into a protected branch: read-only preflight, ONE batch merge decision sheet for all pending human preferences (rebase, coverage, review depth, squash, optional branch delete), then Parts A→B→C→R→D (OpenSpec archive association, rebase pre-check, coverage gate, pr-code-review, squash decision + tip-pin merge) without re-asking. Do NOT merge while an associated OpenSpec change is active; do NOT skip on a direct \"merge MR\"; do NOT auto-select squash when two strategies exist; mid-flight failures (review fail, coverage below threshold, stuck conflict, ancestor MISSING) pause separately. Then sync the workspace onto the target branch. Triggers — 「合并 tip」「merge tip」「合并纪律」「合并决策单」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」「合并前 code-review」 / merge discipline, merge decision sheet, archive-before-merge, rebase pre-check, coverage gate."
 dependencies:
   - pr-code-review
 ---
 
 # Merge Discipline
 
-> Internal shared skill — the single source of truth for merge-time discipline. Five parts, run in order **A → B → C → R → D**: **OpenSpec archive association gate** (Part A) + **rebase/conflict pre-check** (Part B) + **coverage gate** (Part C) + **PR code review** (Part R, strong-dep `pr-code-review`) + **squash decision & tip pinning** (Part D). Referencing workflows declare this in frontmatter `dependencies` and abort at startup if missing.
+> Internal shared skill — the single source of truth for merge-time discipline. A **merge decision sheet** (preflight + one batch of human preferences) opens every merge; then five parts run in order **A → B → C → R → D**: **OpenSpec archive association gate** (Part A) + **rebase/conflict pre-check** (Part B) + **coverage gate** (Part C) + **PR code review** (Part R, strong-dep `pr-code-review`) + **squash decision & tip pinning** (Part D). Referencing workflows declare this in frontmatter `dependencies` and abort at startup if missing.
 
 ## Prerequisite skill check
 
@@ -46,7 +46,54 @@ Any merge into a protected branch (`glab mr merge` / `gh pr merge` / `git merge 
 
 When hosts use `feature-branch-closeout`, that skill owns the **closeout menu**; this skill runs **only after merge is selected** (or on a direct merge command). Do not redefine the full menu here.
 
-**Execution order when merging: Part A (archive gate) → Part B (rebase) → Part C (coverage) → Part R (PR code review) → Part D (squash decision + tip pinning) → merge.** Part A runs first so archive work is not deferred past rebase/CI. A rebase changes the source tip, forcing Parts C/R/D to re-run on the new tip.
+**Execution order when merging: merge decision sheet (preflight + one batch) → Part A (archive gate) → Part B (rebase) → Part C (coverage) → Part R (PR code review) → Part D (squash decision + tip pinning) → merge.** Part A runs first so archive work is not deferred past rebase/CI. A rebase changes the source tip, forcing Parts C/R/D to re-run detection on the new tip (sheet answers are reused).
+
+---
+
+## Merge decision sheet (preflight → one batch → execute)
+
+Human preference decisions for a merge do not depend on results the earlier Parts produce — they depend on repo state and preference lines that can be read up front. Collect them once, before any slow or mutating step.
+
+### 1. Preflight (read-only)
+
+Run detection only — no rebase, push, analyzer run, review run, or merge. Gather verifiable facts for each Part:
+
+- **A**: association with an active OpenSpec change (diff paths / `openspec list`); would Part A block?
+- **B**: `BEHIND` and `CONFLICTS` counts against the target.
+- **C**: `coverage-gate` preference (unset ≡ `ask`).
+- **R**: `pr-review-gate` preference; when it is not `ask`, the depth it resolves to (surface + escalation). When it is `ask`, compute the ladder result as the Recommended depth.
+- **D**: commit list, quality classification and squash recommendation, collapse pre-check.
+
+### 2. One batch form
+
+Ask every pending preference in **one turn**. Include an item only when human input is needed:
+
+| Item | Included when | Options |
+|---|---|---|
+| Archive | Part A would block | archive on the same tip first (Recommended) / skip with explicit 留痕 |
+| Rebase | `BEHIND>0` or `CONFLICTS>0` | rebase now / proceed without rebase (only if `CONFLICTS=0`) / abort |
+| Coverage | `coverage-gate` is `ask` or unset | run / skip |
+| Review | `pr-review-gate` is `ask` | full / light / skip |
+| Squash | two or more commits and the collapse pre-check does not apply | squash / no-squash |
+| Delete source branch | optional; only when another item is on the sheet | delete after merge / keep |
+
+Each item shows its options, a **Recommended** option, and a one-line rationale. Use the template in [reference.md](reference.md)「Merge decision sheet」; render it as one structured batch form with the agent's native capability, falling back to a numbered prose list.
+
+**Empty sheet** — every preference resolves without asking (project preferences, collapse pre-check, no association, level and conflict-free branch): state the resolved conclusions in one line and proceed to execution without prompting. The optional delete item never causes a prompt by itself; without a sheet, deletion stays a non-blocking offer after the workspace sync.
+
+Never answer the sheet on the user's behalf, including in auto-mode hosts. Skip answers still produce each Part's 留痕.
+
+### 3. Execute
+
+Run A → B → C → R → D consuming the sheet answers; do not re-ask an answered item. After a rebase rewrites the tip, Parts C/R/D re-run detection on the new tip and still reuse the answers. Re-entry from Part A (for example after archive lands on the tip) starts a **new** merge attempt with a new preflight and sheet.
+
+### 4. Mid-flight pauses stay separate
+
+These depend on results that do not exist at preflight time, so each pauses on its own when it occurs: Part R fail and the 3-round cap, coverage below threshold / crash / no report / no tests, analyzer unavailable after a run decision, rebase conflict `git-conflict-resolve` cannot finish (or user abort), ancestor check MISSING, fast-forward blocked during workspace sync.
+
+### 5. Relation to `clarifying-question-discipline`
+
+The sheet may present multiple items in one turn. It is exempt from that skill's one-question-per-turn rule: merge gates are a bounded batch of preference decisions with recommended answers, not a clarify interview. Questions outside the sheet follow the normal discipline.
 
 ---
 
@@ -70,7 +117,7 @@ Prevents **merge-then-archive**: implementation lands on the protected branch wh
 ### Hard rules
 
 - Direct user merge commands **MUST** run this Part — **no implicit skip**.
-- User may force-continue only with **explicit** skip 留痕 (template below); default is block.
+- User may force-continue only with **explicit** skip 留痕 (template below); default is block. The skip choice is the sheet's Archive item.
 - Do **not** recommend a separate post-merge archive MR while the change is still associated and active (see Part D Strategy B — recovery only).
 
 ### Detect (illustrative)
@@ -120,10 +167,10 @@ CONFLICTS=$(git merge-tree "$BASE" HEAD origin/<target-branch> | grep -c "^chang
 | State | Action |
 |---|---|
 | `BEHIND=0` and `CONFLICTS=0` | Clean — proceed to Part C |
-| `BEHIND>0` and `CONFLICTS=0` | Report "target N commits ahead; rebase applies cleanly" → wait for user confirm |
-| `CONFLICTS>0` | Report "target N ahead, ~M files conflict" → wait for user confirm |
+| `BEHIND>0` and `CONFLICTS=0` | Report "target N commits ahead; rebase applies cleanly" → Rebase item on the sheet |
+| `CONFLICTS>0` | Report "target N ahead, ~M files conflict" → Rebase item on the sheet |
 
-No auto-rebase without confirmation — rebase rewrites the source branch and triggers a full CI rerun; the user owns that decision.
+No auto-rebase without confirmation — rebase rewrites the source branch and triggers a full CI rerun; the user owns that decision. The confirmation is the sheet's **Rebase** item; execution consumes that answer instead of asking again.
 
 ### On confirm — execute rebase (source branch only)
 
@@ -135,7 +182,7 @@ git rebase origin/<target-branch>
 git push --force-with-lease origin <source-branch>
 ```
 
-If `git-conflict-resolve` is unavailable or the user aborts, stop — leave the worktree mid-rebase (`git rebase --abort` to bail) for human resolution.
+If `git-conflict-resolve` is unavailable or the user aborts, stop — leave the worktree mid-rebase (`git rebase --abort` to bail) for human resolution. This is a mid-flight pause, not a sheet item.
 
 ### Scope boundary — this Part does NOT wait for CI
 
@@ -154,7 +201,7 @@ Each merge attempt triggers at most one rebase. If the target moves again while 
 
 ## Part C — Coverage gate
 
-Part C starts on merge intent. It does **not** auto-run the analyzer by default.
+Part C starts on merge intent. It does **not** auto-run the analyzer by default. The preference is read in the sheet preflight; under `ask` the per-merge question is the sheet's **Coverage** item, and this Part consumes the answer.
 
 ### 1. Resolve project preference
 
@@ -165,7 +212,7 @@ Scan `AGENTS.md` then `CLAUDE.md` (first match wins) for a line matching (case-i
 | Value | Behavior |
 |---|---|
 | *(unset)* | Treat as `ask` |
-| `ask` | On **every** merge, ask the user: run coverage for this merge, or skip? **MUST NOT** auto-run |
+| `ask` | On **every** merge, the sheet asks: run coverage for this merge, or skip? **MUST NOT** auto-run |
 | `always` | Run gate steps without asking (subject to analyzer availability) |
 | `never` | Skip analyzer; write project-preference 留痕; proceed to Part R |
 
@@ -226,7 +273,7 @@ Scan `AGENTS.md` then `CLAUDE.md` (first match wins) for:
 | `always` | Run `pr-code-review` at `depth=full` |
 | `auto` | Content-matched depth: classify surface (§2) + scale/risk escalation (§2.5) — no escalation hit → `light`; any escalation hit → `full` (application-code included) |
 | `never` | Skip `pr-code-review`; write project-preference 留痕; proceed to Part D |
-| `ask` | Ask the user: full / light / skip for this merge; MUST NOT auto-pick; skip needs user-explicit skip 留痕 |
+| `ask` | The sheet's **Review** item asks full / light / skip for this merge (Recommended = ladder result); MUST NOT auto-pick; skip needs user-explicit skip 留痕 |
 | `non-code-light` | Classify the PR surface (§2); non-application-code → `depth=light`; application-code → same scale/risk ladder as `auto` |
 
 ### 2. Classify PR surface (when needed)
@@ -319,7 +366,7 @@ Prevents **merge-strategy-by-default**: the GitLab "Squash commits when merge re
    | Trivial accumulation (fixup / typo / wip / CI-retry noise, no standalone value) | **Squash** — collapse into one commit |
    | Source branch will keep receiving development | **Lean no-squash** — squash cuts the commit graph shared with the target and breeds conflicts on later merges |
 
-4. **Ask and wait** — present the recommendation and require an explicit user choice (squash / no-squash). Never auto-select between two viable strategies: direct merge commands and auto-mode host workflows all stop here (this ask is a sub-step of the merge flow, not a mode reversion). The user's explicit choice overrides the recommendation.
+4. **Confirm via the sheet** — steps 1–3 are computed in the sheet preflight; the explicit user choice (squash / no-squash) is the sheet's **Squash** item, and this step applies that answer without asking again. Never auto-select between two viable strategies: direct merge commands and auto-mode host workflows all stop at the sheet (this ask is a sub-step of the merge flow, not a mode reversion). The user's explicit choice overrides the recommendation. Before executing, re-list the commits on the tip about to be pinned and state any change from the preflight list; if they now satisfy the collapse pre-check, the stated collapse conclusion applies.
 
 5. **Execute with the chosen strategy** — the strategy flows into Step 1's merge command (`gh pr merge <id> --merge|--squash …` / `glab mr merge <id> [--squash] …`, flags per your CLI version). A platform without squash support: state the gap and merge with the available method.
 
@@ -355,19 +402,19 @@ The merge is only half the loop — the local workspace must return to the integ
 1. **Target exists locally** → check it out and fast-forward: `git checkout <target> && git pull --ff-only origin <target>`; report one sync line (branch + new tip).
 2. **Target missing locally** → give the fetch command to obtain it (`git fetch origin <target>:<target>`); a missing local copy is a reported outcome, not a silent skip.
 3. **Fast-forward blocked** (diverged history) → report the divergence and hand the decision to the user; do not rebase or force-update on your own.
-4. Offer to delete the merged source branch (local and remote) as explicit follow-up — cleanup ownership stays with `feature-branch-closeout`.
+4. Delete the merged source branch (local and remote) when the sheet's **Delete** item chose delete (no re-ask); when no sheet was presented, offer deletion as a non-blocking follow-up. Cleanup ownership stays with `feature-branch-closeout`.
 
 ---
 
 ## Mode lifecycle
 
-Asking the user under `ask`, or running the analyzer after opt-in, does not by itself trigger "auto reverts to manual" (sub-step of the merge flow). Gate pause (Part A block / below-threshold / crash / should-run implicit miss / wait for ask answer / Part R fail) = merge flow interrupted, reverts to manual per existing rules. Part B rebase execution follows the same rule: a user-confirmed rebase is a sub-step of the merge flow (does not itself revert to manual); an unresolved conflict or aborted rebase interrupts the merge flow and reverts to manual.
+Presenting the merge decision sheet, or running the analyzer after opt-in, does not by itself trigger "auto reverts to manual" (sub-step of the merge flow). Gate pause (Part A block / below-threshold / crash / should-run implicit miss / waiting on the sheet / Part R fail) = merge flow interrupted, reverts to manual per existing rules. Part B rebase execution follows the same rule: a user-confirmed rebase is a sub-step of the merge flow (does not itself revert to manual); an unresolved conflict or aborted rebase interrupts the merge flow and reverts to manual.
 
 ---
 
 ## Integration guide (for referencing workflows)
 
 - **Keep in your own body:** your stage ordering line (e.g. `archive → branch-closeout → merge-discipline(A→B→C→R→D) → merge → writeback`), a one-line pointer to this skill, and 1-2 key red-flags. Do **not** copy the Part steps inline.
-- **Delegate to this skill:** all five Parts — A (archive gate), B (rebase), C (coverage), R (PR code review via `pr-code-review`), D (tip pinning).
+- **Delegate to this skill:** the merge decision sheet and all five Parts — A (archive gate), B (rebase), C (coverage), R (PR code review via `pr-code-review`), D (tip pinning).
 - **Pre-merge checklist (single source):** [reference.md](reference.md)「合并前检查清单」/ "Pre-merge checklist". Referencing workflows keep **one pointer sentence** only — do **not** paste the checklist into workflow `reference.md`.
 - **Missing strong deps:** abort and print per-skill `npx skills add FuDesign2008/open-skills -g --skill <name> --yes` (see Prerequisite skill check).

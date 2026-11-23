@@ -3,7 +3,9 @@
 ## Purpose
 
 solve 家族工作流（solve-workflow / opsx-solve-workflow / jira-fix-workflow / opsx-jira-fix-workflow）与调试方法论 skill（runtime-evidence-debug）的共享契约同步基线：browser 复现与验证口径、分析期打点权限门控、测试基建二分支、调用即声明强依赖、回顾阶段命名对齐。
+
 ## Requirements
+
 ### Requirement: 工作流引用 browser-debug-toolkit SHALL 以「浏览器可复现问题」为入口
 
 工作流 skill（opsx-solve-workflow / jira-fix-workflow / opsx-jira-fix-workflow / runtime-evidence-debug）引用 `browser-debug-toolkit` 时，MUST 以「问题可在浏览器中复现」为入口条件（UI/CSS/DOM 仅为典型场景子集），不得限定为「仅 UI/CSS/DOM 问题」；分析阶段 MUST 优先用其复现问题并观察运行时状态，检查验证阶段 MUST 用其验证解决方案是否生效（before/after 运行时状态对比）。
@@ -122,7 +124,7 @@ solve 家族工作流（solve-workflow / opsx-solve-workflow / jira-fix-workflow
 
 ### Requirement: 工作流 SHALL 提供合并前覆盖率门控检查清单
 
-工作流对合并前检查清单的权威来源 MUST 为 `merge-discipline/reference.md`（宿主仅保留一句指针）。清单 MUST 覆盖：合并意图是否已确认 / 工程 `coverage-gate` 偏好是否已解析 / `ask` 时是否已询问用户 / 若决定运行则 analyzer 是否可用且已执行 / 结果如何（达标继续；不达标/崩溃/无报告/无测试→暂停；应跑却漏跑→按漏跑规则）/ 跳过或环境缺漏留痕是否写入。
+工作流对合并前检查清单的权威来源 MUST 为 `merge-discipline/reference.md`（宿主仅保留一句指针）。清单 MUST 覆盖：合并意图是否已确认 / 工程 `coverage-gate` 偏好是否已解析 / `ask` 时是否已询问用户（可经 merge decision sheet 一次性询问，不必逐 Part 单独询问）/ 若决定运行则 analyzer 是否可用且已执行 / 结果如何（达标继续；不达标/崩溃/无报告/无测试→暂停；应跑却漏跑→按漏跑规则）/ 跳过或环境缺漏留痕是否写入。
 
 #### Scenario: AI 执行合并前对照清单
 
@@ -300,4 +302,3 @@ The four solve-family hosts (solve-workflow / opsx-solve-workflow / jira-fix-wor
 
 - **WHEN** Jira 宿主经 `--resume` / 「从上次继续」恢复一次被重置的运行
 - **THEN** checkpoint 依据最近一条台账条目重建状态，不回放历史对话
-
