@@ -269,7 +269,7 @@ If the path is still foggy, follow `decision-fog-discipline` before the solution
 
 In manual mode, output the solution table and pause for the user's pick; auto mode picks the best solution automatically.
 
-**Role dispatch via leader (when available).** After solution selection and before review: when the project provides a role contract (default `.claude/agents/_contract.md`), dispatch `leader` at the `escalated` tier with `Phase: design` and `Artifacts` including `openspec/changes/<change-name>/design.md`. Fail-closed-accept the leader card. If no contract is present, continue with host-owned checks. Manual/on-demand catalog roles remain available when the contract exists.
+**Role dispatch via leader (when available).** After solution selection and before review: when a role contract exists at project `.claude/agents/_contract.md` or user `~/.claude/agents/_contract.md` (project wins if both), dispatch `leader` at the `escalated` tier with `Phase: design` and `Artifacts` including `openspec/changes/<change-name>/design.md`. Fail-closed-accept the leader card. If no role contract is present at either path, continue with host-owned checks. Manual/on-demand catalog roles remain available when a role contract is present (per precedence above).
 
 Load `staged-review-flow` and execute its full review contract. This workflow's mapping: `{next-stage}` = Stage 5 "Make the plan"; `{artifact-sink}` = `openspec/changes/<change-name>/design.md`; `{extra-dimensions}` = spec coverage (requirements/scenarios) and Jira status boundary (`jira-status-lifecycle`: claim before analysis,「已修复」only after merge); `{batch-overcap-behavior}` = `N/A`.
 

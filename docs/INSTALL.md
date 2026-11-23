@@ -30,6 +30,8 @@ npx skills add FuDesign2008/open-skills --list
 
 `scripts/install-skills.mjs` 会向支持全局安装的 agent（默认 `claude-code`、`cursor`、`opencode`）执行 `skills add`，并排除 PromptScript/Eve（其 `globalSkillsDir` 为空）。启动方式：优先用当前 Node 二进制直接运行 npm 自带的 `npx-cli.js`（Windows 上不再依赖 `npx.cmd` 垫片），找不到该入口时回退为 `npx skills add`。上游问题：[vercel-labs/skills#1352](https://github.com/vercel-labs/skills/issues/1352)。扩展 agent：`OPEN_SKILLS_AGENTS="claude-code cursor opencode codex" node scripts/install-skills.mjs`。
 
+Skills 安装**成功后**，同一脚本默认将本仓库 `.claude/agents/` 同步到 Claude Code 用户目录 `~/.claude/agents/`（复制 + manifest 归因，非 `npx skills`）。跳过角色同步：`node scripts/install-skills.mjs --no-roles`。仅安装角色：`node scripts/install-roles.mjs` 或 `npm run install:roles`（`--no-prune` 与 skill 安装语义一致；测试可用 `OPEN_SKILLS_ROLES_ROOT` 指向临时目录）。
+
 ### 更新
 
 ```bash

@@ -94,6 +94,12 @@ test('parseArgs defaults and env override', () => {
   assert.deepEqual(e.agents, ['claude-code', 'cursor'])
 })
 
+test('parseArgs defaults roles true; --no-roles opts out', () => {
+  assert.equal(parseArgs([]).roles, true)
+  assert.equal(parseArgs(['--no-roles']).roles, false)
+  assert.equal(parseArgs(['--no-roles', '--no-prune']).roles, false)
+})
+
 test('resolveNpxLaunch prefers bundled npm on win32', () => {
   const execPath = 'C:\\node\\node.exe'
   const cli = 'C:\\node\\node_modules\\npm\\bin\\npx-cli.js'

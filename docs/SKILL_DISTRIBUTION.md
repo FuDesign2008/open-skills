@@ -10,11 +10,13 @@
 | 工程级 skill | `.claude/skills/openspec-*` | open-skills 仓库自身的 openspec 工作流配置 | ❌ 否 |
 | 角色 agent 契约 | `.claude/agents/` | 角色分离的角色定义、任务单/结果单契约、模型档位配置 | ❌ 否 |
 
-## 为什么 `.claude/agents/` 不分发
+## 为什么 `.claude/agents/` 不走 `npx skills add`
 
-角色 agent 依赖宿主提供「独立上下文 + 模型档位 + 工具权限」三项能力，且各平台的定义格式不同（Claude Code 与 OpenCode 的 frontmatter 方言不一致）。本仓库把它作为**工程级配置**维护：只服务本仓库内的 `jira-fix-workflow` 运行，不进入 `npx skills add` 的安装面。
+角色 agent 依赖宿主提供「独立上下文 + 模型档位 + 工具权限」三项能力，且各平台的定义格式不同（Claude Code 与 OpenCode 的 frontmatter 方言不一致）。**`npx skills add` 不分发** `.claude/agents/`，但本仓库提供 **`node scripts/install-roles.mjs`**（或由 `node scripts/install-skills.mjs` 默认附带）将仓库内 agent 文件**复制**到 Claude Code 用户全局 `~/.claude/agents/`，带 `.open-skills-roles-manifest.json` 归因；仅修剪本仓库曾声明的路径，不触碰外来 agent。
 
-消费方需要角色分离时，应在自己的工程内按同一契约落地，而不是从本仓库安装 agent 文件。PDCA 宿主通过**存在性守卫**派发元角色 `leader`（`Phase: design|verify|…`）；由 `leader` 按 `.claude/agents/_contract.md` 门控再派发下属角色。无契约工程行为不变。
+PDCA 宿主通过**存在性守卫**派发元角色 `leader`（`Phase: design|verify|…`）：当**工程内** `.claude/agents/_contract.md` **或** 用户全局 `~/.claude/agents/_contract.md` 存在时启用（两者皆有则**工程路径优先**）；由 `leader` 按生效的 `_contract.md` 门控再派发下属角色。无契约工程行为不变。
+
+也可在消费方工程内按同一契约自行落地 agent 文件，而不使用全局安装。
 
 ## 为什么 openspec-* 不分发
 

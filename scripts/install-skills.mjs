@@ -25,6 +25,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync
 import { homedir } from 'node:os'
 import { join, posix, resolve, win32 } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { installRoles } from './install-roles.mjs'
 
 /** Agents in skills CLI that have globalSkillsDir: undefined (skills@1.5.x). */
 export const NO_GLOBAL_AGENTS = Object.freeze(['promptscript', 'eve'])
@@ -170,6 +171,7 @@ export function parseArgs(argv, env = process.env) {
   let source = 'FuDesign2008/open-skills'
   let skill = '*'
   let prune = true
+  let roles = true
   const rest = []
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]
@@ -179,6 +181,8 @@ export function parseArgs(argv, env = process.env) {
       skill = argv[++i]
     } else if (a === '--no-prune') {
       prune = false
+    } else if (a === '--no-roles') {
+      roles = false
     } else if (a === '--help' || a === '-h') {
       return { help: true }
     } else {
@@ -192,7 +196,7 @@ export function parseArgs(argv, env = process.env) {
   const agents = filterAgentsForGlobalInstall(
     fromEnv.length > 0 ? fromEnv : [...DEFAULT_AGENTS],
   )
-  return { help: false, source, skill, prune, agents, rest }
+  return { help: false, source, skill, prune, roles, agents, rest }
 }
 
 /**
@@ -256,11 +260,14 @@ export function npxLaunchFailureHint(plan, platform = process.platform) {
 }
 
 function printHelp() {
-  console.log(`Usage: node scripts/install-skills.mjs [--source <repo-or-path>] [--skill <name|*>] [--no-prune]
+  console.log(`Usage: node scripts/install-skills.mjs [--source <repo-or-path>] [--skill <name|*>] [--no-prune] [--no-roles]
 
 Env:
   OPEN_SKILLS_AGENTS   Space/comma-separated agent ids (default: claude-code cursor opencode)
                        promptscript and eve are always excluded.
+
+After a successful skills install, also syncs repo role agents to ~/.claude/agents/
+unless --no-roles. Role prune follows --no-prune for this run. Standalone: node scripts/install-roles.mjs
 
 Runs: the skills CLI through npm's npx-cli.js using the running Node binary
       (<node dir>/node_modules/npm/bin/npx-cli.js), so no shell or .cmd shim is
@@ -384,6 +391,25 @@ function main(argv = process.argv.slice(2)) {
   } else {
     console.log('\n✓ partial install: prune and manifest intentionally skipped')
   }
+
+  if (parsed.roles) {
+    try {
+      const roleResult = installRoles(repoRoot, { prune: parsed.prune })
+      console.log(
+        `✓ roles synced: ${roleResult.copied} file(s) → ${roleResult.rolesRoot}` +
+          (parsed.prune ? '' : ' (role prune skipped with --no-prune)'),
+      )
+    } catch (err) {
+      console.error(
+        `\n✗ roles sync failed: ${err instanceof Error ? err.message : err}\n` +
+          '  Skills install completed; re-run node scripts/install-roles.mjs',
+      )
+      process.exit(1)
+    }
+  } else {
+    console.log('✓ roles sync skipped (--no-roles)')
+  }
+
   console.log('✓ Global install finished without PromptScript failure noise.')
 }
 
