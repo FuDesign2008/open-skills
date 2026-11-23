@@ -235,7 +235,7 @@ Delta-spec conventions (enforced by the `openspec-continue-change` skill):
 
 ## Stage 4: Review the solution
 
-**Role dispatch via leader (when available).** After Stage 3 solution selection and before this review: when the project provides a role contract (default `.claude/agents/_contract.md`), dispatch `leader` at the `escalated` tier with `Phase: design` and `Artifacts` including `openspec/changes/<change-name>/design.md`. Fail-closed-accept the leader card. When design docs were written by subordinates, reuse/merge them after review instead of blank-rewriting. If no contract is present, continue with host-owned checks. Manual/on-demand catalog roles remain available when the contract exists.
+**Role dispatch via leader (when available).** After Stage 3 solution selection and before this review: when a role contract exists at project `.claude/agents/_contract.md` or user `~/.claude/agents/_contract.md` (project wins if both), dispatch `leader` at the `escalated` tier with `Phase: design` and `Artifacts` including `openspec/changes/<change-name>/design.md`. Fail-closed-accept the leader card. When design docs were written by subordinates, reuse/merge them after review instead of blank-rewriting. If no role contract is present at either path, continue with host-owned checks. Manual/on-demand catalog roles remain available when a role contract is present (per precedence above).
 
 Load `staged-review-flow` and execute its full review contract. This workflow's mapping: `{next-stage}` = Stage 5 "Make the plan"; `{artifact-sink}` = `design.md` created via `openspec-continue-change`; `{extra-dimensions}` = spec compliance (proposal's why, delta specs' behavior, design's risk, tasks' coverage of requirements); `{batch-overcap-behavior}` = `N/A`. After the review passes, create `design.md` via the native skill.
 
@@ -293,7 +293,7 @@ Load and call `test-suite-ensure`, declaring `mode=mandatory`, scoped to this ch
 
 ## Stage 7: Check & verify
 
-**Role dispatch via leader (when available).** When the project provides a role contract, dispatch `leader` with `Phase: verify` and fail-closed-accept the leader card. Host-owned OpenSpec/engineering/Figma checks below still run. If no contract is present, run host-owned checks only.
+**Role dispatch via leader (when available).** When a role contract exists at project `.claude/agents/_contract.md` or user `~/.claude/agents/_contract.md` (project wins if both), dispatch `leader` with `Phase: verify` and fail-closed-accept the leader card. Host-owned OpenSpec/engineering/Figma checks below still run. If no role contract is present at either path, run host-owned checks only.
 
 **Context budget**: verify against the ledger + artifacts when a reset occurred (per `context-budget-discipline`); never replay prior-session history.
 

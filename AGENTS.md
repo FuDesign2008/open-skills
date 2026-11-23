@@ -238,7 +238,7 @@ Skill 内容...
 
 1. **合并 PR**：`gh pr merge <编号> --merge`
 2. **检查版本发布**：等待 CI 完成（约 15–20 秒），`gh release list -L 3` 确认新版本
-3. **更新本地安装**：在仓库根执行 `node scripts/install-skills.mjs`（内部用当前 Node 直接运行 npm 自带 `npx-cli.js` 执行 `skills add … -g --yes --skill '*' --agent claude-code cursor opencode`，找不到该入口时回退 `npx skills add`；两者都排除无全局目录的 PromptScript/Eve，避免 ✗ 噪音）。需要更多 agent 时设 `OPEN_SKILLS_AGENTS`。全量安装后自动 **prune 陈旧副本**：`skills add` 只增不删，本脚本按 `.open-skills-manifest.json` 归因，仅删除本仓库曾安装且已从仓库移除的 skill 目录（外来 skill 不受影响；部分安装 `--skill <name>` 与 `--no-prune` 均跳过）。根因是上游 CLI 无 sync 删除语义（见 [vercel-labs/skills#1352](https://github.com/vercel-labs/skills/issues/1352) 同仓相关），**不是**本仓库某些 skill「不支持全局安装」。裸命令 `npx skills add FuDesign2008/open-skills -g` 会进入交互式多选（AI/CI 无法应答），不要用于自动化。
+3. **更新本地安装**：在仓库根执行 `node scripts/install-skills.mjs`（内部用当前 Node 直接运行 npm 自带 `npx-cli.js` 执行 `skills add … -g --yes --skill '*' --agent claude-code cursor opencode`，找不到该入口时回退 `npx skills add`；两者都排除无全局目录的 PromptScript/Eve，避免 ✗ 噪音）。需要更多 agent 时设 `OPEN_SKILLS_AGENTS`。Skills 成功后默认 **同步角色** 到 `~/.claude/agents/`（`--no-roles` 跳过；或单独 `node scripts/install-roles.mjs`）。全量安装后自动 **prune 陈旧副本**：`skills add` 只增不删，本脚本按 `.open-skills-manifest.json` 归因，仅删除本仓库曾安装且已从仓库移除的 skill 目录（外来 skill 不受影响；部分安装 `--skill <name>` 与 `--no-prune` 均跳过）。根因是上游 CLI 无 sync 删除语义（见 [vercel-labs/skills#1352](https://github.com/vercel-labs/skills/issues/1352) 同仓相关），**不是**本仓库某些 skill「不支持全局安装」。裸命令 `npx skills add FuDesign2008/open-skills -g` 会进入交互式多选（AI/CI 无法应答），不要用于自动化。
 4. **工作区同步**：`git checkout main && git pull origin main`
 
 ## 版本管理

@@ -9,6 +9,7 @@
     "lint:deid": "node scripts/lint-skill-deidentification.mjs",
     "mark:openspec-internal": "node scripts/mark-openspec-internal.mjs",
     "install:skills": "node scripts/install-skills.mjs",
+    "install:roles": "node scripts/install-roles.mjs",
     "test": "node --test"
   },
   "devDependencies": {

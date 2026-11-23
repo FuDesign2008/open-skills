@@ -239,7 +239,7 @@ Output the solution comparison table and wait for the user to choose before ente
 > ⛔ **[Manual mode — stage 3 exit]** **Stop immediately** after the comparison table and wait for the user to pick a solution number before entering stage 4.
 > 🤖 **[Auto mode]** Auto-select the best solution and proceed directly to stage 4.
 
-**Role dispatch via leader (when available).** After solution selection and before Stage 4 review: when the project provides a role contract (default `.claude/agents/_contract.md`), dispatch `leader` at the `escalated` tier with `Phase: design` plus goal/artifacts/constraints/acceptance. `leader` applies contract gates (including the design-phase architect gate) and returns one aggregated card. Fail-closed-accept that card. If no contract is present, continue with host-owned checks. Manual/on-demand catalog roles remain available when the contract exists.
+**Role dispatch via leader (when available).** After solution selection and before Stage 4 review: when a role contract exists at project `.claude/agents/_contract.md` or user `~/.claude/agents/_contract.md` (project wins if both), dispatch `leader` at the `escalated` tier with `Phase: design` plus goal/artifacts/constraints/acceptance. `leader` applies contract gates (including the design-phase architect gate) and returns one aggregated card. Fail-closed-accept that card. If no role contract is present at either path, continue with host-owned checks. Manual/on-demand catalog roles remain available when a role contract is present (per precedence above).
 
 ### Red Flags
 
@@ -312,7 +312,7 @@ For behavior-changing work, follow `test-first-discipline` (failing test observe
 
 > Principle: output only the verification results — improvement suggestions belong to stage 8.
 
-**Role dispatch via leader (when available).** When the project provides a role contract, dispatch `leader` with `Phase: verify` (working-tree diff + requirement artifacts) and fail-closed-accept the leader card. Host-owned checks below still run (Figma / runtime-verification / debug-verify). If no contract is present, run host-owned checks only.
+**Role dispatch via leader (when available).** When a role contract exists at project `.claude/agents/_contract.md` or user `~/.claude/agents/_contract.md` (project wins if both), dispatch `leader` with `Phase: verify` (working-tree diff + requirement artifacts) and fail-closed-accept the leader card. Host-owned checks below still run (Figma / runtime-verification / debug-verify). If no role contract is present at either path, run host-owned checks only.
 
 **Context budget**: if the run crossed the compaction threshold or restarted from a ledger, verify against the ledger + artifacts — never by replaying prior-session history (per `context-budget-discipline`).
 
