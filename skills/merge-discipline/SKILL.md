@@ -1,15 +1,15 @@
 ---
 name: merge-discipline
-version: "1.10.0"
+version: "1.11.0"
 user-invocable: true
-description: "Hard gate before merging into a protected branch: read-only preflight, ONE batch merge decision sheet for all pending human preferences (rebase, coverage, review depth, squash, optional branch delete), then Parts A→B→C→R→D (OpenSpec archive association, rebase pre-check, coverage gate, pr-code-review, squash decision + tip-pin merge) without re-asking. Do NOT merge while an associated OpenSpec change is active; do NOT skip on a direct \"merge MR\"; do NOT auto-select squash when two strategies exist; mid-flight failures (review fail, coverage below threshold, stuck conflict, ancestor MISSING) pause separately. Then sync the workspace onto the target branch. Triggers — 「合并 tip」「merge tip」「合并纪律」「合并决策单」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」「合并前 code-review」 / merge discipline, merge decision sheet, archive-before-merge, rebase pre-check, coverage gate."
+description: "Hard gate before merging into a protected branch: read-only preflight, ONE batch merge decision sheet for pending human preferences (rebase, coverage, review depth, squash, optional branch delete), then Parts A→B→R→C→D (archive association, rebase, pr-code-review, coverage gate with auto, squash + tip-pin) without re-asking. Do NOT merge while an associated OpenSpec change is active; do NOT skip on a direct \"merge MR\"; do NOT auto-select squash when two strategies exist; mid-flight failures (review fail, coverage below threshold, tip mismatch, stuck conflict, ancestor MISSING) pause separately. Then sync the workspace onto the target branch. Triggers — 「合并 tip」「merge tip」「合并纪律」「合并决策单」「push 后合并」「archive 合入」「合并前门控」「rebase 检查」「冲突预检」「合并前 rebase」「先 archive 再 merge」「合并前 code-review」 / merge discipline, merge decision sheet, archive-before-merge, rebase pre-check, coverage gate."
 dependencies:
   - pr-code-review
 ---
 
 # Merge Discipline
 
-> Internal shared skill — the single source of truth for merge-time discipline. A **merge decision sheet** (preflight + one batch of human preferences) opens every merge; then five parts run in order **A → B → C → R → D**: **OpenSpec archive association gate** (Part A) + **rebase/conflict pre-check** (Part B) + **coverage gate** (Part C) + **PR code review** (Part R, strong-dep `pr-code-review`) + **squash decision & tip pinning** (Part D). Referencing workflows declare this in frontmatter `dependencies` and abort at startup if missing.
+> Internal shared skill — the single source of truth for merge-time discipline. A **merge decision sheet** (preflight + one batch of human preferences) opens every merge; then five parts run in order **A → B → R → C → D**: **OpenSpec archive association gate** (Part A) + **rebase/conflict pre-check** (Part B) + **PR code review** (Part R, strong-dep `pr-code-review`) + **coverage gate** (Part C) + **squash decision & tip pinning** (Part D). Referencing workflows declare this in frontmatter `dependencies` and abort at startup if missing.
 
 ## Prerequisite skill check
 
@@ -46,7 +46,7 @@ Any merge into a protected branch (`glab mr merge` / `gh pr merge` / `git merge 
 
 When hosts use `feature-branch-closeout`, that skill owns the **closeout menu**; this skill runs **only after merge is selected** (or on a direct merge command). Do not redefine the full menu here.
 
-**Execution order when merging: merge decision sheet (preflight + one batch) → Part A (archive gate) → Part B (rebase) → Part C (coverage) → Part R (PR code review) → Part D (squash decision + tip pinning) → merge.** Part A runs first so archive work is not deferred past rebase/CI. A rebase changes the source tip, forcing Parts C/R/D to re-run detection on the new tip (sheet answers are reused).
+**Execution order when merging: merge decision sheet (preflight + one batch) → Part A (archive gate) → Part B (rebase) → Part R (PR code review) → Part C (coverage) → Part D (squash decision + tip pinning) → merge.** Part A runs first so archive work is not deferred past rebase/CI. A rebase in the same attempt continues **R → C → D** and re-runs detection on the new tip (sheet answers are reused). A pause taken to wait for CI ends the attempt; the next merge starts from Part A.
 
 ---
 
@@ -60,7 +60,7 @@ Run detection only — no rebase, push, analyzer run, review run, or merge. Gath
 
 - **A**: association with an active OpenSpec change (diff paths / `openspec list`); would Part A block?
 - **B**: `BEHIND` and `CONFLICTS` counts against the target.
-- **C**: `coverage-gate` preference (unset ≡ `ask`).
+- **C**: `coverage-gate` preference (unset ≡ `ask`, not `auto`). `auto` is applied at Part C by the four-cell; it does not add a sheet item.
 - **R**: `pr-review-gate` preference; when it is not `ask`, the depth it resolves to (surface + escalation). When it is `ask`, compute the ladder result as the Recommended depth.
 - **D**: commit list, quality classification and squash recommendation, collapse pre-check.
 
@@ -85,11 +85,11 @@ Never answer the sheet on the user's behalf, including in auto-mode hosts. Skip 
 
 ### 3. Execute
 
-Run A → B → C → R → D consuming the sheet answers; do not re-ask an answered item. After a rebase rewrites the tip, Parts C/R/D re-run detection on the new tip and still reuse the answers. Re-entry from Part A (for example after archive lands on the tip) starts a **new** merge attempt with a new preflight and sheet.
+Run A → B → R → C → D consuming the sheet answers; do not re-ask an answered item. After a rebase rewrites the tip in the same attempt, continue R → C → D and re-run detection on the new tip while still reusing the answers. Re-entry from Part A (archive landing on the tip, a tip-check failure, or the next merge after a CI wait) starts a **new** merge attempt with a new preflight and sheet.
 
 ### 4. Mid-flight pauses stay separate
 
-These depend on results that do not exist at preflight time, so each pauses on its own when it occurs: Part R fail and the 3-round cap, coverage below threshold / crash / no report / no tests, analyzer unavailable after a run decision, rebase conflict `git-conflict-resolve` cannot finish (or user abort), ancestor check MISSING, fast-forward blocked during workspace sync.
+These depend on results that do not exist at preflight time, so each pauses on its own when it occurs: Part R fail and the 3-round cap, coverage below threshold / crash / no report / no tests, analyzer unavailable after a run decision, rebase conflict `git-conflict-resolve` cannot finish (or user abort), tip-check mismatch before Part D, ancestor check MISSING, fast-forward blocked during workspace sync.
 
 ### 5. Relation to `clarifying-question-discipline`
 
@@ -112,7 +112,7 @@ Prevents **merge-then-archive**: implementation lands on the protected branch wh
 |---|---|
 | Not associated | Pass through → Part B |
 | Associated and change already archived (only under `openspec/changes/archive/…`, absent from `openspec list`) | Pass through → Part B |
-| Associated and change still **active** | **Block merge**. Name the change(s). Require archive (sync main specs + move to `openspec/changes/archive/`) on the **same source tip**, then re-enter merge from Part A. Do **not** run Part B/C/D or the merge command. |
+| Associated and change still **active** | **Block merge**. Name the change(s). Require archive (sync main specs + move to `openspec/changes/archive/`) on the **same source tip**, then re-enter merge from Part A. Do **not** run Part B/R/C/D or the merge command. |
 
 ### Hard rules
 
@@ -166,7 +166,7 @@ CONFLICTS=$(git merge-tree "$BASE" HEAD origin/<target-branch> | grep -c "^chang
 
 | State | Action |
 |---|---|
-| `BEHIND=0` and `CONFLICTS=0` | Clean — proceed to Part C |
+| `BEHIND=0` and `CONFLICTS=0` | Clean — proceed to Part R |
 | `BEHIND>0` and `CONFLICTS=0` | Report "target N commits ahead; rebase applies cleanly" → Rebase item on the sheet |
 | `CONFLICTS>0` | Report "target N ahead, ~M files conflict" → Rebase item on the sheet |
 
@@ -186,11 +186,11 @@ If `git-conflict-resolve` is unavailable or the user aborts, stop — leave the 
 
 ### Scope boundary — this Part does NOT wait for CI
 
-After `--force-with-lease` push, this Part **ends**: it reports "rebased, PR updated, CI rerunning" and returns control to the workflow. CI-gating and the actual merge stay with the workflow's normal closeout (Part C → Part D → merge) — the user comes back after CI is green, same as any post-review merge. This Part is a rebase repair tool, not a merge-through-CI orchestrator.
+After `--force-with-lease` push, the **same** merge attempt continues at Part R → Part C → Part D. Re-run detection on the new tip and reuse the sheet answers. This Part does not wait for CI. If the attempt later pauses specifically to wait for CI, that pause ends the attempt: the next merge is a new attempt from Part A. This Part is a rebase repair tool, not a merge-through-CI orchestrator.
 
 ### Loop bound
 
-Each merge attempt triggers at most one rebase. If the target moves again while waiting for CI, the next merge attempt re-enters from Part A and re-detects — bounded, not infinite.
+Each merge attempt triggers at most one rebase. After that rebase, the same attempt continues R → C → D. If the target moves again while waiting for CI, the next merge attempt re-enters from Part A and re-detects — bounded, not infinite.
 
 ### Red flags
 
@@ -201,20 +201,36 @@ Each merge attempt triggers at most one rebase. If the target moves again while 
 
 ## Part C — Coverage gate
 
-Part C starts on merge intent. It does **not** auto-run the analyzer by default. The preference is read in the sheet preflight; under `ask` the per-merge question is the sheet's **Coverage** item, and this Part consumes the answer.
+Part C runs after Part R has produced a satisfaction 留痕. It does **not** auto-run the analyzer merely because merge intent exists. The preference is read in the sheet preflight; under `ask` the per-merge question is the sheet's **Coverage** item, and this Part consumes the answer. The analyzer is read-only: it does not move the source tip. If the user adds tests during a Part C pause and that moves the tip, resume hits the tip check before Part D and stays fail-closed.
 
 ### 1. Resolve project preference
 
 Scan `AGENTS.md` then `CLAUDE.md` (first match wins) for a line matching (case-insensitive key):
 
-`coverage-gate:\s*(always|never|ask)\b`
+`coverage-gate:\s*(always|never|ask|auto)\b`
+
+A line that does not match is unset.
 
 | Value | Behavior |
 |---|---|
-| *(unset)* | Treat as `ask` |
+| *(unset)* | Treat as `ask`, not `auto` |
 | `ask` | On **every** merge, the sheet asks: run coverage for this merge, or skip? **MUST NOT** auto-run |
 | `always` | Run gate steps without asking (subject to analyzer availability) |
-| `never` | Skip analyzer; write project-preference 留痕; proceed to Part R |
+| `never` | Skip analyzer; write project-preference 留痕; proceed to the tip check, then Part D when it passes |
+| `auto` | Do not ask. Apply the four-cell below at this Part. Skip only when the cell says skip |
+
+### 1.5 `auto` four-cell
+
+Classify the PR/MR **three-dot** changed paths with the allow/deny table in [reference.md](reference.md)「Non-application-code surface」. Apply the scale/risk ladder in [reference.md](reference.md)「Content-matched depth ladder」**except** step 4 (post-fail re-entry). That signal is Part R depth only and is not a coverage hit.
+
+A scale/risk hit is any of: changed lines > 400, changed files > 20, the breaking-change regex, or the sensitive path/keyword table.
+
+| Surface | Scale/risk hit | Action |
+|---|---|---|
+| non-application-code, or empty paths (`changed-paths=0` and the classify command succeeded) | no | Skip analyzer. Write auto-skip 留痕 (surface, lines, files, large/breaking/sensitive flags) |
+| non-application-code or empty paths | yes | Run |
+| application-code | no or yes | Run |
+| Classify command failed, or changed-path listing failed | — | Run |
 
 ### 2. Pre-detection (only if decision is **run**)
 
@@ -222,7 +238,7 @@ If `test-coverage-analyzer` is available, continue to gate steps. If not found, 
 
 ### 3. Gate steps (only if decision is **run**)
 
-Independent Bash permission — runs the analyzer script:
+Independent Bash permission — runs the analyzer script. The script reads coverage; it does not commit or push.
 
 1. **Construct `--base`** (try in order, stop on first hit):
    - MR/PR: `gh pr view --json baseRefName -q .baseRefName` / `glab mr view <iid> -F json | jq .target_branch` → `--base <target>` (bare branch name; the script's `validate_ref` adds `origin/`)
@@ -236,13 +252,13 @@ Independent Bash permission — runs the analyzer script:
 
    | Result | 🤖 Auto | 👤 Manual |
    |---|---|---|
-   | ✅ Report generated + coverage meets threshold | Continue to Part R (PR code review) | Prompt pass, wait for user re-confirm |
-   | ⚠️ Coverage below threshold | Pause, output report, await user (force/add-tests/abort) | same |
+   | ✅ Report generated + coverage meets threshold | Continue to the tip check, then Part D | Prompt pass, wait for user re-confirm |
+   | ⚠️ Coverage below threshold | Pause, output report, await user (force/add-tests/abort). Adding tests that move the tip fails the later tip check | same |
    | 💥 Crash / no report / exit 1 | Treat as gate-fail, pause | same |
    | 📭 No test code / 0% pass | Present report, pause for user judgment | same |
    | 🕳️ **Should-run** but gate not run and merge happened (implicit miss) | Pause merge, rerun gate; if already merged, write miss留痕 | same |
 
-**Should-run** = preference `always`, or preference `ask` after the user chose run. Preference `never` or user-explicit skip under `ask` are **not** implicit misses.
+**Should-run** = preference `always`, preference `ask` after the user chose run, or preference `auto` when the four-cell action is run. Preference `never`, user-explicit skip under `ask`, and auto-skip are **not** implicit misses.
 
 ### 留痕 templates
 
@@ -252,6 +268,7 @@ Location: PR description and `design.md` Verification Notes.
 |------|----------|
 | User explicit skip | `【覆盖率门控跳过】用户显式跳过，未运行 test-coverage-analyzer。时间：<ISO>。决策人：用户。` |
 | Project preference never | `【覆盖率门控跳过】工程偏好 coverage-gate: never。时间：<ISO>。决策人：项目配置。` |
+| Auto skip | `【覆盖率门控跳过】coverage-gate: auto。surface=<non-application-code\|empty>。lines=<n>。files=<n>。large=<ok\|hit>。breaking=<ok\|hit>。sensitive=<ok\|hit>。时间：<ISO>。决策人：项目配置。` |
 | Env gap (skill not found) | `【覆盖率门控跳过】未检测到 test-coverage-analyzer skill，门控不可用。时间：<ISO>。决策人：系统（环境缺漏）。` |
 | Implicit miss | `【覆盖率门控漏跑】合并已发生但门控未运行（应跑未跑）。时间：<ISO>。漏跑阶段：<合并前/合并后>。` |
 
@@ -272,7 +289,7 @@ Scan `AGENTS.md` then `CLAUDE.md` (first match wins) for:
 | *(unset)* | Treat as `auto` (content-matched depth — surface classification + scale/risk escalation) |
 | `always` | Run `pr-code-review` at `depth=full` |
 | `auto` | Content-matched depth: classify surface (§2) + scale/risk escalation (§2.5) — no escalation hit → `light`; any escalation hit → `full` (application-code included) |
-| `never` | Skip `pr-code-review`; write project-preference 留痕; proceed to Part D |
+| `never` | Skip `pr-code-review`; write project-preference 留痕 including `tip=<sha>`; proceed to Part C |
 | `ask` | The sheet's **Review** item asks full / light / skip for this merge (Recommended = ladder result); MUST NOT auto-pick; skip needs user-explicit skip 留痕 |
 | `non-code-light` | Classify the PR surface (§2); non-application-code → `depth=light`; application-code → same scale/risk ladder as `auto` |
 
@@ -299,34 +316,43 @@ No escalation hit → `light` (including application-code). Thresholds and the s
 ### 3. Run or skip
 
 1. Confirm frontmatter dependency `pr-code-review` is available when a review run is required (prerequisite check already ran at load).
-2. If preference is `never` (or `ask` + user skip): write 留痕 → Part D (do not load `pr-code-review`).
+2. If preference is `never` (or `ask` + user skip): write satisfaction 留痕 with `tip=<sha>` → Part C (do not load `pr-code-review`).
 3. Otherwise load `pr-code-review` with the selected `depth` (`full` or `light`) against the open PR/MR about to be merged (follow that skill — Standards∥Spec, confidence ≥80).
 4. **Decision matrix:**
 
 | Result | Action |
 |---|---|
-| Pass — neither axis retains ≥80 Critical/Important | Proceed to Part D |
-| Fail — either axis has ≥80 Critical/Important | **Block Part D.** Do **not** treat source-tip fixes alone as unlock. Either: (1) fix on the source tip, then **mandatory** re-run Part R on the new tip (§3.5), or (2) user **explicit** skip / accept-residual 留痕. Re-enter from Part A only when Part A/B association or rebase rules require it — not as a substitute for re-review. |
-| Skill ineligible skip (closed/draft/already reviewed this session) | Treat as pass for this Part only if the PR is still the merge candidate and a prior ≥80-clean dual-axis review exists on **this tip**; otherwise pause for user. A clean review of a **previous** tip after fixes does **not** count. |
+| Pass — neither axis retains ≥80 Critical/Important | Write clean-pass 留痕 with `tip=<sha>` and `depth=`. Proceed to Part C |
+| Fail — either axis has ≥80 Critical/Important | **Block Part C.** Do **not** treat source-tip fixes alone as unlock. Either: (1) fix on the source tip, then **mandatory** re-run Part R on the new tip (§3.5), or (2) user **explicit** skip / accept-residual 留痕 (both include `tip=<sha>`). Re-enter from Part A only when Part A/B association or rebase rules require it — not as a substitute for re-review. |
+| Skill ineligible skip (closed/draft/already reviewed this session) | Treat as pass for this Part only if the PR is still the merge candidate and a prior ≥80-clean dual-axis review exists on **this tip**; write the clean-pass 留痕 with that tip and depth. Otherwise pause for user. A clean review of a **previous** tip after fixes does **not** count. |
 
 ### 3.5 Fail → fix → re-review until clean (round cap)
 
 When a review **run** fails and the agent applies source-tip fixes (not an explicit skip/accept 留痕):
 
 1. Count each `pr-code-review` invocation in this merge attempt as one **round** (the initial fail is round 1).
-2. After fixes land on the tip, **re-resolve depth** (§1–2.5; post-fail re-entry → full when that signal hits) and **re-run** `pr-code-review` on the new tip before Part D.
-3. **Exit to Part D** only when a round **passes** (no ≥80 Critical/Important on either axis) or the user writes explicit skip / accept-residual 留痕.
-4. **Cap = 3 rounds.** If round 3 still fails: **pause** and ask the user — continue (exactly one more review round; fail → pause again) / accept residual blocking with 留痕 / abort merge. Do **not** auto-enter Part D.
+2. After fixes land on the tip, **re-resolve depth** (§1–2.5; post-fail re-entry → full when that signal hits) and **re-run** `pr-code-review` on the new tip before Part C.
+3. **Exit to Part C** only when a round **passes** (no ≥80 Critical/Important on either axis) or the user writes explicit skip / accept-residual 留痕. Every such exit writes 留痕 with `tip=<full sha of origin/<source> at exit>`.
+4. **Cap = 3 rounds.** If round 3 still fails: **pause** and ask the user — continue (exactly one more review round; fail → pause again) / accept residual blocking with 留痕 / abort merge. Do **not** auto-enter Part C.
 5. Preference `never` / ask-skip paths that never ran Part R do **not** enter this loop.
 
 ### 留痕
 
+Every satisfaction exit records `tip=<full sha of origin/<source> at exit>` (`git rev-parse origin/<source-branch>` at that moment).
+
 | Case | Template |
 |------|----------|
-| User explicit skip | `【PR code-review 门控跳过】用户显式跳过 Part R（pr-code-review）。时间：<ISO>。决策人：用户。PR：<url or id>。` |
-| Accept residual after round cap | `【PR code-review 残留接受】用户在 Part R 轮次封顶后接受残留 ≥80 Critical/Important。时间：<ISO>。决策人：用户。PR：<url or id>。轮次：<n>。` |
-| Project preference never | `【PR code-review 门控跳过】工程偏好 pr-review-gate: never。时间：<ISO>。决策人：项目配置。` |
+| Clean pass | `【PR code-review 门控通过】tip=<sha>。时间：<ISO>。PR：<id>。depth=<light\|full>。` |
+| User explicit skip | `【PR code-review 门控跳过】用户显式跳过 Part R（pr-code-review）。tip=<sha>。时间：<ISO>。决策人：用户。PR：<url or id>。` |
+| Accept residual after round cap | `【PR code-review 残留接受】用户在 Part R 轮次封顶后接受残留 ≥80 Critical/Important。tip=<sha>。时间：<ISO>。决策人：用户。PR：<url or id>。轮次：<n>。` |
+| Project preference never | `【PR code-review 门控跳过】工程偏好 pr-review-gate: never。tip=<sha>。时间：<ISO>。决策人：项目配置。` |
 | Light path used | Optional note in the review comment: `pr-review-gate: <non-code-light\|auto>; surface=<non-application-code\|application-code>; scale=<ok\|escalated>; sensitive=<ok\|hit>`; `depth=<light\|full>` |
+
+Clean pass MUST use this sentence (the table above escapes `|` only so the cell stays one column):
+
+```
+【PR code-review 门控通过】tip=<sha>。时间：<ISO>。PR：<id>。depth=<light|full>。
+```
 
 ### Red flags
 
@@ -335,13 +361,29 @@ When a review **run** fails and the agent applies source-tip fixes (not an expli
 - Calling Claude Code `/code-review` plugin as a substitute without loading `pr-code-review`
 - Collapsing Standards and Spec into one ranked list and treating “overall look fine” as Part R pass
 - Treating application-code as always-`full` under `auto` or `non-code-light` (full requires an escalation hit, or preference `always`)
-- Entering Part D after fixing Part R findings **without** a new dual-axis-clean review on that tip (unless explicit skip/accept-residual 留痕)
+- Entering Part C after fixing Part R findings **without** a new dual-axis-clean review on that tip (unless explicit skip/accept-residual 留痕 that includes `tip=<sha>`)
 
 ---
 
-## Part D — Squash decision + tip pinning (after Part R passes, before merge)
+## Tip check before Part D (fail-closed)
 
-Part D owns everything between review pass and the merge command: the **squash decision** (Step 0) prevents merge-strategy-by-default, and **tip pinning** (Steps 1–4) prevents the stale-tip merge race. (Postmortem: `docs/mr-merge-stale-tip-archive-miss-incident.md`.)
+After Part C continues (threshold met, or an allowed skip) and before Part D:
+
+1. The latest Part R satisfaction 留痕 for this attempt MUST contain `tip=`. Missing `tip=` means do **not** enter Part D.
+2. `git fetch origin <source-branch>`
+3. Compare these SHAs. They MUST all equal `T_trace` (the full sha in that 留痕):
+   - `T_trace` — sha recorded in the 留痕
+   - `T_tracking` — `git rev-parse origin/<source-branch>`
+   - `T_pr` — platform PR/MR head sha
+   - `T_local` — `git rev-parse refs/heads/<source-branch>` when `refs/heads/<source-branch>` exists
+4. If any required read fails or any SHA differs: do **not** enter Part D. Pause into a new merge attempt from Part A (new preflight and sheet).
+5. When they match, Part D pins the merge to that SHA (`T_trace`).
+
+Part C's analyzer does not move the tip. User add-tests during a Part C pause that move the tip fail this check.
+
+## Part D — Squash decision + tip pinning (after the tip check passes, before merge)
+
+Part D runs only after Part C has continued and the tip check has passed. It owns the **squash decision** (Step 0) and **tip pinning** (Steps 1–4). (Postmortem: `docs/mr-merge-stale-tip-archive-miss-incident.md`.) Pin with `T_trace` from the tip check.
 
 ### Step 0 — Squash decision (mandatory, before the merge command)
 
@@ -374,9 +416,9 @@ Prevents **merge-strategy-by-default**: the GitLab "Squash commits when merge re
 
 Prevents the **stale-tip merge race**: archive/fix commits pushed seconds before merge fail to enter the target because the merge fast-forwards to the pre-push tip (whose pipeline was already green), while the freshly-pushed commits stay on the source branch.
 
-1. **Pin the merge revision.**
+1. **Pin the merge revision** to the SHA the tip check already verified (`T_trace`).
    ```bash
-   MERGE_SHA=$(git rev-parse origin/<source-branch>)   # or the SHA returned by push
+   MERGE_SHA="$T_trace"   # full sha of origin/<source> recorded on the Part R satisfaction 留痕
    ```
    Merge with `glab mr merge <id> --sha "$MERGE_SHA" -y` (GitLab) or `gh pr merge <id> --match-head-commit "$MERGE_SHA"` (GitHub; older docs may say `--sha` — use the flag your `gh` supports), using the merge method chosen in Step 0. A bare merge with no tip pin is forbidden.
    If the platform CLI has no tip-pin flag: wait for that tip's pipeline to pass before merging, and treat step 3 as the mandatory backstop.
@@ -414,7 +456,7 @@ Presenting the merge decision sheet, or running the analyzer after opt-in, does 
 
 ## Integration guide (for referencing workflows)
 
-- **Keep in your own body:** your stage ordering line (e.g. `archive → branch-closeout → merge-discipline(A→B→C→R→D) → merge → writeback`), a one-line pointer to this skill, and 1-2 key red-flags. Do **not** copy the Part steps inline.
-- **Delegate to this skill:** the merge decision sheet and all five Parts — A (archive gate), B (rebase), C (coverage), R (PR code review via `pr-code-review`), D (tip pinning).
+- **Keep in your own body:** your stage ordering line (e.g. `archive → branch-closeout → merge-discipline(A→B→R→C→D) → merge → writeback`), a one-line pointer to this skill, and 1-2 key red-flags. Do **not** copy the Part steps inline.
+- **Delegate to this skill:** the merge decision sheet and all five Parts — A (archive gate), B (rebase), R (PR code review via `pr-code-review`), C (coverage), D (tip pinning).
 - **Pre-merge checklist (single source):** [reference.md](reference.md)「合并前检查清单」/ "Pre-merge checklist". Referencing workflows keep **one pointer sentence** only — do **not** paste the checklist into workflow `reference.md`.
 - **Missing strong deps:** abort and print per-skill `npx skills add FuDesign2008/open-skills -g --skill <name> --yes` (see Prerequisite skill check).

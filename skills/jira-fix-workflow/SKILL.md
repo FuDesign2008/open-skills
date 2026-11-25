@@ -270,7 +270,7 @@ Present the PR/MR URL (from stage 9). Load `feature-branch-closeout` for the clo
 
 Once merge is selected:
 
-1. `feature-branch-closeout` loads `merge-discipline` (Part A→B→C→R→D; checklist in that skill's reference.md)
+1. `feature-branch-closeout` loads `merge-discipline` (Part A→B→R→C→D; checklist in that skill's reference.md)
 2. Merge (`gh pr merge --merge` / `glab mr merge`) → delete the remote fix branch → sync the default branch → delete the local branch
 3. Load `jira-status-writeback` (field map: branch, commit, PR URL, root cause, solution, files, report, verification scenarios). An incomplete「已修复」transition leaves the merge in place and leaves the lifecycle incomplete. Direct Jira comments load `jira-wiki-markup` before `jira_add_comment`.
 

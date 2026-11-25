@@ -20,7 +20,7 @@ After verification is green (or each failing check is explicitly labeled Pending
 
 ### Requirement: feature-branch-closeout SHALL delegate merge to merge-discipline
 
-When the chosen option is merge (or the user later says merge), the agent MUST load `merge-discipline` and run Parts A→B→C→D before executing the merge. feature-branch-closeout MUST NOT restate those parts inline.
+When the chosen option is merge (or the user later says merge), the agent MUST load `merge-discipline` and run Parts A→B→R→C→D before executing the merge. feature-branch-closeout MUST NOT restate those parts inline.
 
 #### Scenario: Merge path loads merge-discipline
 
