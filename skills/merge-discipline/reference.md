@@ -2,7 +2,7 @@
 
 ## Pre-merge checklist (gates + tip pinning)
 
-> Full rules live in this skill's `SKILL.md` (Part A archive gate + Part B rebase + Part C coverage + Part R PR code review + Part D squash decision & tip pinning). This is a pre-merge self-check cheat sheet; referencing workflows must not copy the body — keep a one-line pointer only.
+> Full rules live in this skill's `SKILL.md` (Part A archive gate + Part B rebase + Part R PR code review + Part C coverage + tip check + Part D squash decision & tip pinning). This is a pre-merge self-check cheat sheet; referencing workflows must not copy the body — keep a one-line pointer only.
 
 **Merge decision sheet (before Part A):**
 - [ ] Preflight ran read-only (see「Merge decision sheet」below)? All pending preferences asked in **one** batch with Recommended + rationale, or sheet empty and conclusions stated?
@@ -16,17 +16,7 @@
 **Rebase pre-check (Part B):**
 - [ ] Target-branch lead detected? → Part B
 - [ ] Conflicts detected? → Part B
-- [ ] When rebase is needed: reported and the sheet's Rebase item confirmed (no auto-rebase)? After rebase + push, this Part ends without waiting on CI? → Part B
-
-**Coverage gate (Part C):**
-
-- [ ] Merge intent confirmed? (branch closeout chose merge / user direct merge command / AI about to invoke merge)
-- [ ] Project `coverage-gate` preference resolved? (`AGENTS.md` → `CLAUDE.md`; unset ≡ `ask`)
-- [ ] If `ask`: sheet's Coverage item answered “run / skip for this merge”? (must not auto-run)
-- [ ] If **run**: is test-coverage-analyzer available? → if not, write env-gap trail and wait for user
-- [ ] If **run**: gate script executed? Result? → pass → Part R; below threshold / crash / no report / no tests → pause for user
-- [ ] If **skip** (`never` or user-explicit skip): audit trail written? (not an implicit miss)
-- [ ] Implicit miss only means “should-run but did not”
+- [ ] When rebase is needed: reported and the sheet's Rebase item confirmed (no auto-rebase)? After rebase + push, the same attempt continues Part R → Part C → Part D without waiting on CI? A later CI-wait merge starts again from Part A? → Part B
 
 **PR code review (Part R):**
 
@@ -36,10 +26,28 @@
 - [ ] If `auto` (or unset) **or** `non-code-light` on application-code: scale/risk/sensitive escalation applied per「Content-matched depth ladder」below?
 - [ ] If review **run**: strong dependency `pr-code-review` present? (else abort with per-skill `npx skills add … --skill pr-code-review --yes`)
 - [ ] If review **run**: `pr-code-review` invoked at selected `depth=full|light` on the open PR/MR tip (Standards∥Spec)?
-- [ ] If **skip** (`never` or user-explicit skip): 留痕 written?
-- [ ] Pass = neither axis has ≥80 Critical/Important → Part D
-- [ ] On fail: source-tip fixes alone do **not** unlock Part D — mandatory re-run Part R on the new tip until clean, or explicit skip / accept-residual 留痕
-- [ ] Fail→fix→re-review rounds counted (each `pr-code-review` = 1)? Cap 3 then pause (continue one round / accept residual / abort) — no auto Part D
+- [ ] Every satisfaction exit (clean pass, user skip, accept-residual, `never`) wrote 留痕 including `tip=<full sha of origin/<source> at exit>`? Clean pass uses `【PR code-review 门控通过】tip=<sha>。时间：<ISO>。PR：<id>。depth=<light|full>。`
+- [ ] Pass = neither axis has ≥80 Critical/Important → Part C
+- [ ] On fail: source-tip fixes alone do **not** unlock Part C — mandatory re-run Part R on the new tip until clean, or explicit skip / accept-residual 留痕
+- [ ] Fail→fix→re-review rounds counted (each `pr-code-review` = 1)? Cap 3 then pause (continue one round / accept residual / abort) — no auto Part C
+
+**Coverage gate (Part C):**
+
+- [ ] Merge intent confirmed? (branch closeout chose merge / user direct merge command / AI about to invoke merge)
+- [ ] Project `coverage-gate` preference resolved? (`AGENTS.md` → `CLAUDE.md`; unset ≡ `ask`, not `auto`)
+- [ ] If `ask`: sheet's Coverage item answered “run / skip for this merge”? (must not auto-run)
+- [ ] If `auto`: four-cell in「Coverage auto four-cell」applied (surface + ladder without post-fail re-entry)? Classify or command failure → run?
+- [ ] If **run**: is test-coverage-analyzer available? → if not, write env-gap trail and wait for user
+- [ ] If **run**: gate script executed read-only? Result? → pass → tip check then Part D; below threshold / crash / no report / no tests → pause for user
+- [ ] If **skip** (`never`, user-explicit skip, or auto-skip): audit trail written? (not an implicit miss). Auto-skip records surface, lines, files, and flags
+- [ ] Implicit miss only means “should-run but did not” (includes `auto` when the cell says run)
+
+**Tip check (after Part C continues, before Part D):**
+
+- [ ] Latest Part R satisfaction 留痕 contains `tip=`?
+- [ ] `git fetch origin <source>` done, and `T_trace`, `T_tracking` (`origin/<source>`), `T_pr` (platform head), and `T_local` (when `refs/heads/<source>` exists) all equal `T_trace`?
+- [ ] Mismatch or missing `tip=` → do not enter Part D; new merge attempt from Part A?
+- [ ] Match → Part D pins `T_trace`?
 
 **Merge squash decision + tip pinning (Part D):**
 
@@ -60,7 +68,7 @@ Authoritative template and preflight checklist for the sheet described in `SKILL
 |---|---|---|---|
 | A | Active association | PR diff paths under `openspec/changes/<name>/` (not `archive/`); `openspec list --json` | associated and still active → **Archive** |
 | B | `BEHIND`, `CONFLICTS` | `git fetch origin <target>`; `git rev-list --count HEAD..origin/<target>`; `git merge-tree` (see Part B) | `BEHIND>0` or `CONFLICTS>0` → **Rebase** |
-| C | `coverage-gate` | `AGENTS.md` then `CLAUDE.md` | `ask` / unset → **Coverage** |
+| C | `coverage-gate` | `AGENTS.md` then `CLAUDE.md` | `ask` / unset → **Coverage**. `auto` is not a sheet item |
 | R | `pr-review-gate` | `AGENTS.md` then `CLAUDE.md`; for the Recommended depth also surface + escalation (sections below) | `ask` → **Review** |
 | D | Commits, collapse | `gh pr view <id> --json commits` / `glab mr commits <id>`; permitted merge methods | ≥2 commits and no collapse → **Squash** |
 | — | Delete branch | — | any other item present → optional **Delete** |
@@ -95,7 +103,7 @@ Preflight: <one-line facts, e.g. BEHIND=3 CONFLICTS=0; 4 commits; coverage-gate=
 Reply with letters per item (e.g. "1A 2A 3B 4B 5A 6B") or "all recommended".
 ```
 
-After the reply, state the resolved answers in one line, then execute A→B→C→R→D without re-asking them.
+After the reply, state the resolved answers in one line, then execute A→B→R→C→D without re-asking them.
 
 ### Empty-sheet statement
 
@@ -103,7 +111,7 @@ When no item is needed, print one line instead of a form, e.g. `Merge decision: 
 
 ### Still pauses separately (not sheet items)
 
-Part R fail / 3-round cap; coverage below threshold, crash, no report, no tests; analyzer unavailable after a run decision; rebase conflict that cannot be finished or user abort; ancestor check MISSING; fast-forward blocked in the workspace sync.
+Part R fail / 3-round cap; coverage below threshold, crash, no report, no tests; analyzer unavailable after a run decision; rebase conflict that cannot be finished or user abort; tip-check mismatch before Part D; ancestor check MISSING; fast-forward blocked in the workspace sync.
 
 ---
 
@@ -139,7 +147,18 @@ Skill-local non-Markdown under `skills/<name>/` that is documentation/assets onl
 |-----------|---------|
 | ≥1 denylist path | application-code |
 | All paths allowlisted, zero denylist | non-application-code |
-| Empty diff | Do not classify; Part R eligibility / empty-diff rules in `pr-code-review` apply |
+| Empty diff / changed-paths=0 with a successful classify command | Empty paths. Part R follows `pr-code-review` empty-diff rules. Part C `auto` uses the empty cell in「Coverage auto four-cell」 |
+
+## Coverage auto four-cell
+
+Used only by Part C when `coverage-gate: auto`. Same surface table as above. Scale/risk uses「Content-matched depth ladder」steps 2, 3, and 5 only. Step 4 (post-fail re-entry) is a Part R depth signal and is not a coverage hit.
+
+| Surface | Scale/risk hit | Action |
+|---|---|---|
+| non-application-code, or empty paths (`changed-paths=0` and classify succeeded) | no | auto-skip 留痕 (surface, lines, files, large/breaking/sensitive flags) |
+| non-application-code or empty paths | yes | run analyzer |
+| application-code | no or yes | run analyzer |
+| Classify command failed, or changed-path listing failed | — | run analyzer |
 
 ## Content-matched depth ladder (auto / unset / non-code-light application-code)
 
@@ -150,7 +169,7 @@ Applied in order; **first escalation hit wins**. For `auto` / unset, start at st
 | 1. Surface | Allow/deny table above → application-code **or** non-application-code; **does not** by itself select `full` | path classification |
 | 2. Large diff | Total changed lines > 400 **or** changed files > 20 ⇒ **full** | `git diff --stat` (three-dot) |
 | 3. Breaking signal | Title/description/commit messages match `migration\|schema\|breaking\|API contract\|deprecat` (case-insensitive) ⇒ **full** | PR metadata scan |
-| 4. Post-fail re-entry | Prior Part R **fail** on this tip, re-presented after fixes ⇒ **full** | Part R history |
+| 4. Post-fail re-entry | Prior Part R **fail** on this tip, re-presented after fixes ⇒ **full**. **Part R only** — Part C `coverage-gate: auto` MUST NOT treat this step as a scale/risk hit | Part R history |
 | 5. Sensitive path/keyword | Any changed **application-code** path matches a glob below, **or** title/description/commit subject matches a keyword below ⇒ **full** | path + PR metadata vs tables in this file |
 | No hit | Steps 2–5 clean ⇒ **light** (including application-code) | — |
 

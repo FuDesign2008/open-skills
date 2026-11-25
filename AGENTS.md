@@ -23,7 +23,7 @@
 
 `worktree-gate: always`
 
-> 本仓库为 Markdown skills 库，合并前不默认跑 `test-coverage-analyzer`。其他工程可在 `AGENTS.md` / `CLAUDE.md` 声明 `coverage-gate: always` | `never` | `ask`（未声明 ≡ 每次合并询问）。
+> 本仓库为 Markdown skills 库，合并前不默认跑 `test-coverage-analyzer`。其他工程可在 `AGENTS.md` / `CLAUDE.md` 声明 `coverage-gate: always` | `never` | `ask` | `auto`（未声明 ≡ `ask`，每次合并询问；`auto` 按 merge-discipline Part C 四格判定，不是未声明时的默认值）。
 >
 > `pr-review-gate`：`always`（全量 `pr-code-review`）| `never`（跳过 Part R，须留痕）| `ask`（每次询问 full/light/skip）| `non-code-light`（非应用代码表面用 light 深度，否则 full）| `auto`（内容匹配深度：surface 分类 + 大 diff/破坏性信号/fail 重提升级）。**未声明 ≡ `auto`**（merge-discipline v1.7.0 起；升级信号任一命中仍 full，仅「非应用代码且无升级信号」走 light —— 非未分类一刀切）。本仓默认 `non-code-light`：docs/skills/openspec 等表面走轻量双轴审查；含 workflows / `scripts/` / 运行时源码扩展则仍 full。
 >
