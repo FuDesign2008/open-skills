@@ -128,7 +128,8 @@ test("evals record the new order and auto dry-runs", () => {
 });
 
 test("openspec change and main specs carry auto, tip, and order", () => {
-  const change = "openspec/changes/merge-coverage-reorder-auto";
+  // After Part A archive, the change lives under archive/<date>-<name>/.
+  const change = "openspec/changes/archive/2026-11-26-merge-coverage-reorder-auto";
   for (const rel of [
     `${change}/proposal.md`,
     `${change}/design.md`,
