@@ -25,6 +25,10 @@ Sample placeholder MR URL (deid-safe):
 | Hands-on tutorial | Route to `teach` — stop |
 | Design-doc rewrite into review doc | Route to `tech-review-doc` — stop |
 
+## Color scheme
+
+The reference shell sets `color-scheme: light dark` and defines CSS custom properties (`--bg`, `--fg`, `--muted`, `--surface`, `--border`, `--code-bg`). Light values are the defaults; `@media (prefers-color-scheme: dark)` overrides only those tokens. Component rules use `var(--*)` so the page stays readable under the OS preference. When extending styles, reuse those tokens.
+
 ## Output naming
 
 `.html-explain/<topic-slug>-<local-YYYYMMDD-HHmm>.html`

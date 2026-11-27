@@ -60,6 +60,10 @@ test("explain-clearly contract", () => {
   assert.match(shell, /time-ordered subject/);
   assert.match(shell, /comparison table does not satisfy/);
   assert.doesNotMatch(shell, /id="definition"|id="why"|id="implication"|id="analogy"/);
+  assert.match(shell, /color-scheme:\s*light dark/);
+  assert.doesNotMatch(shell, /color-scheme:\s*light\s*;/);
+  assert.match(shell, /--bg\b/);
+  assert.match(shell, /prefers-color-scheme:\s*dark/);
 });
 
 test("explain-clearly adds one evidence link only when a path is supplied", () => {

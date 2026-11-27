@@ -16,7 +16,7 @@ test("html-explain contract", () => {
   const skill = fs.readFileSync(skillUrl, "utf8");
   assert.match(skill, /^name: html-explain$/m);
   assert.match(skill, /^user-invocable: true$/m);
-  assert.match(skill, /^version: "1\.0\.0"$/m);
+  assert.match(skill, /^version: "1\.1\.0"$/m);
   assert.match(skill, /^  - system-browser-open-discipline$/m);
 
   const depsBlock = skill.match(/^dependencies:\n((?:  - .+\n)*)/m);
@@ -68,4 +68,8 @@ test("html-explain contract", () => {
   assert.match(shell, /what-changed|What changed/i);
   assert.match(shell, /<style/i);
   assert.doesNotMatch(shell, /<script/i);
+  assert.match(shell, /color-scheme:\s*light dark/);
+  assert.doesNotMatch(shell, /color-scheme:\s*light\s*;/);
+  assert.match(shell, /--bg\b/);
+  assert.match(shell, /prefers-color-scheme:\s*dark/);
 });

@@ -1,6 +1,6 @@
 ---
 name: html-explain
-version: "1.0.0"
+version: "1.1.0"
 user-invocable: true
 dependencies:
   - system-browser-open-discipline
@@ -28,7 +28,7 @@ Route elsewhere and stop when the request is:
 ## Default pipeline
 
 1. **Gather evidence** for the named subject: MR/PR URL or number, `git diff` / status / log as needed, and the key files touched. Prefer facts from this session over invention.
-2. **Write lightweight HTML** using the five-section outline in [reference.md](reference.md). Use `assets/page-shell.html` as a layout reference (title, one-liner, five section placeholders). Inline CSS is fine. Keep the page light — no concept step-player rules from `explain-clearly`.
+2. **Write lightweight HTML** using the five-section outline in [reference.md](reference.md). Use `assets/page-shell.html` as a layout reference (title, one-liner, five section placeholders). Inline CSS is fine. Follow the shell's CSS custom properties for colors; when extending styles use those tokens so OS dark/light stays readable; do not place light-only color rules after the dark media block. Keep the page light — no concept step-player rules from `explain-clearly`.
 3. **Deliver** under the workspace-root directory `.html-explain/`. Create that directory when needed. Name each file `<topic-slug>-<local-YYYYMMDD-HHmm>.html`. Write a **new** file every time; leave existing files in place. Do **not** edit the workspace gitignore.
 4. **Open** the file for human view by loading and following `system-browser-open-discipline` (thin pointer — do not paste that skill's Iron Law here).
 5. **Close out in chat** with the file path only. Do not paste the full HTML body into the chat. If the browser cannot be opened, still give the absolute path and state that open was skipped.
