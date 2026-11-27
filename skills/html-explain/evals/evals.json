@@ -1,0 +1,29 @@
+{
+  "skill_name": "html-explain",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "用 HTML 解释这个 MR：https://example.com/group/project/-/merge_requests/123",
+      "expected_output": "Runs html-explain default path: gather MR evidence, write five-section .html-explain/*.html, open via system-browser-open-discipline, chat returns path only",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "看不懂这个改动，HTML 解释一下当前 diff",
+      "expected_output": "Lightweight HTML explain of local/diff change; five sections; system browser open; path in chat",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "事件循环是什么？用大白话解释一下",
+      "expected_output": "Route to explain-clearly (pure concept/mechanism); do not use html-explain as the primary skill",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "帮我改一下 skills/foo/SKILL.md 里的 description",
+      "expected_output": "Edit the file in the editor; not html-explain",
+      "files": []
+    }
+  ]
+}
