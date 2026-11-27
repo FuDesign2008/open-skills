@@ -44,3 +44,4 @@ ipcMain.on(EventType.SaveNoteContent, (event, id, content) => {
 - Depth: match the amount of cause the question needs. A broad "what is X" names the subject in one sentence under the title and then gives the relevant mechanism in its shape. A narrower question ("can A do B") puts the direct answer in that sentence.
 - Localization: when the user's codebase contains the concept, replace the generic table or diagram above with real files and lines read in this session.
 - Visuals: Example 1 uses a table because it compares channels, one row per item. Example 2 uses one static diagram because it is a relay topology. Match the visual to the first matching shape.
+- Color scheme (HTML): follow the CSS custom properties in `assets/explanation-shell.html` (`--bg`, `--fg`, `--muted`, `--surface`, `--border`, `--code-bg`) so the page stays readable under OS light and dark.

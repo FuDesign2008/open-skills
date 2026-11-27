@@ -6,13 +6,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>HTML Explain</title>
   <style>
-    :root { color-scheme: light; }
+    :root {
+      color-scheme: light dark;
+      --bg: #faf9f7;
+      --fg: #1a1a1a;
+      --muted: #444444;
+      --surface: #ffffff;
+      --border: #d4d0c8;
+      --code-bg: #f0eeea;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1a1a;
+        --fg: #e8e6e3;
+        --muted: #a8a29e;
+        --surface: #262422;
+        --border: #3f3a36;
+        --code-bg: #2a2826;
+      }
+    }
     body {
       margin: 0;
       font-family: Georgia, "Times New Roman", serif;
       line-height: 1.55;
-      background: #faf9f7;
-      color: #1a1a1a;
+      background: var(--bg);
+      color: var(--fg);
     }
     main {
       max-width: 42rem;
@@ -20,10 +38,14 @@
       padding: 2.5rem 1.25rem 4rem;
     }
     h1 { font-size: 1.75rem; line-height: 1.2; margin: 0 0 0.5rem; }
-    .one-liner { margin: 0 0 1.75rem; color: #444; }
+    .one-liner { margin: 0 0 1.75rem; color: var(--muted); }
     h2 { font-size: 1.05rem; margin: 1.5rem 0 0.4rem; }
     p, ul { margin: 0.4rem 0; }
-    code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.9em; }
+    code {
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: 0.9em;
+      background: var(--code-bg);
+    }
   </style>
 </head>
 <body>

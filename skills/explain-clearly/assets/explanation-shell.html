@@ -6,13 +6,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Explanation</title>
   <style>
-    :root { color-scheme: light dark; }
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f4ef;
+      --fg: #1c1915;
+      --muted: #5c564c;
+      --surface: #ffffff;
+      --border: #c8c2b4;
+      --code-bg: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1915;
+        --fg: #f0ebe3;
+        --muted: #a8a29e;
+        --surface: #2a2620;
+        --border: #4a443a;
+        --code-bg: #2a2620;
+      }
+    }
     body {
       margin: 0;
       font-family: "Iowan Old Style", Palatino, Georgia, serif;
       line-height: 1.55;
-      background: #f6f4ef;
-      color: #1c1915;
+      background: var(--bg);
+      color: var(--fg);
     }
     main {
       max-width: 42rem;
@@ -21,14 +39,15 @@
     }
     h1 { font-size: 1.8rem; line-height: 1.2; margin: 0 0 1.5rem; }
     h2 { font-size: 1.05rem; margin: 1.6rem 0 0.4rem; }
-    p { margin: 0.4rem 0; }
-    table { border-collapse: collapse; width: 100%; margin: 0.8rem 0; }
-    th, td { border: 1px solid #c8c2b4; padding: 0.4rem 0.55rem; text-align: left; }
+    p { margin: 0.4rem 0; color: var(--fg); }
+    table { border-collapse: collapse; width: 100%; margin: 0.8rem 0; background: var(--surface); }
+    th, td { border: 1px solid var(--border); padding: 0.4rem 0.55rem; text-align: left; color: var(--fg); }
     pre {
       overflow: auto;
-      background: #fff;
-      border: 1px solid #c8c2b4;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
       padding: 0.8rem;
+      color: var(--fg);
     }
   </style>
 </head>
