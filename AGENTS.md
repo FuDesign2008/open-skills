@@ -101,6 +101,7 @@ open-skills/
 | jira-read | Jira 工具 | 无 |
 | typescript-check | 工具 | 无 |
 | explain-clearly | 工具 | 无（与全局第三方 `teach` 靠 description 边界区分：概念问答归 explain-clearly，上机教学归 teach） |
+| html-explain | 工具 | system-browser-open-discipline（轻量 HTML 解释 MR/diff；必要时 optional 加载 explain-clearly；强依赖系统浏览器纪律） |
 | article-writer | 内容创作 | 无 |
 | xquik-social-data | 数据采集 | 无 |
 | essence-diagnosis | 工作流 | multi-agent-debate、report-output-discipline |
